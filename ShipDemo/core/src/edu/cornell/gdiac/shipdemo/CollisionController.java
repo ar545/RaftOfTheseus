@@ -27,6 +27,7 @@
 package edu.cornell.gdiac.shipdemo;
 
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.Array;
 
 /**
  * Controller implementing simple game physics.
@@ -58,6 +59,13 @@ public class CollisionController {
 		velocity = new Vector2();
 		normal = new Vector2();
 		temp = new Vector2();
+	}
+
+	public void processCollisions(Ship ship, Array<GameObject> objects) {
+		for (GameObject o : objects) {
+			if (o != ship)
+				checkForCollision(ship, (Wood)o);
+		}
 	}
 
 	/** 

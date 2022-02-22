@@ -11,13 +11,10 @@
  */
 package edu.cornell.gdiac.shipdemo;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.util.FilmStrip;
 
-import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.graphics.*;
 
 /**
@@ -29,18 +26,40 @@ import com.badlogic.gdx.graphics.*;
  * basic game loop (update-draw).
  */
 public class GameMode implements ModeController {
+	/**
+	 * Track the current state of the game for the update loop.
+	 */
+	public enum GameState {
+		/** Before the game has started */
+		INTRO,
+		/** While we are playing the game */
+		PLAY,
+		/** When the ships is dead (but shells still work) */
+		OVER
+	}
+
 	/** The background image for the battle */
 	private Texture background;
-	/** Texture for the ship */
-	private Texture shipTexture;
-	/** Texture for driftwood */
-	private Texture woodTexture;
-	
+//	/** Texture for the ship */
+//	private Texture shipTexture;
+//	/** Texture for driftwood */
+//	private Texture woodTexture;
+
+	/** Reference to drawing context to display graphics (VIEW CLASS) */
+	private GameCanvas canvas;
+
     // Instance variables
 	/** Read input for player from keyboard (CONTROLLER CLASS) */
-	protected InputController playerController;
-    /** Handle collision and physics (CONTROLLER CLASS) */
-    protected CollisionController physicsController;
+	protected InputController inputController;
+	/** Handle collision and physics (CONTROLLER CLASS) */
+	protected CollisionController physicsController;
+	/** Constructs the game models and handle basic gameplay (CONTROLLER CLASS) */
+	private GameplayController gameplayController;
+
+	/** Variable to track the game state (SIMPLE FIELDS) */
+	private GameState gameState;
+	/** Whether or not this player mode is still active */
+	private boolean active;
 
 	/** Location and animation information for player ship (MODEL CLASS) */
 	protected Ship playerShip;
@@ -61,23 +80,23 @@ public class GameMode implements ModeController {
 	 * @param assets	The asset directory containing all the loaded assets
 	 */
 	public GameMode(float width, float height, AssetDirectory assets) {
+		this.canvas = new GameCanvas((int)width, (int)height);
+		active = false;
+		// Null out all pointers, 0 out all ints, etc.
+		gameState = GameState.INTRO;
+
 		// Extract the assets from the asset directory.  All images are textures.
 		background = assets.getEntry("background", Texture.class );
-		shipTexture = assets.getEntry( "ship", Texture.class );
-		woodTexture = assets.getEntry( "wood", Texture.class );
 
 		bounds = new Rectangle(0,0,width,height);
 
-        // PLAYER
-		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f));
-		playerShip.setTexture(shipTexture);
-
-		someWood = new Wood(width*(1.0f / 3.0f), height*(1.0f / 2.0f));
-		someWood.setTexture(woodTexture);
-
 		// Create the controllers.
-		playerController = new InputController();
+		inputController = new InputController();
         physicsController = new CollisionController();
+		gameplayController = new GameplayController();
+
+		// populate gameplay controller with textures
+		gameplayController.populate(assets);
 	}
 
 	/** 
@@ -91,13 +110,50 @@ public class GameMode implements ModeController {
 	 */
 	@Override
 	public void update() {
-		// Read the keyboard for each controller.
-		playerController.readInput ();
+		// Process the game input
+		inputController.readInput();
 
-		// Move the ships forward (ignoring collisions)
-		playerShip.move(playerController.getForward(), playerController.getTurn());
+		// Test whether to reset the game.
+		switch (gameState) {
+			case INTRO:
+				gameState = GameState.PLAY;
+				gameplayController.start(canvas.getWidth() * 0.67f, canvas.getHeight()*0.5f);
+				break;
+			case OVER:
+				if (inputController.didReset()) {
+					gameState = GameState.PLAY;
+					gameplayController.reset();
+					gameplayController.start(canvas.getWidth() * 0.67f, canvas.getHeight()*0.5f);
+				} else {
+					play();
+				}
+				break;
+			case PLAY:
+				play();
+				break;
+			default:
+				break;
+		}
+	}
 
-		physicsController.checkInBounds(playerShip, bounds);
+	/**
+	 * This method processes a single step in the game loop.
+	 *
+	 */
+	protected void play() {
+		// if no player is alive, declare game over
+		if (!gameplayController.isAlive()) {
+			gameState = GameState.OVER;
+		}
+
+		// Update objects.
+		gameplayController.resolveActions(inputController);
+
+		// Check for collisions
+		physicsController.processCollisions(gameplayController.getPlayer(), gameplayController.getObjects());
+
+		// Clean up destroyed objects
+		gameplayController.garbageCollect();
 	}
 
 	/**
@@ -111,19 +167,20 @@ public class GameMode implements ModeController {
 	@Override
 	public void draw(GameCanvas canvas) {
 		canvas.drawOverlay(background, true);
-		
-		// First drawing pass (ships + shadows)
-		playerShip.draw(canvas);
-
-		// draw wood
-		someWood.draw(canvas);
+		// Draw the game objects
+		for (GameObject o : gameplayController.getObjects()) {
+			o.draw(canvas);
+		}
 	}
 
 	/**
 	 * Dispose of all (non-static) resources allocated to this mode.
 	 */
 	public void dispose() {
-		// Garbage collection here is sufficient.  Nothing to do
+		inputController = null;
+		gameplayController = null;
+		physicsController  = null;
+		canvas = null;
 	}
 	
 	/**

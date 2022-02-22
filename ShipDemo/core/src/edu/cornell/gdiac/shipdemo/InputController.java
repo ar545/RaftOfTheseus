@@ -37,6 +37,9 @@ public class InputController {
 	
 	/** How much are we turning? */
 	private float turning;
+
+	/** Whether the reset button was pressed. */
+	private boolean resetPressed;
 	
 	/** 
 	 * Returns the amount of forward movement.
@@ -58,6 +61,15 @@ public class InputController {
 	 */
 	public float getTurn() {
 		return turning;
+	}
+
+	/**
+	 * Returns true if the reset button was pressed.
+	 *
+	 * @return true if the reset button was pressed.
+	 */
+	public boolean didReset() {
+		return resetPressed;
 	}
 
 	/**
@@ -107,5 +119,7 @@ public class InputController {
 		} else if (Gdx.input.isKeyPressed(right) && !Gdx.input.isKeyPressed(left)) {
 			turning = -1;
 		}
+
+		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
     }
 }
