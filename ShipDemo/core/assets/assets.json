@@ -5,8 +5,8 @@
             "minFilter": "linear",
             "magFilter": "linear"
         },
-        "photon": {
-            "file":      "images/photon.png",
+        "wood": {
+            "file":      "images/wood.png",
             "minFilter": "linear",
             "magFilter": "linear"
         },
@@ -14,11 +14,6 @@
           "file":      "images/raft.png",
           "minFilter": "linear",
           "magFilter": "linear"
-        },
-        "target": {
-            "file":      "images/target.png",
-            "minFilter": "linear",
-            "magFilter": "linear"
         }
     },
     "sounds": {

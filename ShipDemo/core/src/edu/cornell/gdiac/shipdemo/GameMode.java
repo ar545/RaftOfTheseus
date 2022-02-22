@@ -11,6 +11,7 @@
  */
 package edu.cornell.gdiac.shipdemo;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -37,8 +38,10 @@ public class GameMode implements ModeController {
 	
 	/** The background image for the battle */
 	private Texture background;
-	/** Texture for the ship (colored for each player) */
+	/** Texture for the ship */
 	private Texture shipTexture;
+	/** Texture for driftwood */
+	private Texture woodTexture;
 	
     // Instance variables
 	/** Read input for player from keyboard (CONTROLLER CLASS) */
@@ -48,6 +51,8 @@ public class GameMode implements ModeController {
 
 	/** Location and animation information for player ship (MODEL CLASS) */
 	protected Ship playerShip;
+	/** Information for 1 piece of wood (MODEL CLASS) */
+	protected Wood someWood;
 
 	/** Store the bounds to enforce the playing region */	
 	private Rectangle bounds;
@@ -66,16 +71,18 @@ public class GameMode implements ModeController {
 		// Extract the assets from the asset directory.  All images are textures.
 		background = assets.getEntry("background", Texture.class );
 		shipTexture = assets.getEntry( "ship", Texture.class );
+		woodTexture = assets.getEntry( "wood", Texture.class );
 
 		bounds = new Rectangle(0,0,width,height);
 
-		// Create the ship and place it
-		
         // PLAYER
 		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f), -90);
 		playerShip.setFilmStrip(new FilmStrip(shipTexture,SHIP_ROWS,SHIP_COLS,SHIP_SIZE));
 
-		// Create the input controllers.
+		someWood = new Wood(width*(1.0f / 3.0f), height*(1.0f / 2.0f));
+		someWood.setTexture(new TextureRegion(woodTexture));
+
+		// Create the controllers.
 		playerController = new InputController();
         physicsController = new CollisionController();
 	}
@@ -114,6 +121,9 @@ public class GameMode implements ModeController {
 		
 		// First drawing pass (ships + shadows)
 		playerShip.drawShip(canvas);
+
+		// draw wood
+		someWood.drawWood(canvas);
 	}
 
 	/**
