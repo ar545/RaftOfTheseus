@@ -67,40 +67,19 @@ public class CollisionController {
 	 *  collidee. Therefore, you should only call this method for one of the 
 	 *  ships, not both. Otherwise, you are processing the same collisions twice.
 	 * 
-	 *  @param ship1 First ship in candidate collision
-	 *  @param ship2 Second ship in candidate collision
+	 *  @param ship Ship in candidate collision
+	 *  @param wood Driftwood in candidate collision
 	 */
-	public void checkForCollision(Ship ship1, Ship ship2) {
+	public void checkForCollision(Ship ship, Wood wood) {
 		// Calculate the normal of the (possible) point of collision
-		normal.set(ship1.getPosition()).sub(ship2.getPosition());
+		normal.set(ship.getPosition()).sub(wood.getPosition());
 		float distance = normal.len();
-		float impactDistance = (ship1.getDiameter() + ship2.getDiameter()) / 2f;
+		float impactDistance = (ship.getDiameter() + wood.getDiameter()) / 2f;
 		normal.nor();
 
 		// If this normal is too small, there was a collision
 		if (distance < impactDistance) {
-			// "Roll back" time so that the ships are barely touching (e.g. point of impact).
-			// We need to use temp, as the method scl would change the contents of normal!
-			temp.set(normal).scl((impactDistance - distance) / 2);  // normal * (d1 - dist)/2
-			ship1.getPosition().add(temp);
-
-			temp.set(normal).scl((impactDistance - distance) / 2);  // normal * (d2 - dist)/2
-			ship2.getPosition().sub(temp);
-
-			// Now it is time for Newton's Law of Impact.
-			// Convert the two velocities into a single reference frame
-			velocity.set(ship1.getVelocity()).sub(ship2.getVelocity()); // v1-v2
-
-			// Compute the impulse (see Essential Math for Game Programmers)
-			float impulse = (-(1 + COLLISION_COEFF) * normal.dot(velocity)) /
-							(normal.dot(normal) * (1 / ship1.getMass() + 1 / ship2.getMass()));
-
-			// Change velocity of the two ships using this impulse
-			temp.set(normal).scl(impulse / ship1.getMass());
-			ship1.getVelocity().add(temp);
-
-			temp.set(normal).scl(impulse / ship2.getMass());
-			ship2.getVelocity().sub(temp);
+			// TODO: consume the wood and add it to the player's health
 		}
 	}
 
@@ -114,6 +93,7 @@ public class CollisionController {
 	 * @param bounds	The rectangular bounds of the playing field
 	 */
 	public void checkInBounds(Ship ship, Rectangle bounds) {
+		// TODO: Change this so the raft doesn't bounce off of walls like a bouncy ball
 		//Ensure the ship doesn't go out of view. Bounce off walls.
 		if (ship.getPosition().x <= bounds.x) {
 			ship.getVelocity().x = -ship.getVelocity().x;

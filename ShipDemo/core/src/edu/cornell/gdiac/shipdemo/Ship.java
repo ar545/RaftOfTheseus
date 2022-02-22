@@ -29,7 +29,7 @@ import com.badlogic.gdx.graphics.*;
 import edu.cornell.gdiac.util.*;
 
 /**
- * Model class representing an alien ship.
+ * Model class representing a player-controlled raft.
  * 
  * Note that the graphics resources in this class are static.  That
  * is because all ships share the same image file, and it would waste

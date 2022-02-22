@@ -31,6 +31,7 @@ import com.badlogic.gdx.controllers.Controller;
  * the the keyboard.
  */
 public class InputController {
+	// TODO: Rewrite this class so that up/down/left/right move the player up/down/left/right, instead of rotating the player and moving them forward/backward.
 	/** How much forward are we going? */
 	private float forward;				
 	
@@ -83,7 +84,7 @@ public class InputController {
 	public void readInput() {
 		// Figure out, based on which player we are, which keys
 		// control our actions (depends on player).
-		// TODO: make it so that both arrow keys and WASD control the player
+		// TODO: make it so that both arrow keys and WASD can be used to control the player.
 		int up, left, right, down;
 		up    = Input.Keys.UP;
 		down  = Input.Keys.DOWN;
