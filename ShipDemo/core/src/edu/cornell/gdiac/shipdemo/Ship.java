@@ -40,9 +40,9 @@ public class Ship {
 	/** The frame number for the tightest bank for a left turn */
     public static final int SHIP_IMG_LEFT = 0;
 	/** The frame number for a ship that is not turning */
-    public static final int SHIP_IMG_FLAT = 9;
+    public static final int SHIP_IMG_FLAT = 0;
 	/** The frame number for the tightest bank for a right turn */
-    public static final int SHIP_IMG_RIGHT = 17;
+    public static final int SHIP_IMG_RIGHT = 0;
 
     // Private constants to avoid use of "magic numbers"
     /** The size of the ship in pixels (image is square) */

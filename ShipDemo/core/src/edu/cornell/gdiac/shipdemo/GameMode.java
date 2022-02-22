@@ -29,11 +29,11 @@ import com.badlogic.gdx.graphics.*;
  */
 public class GameMode implements ModeController {
 	/** Number of rows in the ship image filmstrip */
-	private static final int SHIP_ROWS = 4;
+	private static final int SHIP_ROWS = 1;
 	/** Number of columns in this ship image filmstrip */
-	private static final int SHIP_COLS = 5;
+	private static final int SHIP_COLS = 1;
 	/** Number of elements in this ship image filmstrip */
-	private static final int SHIP_SIZE = 18;
+	private static final int SHIP_SIZE = 1;
 	
 	/** The background image for the battle */
 	private Texture background;
@@ -72,9 +72,8 @@ public class GameMode implements ModeController {
 		// Create the ship and place it
 		
         // PLAYER
-		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f), 180);
+		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f), -90);
 		playerShip.setFilmStrip(new FilmStrip(shipTexture,SHIP_ROWS,SHIP_COLS,SHIP_SIZE));
-		playerShip.setColor(new Color(0.5f, 0.5f, 1.0f, 1.0f));
 
 		// Create the input controllers.
 		playerController = new InputController();

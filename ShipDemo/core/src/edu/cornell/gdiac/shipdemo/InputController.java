@@ -61,13 +61,9 @@ public class InputController {
 	}
 
 	/**
-	 * Creates a new input controller for the specified player.
+	 * Creates a new input controller.
 	 * 
-	 * The game supports two players working against each other in hot seat mode. 
-	 * We need a separate input controller for each player. In keyboard, this is 
-	 * WASD vs. Arrow keys.  We also support multiple X-Box game controllers.
-	 * 
-	 * @param id Player id number (0..4)
+	 * The game supports one player controllable using WASD or Arrow keys.
 	 */
 	public InputController() {
 		assert(true);

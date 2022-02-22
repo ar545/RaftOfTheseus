@@ -11,7 +11,7 @@
             "magFilter": "linear"
         },
         "ship": {
-          "file":      "images/ships.png",
+          "file":      "images/raft.png",
           "minFilter": "linear",
           "magFilter": "linear"
         },
