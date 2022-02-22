@@ -29,13 +29,6 @@ import com.badlogic.gdx.graphics.*;
  * basic game loop (update-draw).
  */
 public class GameMode implements ModeController {
-	/** Number of rows in the ship image filmstrip */
-	private static final int SHIP_ROWS = 1;
-	/** Number of columns in this ship image filmstrip */
-	private static final int SHIP_COLS = 1;
-	/** Number of elements in this ship image filmstrip */
-	private static final int SHIP_SIZE = 1;
-	
 	/** The background image for the battle */
 	private Texture background;
 	/** Texture for the ship */
@@ -76,11 +69,11 @@ public class GameMode implements ModeController {
 		bounds = new Rectangle(0,0,width,height);
 
         // PLAYER
-		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f), -90);
-		playerShip.setFilmStrip(new FilmStrip(shipTexture,SHIP_ROWS,SHIP_COLS,SHIP_SIZE));
+		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f));
+		playerShip.setTexture(shipTexture);
 
 		someWood = new Wood(width*(1.0f / 3.0f), height*(1.0f / 2.0f));
-		someWood.setTexture(new TextureRegion(woodTexture));
+		someWood.setTexture(woodTexture);
 
 		// Create the controllers.
 		playerController = new InputController();
@@ -120,10 +113,10 @@ public class GameMode implements ModeController {
 		canvas.drawOverlay(background, true);
 		
 		// First drawing pass (ships + shadows)
-		playerShip.drawShip(canvas);
+		playerShip.draw(canvas);
 
 		// draw wood
-		someWood.drawWood(canvas);
+		someWood.draw(canvas);
 	}
 
 	/**

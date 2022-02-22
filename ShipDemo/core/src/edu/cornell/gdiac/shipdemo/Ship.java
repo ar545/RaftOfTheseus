@@ -24,6 +24,7 @@
  */
 package edu.cornell.gdiac.shipdemo;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import edu.cornell.gdiac.util.*;
@@ -35,193 +36,16 @@ import edu.cornell.gdiac.util.*;
  * is because all ships share the same image file, and it would waste
  * memory to load the same image file for each ship.
  */
-public class Ship {
-	// Ship Frame Sprite numbers
-	/** The frame number for the tightest bank for a left turn */
-    public static final int SHIP_IMG_LEFT = 0;
-	/** The frame number for a ship that is not turning */
-    public static final int SHIP_IMG_FLAT = 0;
-	/** The frame number for the tightest bank for a right turn */
-    public static final int SHIP_IMG_RIGHT = 0;
-
+public class Ship extends GameObject {
     // Private constants to avoid use of "magic numbers"
-    /** The size of the ship in pixels (image is square) */
-    private static final int SHIP_SIZE  = 81;
-    /** The amount to offset the shadow image by */
-	private static final float SHADOW_OFFSET = 10.0f;
     /** Amount to adjust forward movement from input */
     private static final float THRUST_FACTOR   = 0.4f;
-    /** Amount to adjust angular movement from input */
-    private static final float BANK_FACTOR     = 0.5f;
-    /** Maximum turning/banking speed */
-    private static final float MAXIMUM_BANK    = 10.0f;
     /** Amount to decay forward thrust over time */
     private static final float FORWARD_DAMPING = 0.9f;
-    /** Amount to angular movement over time */
-    private static final float ANGULAR_DAMPING = 0.875f;
-	
-    // Modify this as part of the lab
-    /** Amount to scale the ship size */
-    private static final float DEFAULT_SCALE = 1.0f;
-    
-	/** Position of the ship */
-	private Vector2 pos;
-	/** Velocity of the ship */
-	private Vector2 vel;
-	/** Color to tint this ship (red or blue) */
-	private Color  tint;
-	/** Color of the ships shadow (cached) */
-	private Color stint;
-	
-	/** Mass/weight of the ship. Used in collisions. */
-	private float mass;
-	
-	// The following are protected, because they have no accessors
-	/** Current angle of the ship */
-    protected float ang;
-	/** Accumulator variable to turn faster as key is held down */
-    protected float dang;
-    
-	// Asset references.  These should be set by GameMode
-	/** Reference to ship's sprite for drawing */
-    private FilmStrip shipSprite;
 
-    // ACCESSORS
-    /**
-     * Returns the image filmstrip for this ship
-     * 
-     * This value should be loaded by the GameMode and set there. However, we
-     * have to be prepared for this to be null at all times
-     *
-     * @return the image texture for this ship
-     */
-    public FilmStrip getFilmStrip() {
-    	return shipSprite;
-    }
-    
-    /**
-     * Sets the image texture for this ship
-     * 
-     * This value should be loaded by the GameMode and set there. However, we
-     * have to be prepared for this to be null at all times
-     *
-     * param value the image texture for this ship
-     */
-    public void setFilmStrip(FilmStrip value) {
-    	shipSprite = value;
-    	shipSprite.setFrame(SHIP_IMG_FLAT);
-    }
-
-	/**
-	 * Returns the position of this ship.
-	 *
-	 * This is location of the center pixel of the ship on the screen.
-	 *
-	 * @return the position of this ship
-	 */
-	public Vector2 getPosition() { 
-		return pos;  
-	}
-	
-	/**
-	 * Sets the position of this ship.
-	 *
-	 * This is location of the center pixel of the ship on the screen.
-	 *
-	 * @param value the position of this ship
-	 */
-	public void setPosition(Vector2 value) { 
-		pos.set(value);
-	}
-
-	/**
-	 * Returns the velocity of this ship.
-	 *
-	 * This value is necessary to control momementum in ship movement.
-	 *
-	 * @return the velocity of this ship
-	 */
-	public Vector2 getVelocity() {
-		return vel;  
-	}
-
-	/**
-	 * Sets the velocity of this ship.
-	 *
-	 * This value is necessary to control momementum in ship movement.
-	 *
-	 * @param value the velocity of this ship
-	 */
-	public void setVelocity(Vector2 value) { 
-		vel.set(value);
-	}
-	
-	/** 
-	 * Returns the angle that this ship is facing.
-	 *
-	 * The angle is specified in degrees, not radians.
-	 *
-	 * @return the angle of the ship
-	 */
-	public float getAngle() {
-		return ang;
-	}
-	
-	/** 
-	 * Sets the angle that this ship is facing.
-	 *
-	 * The angle is specified in degrees, not radians.
-	 *
-	 * @param value the angle of the ship
-	 */
-	public void setAngle(float value) {
-		ang = value;
-	}
-
-	/**
-	 * Returns the tint color for this ship.
-	 *
-	 * We can change how an image looks without loading a new image by 
-	 * tinting it differently.
-	 *
-	 * @return the tint color
-	 */
-	public Color getColor() {
-		return tint;  
-	}
-	
-	/**
-	 * Sets the tint color for this ship.
-	 *
-	 * We can change how an image looks without loading a new image by 
-	 * tinting it differently.
-	 *
-	 * @param value the tint color
-	 */
-	public void setColor(Color value) { 
-		tint.set(value);
-	}
-
-	/**
-	 * Returns the mass of the ship.
-	 *
-	 * This value is necessary to resolve collisions.
-	 *
-	 * @return the ship mass
-	 */
-	public float getMass() {
-		return mass;
-	}
-
-	/**
-	 * Returns the diameter of the ship ship.
-	 *
-	 * This value is necessary to resolve collisions.
-	 *
-	 * @return the ship diameter
-	 */
-	public float getDiameter() {
-		return SHIP_SIZE;
+	@Override
+	public ObjectType getType() {
+		return ObjectType.SHIP;
 	}
 	
 	/**
@@ -229,21 +53,15 @@ public class Ship {
 	 *
 	 * @param x The initial x-coordinate of the center
 	 * @param y The initial y-coordinate of the center
-	 * @param ang The initial angle of rotation
 	 */
-    public Ship(float x, float y, float ang) {
+    public Ship(float x, float y) {
         // Set the position of this ship.
-        this.pos = new Vector2(x,y);
-        this.ang = ang;
+        this.position = new Vector2(x,y);
 
         // We start at rest.
-        vel = new Vector2();
-        dang = 0.0f;
-        mass = 1.0f;
+        this.velocity = new Vector2();
 
-        //Set current ship image
-        tint  = new Color(Color.WHITE);
-        stint = new Color(0.0f,0.0f,0.0f,0.5f);
+		this.radius = 64;
     }
 
 	/**
@@ -256,104 +74,17 @@ public class Ship {
 	 * @param forward	Amount to move forward
 	 * @param turn		Amount to turn the ship
 	 */
-	public void move(float forward, float turn){
-		// Process the ship turning.
-		processTurn(turn);
-
+	public void move(float forward, float turn) {
 		// Process the ship thrust.
-		if (forward != 0.0f) {
+		if (forward != 0.0f || turn != 0.0f) {
 			// Thrust key pressed; increase the ship velocity.
-			vel.add(forward * (float)Math.cos(Math.toRadians (ang)) * THRUST_FACTOR,
-					forward * (float)-Math.sin (Math.toRadians (ang)) * THRUST_FACTOR);
-		} else {  
+			velocity.add(-turn * THRUST_FACTOR,forward * THRUST_FACTOR);
+		} else {
 			// Gradually slow the ship down
-			vel.scl(FORWARD_DAMPING);
+			velocity.scl(FORWARD_DAMPING);
 		}
-
-		// Move the ship, updating it.
-		// Adjust the angle by the change in angle
-		ang += dang;  // INVARIANT: -360 < ang < 720                                                   
-		if (ang > 360)
-			ang -= 360;
-		if (ang < 0)
-			ang += 360;
 
 		// Move the ship position by the ship velocity
-		pos.add(vel);
-    }
-    
-    /**
-     * Update the animation of the ship to process a turn
-     *
-     * Turning changes the frame of the filmstrip, as we change from a level ship to
-     * a hard bank.  This method also updates the field dang cumulatively.
-     *
-	 * @param turn Amount to turn the ship
-	 */
-    private void processTurn(float turn) {
-		int frame = (shipSprite == null ? 0 : shipSprite.getFrame());
-		if (turn != 0.0f) {
-			// The turning factor is cumulative.  
-			// The longer it is held down, the harder we bank.        
-			dang -= turn/BANK_FACTOR;
-			if (dang < -MAXIMUM_BANK) {
-				dang = -MAXIMUM_BANK;
-			} else if (dang > MAXIMUM_BANK) {
-				dang = MAXIMUM_BANK;
-			}
-
-			// SHIP_IMG_RIGHT represents the hardest bank possible.
-			if (turn > 0 && frame < SHIP_IMG_RIGHT) {
-				frame++;
-			} else if (turn < 0 && frame > SHIP_IMG_LEFT) {
-				frame--;
-			}
-		} else {
-			// If neither key is pressed, slowly flatten out ship.
-			if (dang != 0) {
-				dang *= ANGULAR_DAMPING;   // Damping factor.
-			}
-			if (frame < SHIP_IMG_FLAT) {
-				frame++;
-			} else if (frame > SHIP_IMG_FLAT) {
-				frame--;
-			}
-		}
-		if (shipSprite != null) {
-			shipSprite.setFrame(frame);
-		}
-    }
-
-	/**
-	 * Draws the ship (and its related images) to the given GameCanvas. 
-	 *
-	 * You will want to modify this method for Exercise 4.
-	 *
-	 * This method uses alpha blending, which is set before this method is
-	 * called (in GameMode).
-	 *
-	 * @param canvas The drawing canvas.
-	 */
-    public void drawShip(GameCanvas canvas) {
-    	if (shipSprite == null) {
-    		return;
-    	}
-		// For placement purposes, put origin in center.
-        float ox = 0.5f * shipSprite.getRegionWidth();
-        float oy = 0.5f * shipSprite.getRegionHeight();
-
-        // How much to rotate the image
-        float rotate = -(90+ang);
-
-		// Draw the shadow.  Make a translucent color.
-		// Position it offset by 10 so it can be seen.
-        float sx = pos.x+SHADOW_OFFSET;
-        float sy = pos.y+SHADOW_OFFSET;
-        
-        // Need to negate y scale because of coordinate access flip.
-        // Draw the shadow first
-		canvas.draw(shipSprite, stint, ox, oy, sx, sy, rotate, DEFAULT_SCALE, DEFAULT_SCALE);
-		// Then draw the ship
-		canvas.draw(shipSprite, tint, ox, oy, pos.x, pos.y, rotate, DEFAULT_SCALE, DEFAULT_SCALE);
+		position.add(velocity);
 	}
 }
