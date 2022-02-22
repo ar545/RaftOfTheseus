@@ -1,0 +1,22 @@
+{
+	"textures": {
+        "background": "images/background.png",
+        "beam":     "images/beam.png",
+        "beetle":   "images/beetle.png",
+        "blue":     "images/blue.png",
+        "bullet":   "images/bullet.png",
+        "green":    "images/green.png",
+        "red":      "images/red.png",
+        "star":     "images/star.png"
+    },
+    "fonts": {
+        "times": {
+            "file": "fonts/LucidaGrande.ttf",
+            "size": 16
+        },
+        "times": {
+            "file": "fonts/TimesRoman.ttf",
+            "size": 32
+        }
+    }
+}
