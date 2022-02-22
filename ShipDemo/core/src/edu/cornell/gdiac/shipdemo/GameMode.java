@@ -11,18 +11,13 @@
  */
 package edu.cornell.gdiac.shipdemo;
 
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.assets.ResourceManager;
-import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.util.FilmStrip;
 
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.Texture.TextureFilter;
-import com.badlogic.gdx.assets.AssetManager;
 
 /**
  * The primary controller class for the game.
@@ -42,31 +37,17 @@ public class GameMode implements ModeController {
 	
 	/** The background image for the battle */
 	private Texture background;
-	/** The image for a single proton */
-	private Texture photonTexture;
 	/** Texture for the ship (colored for each player) */
 	private Texture shipTexture;
-	/** Texture for the target reticule */
-	private Texture targetTexture;
-	/** The weapon fire sound for the blue player */
-	private Sound blueSound;
-	/** The weapon fire sound for the red player */
-	private Sound redSound;
 	
     // Instance variables
-	/** Read input for blue player from keyboard or game pad (CONTROLLER CLASS) */
-	protected InputController blueController;
-	/** Read input for red player from keyboard or game pad (CONTROLLER CLASS) */
-	protected InputController redController;
+	/** Read input for player from keyboard (CONTROLLER CLASS) */
+	protected InputController playerController;
     /** Handle collision and physics (CONTROLLER CLASS) */
     protected CollisionController physicsController;
 
-	/** Location and animation information for blue ship (MODEL CLASS) */
-	protected Ship shipBlue;
-	/** Location and animation information for red ship (MODEL CLASS) */
-	protected Ship shipRed;
-	/** Shared memory pool for photons. (MODEL CLASS) */
-	protected PhotonQueue photons;
+	/** Location and animation information for player ship (MODEL CLASS) */
+	protected Ship playerShip;
 
 	/** Store the bounds to enforce the playing region */	
 	private Rectangle bounds;
@@ -85,35 +66,18 @@ public class GameMode implements ModeController {
 		// Extract the assets from the asset directory.  All images are textures.
 		background = assets.getEntry("background", Texture.class );
 		shipTexture = assets.getEntry( "ship", Texture.class );
-		targetTexture = assets.getEntry( "target", Texture.class );
-		photonTexture = assets.getEntry( "photon", Texture.class );
 
-		// Initialize the photons.
-		photons = new PhotonQueue();
-		photons.setTexture(photonTexture);
 		bounds = new Rectangle(0,0,width,height);
 
-		// Load the sounds.  We need to use the subclass SoundBuffer because of our changes to audio.
-		blueSound = assets.getEntry( "laser",  SoundBuffer.class);
-		redSound  = assets.getEntry( "fusion", SoundBuffer.class);
-
-		// Create the two ships and place them across from each other.
-
-        // RED PLAYER
-		shipRed  = new Ship(width*(1.0f / 3.0f), height*(1.0f / 2.0f), 0);
-		shipRed.setFilmStrip(new FilmStrip(shipTexture,SHIP_ROWS,SHIP_COLS,SHIP_SIZE));
-		shipRed.setTargetTexture(targetTexture);
-		shipRed.setColor(new Color(1.0f, 0.25f, 0.25f, 1.0f));  // Red, but makes texture easier to see
+		// Create the ship and place it
 		
-        // BLUE PLAYER
-		shipBlue = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f), 180);
-		shipBlue.setFilmStrip(new FilmStrip(shipTexture,SHIP_ROWS,SHIP_COLS,SHIP_SIZE));
-		shipBlue.setTargetTexture(targetTexture);
-		shipBlue.setColor(new Color(0.5f, 0.5f, 1.0f, 1.0f));   // Blue, but makes texture easier to see
+        // PLAYER
+		playerShip = new Ship(width*(2.0f / 3.0f), height*(1.0f / 2.0f), 180);
+		playerShip.setFilmStrip(new FilmStrip(shipTexture,SHIP_ROWS,SHIP_COLS,SHIP_SIZE));
+		playerShip.setColor(new Color(0.5f, 0.5f, 1.0f, 1.0f));
 
 		// Create the input controllers.
-		redController  = new InputController(1);
-		blueController = new InputController(0);
+		playerController = new InputController();
         physicsController = new CollisionController();
 	}
 
@@ -129,31 +93,12 @@ public class GameMode implements ModeController {
 	@Override
 	public void update() {
 		// Read the keyboard for each controller.
-		redController.readInput ();
-		blueController.readInput ();
-		
-		// Move the photons forward, and add new ones if necessary.
-		//photons.move (width,height);
-		if (redController.didPressFire() && firePhoton(shipRed,photons)) {
-            redSound.play(); 
-		}
-		if (blueController.didPressFire() && firePhoton(shipBlue,photons)) {
-			blueSound.play();
-		}
+		playerController.readInput ();
 
 		// Move the ships forward (ignoring collisions)
-		shipRed.move(redController.getForward(),   redController.getTurn());
-		shipBlue.move(blueController.getForward(), blueController.getTurn());
-		photons.move(bounds);
-		
-		// Change the target position.
-		shipRed.acquireTarget(shipBlue);
-		shipBlue.acquireTarget(shipRed);
-		
-		// This call handles BOTH ships.
-		physicsController.checkForCollision(shipBlue, shipRed);
-		physicsController.checkInBounds(shipBlue, bounds);
-		physicsController.checkInBounds(shipRed, bounds);
+		playerShip.move(playerController.getForward(), playerController.getTurn());
+
+		physicsController.checkInBounds(playerShip, bounds);
 	}
 
 	/**
@@ -169,15 +114,7 @@ public class GameMode implements ModeController {
 		canvas.drawOverlay(background, true);
 		
 		// First drawing pass (ships + shadows)
-		shipBlue.drawShip(canvas);		// Draw Red and Blue ships
-		shipRed.drawShip(canvas);
-
-		// Second drawing pass (photons)
-		canvas.setBlendState(GameCanvas.BlendState.ADDITIVE);		
-		shipBlue.drawTarget(canvas);  // Draw target
-		shipRed.drawTarget(canvas);   // Draw target
-		photons.draw(canvas);         // Draw Photons
-		canvas.setBlendState(GameCanvas.BlendState.ALPHA_BLEND);
+		playerShip.drawShip(canvas);
 	}
 
 	/**
@@ -199,25 +136,5 @@ public class GameMode implements ModeController {
 	 */
 	public void resize(int width, int height) {
 		bounds.set(0,0,width,height);
-	}
-	
-	/**
- 	 * Fires a photon from the ship, adding it to the PhotonQueue.
- 	 * 
- 	 * This is not inside either PhotonQueue or Ship because it is a relationship
- 	 * between to objects.  As we will see in class, we do not want to code binary
- 	 * relationships that way (because it increases dependencies).
- 	 *
- 	 * @param ship  	Ship firing the photon
- 	 * @param photons 	PhotonQueue for allocation
- 	 */
-	private boolean firePhoton(Ship ship, PhotonQueue photons) {
-		// Only process if enough time has passed since last.
-		if (ship.canFireWeapon()) {
-			photons.addPhoton(ship.getPosition(),ship.getVelocity(),ship.getAngle());
-			ship.reloadWeapon();
-			return true;
-		}
-		return false;
 	}
 }

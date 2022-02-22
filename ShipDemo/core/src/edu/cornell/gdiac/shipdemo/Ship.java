@@ -49,10 +49,6 @@ public class Ship {
     private static final int SHIP_SIZE  = 81;
     /** The amount to offset the shadow image by */
 	private static final float SHADOW_OFFSET = 10.0f;
-    /** The size of the target reticule in pixels (image is square) */
-    private static final int TARGET_SIZE = 19;
-    /** Distance from ship to target reticule */
-    private static final int TARGET_DIST = 100;
     /** Amount to adjust forward movement from input */
     private static final float THRUST_FACTOR   = 0.4f;
     /** Amount to adjust angular movement from input */
@@ -63,8 +59,6 @@ public class Ship {
     private static final float FORWARD_DAMPING = 0.9f;
     /** Amount to angular movement over time */
     private static final float ANGULAR_DAMPING = 0.875f;
-    /** The number of frames until we can fire again */
-	private static final int   RELOAD_RATE = 3;
 	
     // Modify this as part of the lab
     /** Amount to scale the ship size */
@@ -83,20 +77,14 @@ public class Ship {
 	private float mass;
 	
 	// The following are protected, because they have no accessors
-	/** Offset of the ships target */
-    protected Vector2 tofs;
 	/** Current angle of the ship */
     protected float ang;
 	/** Accumulator variable to turn faster as key is held down */
     protected float dang;
-    /** Countdown to limit refire rate */
-    protected int refire;
     
 	// Asset references.  These should be set by GameMode
 	/** Reference to ship's sprite for drawing */
     private FilmStrip shipSprite;
-	/** Texture for the target reticule */
-	private Texture targetTexture;
 
     // ACCESSORS
     /**
@@ -122,30 +110,6 @@ public class Ship {
     public void setFilmStrip(FilmStrip value) {
     	shipSprite = value;
     	shipSprite.setFrame(SHIP_IMG_FLAT);
-    }
-    
-    /**
-     * Returns the image texture for the target reticule
-     * 
-     * This value should be loaded by the GameMode and set there. However, we
-     * have to be prepared for this to be null at all times
-     *
-     * @return the image texture for the target reticule
-     */
-    public Texture getTargetTexture() {
-    	return targetTexture;
-    }
-    
-    /**
-     * Sets the image texture for the target reticule
-     * 
-     * This value should be loaded by the GameMode and set there. However, we
-     * have to be prepared for this to be null at all times
-     *
-     * param value the image texture for the target reticule
-     */
-    public void setTargetTexture(Texture value) {
-    	targetTexture = value;
     }
 
 	/**
@@ -237,27 +201,6 @@ public class Ship {
 	public void setColor(Color value) { 
 		tint.set(value);
 	}
-	
-	/**
-	 * Returns true if the ship can fire its weapon
-	 *
-	 * Weapon fire is subjected to a cooldown.  You can modify this
-	 * to see what happens if RELOAD_RATE is faster or slower.
-	 *
-	 * @return true if the ship can fire
-	 */
-	public boolean canFireWeapon() {
-		return (refire > RELOAD_RATE);
-	}
-	
-	/**
-	 * Resets the reload counter so the ship cannot fire again immediately.
-	 *
-	 * The ship must wait RELOAD_RATE steps before it can fire.
-	 */
-	public void reloadWeapon() {
-		refire = 0; 
-	}
 
 	/**
 	 * Returns the mass of the ship.
@@ -298,10 +241,6 @@ public class Ship {
         dang = 0.0f;
         mass = 1.0f;
 
-        // Currently no target sited.
-        tofs = new Vector2();
-        refire = 0;
-
         //Set current ship image
         tint  = new Color(Color.WHITE);
         stint = new Color(0.0f,0.0f,0.0f,0.5f);
@@ -341,11 +280,6 @@ public class Ship {
 
 		// Move the ship position by the ship velocity
 		pos.add(vel);
-
-		//Increment the refire readiness counter
-		if (refire <= RELOAD_RATE) {
-			refire++;
-		}
     }
     
     /**
@@ -391,25 +325,6 @@ public class Ship {
     }
 
 	/**
-	 * Aim the target reticule at the opponent
-	 *
-	 * The target reticule always shows the location of our opponent.  In order
-	 * to place it we need to know where our opponent is.  This method is
-	 * called by the game engine to let us know the location of our
-	 * opponent.
-	 *
-	 * @param other The opponent
-	 */
-    public void acquireTarget(Ship other) {
-        // Calculate vector to 2nd ship
-        tofs.set(other.pos).sub(this.pos);  // tofs = other.pos - this.pos (and not a reference to other.pos)
-
-        // Scale it so we can draw it.
-        tofs.nor();
-        tofs.scl(TARGET_DIST); 
-    }
-
-	/**
 	 * Draws the ship (and its related images) to the given GameCanvas. 
 	 *
 	 * You will want to modify this method for Exercise 4.
@@ -441,31 +356,4 @@ public class Ship {
 		// Then draw the ship
 		canvas.draw(shipSprite, tint, ox, oy, pos.x, pos.y, rotate, DEFAULT_SCALE, DEFAULT_SCALE);
 	}
-
-	/**
-	 * Draw the target cursor
-	 *
-	 * You will want to modify this method for Exercise 4.
-	 *
-	 * This method uses additive blending, which is set before this method is
-	 * called (in GameMode).
-	 *
-	 * @param canvas The drawing canvas.
-	 */
-	public void drawTarget(GameCanvas canvas) {
-		if (targetTexture == null) {
-			return;
-		}
-		
-		// Target position
-		float tx = pos.x + tofs.x;
-		float ty = pos.y + tofs.y;
-
-		// For placement purposes, put origin in center.
-        float ox = 0.5f * TARGET_SIZE;
-        float oy = 0.5f * TARGET_SIZE;
-        
-		canvas.draw(targetTexture, Color.WHITE, ox, oy, tx, ty, 0, DEFAULT_SCALE, DEFAULT_SCALE);
-    }
-
 }
