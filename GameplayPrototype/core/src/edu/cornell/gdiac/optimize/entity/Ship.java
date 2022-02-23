@@ -28,14 +28,14 @@ import com.badlogic.gdx.graphics.*;
  * Model class for the player ship.
  */
 public class Ship extends GameObject {
-	// TODO: add up/down movement and a health field
-	/// CONSTANTS
+	// TODO: design choice: ship_life is implemented in Gameplay Control
+	// CONSTANTS
 	/** Horizontal speed **/
-	private static final float BEETLE_SPEED = 4.0f;
+	private static final float RAFT_SPEED = 4.0f;
 	
-	/// ATTRIBUTES
+	// ATTRIBUTES
 	/** The left/right movement of the player this turn */
-	private float movement = 0.0f; // TODO: should probably be a Vector2
+	private Vector2 movement = new Vector2(0f,0f);
 	
 	/**
 	 * Returns the type of this object.
@@ -53,7 +53,7 @@ public class Ship extends GameObject {
 	 *
 	 * @return the current player movement input.
 	 */
-	public float getMovement() {
+	public Vector2 getMovement() {
 		return movement;
 	}
 	
@@ -62,7 +62,7 @@ public class Ship extends GameObject {
 	 *
 	 * @param value the current player movement input.
 	 */
-	public void setMovement(float value) {
+	public void setMovement(Vector2 value) {
 		movement = value;
 	}
 	
@@ -84,11 +84,11 @@ public class Ship extends GameObject {
 	 * @param delta Number of seconds since last animation frame
 	 */
 	public void update(float delta) {
-		// Call superclass's update
+		// Call superclasses' update
 		super.update(delta);
 
-		// Movement handling
-		position.x += movement * BEETLE_SPEED;
+		// Movement handling, used to be "position.x += movement.x * BEETLE_SPEED;"
+		position.add(movement.scl(RAFT_SPEED));
 	}
 	
 }

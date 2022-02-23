@@ -411,13 +411,27 @@ public class GameCanvas {
     	spriteBatch.setColor(Color.WHITE);
 		spriteBatch.draw(region, x,  y);
 	}
-	
+
+	/** draw function with color, used by progress bar in game */
+	public void draw(TextureRegion region, float x, float y, float width, float height, Color color){
+		if (!active) {
+			Gdx.app.error("GameCanvas", "Cannot draw without active begin()", new IllegalStateException());
+			return;
+		}
+
+		// Unlike Lab 1, we can shortcut without a master drawing method
+		spriteBatch.setColor(color);
+		spriteBatch.draw(region, x,  y, width, height);
+		spriteBatch.setColor(Color.WHITE);
+	}
+
+	/** draw function used by progress bar in loading mode */
 	public void draw(TextureRegion region, float x, float y, float width, float height) {
 		if (!active) {
 			Gdx.app.error("GameCanvas", "Cannot draw without active begin()", new IllegalStateException());
 			return;
 		}
-		
+
 		// Unlike Lab 1, we can shortcut without a master drawing method
     	spriteBatch.setColor(Color.WHITE);
 		spriteBatch.draw(region, x,  y, width, height);

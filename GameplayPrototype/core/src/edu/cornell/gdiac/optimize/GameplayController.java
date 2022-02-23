@@ -25,6 +25,7 @@ import com.badlogic.gdx.graphics.Texture;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.optimize.entity.*;
+import com.badlogic.gdx.math.Vector2;
 
 /**
  * Controller to handle gameplay interactions.
@@ -33,7 +34,7 @@ import edu.cornell.gdiac.optimize.entity.*;
  * This controller also acts as the root class for all the models.
  */
 public class GameplayController {
-	// TODO: increase player health when wood is destroyed
+
 	// Graphics assets for the entities
 	/** Texture for all ships, as they look the same */
 	private Texture raftTexture;
@@ -49,6 +50,13 @@ public class GameplayController {
 	/** The backing set for garbage collection */
 	private Array<GameObject> backing;
 
+	/** Health: increase player health when wood is destroyed */
+	protected float player_health;
+	/** Maximum health */
+	protected static final float MAXIMUM_PLAYER_HEALTH = 15.0f;
+	/** initial health */
+	protected static final float INITIAL_PLAYER_HEALTH = 5.0f;
+
 	/**
 	 * Creates a new GameplayController with no active elements.
 	 */
@@ -56,6 +64,7 @@ public class GameplayController {
 		player = null;
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
+		player_health = INITIAL_PLAYER_HEALTH;
 	}
 
 	/**
@@ -119,7 +128,7 @@ public class GameplayController {
 		// Create the player's ship
 		player = new Ship();
 		player.setTexture(raftTexture);
-		player.getPosition().set(width*0.5f, height*0.5f);
+		player.getPosition().set(width * 0.5f, height * 0.5f);
 
 		// Player must be in object list.
 		objects.add(player);
@@ -183,8 +192,9 @@ public class GameplayController {
 			player = null;
 			break;
 		case WOOD:
-			// TODO: wood destruction actions (i.e., add player health)
-			System.out.println("Some wood just got destroyed");
+			Wood w = (Wood) o;
+			player_health += w.getWood();
+			System.out.println("Wood of " + w.getWood() + " taken by player!");
 			break;
 		default:
 			break;
@@ -205,6 +215,10 @@ public class GameplayController {
 			resolvePlayer(input,delta);
 		}
 
+		if(player != null && player_health < 0){
+			player.setDestroyed(true);
+		}
+
 		// Process the other (non-ship) objects.
 		for (GameObject o : objects) {
 			o.update(delta);
@@ -221,7 +235,13 @@ public class GameplayController {
 	 * @param delta  Number of seconds since last animation frame
 	 */
 	public void resolvePlayer(InputController input, float delta) {
-		player.setMovement(input.getMovement());
+		Vector2 movement = input.getMovement();
+		player_health -= Math.abs(movement.len() / 10f);
+		player.setMovement(movement);
 		player.update(delta);
+	}
+
+	public float getProgress(){
+		return player_health / MAXIMUM_PLAYER_HEALTH;
 	}
 }

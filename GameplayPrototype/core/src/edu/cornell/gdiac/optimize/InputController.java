@@ -18,6 +18,7 @@
 package edu.cornell.gdiac.optimize;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.util.*;
 
@@ -29,16 +30,19 @@ import edu.cornell.gdiac.util.*;
  * a controller via the new XBox360Controller class.
  */
 public class InputController {
-	// TODO: add up/down movement and WASD support
 	// Fields to manage game state
 	/** Whether the reset button was pressed. */
 	protected boolean resetPressed;
 	/** Whether the exit button was pressed. */
 	protected boolean exitPressed;
+	/** Whether the mouse input should be considered */
+	protected boolean mouseAllowed;
 	/** How much did we move (left/right)? */
-	private float offset;
+	private float x_offset;
+	/** How much did we move (up/down)? */
+	private float y_offset;
 	/** XBox Controller support */
-	private XBoxController xbox;
+	private final XBoxController xbox;
 	
 	/**
 	 * Returns the amount of sideways movement. 
@@ -47,8 +51,8 @@ public class InputController {
 	 *
 	 * @return the amount of sideways movement. 
 	 */
-	public float getMovement() {
-		return offset;
+	public Vector2 getMovement() {
+		return new Vector2(x_offset, y_offset);
 	}
 
 	/**
@@ -78,6 +82,7 @@ public class InputController {
 	public InputController() { 
 		// If we have a game-pad for id, then use it.
 		Array<XBoxController> controllers = Controllers.get().getXBoxControllers();
+		mouseAllowed = false;
 		if (controllers.size > 0) {
 			xbox = controllers.get(0);
 		} else {
@@ -102,18 +107,18 @@ public class InputController {
 	 * Reads input from an X-Box controller connected to this computer.
 	 */
 	private void readGamepad() {
-
 		resetPressed = xbox.getA();
 		exitPressed  = xbox.getBack();
 
 		// Increase animation frame, but only if trying to move
-		offset = xbox.getLeftX();
+		x_offset = xbox.getLeftX();
+		y_offset = xbox.getLeftY();
 	}
 
 	/**
-	 * Reads input from the keyboard.
+	 * Reads input from the keyboard and mouse for movement
 	 *
-	 * This controller reads from the keyboard regardless of whether or not an X-Box
+	 * This controller reads from the keyboard regardless of whether an X-Box
 	 * controller is connected.  However, if a controller is connected, this method
 	 * gives priority to the X-Box controller.
 	 *
@@ -123,13 +128,43 @@ public class InputController {
 		// Give priority to gamepad results
 		resetPressed = (secondary && resetPressed) || (Gdx.input.isKeyPressed(Input.Keys.R));
 		exitPressed  = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
+		// Press M to enable mouse
+		if(Gdx.input.isKeyJustPressed(Input.Keys.M)){
+			mouseAllowed = !mouseAllowed;
+		}
+		// set up the offset
+		x_offset = (secondary ? x_offset : 0.0f);
+		y_offset = (secondary ? y_offset : 0.0f);
 
-		offset = (secondary ? offset : 0.0f);
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-			offset += 1.0f;
+		// Read keyboard inputs
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+			x_offset += 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-			offset -= 1.0f;
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+			x_offset -= 1.0f;
 		}
+		if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) {
+			y_offset += 1.0f;
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)  || Gdx.input.isKeyPressed(Input.Keys.S)) {
+			y_offset -= 1.0f;
+		}
+
+		//read mouse inputs
+		if(mouseAllowed){
+			if (Gdx.input.getDeltaX() > 0) {
+				x_offset += 1.0f;
+			}
+			if (Gdx.input.getDeltaX() < 0) {
+				x_offset -= 1.0f;
+			}
+			if (Gdx.input.getDeltaY() < 0) {
+				y_offset += 1.0f;
+			}
+			if (Gdx.input.getDeltaY() > 0) {
+				y_offset -= 1.0f;
+			}
+		}
+
 	}
 }

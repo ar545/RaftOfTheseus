@@ -5,7 +5,7 @@
  * the instructions.  All objects in this game are treated as circles,
  * and a collision happens when circles intersect.
  *
- * This controller is EXTREMELY ineffecient.  To improve its performance,
+ * This controller is EXTREMELY inefficient.  To improve its performance,
  * you will need to use collision cells, as described in the instructions.
  * You should not need to modify any method other than the constructor
  * and processCollisions.  However, you will need to add your own methods.
@@ -27,13 +27,12 @@ import edu.cornell.gdiac.optimize.entity.*;
  * Controller implementing simple game physics.
  */
 public class CollisionController {
-	// TODO: don't allow the ship to go offscreen vertically.
 	// These cannot be modified after the controller is constructed.
 	// If these change, make a new constructor.
 	/** Width of the collision geometry */
-	private float width;
+	private final float width;
 	/** Height of the collision geometry */
-	private float height;
+	private final float height;
 	
 	// Cache objects for collision calculations
 	private Vector2 temp1;
@@ -75,7 +74,10 @@ public class CollisionController {
 		temp1 = new Vector2();
 		temp2 = new Vector2();
 	}
-	
+
+	// TODO: It is efficient right now to O(n) through all object to find the player and compute collision between
+	// TODO: the player and others. However, since we are implementing enemies, we should follow the Lab3 design where
+	// TODO: all possible collision between object are checked but only those meaningful are handled. -- Leo
 	/**
 	 * This is the main (incredibly unoptimized) collision detetection method.
 	 *
@@ -83,13 +85,18 @@ public class CollisionController {
 	 * @param offset  Offset of the box and bump 
 	 */
 	public void processCollisions(Array<GameObject> objects, int offset) {
-		// Find which object is the player
+		// Find which object is the player (O(n))
 		Ship player = null;
 		for (GameObject o : objects) {
 			if (o.getType() == GameObject.ObjectType.SHIP) {
 				player = (Ship) o;
 				break;
 			}
+		}
+
+		// assert player != null, avoid null pointer exception
+		if(player == null){
+			return;
 		}
 
 		// Process player bounds
@@ -103,6 +110,9 @@ public class CollisionController {
 		}
 	}
 
+	/** handel the collision between ship and wood, wood get destroyed and ship get extended life
+	 * @param player - the ship to extend life
+	 * @param wood   - the wood to destroy */
 	private void handleCollision(Ship player, Wood wood) {
 		if (player.isDestroyed() || wood.isDestroyed()) {
 			return;
@@ -122,17 +132,23 @@ public class CollisionController {
 
 	/**
 	 * Check a bullet for being out-of-bounds.
+	 * both x and y-axis are implemented
 	 *
 	 * @param sh Ship to check 
 	 */
 	private void handleBounds(Ship sh) {
-		// Do not let the ship go off screen.
+		// Do not let the ship go off-screen on x-axis
 		if (sh.getX() <= sh.getRadius()) {
 			sh.setX(sh.getRadius());
 		} else if (sh.getX() >= getWidth() - sh.getRadius()) {
 			sh.setX(getWidth() - sh.getRadius());
 		}
-	}
 
-	//#endregion
+		// Do not let the ship go off-screen on y-axis
+		if (sh.getY() <= sh.getRadius()) {
+			sh.setY(sh.getRadius());
+		} else if (sh.getY() >= getHeight() - sh.getRadius()) {
+			sh.setY(getHeight() - sh.getRadius());
+		}
+	}
 }

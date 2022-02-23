@@ -12,11 +12,12 @@
 package edu.cornell.gdiac.optimize;
 
 import com.badlogic.gdx.*;
-import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.*;
+
+//import com.badlogic.gdx.utils.*;
+//import com.badlogic.gdx.assets.*;
+//import com.badlogic.gdx.graphics.g2d.freetype.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
@@ -24,13 +25,12 @@ import edu.cornell.gdiac.util.*;
 /**
  * The primary controller class for the game.
  *
- * While GDXRoot is the root class, it delegates all of the work to the player mode
- * classes. This is the player mode class for running the game. In initializes all 
- * of the other classes in the game and hooks them together.  It also provides the
+ * While GDXRoot is the root class, it delegates all the work to the player mode
+ * classes. This is the player mode class for running the game. In initializes all the other classes in the game
+ * and hooks them together.  It also provides the
  * basic game loop (update-draw).
  */
 public class GameMode implements Screen {
-	// TODO: display player health
 	/** 
  	 * Track the current state of the game for the update loop.
  	 */
@@ -39,7 +39,7 @@ public class GameMode implements Screen {
 		INTRO,
 		/** While we are playing the game */
 		PLAY,
-		/** When the ships is dead (but shells still work) */
+		/** When the ships are dead (but shells still work) */
 		OVER
 	}
 	
@@ -48,6 +48,22 @@ public class GameMode implements Screen {
 	private Texture background;
 	/** The font for giving messages to the player */
 	private BitmapFont displayFont;
+	/** The alternate font for giving messages to the player */
+	private BitmapFont alternateFont;
+
+	// following assets are used in the progress bar. progress bar is a "texture atlas." Break it up into parts.
+	/** Left cap to the status background (grey region) */
+	private TextureRegion statusBkgLeft;
+	/** Middle portion of the status background (grey region) */
+	private TextureRegion statusBkgMiddle;
+	/** Right cap to the status background (grey region) */
+	private TextureRegion statusBkgRight;
+	/** Left cap to the status foreground (colored region) */
+	private TextureRegion statusFrgLeft;
+	/** Middle portion of the status foreground (colored region) */
+	private TextureRegion statusFrgMiddle;
+	/** Right cap to the status foreground (colored region) */
+	private TextureRegion statusFrgRight;
 
 	/// CONSTANTS
 	/** Factor used to compute where we are in scrolling process */
@@ -56,6 +72,20 @@ public class GameMode implements Screen {
 	private static final float COUNTER_OFFSET   = 5.0f;
 	/** Offset for the game over message on the screen */
 	private static final float GAME_OVER_OFFSET = 40.0f;
+	/** Height of the crush shell progress bar */
+	private static final float GAME_BAR_HEIGHT_RATIO = 0.9f;
+	/** Width of the crush shell progress bar */
+	private static final float GAME_BAR_WIDTH_RATIO = 0.8f;
+	/** Height of the progress bar */
+	private static final int PROGRESS_HEIGHT = 30;
+	/** Width of the rounded cap on left or right */
+	private static final int PROGRESS_CAP    = 15;
+	/** the time constant of period of blinking of text and progress bar*/
+	private static final int TIME_CONSTANT = 800;
+	/** Standard window size (for scaling) */
+	private static final int STANDARD_WIDTH  = 800;
+	/** Standard window height (for scaling) */
+	private static final int STANDARD_HEIGHT = 700;
 	
 	/** Reference to drawing context to display graphics (VIEW CLASS) */
 	private GameCanvas canvas;
@@ -71,7 +101,7 @@ public class GameMode implements Screen {
 	private GameState gameState;
 	/** Variable to track total time played in milliseconds (SIMPLE FIELDS) */
 	private float totalTime = 0;
-	/** Whether or not this player mode is still active */
+	/** Whether this player mode is still active */
 	private boolean active;
 	
 	/** Listener that will update the player mode when we are done */
@@ -117,6 +147,16 @@ public class GameMode implements Screen {
 	public void populate(AssetDirectory directory) {
 		background  = directory.getEntry("background",Texture.class);
 		displayFont = directory.getEntry("times",BitmapFont.class);
+		alternateFont = directory.getEntry("grande",BitmapFont.class);
+
+		// populate progressbar texture Break up the status bar texture into regions
+		statusBkgLeft = directory.getEntry( "progress.backleft", TextureRegion.class );
+		statusBkgRight = directory.getEntry( "progress.backright", TextureRegion.class );
+		statusBkgMiddle = directory.getEntry( "progress.background", TextureRegion.class );
+		statusFrgLeft = directory.getEntry( "progress.foreleft", TextureRegion.class );
+		statusFrgRight = directory.getEntry( "progress.foreright", TextureRegion.class );
+		statusFrgMiddle = directory.getEntry( "progress.foreground", TextureRegion.class );
+
 		gameplayController.populate(directory);
 	}
 
@@ -144,6 +184,7 @@ public class GameMode implements Screen {
 				gameState = GameState.PLAY;
 				gameplayController.reset();
 				gameplayController.start(canvas.getWidth(), canvas.getHeight());
+				gameplayController.player_health = GameplayController.INITIAL_PLAYER_HEALTH;
 			} else {
 				play(delta);
 			}
@@ -155,7 +196,7 @@ public class GameMode implements Screen {
 			break;
 		}
 	}
-	int done = 0;
+
 	
 	/**
 	 * This method processes a single step in the game loop.
@@ -196,13 +237,21 @@ public class GameMode implements Screen {
 			o.draw(canvas);
 		}
 
-		// Output a simple debugging message stating the number of shells on the screen
-		String message = "Current player health: " + 0.0f; // TODO: change to display health
-		canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
+		// Draw progress bar
+		drawProgress(canvas, gameplayController.getProgress(), ((int)totalTime / TIME_CONSTANT) % 2 == 0 );
 
+		// Draw text
 		if (gameState == GameState.OVER) {
 			canvas.drawTextCentered("Game Over!",displayFont, GAME_OVER_OFFSET);
-			canvas.drawTextCentered("Press R to Restart", displayFont, 0);
+			// make restart line blinking
+			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
+				canvas.drawTextCentered("Press R to Restart", alternateFont, 0);
+			}
+			canvas.drawText("Current player health: 0", displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
+		}else{
+			// Output a simple debugging message stating the number of shells on the screen
+			String message = "Current player health: " + gameplayController.player_health;
+			canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 		}
 
 		// Flush information to the graphic buffer.
@@ -278,10 +327,58 @@ public class GameMode implements Screen {
 	/**
 	 * Sets the ScreenListener for this mode
 	 *
-	 * The ScreenListener will respond to requests to quit.
+	 * The ScreenListener will respond to request to quit.
 	 */
 	public void setScreenListener(ScreenListener listener) {
 		this.listener = listener;
 	}
 
+
+	/**
+	 * Updates the progress bar according to crush_shells_progress
+	 *
+	 * The progress bar is composed of parts: two rounded caps on the end,
+	 * and a rectangle in a middle.  We adjust the size of the rectangle in
+	 * the middle to represent the amount of progress.
+	 *
+	 * @param canvas The drawing context
+	 */
+	private void drawProgress(GameCanvas canvas, float progress, boolean blink) {
+
+		// Compute the drawing scale
+		float sx = ((float)canvas.getWidth())/STANDARD_WIDTH;
+		float sy = ((float)canvas.getHeight())/STANDARD_HEIGHT;
+		float scale = (Math.min(sx, sy));
+		int width = (int)(GAME_BAR_WIDTH_RATIO*canvas.getWidth());
+		int centerY = (int)(GAME_BAR_HEIGHT_RATIO*canvas.getHeight());
+		int centerX = width/2;
+		int heightY = canvas.getWidth();
+		Color color = Color.WHITE;
+//		if(blink){
+//			color = Color.SALMON;
+//		}
+
+		// draw the background
+		canvas.draw(statusBkgLeft,   centerX-width/2, centerY,
+				scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT, Color.LIGHT_GRAY);
+		canvas.draw(statusBkgRight,  centerX+width/2-scale*PROGRESS_CAP, centerY,
+				scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT, Color.LIGHT_GRAY);
+		canvas.draw(statusBkgMiddle, centerX-width/2+scale*PROGRESS_CAP, centerY,
+				width-2*scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT, Color.LIGHT_GRAY);
+
+		// draw the foreground
+		canvas.draw(statusFrgLeft,   centerX-width/2, centerY,
+				scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT, color);
+
+		if (progress > 0) {
+			float span = progress * (width - 2 * scale * PROGRESS_CAP) * 0.99f;
+			canvas.draw(statusFrgRight,  centerX-width/2+scale*PROGRESS_CAP+span, centerY,
+					scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT, color);
+			canvas.draw(statusFrgMiddle, centerX-width/2+scale*PROGRESS_CAP, centerY,
+					span, scale* PROGRESS_HEIGHT, color);
+		} else {
+			canvas.draw(statusFrgRight,  centerX-width/2+scale* PROGRESS_CAP, centerY,
+					scale* PROGRESS_CAP, scale* PROGRESS_HEIGHT, color);
+		}
+	}
 }
