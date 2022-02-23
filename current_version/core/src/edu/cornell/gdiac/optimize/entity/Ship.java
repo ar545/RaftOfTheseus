@@ -38,7 +38,7 @@ public class Ship extends GameObject {
 	/** How fast we change frames (one frame per 4 calls to update) */
 	private static final float ANIMATION_SPEED = 0.25f;
 	/** The number of animation frames in our filmstrip */
-	private static final int   NUM_ANIM_FRAMES = 2;
+	private static final int   NUM_ANIM_FRAMES = 1;
 	//#region REMOVE ME
 	/** Number of kills for a power up */
 	private static final int POWER_KILL = 20;
@@ -159,7 +159,7 @@ public class Ship extends GameObject {
 	}
 	
 	public void setTexture(Texture texture) {
-		animator = new FilmStrip(texture,1,2,2);
+		animator = new FilmStrip(texture,1,1, 1);
 		radius = animator.getRegionHeight() / 2.0f;
 		origin = new Vector2(animator.getRegionWidth()/2.0f, animator.getRegionHeight()/2.0f);
 	}

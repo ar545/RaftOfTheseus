@@ -91,7 +91,6 @@ public class GameMode implements Screen {
 		// Create the controllers.
 		inputController = new InputController();
 		gameplayController = new GameplayController();
-		// YOU WILL NEED TO MODIFY THIS NEXT LINE
 		physicsController = new CollisionController(canvas.getWidth(), canvas.getHeight());
 	}
 	
@@ -168,11 +167,6 @@ public class GameMode implements Screen {
 			gameState = GameState.OVER;
 		}
 
-		// Add a new shell if time.
-		if (RandomController.rollInt(0, 25) == 0 || inputController.didFlood()) {
-			gameplayController.addShell(canvas.getWidth(), canvas.getHeight());
-		}
-
 		// Update objects.
 		gameplayController.resolveActions(inputController,delta);
 
@@ -202,7 +196,7 @@ public class GameMode implements Screen {
 		}
 
 		// Output a simple debugging message stating the number of shells on the screen
-		String message = "Current shells: "+gameplayController.getShellCount();
+		String message = "Placeholder Message";
 		canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 
 		if (gameState == GameState.OVER) {

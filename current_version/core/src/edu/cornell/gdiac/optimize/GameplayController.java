@@ -21,12 +21,10 @@
 package edu.cornell.gdiac.optimize;
 
 import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.optimize.entity.*;
-import edu.cornell.gdiac.optimize.GameObject.ObjectType;
 
 /**
  * Controller to handle gameplay interactions.
@@ -37,37 +35,12 @@ import edu.cornell.gdiac.optimize.GameObject.ObjectType;
 public class GameplayController {
 	// Graphics assets for the entities
 	/** Texture for all ships, as they look the same */
-	private Texture beetleTexture;
-	/** Texture for all stars, as they look the same */
-	private Texture starTexture;
-	/** Texture for all bullets, as they look the same */
-	private Texture bulletTexture;
-	/** Texture for green shells, as they look the same */
-	private Texture greenTexture;
-	/** Texture for red shells, as they look the same */
-	private Texture redTexture;
-
-	/** The minimum x-velocity of a newly generated shell */
-	private static final float MIN_SHELL_VX = 3;
-	/** The maximum y-velocity of a newly generated shell */
-	private static final float MAX_SHELL_VX = 10;
-	/** The y-position offset of a newly generated bullet */
-	private static final float BULLET_OFFSET = 5.0f;
-	/** The vertical speed of a newly generated bullet */
-	private static final float BULLET_SPEED  = 10.0f;
-	/** The minimum velocity factor (x shell velocity) of a newly created star */
-	private static final float MIN_STAR_FACTOR = 0.1f;
-	/** The maximum velocity factor (x shell velocity) of a newly created star */
-	private static final float MAX_STAR_FACTOR = 0.2f;
-	/** The minimum velocity offset (+ shell velocity) of a newly created star */
-	private static final float MIN_STAR_OFFSET = -3.0f;
-	/** The maximum velocity offset (+ shell velocity) of a newly created star */
-	private static final float MAX_STAR_OFFSET = 3.0f;
+	private Texture raftTexture;
+	/** Texture for all wood pieces, as they look the same */
+	private Texture woodTexture;
 
 	/** Reference to player (need to change to allow multiple players) */
 	private Ship player;
-	/** Shell count for the display in window corner */
-	private int shellCount;
 
 	// List of objects with the garbage collection set.
 	/** The currently active object */
@@ -80,7 +53,6 @@ public class GameplayController {
 	 */
 	public GameplayController() {
 		player = null;
-		shellCount = 0;
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
 	}
@@ -95,11 +67,8 @@ public class GameplayController {
 	 * @param directory 	Reference to the asset directory.
 	 */
 	public void populate(AssetDirectory directory) {
-		beetleTexture = directory.getEntry("beetle", Texture.class);
-		bulletTexture = directory.getEntry("bullet", Texture.class);
-		starTexture = directory.getEntry("star", Texture.class);
-		redTexture  = directory.getEntry("red", Texture.class);
-		greenTexture = directory.getEntry("green", Texture.class);
+		raftTexture = directory.getEntry("raft", Texture.class);
+		woodTexture = directory.getEntry("wood", Texture.class);
 	}
 
 	/**
@@ -136,20 +105,11 @@ public class GameplayController {
 	public boolean isAlive() {
 		return player != null;
 	}
-
-	/**
-	 * Returns the number of shells currently active on the screen.
-	 *
-	 * @return the number of shells currently active on the screen.
-	 */
-	public int getShellCount() {
-		return shellCount;
-	}
 	
 	/**
 	 * Starts a new game.
 	 *
-	 * This method creates a single player, but does nothing else.
+	 * This method creates a single player, and creates driftwood in random positions.
 	 *
 	 * @param x Starting x-position for the player
 	 * @param y Starting y-position for the player
@@ -157,11 +117,19 @@ public class GameplayController {
 	public void start(float x, float y) {
 		// Create the player's ship
 		player = new Ship();
-		player.setTexture(beetleTexture);
+		player.setTexture(raftTexture);
 		player.getPosition().set(x,y);
 
 		// Player must be in object list.
 		objects.add(player);
+
+		// add driftwood
+		for (int i = 0; i < 10; i ++) {
+			Wood wood = new Wood();
+			wood.setTexture(woodTexture);
+			wood.getPosition().set((float)(x*Math.random()), (float)(y*Math.random()));
+			objects.add(wood);
+		}
 	}
 
 	/**
@@ -169,46 +137,9 @@ public class GameplayController {
 	 */
 	public void reset() {
 		player = null;
-		shellCount = 0;
 		objects.clear();
 	}
 
-	/**
-	 * Adds a new shell to the game.
-	 *
-	 * A shell is generated at the top with a random horizontal position. Notice that
-	 * this allocates memory to the heap.  If we were REALLY worried about performance,
-	 * we would use a memory pool here.
-	 *
-	 * @param width  Current game width
-	 * @param height Current game height
-	 */
-	public void addShell(float width, float height) {
-		// Add a new shell
-		Shell b = new Shell();
-		if (RandomController.rollInt(0, 2) == 0) {
-			// Needs two shots to kill
-			b.setTexture(redTexture);
-			b.setDamagedTexture(greenTexture);
-		} else {
-			//  Needs one shot to kill
-			b.setTexture(greenTexture);
-			b.setDamagedTexture(null);
-		}
-
-		// Only define vx. Gravity takes care of vy.
-		float vx = RandomController.rollFloat(MIN_SHELL_VX,MAX_SHELL_VX);
-		// Coin flip positive or negative
-		vx = vx*((float)RandomController.rollInt(0, 1) * 2 - 1);
-
-		// Position the shell
-		b.setX(RandomController.rollFloat(0, width));
-		b.setY(height);
-		b.setVX(vx);
-		objects.add(b);
-		shellCount++;
-	}
-	
 	/**
 	 * Garbage collects all deleted objects.
 	 *
@@ -250,20 +181,8 @@ public class GameplayController {
 		case SHIP:
 			player = null;
 			break;
-		case SHELL:
-			// Create some stars
-			for (int j = 0; j < 6; j++) {
-				Star s = new Star();
-				s.setTexture(starTexture);
-				s.getPosition().set(o.getPosition());
-				float vx = o.getVX() * RandomController.rollFloat(MIN_STAR_FACTOR, MAX_STAR_FACTOR) 
-							+ RandomController.rollFloat(MIN_STAR_OFFSET, MAX_STAR_OFFSET);
-				float vy = o.getVY() * RandomController.rollFloat(MIN_STAR_FACTOR, MAX_STAR_FACTOR) 
-							+ RandomController.rollFloat(MIN_STAR_OFFSET, MAX_STAR_OFFSET);
-				s.getVelocity().set(vx,vy);
-				backing.add(s);
-			}
-			shellCount--;
+		case WOOD:
+			// TODO: wood destruction actions (i.e., add player health)
 			break;
 		default:
 			break;
@@ -301,21 +220,6 @@ public class GameplayController {
 	 */
 	public void resolvePlayer(InputController input, float delta) {
 		player.setMovement(input.getMovement());
-		player.setFiring(input.didFire());
 		player.update(delta);
-		if (!player.isFiring()) {
-			return;
-		}
-
-		// Create a new bullet
-		Bullet b = new Bullet();
-		b.setTexture(bulletTexture);
-		b.setX(player.getX());
-		b.setY(player.getY()+player.getRadius()+BULLET_OFFSET);
-		b.setVY(BULLET_SPEED);
-		backing.add(b); // Bullet added NEXT frame.
-
-		// Prevent player from firing immediately afterwards.
-		player.resetCooldown();
 	}
 }
