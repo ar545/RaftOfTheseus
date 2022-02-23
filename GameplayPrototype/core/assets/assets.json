@@ -1,15 +1,8 @@
 {
 	"textures": {
         "background": "images/background.png",
-        "beam":     "images/beam.png",
-        "beetle":   "images/beetle.png",
         "raft":     "images/raft.png",
-        "wood":     "images/wood.png",
-        "blue":     "images/blue.png",
-        "bullet":   "images/bullet.png",
-        "green":    "images/green.png",
-        "red":      "images/red.png",
-        "star":     "images/star.png"
+        "wood":     "images/wood.png"
     },
     "fonts": {
         "times": {
