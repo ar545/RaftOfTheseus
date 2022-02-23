@@ -38,8 +38,12 @@ public class GameplayController {
 	// Graphics assets for the entities
 	/** Texture for all ships, as they look the same */
 	private Texture raftTexture;
-	/** Texture for all wood pieces, as they look the same */
+	/** Texture for wood pieces that represent single pile of log */
 	private Texture woodTexture;
+	/** Texture for wood pieces that represents double pile of logs */
+	private Texture doubleTexture;
+	/** Texture for all target, as they look the same */
+	private Texture targetTexture;
 
 	/** Reference to player */
 	private Ship player;
@@ -79,6 +83,8 @@ public class GameplayController {
 	public void populate(AssetDirectory directory) {
 		raftTexture = directory.getEntry("raft", Texture.class);
 		woodTexture = directory.getEntry("wood", Texture.class);
+		doubleTexture = directory.getEntry("double", Texture.class);
+		targetTexture = directory.getEntry("target", Texture.class);
 	}
 
 	/**
@@ -135,8 +141,15 @@ public class GameplayController {
 
 		// add driftwood
 		for (int i = 0; i < 10; i ++) {
-			Wood wood = new Wood();
-			wood.setTexture(woodTexture);
+			Wood wood;
+			if(RandomController.rollInt(0, 1) == 0){
+				wood = new Wood(true);
+				wood.setTexture(doubleTexture);
+			}else{
+				wood = new Wood(false);
+				wood.setTexture(woodTexture);
+			}
+			// TODO: use random controller
 			wood.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
 			objects.add(wood);
 		}
@@ -194,7 +207,7 @@ public class GameplayController {
 		case WOOD:
 			Wood w = (Wood) o;
 			player_health += w.getWood();
-			System.out.println("Wood of " + w.getWood() + " taken by player!");
+//			System.out.println("Wood of " + w.getWood() + " taken by player!");
 			break;
 		default:
 			break;

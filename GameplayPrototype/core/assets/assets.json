@@ -1,8 +1,10 @@
 {
 	"textures": {
-        "background": "images/background.png",
-        "raft":     "images/raft.png",
-        "wood":     "images/wood.png",
+      "background": "images/background.png",
+      "raft":     "images/raft.png",
+      "wood":     "images/wood.png",
+      "double":     "images/double.png",
+      "target":     "images/target.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
