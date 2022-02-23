@@ -39,8 +39,10 @@ public class GameMode implements Screen {
 		INTRO,
 		/** While we are playing the game */
 		PLAY,
-		/** When the ships are dead (but shells still work) */
-		OVER
+		/** When the player loses the game */
+		OVER,
+		/** When the player wins the game */
+		WIN
 	}
 	
 	// Loaded assets
@@ -179,12 +181,14 @@ public class GameMode implements Screen {
 			gameState = GameState.PLAY;
 			gameplayController.start(canvas.getWidth(), canvas.getHeight());
 			break;
+
+		case WIN:
 		case OVER:
 			if (inputController.didReset()) {
 				gameState = GameState.PLAY;
 				gameplayController.reset();
 				gameplayController.start(canvas.getWidth(), canvas.getHeight());
-				gameplayController.player_health = GameplayController.INITIAL_PLAYER_HEALTH;
+
 			} else {
 				play(delta);
 			}
@@ -204,6 +208,11 @@ public class GameMode implements Screen {
 	 * @param delta Number of seconds since last animation frame
 	 */
 	protected void play(float delta) {
+		// if no player is win, declare game win
+		if (gameplayController.isWin()) {
+			gameState = GameState.WIN;
+		}
+
 		// if no player is alive, declare game over
 		if (!gameplayController.isAlive()) {
 			gameState = GameState.OVER;
@@ -248,9 +257,16 @@ public class GameMode implements Screen {
 				canvas.drawTextCentered("Press R to Restart", alternateFont, 0);
 			}
 			canvas.drawText("Current player health: 0", displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
-		}else{
+		}else if(gameState == GameState.WIN){
+			canvas.drawTextCentered("You Win!",displayFont, GAME_OVER_OFFSET);
+			// make restart line blinking
+			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
+				canvas.drawTextCentered("Press R to Restart", alternateFont, 0);
+			}
+			canvas.drawText("Walker is gone!", displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
+		}else {
 			// Output a simple debugging message stating the number of shells on the screen
-			String message = "Current player health: " + gameplayController.player_health;
+			String message = "Current player health: " + (int) (gameplayController.player_health * 10) + ".0";
 			canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 		}
 

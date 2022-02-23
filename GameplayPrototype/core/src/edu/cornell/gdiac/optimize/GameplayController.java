@@ -48,6 +48,9 @@ public class GameplayController {
 	/** Reference to player */
 	private Ship player;
 
+	/** Reference to target */
+	private Target target;
+
 	// List of objects with the garbage collection set.
 	/** The currently active object */
 	private Array<GameObject> objects;
@@ -57,15 +60,16 @@ public class GameplayController {
 	/** Health: increase player health when wood is destroyed */
 	protected float player_health;
 	/** Maximum health */
-	protected static final float MAXIMUM_PLAYER_HEALTH = 15.0f;
+	protected static final float MAXIMUM_PLAYER_HEALTH = 12.0f;
 	/** initial health */
-	protected static final float INITIAL_PLAYER_HEALTH = 5.0f;
+	protected static final float INITIAL_PLAYER_HEALTH = 2.0f;
 
 	/**
 	 * Creates a new GameplayController with no active elements.
 	 */
 	public GameplayController() {
 		player = null;
+		target = null;
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
 		player_health = INITIAL_PLAYER_HEALTH;
@@ -134,10 +138,15 @@ public class GameplayController {
 		// Create the player's ship
 		player = new Ship();
 		player.setTexture(raftTexture);
-		player.getPosition().set(width * 0.5f, height * 0.5f);
+		player.getPosition().set(getPlayer().getRadius(), getPlayer().getRadius());
 
-		// Player must be in object list.
-		objects.add(player);
+		// player must have full health
+		player_health = GameplayController.INITIAL_PLAYER_HEALTH;
+
+		// Create the target
+		target = new Target();
+		target.setTexture(targetTexture);
+		target.getPosition().set(width - target.getRadius(), height - target.getRadius());
 
 		// add driftwood
 		for (int i = 0; i < 10; i ++) {
@@ -153,6 +162,11 @@ public class GameplayController {
 			wood.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
 			objects.add(wood);
 		}
+		// Player must be in object list.
+		objects.add(player);
+
+		// target must be in the object list
+		objects.add(target);
 	}
 
 	/**
@@ -160,6 +174,7 @@ public class GameplayController {
 	 */
 	public void reset() {
 		player = null;
+		target = null;
 		objects.clear();
 	}
 
@@ -209,6 +224,9 @@ public class GameplayController {
 			player_health += w.getWood();
 //			System.out.println("Wood of " + w.getWood() + " taken by player!");
 			break;
+		case TARGET:
+			target = null;
+			break;
 		default:
 			break;
 		}
@@ -224,7 +242,7 @@ public class GameplayController {
 	 */
 	public void resolveActions(InputController input, float delta) {
 		// Process the player
-		if (player != null) {
+		if (player != null && target != null) {
 			resolvePlayer(input,delta);
 		}
 
@@ -254,7 +272,13 @@ public class GameplayController {
 		player.update(delta);
 	}
 
+	/** @return float represent the health of the player */
 	public float getProgress(){
 		return player_health / MAXIMUM_PLAYER_HEALTH;
+	}
+
+	/** @return boolean represent if the player has won the game */
+	public boolean isWin() {
+		return target == null;
 	}
 }

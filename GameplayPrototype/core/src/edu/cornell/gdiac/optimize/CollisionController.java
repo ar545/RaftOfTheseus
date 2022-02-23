@@ -103,11 +103,16 @@ public class CollisionController {
 		handleBounds(player);
 
 		// For each wood object, check for collisions with the player
+		// For target, check for collision with palyer
 		for (GameObject o : objects) {
 			if (o.getType() == GameObject.ObjectType.WOOD) {
 				handleCollision(player, (Wood)o);
+			}else if(o.getType() == GameObject.ObjectType.TARGET){
+				handleCollision(player, (Target)o);
 			}
 		}
+
+
 	}
 
 	/** handel the collision between ship and wood, wood get destroyed and ship get extended life
@@ -128,6 +133,24 @@ public class CollisionController {
 
 		// Destroy wood
 		wood.setDestroyed(true);
+	}
+
+	private void handleCollision(Ship player, Target t){
+		if (player.isDestroyed() || t.isDestroyed()) {
+			return;
+		}
+
+		temp1.set(player.getPosition()).sub(t.getPosition());
+		float dist = temp1.len();
+
+		// Too far away
+		if (dist > player.getRadius() /*+ t.getRadius()*/ ) {
+			return;
+		}
+
+		// Destroy Target
+		t.setDestroyed(true);
+
 	}
 
 	/**

@@ -11,13 +11,13 @@ public class Wood extends GameObject {
 
     // Attributes
     /** How many logs is in this pile of wood. player health will add correspondingly */
-    private final int wood;
+    private final float wood;
 
     // Constants
     /** the maximum log generated for each pile of wood */
-    private final static int MAXIMUM_WOOD_GENERATION = 2;
+    private final static float MAXIMUM_WOOD_GENERATION = 1f;
     /** the minimum log generated for each pile of wood */
-    private final static int MINIMUM_WOOD_GENERATION = 1;
+    private final static float MINIMUM_WOOD_GENERATION = 0.5f;
 
     /** Constructor, build a pile of wood with random number of logs */
     public Wood(boolean doubled){
@@ -37,8 +37,8 @@ public class Wood extends GameObject {
     }
 
     /** return the number of logs in this pile of wood
-     * @return int representing player health replenish */
-    public int getWood() {
+     * @return float representing player health replenish */
+    public float getWood() {
         return wood;
     }
 

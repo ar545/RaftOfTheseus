@@ -40,7 +40,9 @@ public abstract class GameObject {
 		/** A ship, which lives until it is destroyed by a shell */
 		SHIP,
 		/** A piece of driftwood */
-		WOOD
+		WOOD,
+		/** The target, or if you like, The Walker White */
+		TARGET
 	}
 	
 	// Attributes for all game objects
@@ -149,7 +151,7 @@ public abstract class GameObject {
 	/**
 	 * Sets the y-coordinate of the object velocity.
 	 *
-	 * @param value the y-coordinate of the object velocity.
+	 * @return the y-coordinate of the object velocity.
 	 */
 	public float getVY() {
 		return velocity.y;
