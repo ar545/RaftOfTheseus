@@ -7,6 +7,7 @@ import edu.cornell.gdiac.optimize.RandomController;
  * Model class for driftwood.
  */
 public class Wood extends GameObject {
+    // TODO: show the wood's log number by color in texture
 
     // Attributes
     /** How many logs is in this pile of wood. player health will add correspondingly */
