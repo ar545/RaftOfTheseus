@@ -35,13 +35,6 @@ public abstract class GameObject {
 	
 	/**
 	 * Enum specifying the type of this game object.
-	 * 
-	 * This Enum is not strictly necessary.  We could use runtime-time
-	 * typing instead.  However, enums can be used in switch statements
-	 * (which are very fast), which types cannot. That is the motivation
-	 * for this Enum.
-	 * If you add new subclasses of GameObject, you will need to add
-	 * to this Enum as well.
 	 */
 	public enum ObjectType {
 		/** A ship, which lives until it is destroyed by a shell */

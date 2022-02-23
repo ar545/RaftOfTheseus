@@ -29,6 +29,7 @@ import edu.cornell.gdiac.util.*;
  * a controller via the new XBox360Controller class.
  */
 public class InputController {
+	// TODO: add up/down movement and WASD support
 	// Fields to manage game state
 	/** Whether the reset button was pressed. */
 	protected boolean resetPressed;

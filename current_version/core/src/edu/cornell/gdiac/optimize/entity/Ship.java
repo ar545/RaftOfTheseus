@@ -28,13 +28,14 @@ import com.badlogic.gdx.graphics.*;
  * Model class for the player ship.
  */
 public class Ship extends GameObject {
+	// TODO: add up/down movement and a health field
 	/// CONSTANTS
 	/** Horizontal speed **/
 	private static final float BEETLE_SPEED = 4.0f;
 	
 	/// ATTRIBUTES
 	/** The left/right movement of the player this turn */
-	private float movement = 0.0f;
+	private float movement = 0.0f; // TODO: should probably be a Vector2
 	
 	/**
 	 * Returns the type of this object.
@@ -80,35 +81,14 @@ public class Ship extends GameObject {
 	/**
 	 * Updates the animation frame and position of this ship.
 	 *
-	 * Notice how little this method does.  It does not actively fire the weapon.  It 
-	 * only manages the cooldown and indicates whether the weapon is currently firing. 
-	 * The result of weapon fire is managed by the GameplayController.
-	 *
 	 * @param delta Number of seconds since last animation frame
 	 */
 	public void update(float delta) {
 		// Call superclass's update
 		super.update(delta);
 
-		// Increase animation frame, but only if trying to move
-		if (movement != 0.0f) {
-			position.x += movement * BEETLE_SPEED;
-		}
-	}
-
-	/**
-	 * Draws this shell to the canvas
-	 *
-	 * There is only one drawing pass in this application, so you can draw the objects 
-	 * in any order.
-	 *
-	 * @param canvas The drawing context
-	 */
-	public void draw(GameCanvas canvas) {
-		float x = animator.getRegionWidth()/2.0f;
-		float y = animator.getRegionHeight()/2.0f;
-		animator.setFrame(0);
-		canvas.draw(animator, Color.WHITE, x, y, position.x, position.y, 0.0f, 1.0f, 1.f);
+		// Movement handling
+		position.x += movement * BEETLE_SPEED;
 	}
 	
 }

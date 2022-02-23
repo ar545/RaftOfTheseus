@@ -25,11 +25,9 @@ import edu.cornell.gdiac.optimize.entity.*;
 
 /**
  * Controller implementing simple game physics.
- *
- * This is a very inefficient physics engine.  Part of this lab is determining
- * how to make it more efficient.
  */
 public class CollisionController {
+	// TODO: don't allow the ship to go offscreen vertically.
 	// These cannot be modified after the controller is constructed.
 	// If these change, make a new constructor.
 	/** Width of the collision geometry */

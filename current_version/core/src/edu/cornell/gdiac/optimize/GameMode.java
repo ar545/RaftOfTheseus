@@ -30,6 +30,7 @@ import edu.cornell.gdiac.util.*;
  * basic game loop (update-draw).
  */
 public class GameMode implements Screen {
+	// TODO: display player health
 	/** 
  	 * Track the current state of the game for the update loop.
  	 */
@@ -196,7 +197,7 @@ public class GameMode implements Screen {
 		}
 
 		// Output a simple debugging message stating the number of shells on the screen
-		String message = "Placeholder Message";
+		String message = "Current player health: " + 0.0f; // TODO: change to display health
 		canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 
 		if (gameState == GameState.OVER) {

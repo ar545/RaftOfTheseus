@@ -33,13 +33,14 @@ import edu.cornell.gdiac.optimize.entity.*;
  * This controller also acts as the root class for all the models.
  */
 public class GameplayController {
+	// TODO: increase player health when wood is destroyed
 	// Graphics assets for the entities
 	/** Texture for all ships, as they look the same */
 	private Texture raftTexture;
 	/** Texture for all wood pieces, as they look the same */
 	private Texture woodTexture;
 
-	/** Reference to player (need to change to allow multiple players) */
+	/** Reference to player */
 	private Ship player;
 
 	// List of objects with the garbage collection set.
@@ -183,6 +184,7 @@ public class GameplayController {
 			break;
 		case WOOD:
 			// TODO: wood destruction actions (i.e., add player health)
+			System.out.println("Some wood just got destroyed");
 			break;
 		default:
 			break;
