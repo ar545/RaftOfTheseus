@@ -60,9 +60,9 @@ public class GameplayController {
 	/** Health: increase player health when wood is destroyed */
 	protected float player_health;
 	/** Maximum health */
-	protected static final float MAXIMUM_PLAYER_HEALTH = 12.0f;
+	protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
 	/** initial health */
-	protected static final float INITIAL_PLAYER_HEALTH = 2.0f;
+	protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
 
 	/**
 	 * Creates a new GameplayController with no active elements.
@@ -267,7 +267,7 @@ public class GameplayController {
 	 */
 	public void resolvePlayer(InputController input, float delta) {
 		Vector2 movement = input.getMovement();
-		player_health -= Math.abs(movement.len() / 10f);
+		player_health -= Math.abs(movement.len());
 		player.setMovement(movement);
 		player.update(delta);
 	}

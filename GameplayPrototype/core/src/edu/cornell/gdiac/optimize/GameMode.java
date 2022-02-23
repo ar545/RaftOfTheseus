@@ -266,7 +266,7 @@ public class GameMode implements Screen {
 			canvas.drawText("Walker is gone!", displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 		}else {
 			// Output a simple debugging message stating the number of shells on the screen
-			String message = "Current player health: " + (int) (gameplayController.player_health * 10) + ".0";
+			String message = "Current player health: " + (int) (gameplayController.player_health) + ".0";
 			canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 		}
 

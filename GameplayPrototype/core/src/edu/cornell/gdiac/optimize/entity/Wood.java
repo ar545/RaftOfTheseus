@@ -15,9 +15,9 @@ public class Wood extends GameObject {
 
     // Constants
     /** the maximum log generated for each pile of wood */
-    private final static float MAXIMUM_WOOD_GENERATION = 1f;
+    private final static float MAXIMUM_WOOD_GENERATION = 10f;
     /** the minimum log generated for each pile of wood */
-    private final static float MINIMUM_WOOD_GENERATION = 0.5f;
+    private final static float MINIMUM_WOOD_GENERATION = 5f;
 
     /** Constructor, build a pile of wood with random number of logs */
     public Wood(boolean doubled){
