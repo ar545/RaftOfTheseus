@@ -111,14 +111,14 @@ public class GameplayController {
 	 *
 	 * This method creates a single player, and creates driftwood in random positions.
 	 *
-	 * @param x Starting x-position for the player
-	 * @param y Starting y-position for the player
+	 * @param width Canvas width
+	 * @param height Canvas height
 	 */
-	public void start(float x, float y) {
+	public void start(float width, float height) {
 		// Create the player's ship
 		player = new Ship();
 		player.setTexture(raftTexture);
-		player.getPosition().set(x,y);
+		player.getPosition().set(width*0.5f, height*0.5f);
 
 		// Player must be in object list.
 		objects.add(player);
@@ -127,7 +127,7 @@ public class GameplayController {
 		for (int i = 0; i < 10; i ++) {
 			Wood wood = new Wood();
 			wood.setTexture(woodTexture);
-			wood.getPosition().set((float)(x*Math.random()), (float)(y*Math.random()));
+			wood.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
 			objects.add(wood);
 		}
 	}

@@ -32,12 +32,8 @@ public class InputController {
 	// Fields to manage game state
 	/** Whether the reset button was pressed. */
 	protected boolean resetPressed;
-	/** Whether the flood button was pressed. */
-	protected boolean floodPressed;
 	/** Whether the exit button was pressed. */
 	protected boolean exitPressed;
-	/** Whether the fire button was pressed. */
-	private boolean firePressed;
 	/** How much did we move (left/right)? */
 	private float offset;
 	/** XBox Controller support */
@@ -55,30 +51,12 @@ public class InputController {
 	}
 
 	/**
-	 * Returns true if the fire button was pressed.
-	 *
-	 * @return true if the fire button was pressed.
-	 */
-	public boolean didFire() {
-		return firePressed;
-	}
-
-	/**
 	 * Returns true if the reset button was pressed.
 	 *
 	 * @return true if the reset button was pressed.
 	 */
 	public boolean didReset() {
 		return resetPressed;
-	}
-
-	/**
-	 * Returns true if the player wants to flood shells.
-	 *
-	 * @return true if the player wants to flood shells.
-	 */
-	public boolean didFlood() {
-		return floodPressed;
 	}
 
 	/**
@@ -125,12 +103,10 @@ public class InputController {
 	private void readGamepad() {
 
 		resetPressed = xbox.getA();
-		floodPressed = xbox.getRBumper();
 		exitPressed  = xbox.getBack();
 
 		// Increase animation frame, but only if trying to move
 		offset = xbox.getLeftX();
-		firePressed = xbox.getRightTrigger() > 0.6f;
 	}
 
 	/**
@@ -145,7 +121,6 @@ public class InputController {
 	private void readKeyboard(boolean secondary) {
 		// Give priority to gamepad results
 		resetPressed = (secondary && resetPressed) || (Gdx.input.isKeyPressed(Input.Keys.R));
-		floodPressed = (secondary && floodPressed) || (Gdx.input.isKeyPressed(Input.Keys.F));
 		exitPressed  = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
 
 		offset = (secondary ? offset : 0.0f);
@@ -155,6 +130,5 @@ public class InputController {
 		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
 			offset -= 1.0f;
 		}
-		firePressed =  (secondary && firePressed) || Gdx.input.isKeyPressed(Input.Keys.SPACE);
 	}
 }

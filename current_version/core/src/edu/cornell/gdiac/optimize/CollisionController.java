@@ -30,29 +30,6 @@ import edu.cornell.gdiac.optimize.entity.*;
  * how to make it more efficient.
  */
 public class CollisionController {
-
-	// 'Bounciness' constants
-	/** Restitution for colliding with the (hard coded) box */
-	protected static final float BOX_COEFF_REST   = 0.95f;
-	/** Restitution for colliding with the (hard coded) bump */
-	protected static final float BUMP_COEFF_REST  = 1.95f;
-	/** Dampening factor when colliding with floor or shell */
-	protected static final float DAMPENING_FACTOR = 0.95f;
-	
-	// Geometry of the background image
-	/** (Scaled) distance of the floor ledge from bottom */
-	protected static final float BOTTOM_OFFSET    = 0.075f;
-	/** (Scaled) position of the box center */
-	protected static final float BOX_X_POSITION   = 0.141f;
-	/** (Scaled) position of half the box width */
-	protected static final float BOX_HALF_WIDTH   = 0.133f;
-	/** (Scaled) position of the box height from bottom of screen */
-	protected static final float BOX_FULL_HEIGHT  = 0.2f;
-	/** (Scaled) position of the bump center */
-	protected static final float BUMP_X_POSITION  = 0.734f;
-	/** (Scaled) position of the bump radius */
-	protected static final float BUMP_RADIUS      = 0.11f;
-	
 	// These cannot be modified after the controller is constructed.
 	// If these change, make a new constructor.
 	/** Width of the collision geometry */
@@ -82,18 +59,6 @@ public class CollisionController {
 	 */
 	public float getHeight() {
 		return height;
-	}
-	
-	/**
-	 * Returns the height of the floor ledge.
-	 *
-	 * The floor ledge supports the player ship, and is what all of the shells
-	 * bounce off of.  It is raised slightly higher than the bottom of the screen.
-	 *
-	 * @return the height of the floor ledge.
-	 */
-	public float getFloorLedge() {
-		return BOTTOM_OFFSET*height;
 	}
 
 	//#region Initialization (MODIFY THIS CODE)
@@ -140,8 +105,21 @@ public class CollisionController {
 		}
 	}
 
-	private void handleCollision(Ship player, Wood o) {
-		//TODO: code for collecting the wood: marking it as destroyed, increasing player health
+	private void handleCollision(Ship player, Wood wood) {
+		if (player.isDestroyed() || wood.isDestroyed()) {
+			return;
+		}
+
+		temp1.set(player.getPosition()).sub(wood.getPosition());
+		float dist = temp1.len();
+
+		// Too far away
+		if (dist > player.getRadius() + wood.getRadius()) {
+			return;
+		}
+
+		// Destroy wood
+		wood.setDestroyed(true);
 	}
 
 	/**

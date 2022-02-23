@@ -136,13 +136,13 @@ public class GameMode implements Screen {
 		switch (gameState) {
 		case INTRO:
 			gameState = GameState.PLAY;
-			gameplayController.start(canvas.getWidth() / 2.0f, physicsController.getFloorLedge());
+			gameplayController.start(canvas.getWidth(), canvas.getHeight());
 			break;
 		case OVER:
 			if (inputController.didReset()) {
 				gameState = GameState.PLAY;
 				gameplayController.reset();
-				gameplayController.start(canvas.getWidth() / 2.0f, physicsController.getFloorLedge());
+				gameplayController.start(canvas.getWidth(), canvas.getHeight());
 			} else {
 				play(delta);
 			}

@@ -31,39 +31,10 @@ public class Ship extends GameObject {
 	/// CONSTANTS
 	/** Horizontal speed **/
 	private static final float BEETLE_SPEED = 4.0f;
-	/** How long between shots */
-	private static final int COOLDOWN_TIME  = 8;
-	/** Cooldown bonus if we don't fire */
-	private static final int COOLDOWN_BONUS = 3;
-	/** How fast we change frames (one frame per 4 calls to update) */
-	private static final float ANIMATION_SPEED = 0.25f;
-	/** The number of animation frames in our filmstrip */
-	private static final int   NUM_ANIM_FRAMES = 1;
-	//#region REMOVE ME
-	/** Number of kills for a power up */
-	private static final int POWER_KILL = 20;
-	/** Length of time of power up */
-	private static final int POWER_TIME = 600; // 5 seconds
-	//#endregion
 	
 	/// ATTRIBUTES
 	/** The left/right movement of the player this turn */
 	private float movement = 0.0f;
-	/** Whether this ship is currently firing */
-	private boolean firing = false;
-	/** How long before ship can fire again */
-	private int cooldown;
-	/** Current animation frame for this ship */
-	private float animeframe;
-	//#region REMOVE ME
-	// Code to allow power-ups
-	/** Whether we are currently powered up */
-	private boolean powered = false;
-	/** Number of kills so far (to acquire power-up) */
-	private int killcount = 0;
-	/** The current amount of time with the power-up */
-	private int powertime;
-	//#endregion
 	
 	/**
 	 * Returns the type of this object.
@@ -95,67 +66,9 @@ public class Ship extends GameObject {
 	}
 	
 	/**
-	 * Returns true if the ship is actively firing.
-	 *
-	 * @return true if the ship is actively firing.
-	 */
-	public boolean isFiring() {
-		return firing && cooldown <= 0;
-	}
-	
-	/**
-	 * Sets whether the ship is actively firing.
-	 *
-	 * @param value whether the ship is actively firing.
-	 */
-	public void setFiring(boolean value) {
-		firing = value;
-	}
-	
-	/**
-	 * Resets the cooldown so that the weapon can fire again.
-	 *
-	 * Since weapon fire is managed externally, we need this method to 
-	 * reset the weapon after use. Otherwise, the player can fire 
-	 * a continuous stream of bullets.
-	 */
-	public void resetCooldown() {
-		cooldown = COOLDOWN_TIME;
-	}
-
-	//#region REMOVE ME
-	/** 
-	 * Returns true if the powerup is active.
-	 *
-	 * @return true if the powerup is active.
-	 */
-	public boolean isPowered() {
-		return powered;
-	}
-	
-	/**
-	 * Acknowledges a kill to earn power ups
-	 */
-	public void registerKill() {
-		if (!powered) {
-			killcount++;
-		}
-
-		// Magic Numbers
-		if (killcount == POWER_KILL) {
-			powertime = POWER_TIME;
-			powered   = true;
-			killcount = 0;
-		}
-	}
-	//#endregion
-	
-	/**
 	 * Initialize a ship with trivial starting position.
 	 */
 	public Ship() {
-		cooldown   = 0;
-		animeframe = 0.0f;
 	}
 	
 	public void setTexture(Texture texture) {
@@ -179,31 +92,8 @@ public class Ship extends GameObject {
 
 		// Increase animation frame, but only if trying to move
 		if (movement != 0.0f) {
-			animeframe += ANIMATION_SPEED;
-			if (animeframe >= NUM_ANIM_FRAMES) {
-				animeframe -= NUM_ANIM_FRAMES;
-			}
 			position.x += movement * BEETLE_SPEED;
 		}
-
-		// Decrease time until ship can fire again
-		if (cooldown > 0) {
-			cooldown--;
-		}
-
-		if (!firing) {
-			// Cool down faster when not holding space
-			cooldown -= COOLDOWN_BONUS;
-		}
-		
-		//#region REMOVE ME
-		if (powered) {
-			powertime--;
-			if (powertime == 0) {
-				powered = false;
-			}
-		}
-		//#endregion
 	}
 
 	/**
@@ -217,7 +107,7 @@ public class Ship extends GameObject {
 	public void draw(GameCanvas canvas) {
 		float x = animator.getRegionWidth()/2.0f;
 		float y = animator.getRegionHeight()/2.0f;
-		animator.setFrame((int)animeframe);
+		animator.setFrame(0);
 		canvas.draw(animator, Color.WHITE, x, y, position.x, position.y, 0.0f, 1.0f, 1.f);
 	}
 	
