@@ -1,6 +1,7 @@
 {
 	"textures": {
       "background": "images/background.png",
+      "new_background": "images/new_background.png",
       "raft":     "images/raft.png",
       "wood":     "images/wood.png",
       "double":     "images/double.png",

@@ -312,6 +312,31 @@ public class GameCanvas {
     }
 
 	/**
+	 * Draw the seamless background image.
+	 *
+	 * The background image is drawn (with NO SCALING) at position x, y.  Width-wise,
+	 * the image is seamlessly scrolled; when we reach the image we draw a second copy.
+	 *
+	 * To work properly, the image should be wide and high enough to fill the screen.
+	 *
+	 * @param image  Texture to draw as an overlay
+	 * @param x      The x-coordinate of the bottom left corner of the texture to draw
+	 * @param y 	 The y-coordinate of the bottom left corner of the texture to draw
+	 * @param affine The affine transformation that should be applied onto the texture before drawing
+	 */
+	public void drawBackgroundAffine(Texture image, float x, float y, Affine2 affine) {
+		if (!active) {
+			Gdx.app.error("GameCanvas", "Cannot draw without active begin()", new IllegalStateException());
+			return;
+		}
+
+		// draw using affine
+		TextureRegion region = new TextureRegion(image, (int)x, (int)y);
+		spriteBatch.draw(region, x, y, affine);
+
+	}
+
+	/**
 	 * Draws the tinted texture at the given position.
 	 *
 	 * The texture colors will be multiplied by the given color.  This will turn

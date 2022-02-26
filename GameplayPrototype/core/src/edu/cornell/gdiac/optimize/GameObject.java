@@ -251,5 +251,18 @@ public abstract class GameObject {
 		canvas.draw(animator, Color.WHITE, origin.x, origin.y, 
 					position.x, position.y, 0.0f, 1.0f, 1.f);
 	}
+
+	/**
+	 * Draws this object to the canvas
+	 *
+	 * There is only one drawing pass in this application, so you can draw the objects
+	 * in any order.
+	 *
+	 * @param canvas The drawing context
+	 */
+	public void drawAffine(GameCanvas canvas, Vector2 affine) {
+		canvas.draw(animator, Color.WHITE, origin.x, origin.y,
+				position.x + affine.x, position.y + affine.y, 0.0f, 1.0f, 1.f);
+	}
 	
 }

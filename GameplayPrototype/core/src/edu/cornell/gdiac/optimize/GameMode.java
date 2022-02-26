@@ -19,6 +19,8 @@ import com.badlogic.gdx.graphics.g2d.*;
 //import com.badlogic.gdx.assets.*;
 //import com.badlogic.gdx.graphics.g2d.freetype.*;
 
+import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.math.Vector2;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.*;
 
@@ -29,6 +31,10 @@ import edu.cornell.gdiac.util.*;
  * classes. This is the player mode class for running the game. In initializes all the other classes in the game
  * and hooks them together.  It also provides the
  * basic game loop (update-draw).
+ *
+ * Screen size defined by canvas.getWidth(), canvas.getHeight()
+ *
+ * Map size defined by
  */
 public class GameMode implements Screen {
 	/** 
@@ -53,7 +59,7 @@ public class GameMode implements Screen {
 	/** The alternate font for giving messages to the player */
 	private BitmapFont alternateFont;
 
-	// following assets are used in the progress bar. progress bar is a "texture atlas." Break it up into parts.
+	// Load progress bar assets. progress bar is a "texture atlas." Break it up into parts.
 	/** Left cap to the status background (grey region) */
 	private TextureRegion statusBkgLeft;
 	/** Middle portion of the status background (grey region) */
@@ -67,47 +73,54 @@ public class GameMode implements Screen {
 	/** Right cap to the status foreground (colored region) */
 	private TextureRegion statusFrgRight;
 
-	/// CONSTANTS
-	/** Factor used to compute where we are in scrolling process */
-	private static final float TIME_MODIFIER    = 0.06f;
+	// TIME CONSTANTS
+	/** the time constant of period of blinking of text and progress bar*/
+	private static final int TIME_CONSTANT = 800;
+
+	// DISPLAY CONSTANTS
 	/** Offset for the shell counter message on the screen */
 	private static final float COUNTER_OFFSET   = 5.0f;
 	/** Offset for the game over message on the screen */
 	private static final float GAME_OVER_OFFSET = 40.0f;
-	/** Height of the crush shell progress bar */
-	private static final float GAME_BAR_HEIGHT_RATIO = 0.9f;
-	/** Width of the crush shell progress bar */
+	/** Height of the health progress bar on screen */
+	private static final float GAME_BAR_HEIGHT_RATIO = 0.89f;
+	/** Width of the health progress bar */
 	private static final float GAME_BAR_WIDTH_RATIO = 0.8f;
 	/** Height of the progress bar */
 	private static final int PROGRESS_HEIGHT = 30;
 	/** Width of the rounded cap on left or right */
 	private static final int PROGRESS_CAP    = 15;
-	/** the time constant of period of blinking of text and progress bar*/
-	private static final int TIME_CONSTANT = 800;
-	/** Standard window size (for scaling) */
-	private static final int STANDARD_WIDTH  = 800;
-	/** Standard window height (for scaling) */
-	private static final int STANDARD_HEIGHT = 700;
-	
+
+	// MAP CONSTANTS
+	// TODO: substitute this with level JSON in Technical Prototype
+	/** temporary world size: width */
+	private static final float WORLD_WIDTH = 1200f;
+	/** temporary world size: height */
+	private static final float WORLD_HEIGHT = 1000f;
+
+	// reference to gameplay elements
 	/** Reference to drawing context to display graphics (VIEW CLASS) */
 	private GameCanvas canvas;
-	
 	/** Reads input from keyboard or game pad (CONTROLLER CLASS) */
 	private InputController inputController;
 	/** Handle collision and physics (CONTROLLER CLASS) */
 	private CollisionController physicsController;
 	/** Constructs the game models and handle basic gameplay (CONTROLLER CLASS) */
 	private GameplayController gameplayController;
-	
 	/** Variable to track the game state (SIMPLE FIELDS) */
 	private GameState gameState;
 	/** Variable to track total time played in milliseconds (SIMPLE FIELDS) */
 	private float totalTime = 0;
 	/** Whether this player mode is still active */
 	private boolean active;
-	
 	/** Listener that will update the player mode when we are done */
 	private ScreenListener listener;
+
+	// reference to canvas size
+	/** Standard window size */
+	private final float canvas_width;
+	/** Standard window height */
+	private final float canvas_height;
 
 	/**
 	 * Creates a new game with the given drawing context.
@@ -124,7 +137,11 @@ public class GameMode implements Screen {
 		// Create the controllers.
 		inputController = new InputController();
 		gameplayController = new GameplayController();
-		physicsController = new CollisionController(canvas.getWidth(), canvas.getHeight());
+		// TODO for technical prototype
+		// TODO: change to gameplayController.start(level JSON class);
+		physicsController = new CollisionController(WORLD_WIDTH, WORLD_HEIGHT);
+		canvas_height = canvas.getHeight();
+		canvas_width = canvas.getWidth();
 	}
 	
 	/**
@@ -147,7 +164,7 @@ public class GameMode implements Screen {
 	 * @param directory 	Reference to the asset directory.
 	 */
 	public void populate(AssetDirectory directory) {
-		background  = directory.getEntry("background",Texture.class);
+		background  = directory.getEntry("new_background",Texture.class);
 		displayFont = directory.getEntry("times",BitmapFont.class);
 		alternateFont = directory.getEntry("grande",BitmapFont.class);
 
@@ -179,7 +196,9 @@ public class GameMode implements Screen {
 		switch (gameState) {
 		case INTRO:
 			gameState = GameState.PLAY;
-			gameplayController.start(canvas.getWidth(), canvas.getHeight());
+			// TODO for technical prototype
+			// TODO: change to gameplayController.start(level JSON class);
+			gameplayController.start(WORLD_WIDTH, WORLD_HEIGHT);
 			break;
 
 		case WIN:
@@ -187,7 +206,9 @@ public class GameMode implements Screen {
 			if (inputController.didReset()) {
 				gameState = GameState.PLAY;
 				gameplayController.reset();
-				gameplayController.start(canvas.getWidth(), canvas.getHeight());
+				// TODO for technical prototype
+				// TODO: change to gameplayController.start(level JSON class);
+				gameplayController.start(WORLD_WIDTH, WORLD_HEIGHT);
 
 			} else {
 				play(delta);
@@ -223,8 +244,8 @@ public class GameMode implements Screen {
 
 		// Check for collisions
 		totalTime += (delta*1000); // Seconds to milliseconds
-		float offset =  canvas.getWidth() - (totalTime * TIME_MODIFIER) % canvas.getWidth();
-		physicsController.processCollisions(gameplayController.getObjects(),(int)offset);
+
+		physicsController.processCollisions(gameplayController.getObjects(),(int)totalTime);
 
 		// Clean up destroyed objects
 		gameplayController.garbageCollect();
@@ -238,12 +259,19 @@ public class GameMode implements Screen {
 	 * prefer this in lecture.
 	 */
 	private void draw(float delta) {
-		float offset = -((totalTime * TIME_MODIFIER) % canvas.getWidth());
+		// calculate offset = (ship pos) - (canvas size / 2)
+		Vector2 offset2 = new Vector2(canvas_width/2, canvas_height/2);
+		offset2.sub(gameplayController.getPlayerPosition());
+		Affine2 affine = new Affine2();
+		affine.setToTranslation(offset2);
+
 		canvas.begin();
-		canvas.drawBackground(background,offset,-100);
+		canvas.drawBackgroundAffine(background, WORLD_WIDTH, WORLD_HEIGHT, affine);
+//		canvas.drawBackground(background_old,offset,-100);
 		// Draw the game objects
 		for (GameObject o : gameplayController.getObjects()) {
-			o.draw(canvas);
+//			o.draw(canvas);
+			o.drawAffine(canvas, offset2);
 		}
 
 		// Draw progress bar
@@ -362,8 +390,8 @@ public class GameMode implements Screen {
 	private void drawProgress(GameCanvas canvas, float progress, boolean blink) {
 
 		// Compute the drawing scale
-		float sx = ((float)canvas.getWidth())/STANDARD_WIDTH;
-		float sy = ((float)canvas.getHeight())/STANDARD_HEIGHT;
+		float sx = ((float)canvas.getWidth())/canvas_width;
+		float sy = ((float)canvas.getHeight())/canvas_height;
 		float scale = (Math.min(sx, sy));
 		int width = (int)(GAME_BAR_WIDTH_RATIO*canvas.getWidth());
 		int centerY = (int)(GAME_BAR_HEIGHT_RATIO*canvas.getHeight());

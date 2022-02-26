@@ -82,9 +82,9 @@ public class CollisionController {
 	 * This is the main (incredibly unoptimized) collision detetection method.
 	 *
 	 * @param objects List of live objects to check 
-	 * @param offset  Offset of the box and bump 
+	 * @param total_time  time used to calculate big wave in Technical prototype
 	 */
-	public void processCollisions(Array<GameObject> objects, int offset) {
+	public void processCollisions(Array<GameObject> objects, int total_time) {
 		// Find which object is the player (O(n))
 		Ship player = null;
 		for (GameObject o : objects) {
@@ -160,14 +160,14 @@ public class CollisionController {
 	 * @param sh Ship to check 
 	 */
 	private void handleBounds(Ship sh) {
-		// Do not let the ship go off-screen on x-axis
+		// Do not let the ship go off-world on both-axis: x
 		if (sh.getX() <= sh.getRadius()) {
 			sh.setX(sh.getRadius());
 		} else if (sh.getX() >= getWidth() - sh.getRadius()) {
 			sh.setX(getWidth() - sh.getRadius());
 		}
 
-		// Do not let the ship go off-screen on y-axis
+		// Do not let the ship go off-world on both-axis: y
 		if (sh.getY() <= sh.getRadius()) {
 			sh.setY(sh.getRadius());
 		} else if (sh.getY() >= getHeight() - sh.getRadius()) {

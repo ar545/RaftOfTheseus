@@ -59,6 +59,8 @@ public class GameplayController {
 
 	/** Health: increase player health when wood is destroyed */
 	protected float player_health;
+	/** The position where the player dead */
+	private Vector2 player_dead_position;
 	/** Maximum health */
 	protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
 	/** initial health */
@@ -149,7 +151,7 @@ public class GameplayController {
 		target.getPosition().set(width - target.getRadius(), height - target.getRadius());
 
 		// add driftwood
-		for (int i = 0; i < 10; i ++) {
+		for (int i = 0; i < 30; i ++) {
 			Wood wood;
 			if(RandomController.rollInt(0, 1) == 0){
 				wood = new Wood(true);
@@ -217,6 +219,7 @@ public class GameplayController {
 	protected void destroy(GameObject o) {
 		switch(o.getType()) {
 		case SHIP:
+			player_dead_position = player.getPosition();
 			player = null;
 			break;
 		case WOOD:
@@ -280,5 +283,14 @@ public class GameplayController {
 	/** @return boolean represent if the player has won the game */
 	public boolean isWin() {
 		return target == null;
+	}
+
+	public Vector2 getPlayerPosition() {
+		if(player != null){
+			return getPlayer().getPosition();
+
+		}else{
+			return player_dead_position;
+		}
 	}
 }
