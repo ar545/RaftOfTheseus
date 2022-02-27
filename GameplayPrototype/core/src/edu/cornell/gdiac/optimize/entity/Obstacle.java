@@ -2,11 +2,11 @@ package edu.cornell.gdiac.optimize.entity;
 
 import edu.cornell.gdiac.optimize.GameObject;
 
-public class Target extends GameObject {
-    /** get the type of wood objects
-     * @return object type wood */
+public class Obstacle extends GameObject {
+    /** get the type of rock objects
+     * @return object type obstacle */
     @Override
     public GameObject.ObjectType getType() {
-        return ObjectType.TARGET;
+        return ObjectType.OBSTACLE;
     }
 }

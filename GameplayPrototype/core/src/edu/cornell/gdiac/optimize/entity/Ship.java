@@ -34,8 +34,10 @@ public class Ship extends GameObject {
 	private static final float RAFT_SPEED = 4.0f;
 	
 	// ATTRIBUTES
-	/** The left/right movement of the player this turn */
+	/** The movement of the player this turn */
 	private Vector2 movement = new Vector2(0f,0f);
+	/** The most recent non-zero movement of the player this turn */
+	public Vector2 last_movement = new Vector2(0f,0f);
 	
 	/**
 	 * Returns the type of this object.
@@ -89,6 +91,9 @@ public class Ship extends GameObject {
 
 		// Movement handling, used to be "position.x += movement.x * BEETLE_SPEED;"
 		position.add(movement.scl(RAFT_SPEED));
+		if(!movement.isZero()){
+			last_movement.set(getMovement());
+		}
 	}
 	
 }

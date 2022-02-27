@@ -4,6 +4,7 @@
       "new_background": "images/new_background.png",
       "raft":     "images/raft.png",
       "wood":     "images/wood.png",
+      "rock":     "images/rock.png",
       "double":     "images/double.png",
       "target":     "images/target.png",
       "progress": {

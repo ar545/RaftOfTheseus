@@ -109,6 +109,8 @@ public class CollisionController {
 				handleCollision(player, (Wood)o);
 			}else if(o.getType() == GameObject.ObjectType.TARGET){
 				handleCollision(player, (Target)o);
+			}else if(o.getType() == GameObject.ObjectType.OBSTACLE){
+				handleCollision(player, (Obstacle)o);
 			}
 		}
 
@@ -135,6 +137,7 @@ public class CollisionController {
 		wood.setDestroyed(true);
 	}
 
+	/** destroy the target and declare the player win when the player clash the target */
 	private void handleCollision(Ship player, Target t){
 		if (player.isDestroyed() || t.isDestroyed()) {
 			return;
@@ -150,6 +153,24 @@ public class CollisionController {
 
 		// Destroy Target
 		t.setDestroyed(true);
+
+	}
+
+	private void handleCollision(Ship player, Obstacle o){
+		if (player.isDestroyed() || o.isDestroyed()) {
+			return;
+		}
+
+		temp1.set(player.getPosition()).sub(o.getPosition());
+		float dist = temp1.len();
+
+		// Too far away
+		if (dist > player.getRadius() /*+ t.getRadius()*/ ) {
+			return;
+		}
+
+		// push the player away from rock
+		player.getPosition().add(player.last_movement.scl(-4));
 
 	}
 

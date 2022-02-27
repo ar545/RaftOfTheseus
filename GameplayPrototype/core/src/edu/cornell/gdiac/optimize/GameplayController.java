@@ -44,6 +44,8 @@ public class GameplayController {
 	private Texture doubleTexture;
 	/** Texture for all target, as they look the same */
 	private Texture targetTexture;
+	/** Texture for all rock, as they look the same */
+	private Texture rockTexture;
 
 	/** Reference to player */
 	private Ship player;
@@ -91,6 +93,7 @@ public class GameplayController {
 		woodTexture = directory.getEntry("wood", Texture.class);
 		doubleTexture = directory.getEntry("double", Texture.class);
 		targetTexture = directory.getEntry("target", Texture.class);
+		rockTexture = directory.getEntry("rock", Texture.class);
 	}
 
 	/**
@@ -148,10 +151,21 @@ public class GameplayController {
 		// Create the target
 		target = new Target();
 		target.setTexture(targetTexture);
-		target.getPosition().set(width - target.getRadius(), height - target.getRadius());
+		// TODO: location of target should be in level json file
+		// TODO: Replace these after Technical prototype
+		int i = RandomController.rollInt(0, 2);
+		System.out.println(i);
+		if(i == 0){
+			target.getPosition().set(target.getRadius(), height - target.getRadius());
+		}else if(i == 1){
+			target.getPosition().set(width - target.getRadius(), target.getRadius());
+		}else{
+			target.getPosition().set(width - target.getRadius(), height - target.getRadius());
+		}
 
 		// add driftwood
-		for (int i = 0; i < 30; i ++) {
+		// TODO: Replace these after Technical prototype. location of wood should be in level json file
+		for (int ii = 0; ii < 30; ii ++) {
 			Wood wood;
 			if(RandomController.rollInt(0, 1) == 0){
 				wood = new Wood(true);
@@ -164,6 +178,14 @@ public class GameplayController {
 			wood.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
 			objects.add(wood);
 		}
+
+		// Create the rock
+		Obstacle rock = new Obstacle();
+		rock.setTexture(rockTexture);
+		rock.getPosition().set(width/2, height/2);
+		objects.add(rock);
+
+
 		// Player must be in object list.
 		objects.add(player);
 
@@ -285,10 +307,10 @@ public class GameplayController {
 		return target == null;
 	}
 
+	/** @return the player's last known position */
 	public Vector2 getPlayerPosition() {
 		if(player != null){
 			return getPlayer().getPosition();
-
 		}else{
 			return player_dead_position;
 		}

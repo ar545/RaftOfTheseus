@@ -81,7 +81,7 @@ public class GameMode implements Screen {
 	/** Offset for the shell counter message on the screen */
 	private static final float COUNTER_OFFSET   = 5.0f;
 	/** Offset for the game over message on the screen */
-	private static final float GAME_OVER_OFFSET = 40.0f;
+	private static final float GAME_OVER_OFFSET = 80.0f;
 	/** Height of the health progress bar on screen */
 	private static final float GAME_BAR_HEIGHT_RATIO = 0.89f;
 	/** Width of the health progress bar */
@@ -262,15 +262,13 @@ public class GameMode implements Screen {
 		// calculate offset = (ship pos) - (canvas size / 2)
 		Vector2 offset2 = new Vector2(canvas_width/2, canvas_height/2);
 		offset2.sub(gameplayController.getPlayerPosition());
-		Affine2 affine = new Affine2();
-		affine.setToTranslation(offset2);
 
 		canvas.begin();
-		canvas.drawBackgroundAffine(background, WORLD_WIDTH, WORLD_HEIGHT, affine);
-//		canvas.drawBackground(background_old,offset,-100);
+		//draw background
+		canvas.drawBackgroundAffine(background, offset2);
+
 		// Draw the game objects
 		for (GameObject o : gameplayController.getObjects()) {
-//			o.draw(canvas);
 			o.drawAffine(canvas, offset2);
 		}
 
@@ -278,25 +276,24 @@ public class GameMode implements Screen {
 		drawProgress(canvas, gameplayController.getProgress(), ((int)totalTime / TIME_CONSTANT) % 2 == 0 );
 
 		// Draw text
-		if (gameState == GameState.OVER) {
-			canvas.drawTextCentered("Game Over!",displayFont, GAME_OVER_OFFSET);
+		String top_message = "Current player health: 0";
+		if(gameState == GameState.PLAY){
+			// Output a simple debugging message stating the health on the screen
+			top_message = "Current player health: " + (int) (gameplayController.player_health) + ".0";
+		}else{
+			String end_message = "Game Over!";
+			String blink_message = "Press R to Restart";
+			if(gameState == GameState.WIN){
+				top_message = "You found my Walker!";
+				end_message = "You Win!";
+			}
+			canvas.drawTextCentered(end_message,displayFont, 1.5f * GAME_OVER_OFFSET);
 			// make restart line blinking
 			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
-				canvas.drawTextCentered("Press R to Restart", alternateFont, 0);
+				canvas.drawTextCentered(blink_message, alternateFont, GAME_OVER_OFFSET);
 			}
-			canvas.drawText("Current player health: 0", displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
-		}else if(gameState == GameState.WIN){
-			canvas.drawTextCentered("You Win!",displayFont, GAME_OVER_OFFSET);
-			// make restart line blinking
-			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
-				canvas.drawTextCentered("Press R to Restart", alternateFont, 0);
-			}
-			canvas.drawText("Walker is gone!", displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
-		}else {
-			// Output a simple debugging message stating the number of shells on the screen
-			String message = "Current player health: " + (int) (gameplayController.player_health) + ".0";
-			canvas.drawText(message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 		}
+		canvas.drawText(top_message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 
 		// Flush information to the graphic buffer.
 		canvas.end();

@@ -42,7 +42,9 @@ public abstract class GameObject {
 		/** A piece of driftwood */
 		WOOD,
 		/** The target, or if you like, The Walker White */
-		TARGET
+		TARGET,
+		/** The obstacle that player cannot overcome */
+		OBSTACLE
 	}
 	
 	// Attributes for all game objects
