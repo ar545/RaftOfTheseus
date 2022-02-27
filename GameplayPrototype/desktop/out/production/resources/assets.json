@@ -1,0 +1,34 @@
+{
+	"textures": {
+      "background": "images/background.png",
+      "new_background": "images/new_background.png",
+      "raft":     "images/raft.png",
+      "wood":     "images/wood.png",
+      "rock":     "images/rock.png",
+      "double":     "images/double.png",
+      "target":     "images/target.png",
+      "progress": {
+        "file":      "images/progressbar.png",
+        "minFilter": "linear",
+        "magFilter": "linear",
+        "atlas":     {
+          "background" : [16,   0, 216, 30],
+          "backleft"   : [0,    0,  15, 30],
+          "backright"  : [384,  0, 400, 30],
+          "foreground" : [16,  40, 216, 70],
+          "foreleft"   : [0,   40,  16, 70],
+          "foreright"  : [384, 40, 400, 70]
+        }
+      }
+    },
+    "fonts": {
+        "grande": {
+            "file": "fonts/LucidaGrande.ttf",
+            "size": 32
+        },
+        "times": {
+            "file": "fonts/TimesRoman.ttf",
+            "size": 32
+        }
+    }
+}
