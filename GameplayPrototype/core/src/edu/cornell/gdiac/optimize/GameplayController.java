@@ -46,6 +46,8 @@ public class GameplayController {
 	private Texture targetTexture;
 	/** Texture for all rock, as they look the same */
 	private Texture rockTexture;
+	/** Texture for current placeholder: texture alas in future */
+	private Texture currentTexture;
 
 	/** Reference to player */
 	private Ship player;
@@ -94,6 +96,7 @@ public class GameplayController {
 		doubleTexture = directory.getEntry("double", Texture.class);
 		targetTexture = directory.getEntry("target", Texture.class);
 		rockTexture = directory.getEntry("rock", Texture.class);
+		currentTexture = directory.getEntry("current", Texture.class);
 	}
 
 	/**
@@ -184,6 +187,12 @@ public class GameplayController {
 		rock.setTexture(rockTexture);
 		rock.getPosition().set(width/2, height/2);
 		objects.add(rock);
+
+		// Create one current
+		Current cur = new Current();
+		cur.setTexture(currentTexture);
+		cur.getPosition().set(width/3, height/3);
+		objects.add(cur);
 
 
 		// Player must be in object list.

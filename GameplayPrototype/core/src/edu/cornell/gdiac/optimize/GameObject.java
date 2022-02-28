@@ -44,7 +44,9 @@ public abstract class GameObject {
 		/** The target, or if you like, The Walker White */
 		TARGET,
 		/** The obstacle that player cannot overcome */
-		OBSTACLE
+		OBSTACLE,
+		/** The current that player will suffer or benefit from */
+		CURRENT
 	}
 	
 	// Attributes for all game objects

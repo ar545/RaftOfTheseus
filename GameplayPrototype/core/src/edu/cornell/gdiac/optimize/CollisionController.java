@@ -111,6 +111,8 @@ public class CollisionController {
 				handleCollision(player, (Target)o);
 			}else if(o.getType() == GameObject.ObjectType.OBSTACLE){
 				handleCollision(player, (Obstacle)o);
+			}else if(o.getType() == GameObject.ObjectType.CURRENT){
+				handleCollision(player, (Current)o);
 			}
 		}
 
@@ -156,6 +158,7 @@ public class CollisionController {
 
 	}
 
+	/** push the player away from the rock to the direction of coming */
 	private void handleCollision(Ship player, Obstacle o){
 		if (player.isDestroyed() || o.isDestroyed()) {
 			return;
@@ -165,7 +168,7 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius() /*+ t.getRadius()*/ ) {
+		if (dist > player.getRadius() /*+ o.getRadius()*/ ) {
 			return;
 		}
 
@@ -173,6 +176,25 @@ public class CollisionController {
 		player.getPosition().add(player.last_movement.scl(-4));
 
 	}
+
+	/** push the player toward the direction of the current */
+	private void handleCollision(Ship player, Current c){
+		if (player.isDestroyed() || c.isDestroyed()) {
+			return;
+		}
+
+		temp1.set(player.getPosition()).sub(c.getPosition());
+		float dist = temp1.len();
+
+		// Too far away
+		if (dist > player.getRadius() /*+ c.getRadius()*/ ) {
+			return;
+		}
+
+		player.getPosition().add(c.getDirectionVector());
+
+	}
+
 
 	/**
 	 * Check a bullet for being out-of-bounds.
