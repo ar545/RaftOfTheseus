@@ -38,6 +38,8 @@ public class GameplayController {
 	// Graphics assets for the entities
 	/** Texture for all ships, as they look the same */
 	private Texture raftTexture;
+	/** Texture for the ocean tiles */
+	private Texture oceanTexture;
 	/** Texture for wood pieces that represent single pile of log */
 	private Texture woodTexture;
 	/** Texture for wood pieces that represents double pile of logs */
@@ -54,6 +56,9 @@ public class GameplayController {
 
 	/** Reference to target */
 	private Target target;
+
+	/** Reference to tile grid */
+	private Grid grid;
 
 	// List of objects with the garbage collection set.
 	/** The currently active object */
@@ -79,6 +84,8 @@ public class GameplayController {
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
 		player_health = INITIAL_PLAYER_HEALTH;
+		// TODO replace with data centric constructor
+		grid = new Grid(12, 10);
 	}
 
 	/**
@@ -92,6 +99,7 @@ public class GameplayController {
 	 */
 	public void populate(AssetDirectory directory) {
 		raftTexture = directory.getEntry("raft", Texture.class);
+		oceanTexture = directory.getEntry("water_tile", Texture.class);
 		woodTexture = directory.getEntry("wood", Texture.class);
 		doubleTexture = directory.getEntry("double", Texture.class);
 		targetTexture = directory.getEntry("target", Texture.class);
@@ -207,6 +215,9 @@ public class GameplayController {
 
 		// target must be in the object list
 		objects.add(target);
+
+		// set grid Textures
+		grid.setOceanTexture(oceanTexture);
 	}
 
 	/**
