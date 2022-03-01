@@ -32,25 +32,12 @@ import edu.cornell.gdiac.util.*;
  * Base class for all Model objects in the game.
  */
 public abstract class GameObject extends Environment {
-	
 
-	
-	// Attributes for all game objects
-//	/** Object position (centered on the texture middle) */
-//	protected Vector2 position;
+	// Attributes for all game objects in addition to environment
 	/** Object velocity vector */
 	protected Vector2 velocity;
-//	/** Reference to texture origin */
-//	protected Vector2 origin;
-//	/** Radius of the object (used for collisions) */
-//	protected float radius;
 	/** Whether or not the object should be removed at next timestep. */
 	protected boolean destroyed;
-//	/** CURRENT image for this object. May change over time. */
-//	protected FilmStrip animator;
-	
-
-
 
 	/// Velocity
 	/**
@@ -129,9 +116,6 @@ public abstract class GameObject extends Environment {
 	}
 
 
-
-
-
 	/**
 	 * Constructs a trivial game object
 	 *
@@ -157,7 +141,5 @@ public abstract class GameObject extends Environment {
 	public void update(float delta) {
 		position.add(velocity);
 	}
-
-
 	
 }
