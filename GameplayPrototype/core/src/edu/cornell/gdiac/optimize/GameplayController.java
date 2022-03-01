@@ -38,6 +38,8 @@ public class GameplayController {
 	// Graphics assets for the entities
 	/** Texture for all ships, as they look the same */
 	private Texture raftTexture;
+	/** Texture for the ocean tiles */
+	private Texture oceanTexture;
 	/** Texture for wood pieces that represent single pile of log */
 	private Texture woodTexture;
 	/** Texture for wood pieces that represents double pile of logs */
@@ -56,6 +58,9 @@ public class GameplayController {
 
 	/** Reference to target */
 	private Target target;
+
+	/** Reference to tile grid */
+	private Grid grid;
 
 	// List of objects with the garbage collection set.
 	/** The currently active object */
@@ -84,6 +89,8 @@ public class GameplayController {
 		backing = new Array<GameObject>();
 		envs = new Array<Environment>();
 		player_health = INITIAL_PLAYER_HEALTH;
+		// TODO replace with data centric constructor
+		grid = new Grid(24, 20);
 	}
 
 	/**
@@ -97,6 +104,7 @@ public class GameplayController {
 	 */
 	public void populate(AssetDirectory directory) {
 		raftTexture = directory.getEntry("raft", Texture.class);
+		oceanTexture = directory.getEntry("water_tile", Texture.class);
 		woodTexture = directory.getEntry("wood", Texture.class);
 		doubleTexture = directory.getEntry("double", Texture.class);
 		targetTexture = directory.getEntry("target", Texture.class);
@@ -130,8 +138,6 @@ public class GameplayController {
 	/**
 	 * Returns a reference to the currently active player.
 	 *
-	 * This property needs to be modified if you want multiple players.
-	 *
 	 * @return a reference to the currently active player.
 	 */
 	public Ship getPlayer() {
@@ -147,6 +153,13 @@ public class GameplayController {
 	 */
 	public boolean isAlive() {
 		return player != null;
+	}
+
+	/**
+	 * @return a reference to the current grid;
+	 */
+	public Grid getGrid() {
+		return grid;
 	}
 	
 	/**
@@ -227,6 +240,11 @@ public class GameplayController {
 
 		// Player must be in object list.
 		objects.add(player);
+
+		// set grid Textures
+		// TODO Find better way to set textures?
+		grid.setOceanTexture(oceanTexture);
+
 	}
 
 	/**
