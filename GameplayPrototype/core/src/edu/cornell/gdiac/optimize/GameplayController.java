@@ -48,6 +48,8 @@ public class GameplayController {
 	private Texture rockTexture;
 	/** Texture for current placeholder: texture alas in future */
 	private Texture currentTexture;
+	/** Texture for current placeholder: texture alas in future */
+	private Texture enemyTexture;
 
 	/** Reference to player */
 	private Ship player;
@@ -60,14 +62,16 @@ public class GameplayController {
 	private Array<GameObject> objects;
 	/** The backing set for garbage collection */
 	private Array<GameObject> backing;
+	/** The environments */
+	private Array<Environment> envs;
 
 	/** Health: increase player health when wood is destroyed */
 	protected float player_health;
 	/** The position where the player dead */
 	private Vector2 player_dead_position;
-	/** Maximum health */
+	/** Maximum player health */
 	protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
-	/** initial health */
+	/** initial player health */
 	protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
 
 	/**
@@ -78,6 +82,7 @@ public class GameplayController {
 		target = null;
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
+		envs = new Array<Environment>();
 		player_health = INITIAL_PLAYER_HEALTH;
 	}
 
@@ -97,6 +102,7 @@ public class GameplayController {
 		targetTexture = directory.getEntry("target", Texture.class);
 		rockTexture = directory.getEntry("rock", Texture.class);
 		currentTexture = directory.getEntry("current", Texture.class);
+		enemyTexture = directory.getEntry("enemy", Texture.class);
 	}
 
 	/**
@@ -110,6 +116,15 @@ public class GameplayController {
 	 */
 	public Array<GameObject> getObjects() {
 		return objects;
+	}
+
+	/**
+	 * Returns the list of the environments objects (currents, rocks, and target)
+	 *
+	 * @return the list of the game environments objects
+	 */
+	public Array<Environment> getEnvs() {
+		return envs;
 	}
 
 	/**
@@ -143,30 +158,29 @@ public class GameplayController {
 	 * @param height Canvas height
 	 */
 	public void start(float width, float height) {
-		// Create the player's ship
+		// Create the player's ship to objects
 		player = new Ship();
 		player.setTexture(raftTexture);
-		player.getPosition().set(getPlayer().getRadius(), getPlayer().getRadius());
 
-		// player must have full health
-		player_health = GameplayController.INITIAL_PLAYER_HEALTH;
+		// TODO: these values should be defined in level json file. Replace these after Technical prototype
+		player.getPosition().set(getPlayer().getRadius(), getPlayer().getRadius()); // Initial player position: down-left
+		player_health = GameplayController.INITIAL_PLAYER_HEALTH; // Initial player health: full health
 
-		// Create the target
+		// Create the target to objects
 		target = new Target();
 		target.setTexture(targetTexture);
-		// TODO: location of target should be in level json file
-		// TODO: Replace these after Technical prototype
-		int random_target_selection = RandomController.rollInt(0, 2);
-//		System.out.println(random_target_selection);
+
+		// TODO: location of target should be in level json file. Replace these after Technical prototype
+		int random_target_selection = RandomController.rollInt(0, 2); // Select one of the three corners
 		if(random_target_selection == 0){
-			target.getPosition().set(target.getRadius(), height - target.getRadius());
+			target.getPosition().set(target.getRadius(), height - target.getRadius()); // Top-right corner
 		}else if(random_target_selection == 1){
-			target.getPosition().set(width - target.getRadius(), target.getRadius());
+			target.getPosition().set(width - target.getRadius(), target.getRadius()); // Down-right corner
 		}else{
-			target.getPosition().set(width - target.getRadius(), height - target.getRadius());
+			target.getPosition().set(width - target.getRadius(), height - target.getRadius()); // Top-left corner
 		}
 
-		// add driftwood
+		// add driftwood to objects
 		// TODO: Replace these after Technical prototype. location of wood should be in level json file
 		for (int ii = 0; ii < 30; ii ++) {
 			Wood wood;
@@ -177,36 +191,42 @@ public class GameplayController {
 				wood = new Wood(false);
 				wood.setTexture(woodTexture);
 			}
-			// TODO: use random controller
 			wood.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
 			objects.add(wood);
 		}
 
-		// Create the rock
+		// Create the rock to environment
 		// TODO: Replace these after Technical prototype. location of rock should be in level json file
 		Obstacle rock = new Obstacle();
 		rock.setTexture(rockTexture);
-		rock.getPosition().set(width/2, height/2);
-		objects.add(rock);
+		rock.getPosition().set(width/2, height/2); // center of map
+		envs.add(rock);
 
-		// Create some currents
+		// Create some currents to environment
 		// TODO: Replace these after Technical prototype. location of current should be in level json file
 		Current[] curs = new Current[4];
 		for(int ii = 0; ii < 4; ii ++){
 			curs[ii] = new Current();
 			curs[ii].setTexture(currentTexture);
-			objects.add(curs[ii]);
+			envs.add(curs[ii]);
 		}
 		curs[0].getPosition().set(width/4, height/4);
 		curs[1].getPosition().set(3 * width/4, height/4);
 		curs[2].getPosition().set(width/4, 3 * height/4);
 		curs[3].getPosition().set(3 * width/4, 3 * height/4);
 
-		// Player must be in object list.
-		objects.add(player);
+		// Add some enemy to the environment
+		// TODO: Replace these after Technical prototype. location of current should be in level json file
+		Enemy e = new Enemy();
+		e.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
+		e.setTexture(enemyTexture);
+		objects.add(e);
 
 		// target must be in the object list
 		objects.add(target);
+
+		// Player must be in object list.
+		objects.add(player);
 	}
 
 	/**
@@ -216,6 +236,8 @@ public class GameplayController {
 		player = null;
 		target = null;
 		objects.clear();
+		envs.clear();
+		backing.clear();
 	}
 
 	/**
@@ -267,6 +289,7 @@ public class GameplayController {
 		case TARGET:
 			target = null;
 			break;
+		case ENEMY:
 		default:
 			break;
 		}
@@ -281,11 +304,12 @@ public class GameplayController {
 	 * @param delta  Number of seconds since last animation frame
 	 */
 	public void resolveActions(InputController input, float delta) {
-		// Process the player
+		// If player is alive and not reach the target Process the player
 		if (player != null && target != null) {
 			resolvePlayer(input,delta);
 		}
 
+		// If player is dead, kill the player
 		if(player != null && player_health < 0){
 			player.setDestroyed(true);
 		}

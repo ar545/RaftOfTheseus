@@ -8,6 +8,7 @@
       "double":     "images/double.png",
       "target":     "images/target.png",
       "current":     "images/current.png",
+      "enemy":     "images/enemy.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",

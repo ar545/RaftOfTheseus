@@ -245,7 +245,12 @@ public class GameMode implements Screen {
 		// Check for collisions
 		totalTime += (delta*1000); // Seconds to milliseconds
 
-		physicsController.processCollisions(gameplayController.getObjects(),(int)totalTime);
+		// Process player - objects collision
+		// TODO: process inter-objects collision instead of merely player objects interaction
+		physicsController.processCollisions(gameplayController.getObjects(), gameplayController.getPlayer(),(int)totalTime);
+
+		// Process player - environment collision
+		physicsController.processCollisions(gameplayController.getEnvs(), gameplayController.getPlayer());
 
 		// Clean up destroyed objects
 		gameplayController.garbageCollect();
@@ -266,6 +271,11 @@ public class GameMode implements Screen {
 		canvas.begin();
 		//draw background
 		canvas.drawBackgroundAffine(background, offset2);
+
+		// Draw the game environments
+		for (Environment e : gameplayController.getEnvs()) {
+			e.drawAffine(canvas, offset2);
+		}
 
 		// Draw the game objects
 		for (GameObject o : gameplayController.getObjects()) {

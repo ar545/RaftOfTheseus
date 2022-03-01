@@ -36,7 +36,7 @@ public class CollisionController {
 	
 	// Cache objects for collision calculations
 	private Vector2 temp1;
-	private Vector2 temp2;
+//	private Vector2 temp2;
 	
 	/// ACCESSORS
 	
@@ -45,9 +45,7 @@ public class CollisionController {
 	 *
 	 * @return width of the game window
 	 */
-	public float getWidth() {
-		return width;
-	}
+	public float getWidth() { return width; }
 	
 	/**
 	 * Returns height of the game window (necessary to detect out of bounds)
@@ -58,7 +56,6 @@ public class CollisionController {
 		return height;
 	}
 
-	//#region Initialization (MODIFY THIS CODE)
 	
 	/**
 	 * Creates a CollisionController for the given screen dimensions.
@@ -72,28 +69,22 @@ public class CollisionController {
 		
 		// Initialize cache objects
 		temp1 = new Vector2();
-		temp2 = new Vector2();
+//		temp2 = new Vector2();
 	}
 
+	/* IMPORTANT: All game objects are separated into moving objects and static environment,
+	to reduce the burden of checking for collision between static objects.  */
 	// TODO: It is efficient right now to O(n) through all object to find the player and compute collision between
 	// TODO: the player and others. However, since we are implementing enemies, we should follow the Lab3 design where
 	// TODO: all possible collision between object are checked but only those meaningful are handled. -- Leo
 	/**
-	 * This is the main (incredibly unoptimized) collision detetection method.
+	 * Check for collision between player and dynamic objects (should update to check inter-dynamic obj collisions)
 	 *
-	 * @param objects List of live objects to check 
+	 * @param objects List of live objects to check
+	 * @param player pointer to player (should be removed in the future)
 	 * @param total_time  time used to calculate big wave in Technical prototype
 	 */
-	public void processCollisions(Array<GameObject> objects, int total_time) {
-		// Find which object is the player (O(n))
-		Ship player = null;
-		for (GameObject o : objects) {
-			if (o.getType() == GameObject.ObjectType.SHIP) {
-				player = (Ship) o;
-				break;
-			}
-		}
-
+	public void processCollisions(Array<GameObject> objects, Ship player, int total_time) {
 		// assert player != null, avoid null pointer exception
 		if(player == null){
 			return;
@@ -102,21 +93,37 @@ public class CollisionController {
 		// Process player bounds
 		handleBounds(player);
 
-		// For each wood object, check for collisions with the player
-		// For target, check for collision with palyer
+		// For each dynamic object, check for collisions with the player
 		for (GameObject o : objects) {
 			if (o.getType() == GameObject.ObjectType.WOOD) {
 				handleCollision(player, (Wood)o);
 			}else if(o.getType() == GameObject.ObjectType.TARGET){
 				handleCollision(player, (Target)o);
-			}else if(o.getType() == GameObject.ObjectType.OBSTACLE){
-				handleCollision(player, (Obstacle)o);
-			}else if(o.getType() == GameObject.ObjectType.CURRENT){
-				handleCollision(player, (Current)o);
+			}else if(o.getType() == Environment.ObjectType.ENEMY){
+				handleCollision(player, (Enemy)o);
 			}
 		}
+	}
 
+	/**
+	 * Check for collision between player and static objects
+	 * @param envs List of env element to check
+	 * @param player pointer to player (should be removed in the future)
+	 **/
+	public void processCollisions(Array<Environment> envs, Ship player){
+		// assert player != null, avoid null pointer exception
+		if(player == null){
+			return;
+		}
 
+		// For each static env object, check for collisions with the player
+		for(Environment e : envs){
+			if(e.getType() == Environment.ObjectType.OBSTACLE){
+				handleCollision(player, (Obstacle)e);
+			}else if(e.getType() == Environment.ObjectType.CURRENT){
+				handleCollision(player, (Current)e);
+			}
+		}
 	}
 
 	/** handel the collision between ship and wood, wood get destroyed and ship get extended life
@@ -177,7 +184,7 @@ public class CollisionController {
 
 	}
 
-	/** push the player toward the direction of the current */
+	/** Handle the collision between player and current. Push the player toward the direction of the current */
 	private void handleCollision(Ship player, Current c){
 		if (player.isDestroyed() || c.isDestroyed()) {
 			return;
@@ -192,9 +199,12 @@ public class CollisionController {
 		}
 
 		player.getPosition().add(c.getDirectionVector());
-
 	}
 
+	/** Handle the collision between player and enemy */
+	private void handleCollision(Ship player, Enemy e){
+
+	}
 
 	/**
 	 * Check a bullet for being out-of-bounds.
