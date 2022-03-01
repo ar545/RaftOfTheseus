@@ -1,10 +1,10 @@
 package edu.cornell.gdiac.optimize.entity;
 
 import com.badlogic.gdx.math.Vector2;
-import edu.cornell.gdiac.optimize.GameObject;
+import edu.cornell.gdiac.optimize.Environment;
 import edu.cornell.gdiac.optimize.RandomController;
 
-public class Current extends GameObject {
+public class Current extends Environment {
 
 
     /**
@@ -32,8 +32,8 @@ public class Current extends GameObject {
     /** get the type of wood objects
      * @return object type wood */
     @Override
-    public GameObject.ObjectType getType() {
-        return ObjectType.CURRENT;
+    public Environment.ObjectType getType() {
+        return Environment.ObjectType.CURRENT;
     }
 
     /** constructor with known direction */

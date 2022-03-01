@@ -165,9 +165,10 @@ public class CollisionController {
 
 	}
 
-	/** push the player away from the rock to the direction of coming */
+	/** push the player away from the rock to the direction of coming
+	 *  pre-assumption & post-condition: rock or any environment will never be destroyed or moved */
 	private void handleCollision(Ship player, Obstacle o){
-		if (player.isDestroyed() || o.isDestroyed()) {
+		if (player.isDestroyed()) {
 			return;
 		}
 
@@ -184,9 +185,10 @@ public class CollisionController {
 
 	}
 
-	/** Handle the collision between player and current. Push the player toward the direction of the current */
+	/** Handle the collision between player and current. Push the player toward the direction of the current
+	 * pre-assumption & post-condition: current or any environment will never be destroyed or moved */
 	private void handleCollision(Ship player, Current c){
-		if (player.isDestroyed() || c.isDestroyed()) {
+		if (player.isDestroyed()) {
 			return;
 		}
 
@@ -203,7 +205,20 @@ public class CollisionController {
 
 	/** Handle the collision between player and enemy */
 	private void handleCollision(Ship player, Enemy e){
+		if (player.isDestroyed() || e.isDestroyed()) {
+			return;
+		}
 
+		temp1.set(player.getPosition()).sub(e.getPosition());
+		float dist = temp1.len();
+
+		// Too far away
+		if (dist > player.getRadius()  /* + e.getRadius() */ ) {
+			return;
+		}
+
+		// destroy the player
+		player.setDestroyed(true);
 	}
 
 	/**

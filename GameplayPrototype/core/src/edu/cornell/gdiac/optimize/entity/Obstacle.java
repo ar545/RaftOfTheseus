@@ -1,12 +1,12 @@
 package edu.cornell.gdiac.optimize.entity;
 
-import edu.cornell.gdiac.optimize.GameObject;
+import edu.cornell.gdiac.optimize.Environment;
 
-public class Obstacle extends GameObject {
+public class Obstacle extends Environment {
     /** get the type of rock objects
      * @return object type obstacle */
     @Override
-    public GameObject.ObjectType getType() {
-        return ObjectType.OBSTACLE;
+    public Environment.ObjectType getType() {
+        return Environment.ObjectType.OBSTACLE;
     }
 }

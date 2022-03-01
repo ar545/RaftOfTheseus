@@ -182,7 +182,7 @@ public class GameplayController {
 
 		// add driftwood to objects
 		// TODO: Replace these after Technical prototype. location of wood should be in level json file
-		for (int ii = 0; ii < 30; ii ++) {
+		for (int ii = 0; ii < 32; ii ++) {
 			Wood wood;
 			if(RandomController.rollInt(0, 1) == 0){
 				wood = new Wood(true);
@@ -285,6 +285,9 @@ public class GameplayController {
 		case WOOD:
 			Wood w = (Wood) o;
 			player_health += w.getWood();
+			if(player_health > MAXIMUM_PLAYER_HEALTH){
+				player_health = MAXIMUM_PLAYER_HEALTH;
+			}
 			break;
 		case TARGET:
 			target = null;
