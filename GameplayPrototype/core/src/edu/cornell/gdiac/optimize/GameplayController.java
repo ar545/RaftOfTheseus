@@ -85,7 +85,7 @@ public class GameplayController {
 		backing = new Array<GameObject>();
 		player_health = INITIAL_PLAYER_HEALTH;
 		// TODO replace with data centric constructor
-		grid = new Grid(12, 10);
+		grid = new Grid(24, 20);
 	}
 
 	/**
@@ -123,8 +123,6 @@ public class GameplayController {
 	/**
 	 * Returns a reference to the currently active player.
 	 *
-	 * This property needs to be modified if you want multiple players.
-	 *
 	 * @return a reference to the currently active player.
 	 */
 	public Ship getPlayer() {
@@ -140,6 +138,13 @@ public class GameplayController {
 	 */
 	public boolean isAlive() {
 		return player != null;
+	}
+
+	/**
+	 * @return a reference to the current grid;
+	 */
+	public Grid getGrid() {
+		return grid;
 	}
 	
 	/**
@@ -217,6 +222,7 @@ public class GameplayController {
 		objects.add(target);
 
 		// set grid Textures
+		// TODO Find better way to set textures?
 		grid.setOceanTexture(oceanTexture);
 	}
 

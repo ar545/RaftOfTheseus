@@ -266,6 +266,8 @@ public class GameMode implements Screen {
 		canvas.begin();
 		//draw background
 		canvas.drawBackgroundAffine(background, offset2);
+		// draw grid
+		gameplayController.getGrid().drawAffine(canvas, offset2);
 
 		// Draw the game objects
 		for (GameObject o : gameplayController.getObjects()) {

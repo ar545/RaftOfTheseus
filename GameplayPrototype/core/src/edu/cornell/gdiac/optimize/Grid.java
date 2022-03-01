@@ -48,7 +48,7 @@ public class Grid {
     // Texture to store background tiles to draw.
     private Texture ocean_tile;
     // Size in pixels of a tile // TODO load from json or another class
-    private final int tile_size = 100;
+    private final int tile_size = 50;
 
 
     /**
