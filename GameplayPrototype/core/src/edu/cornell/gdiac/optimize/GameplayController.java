@@ -156,11 +156,11 @@ public class GameplayController {
 		target.setTexture(targetTexture);
 		// TODO: location of target should be in level json file
 		// TODO: Replace these after Technical prototype
-		int i = RandomController.rollInt(0, 2);
-		System.out.println(i);
-		if(i == 0){
+		int random_target_selection = RandomController.rollInt(0, 2);
+//		System.out.println(random_target_selection);
+		if(random_target_selection == 0){
 			target.getPosition().set(target.getRadius(), height - target.getRadius());
-		}else if(i == 1){
+		}else if(random_target_selection == 1){
 			target.getPosition().set(width - target.getRadius(), target.getRadius());
 		}else{
 			target.getPosition().set(width - target.getRadius(), height - target.getRadius());
@@ -183,17 +183,24 @@ public class GameplayController {
 		}
 
 		// Create the rock
+		// TODO: Replace these after Technical prototype. location of rock should be in level json file
 		Obstacle rock = new Obstacle();
 		rock.setTexture(rockTexture);
 		rock.getPosition().set(width/2, height/2);
 		objects.add(rock);
 
-		// Create one current
-		Current cur = new Current();
-		cur.setTexture(currentTexture);
-		cur.getPosition().set(width/3, height/3);
-		objects.add(cur);
-
+		// Create some currents
+		// TODO: Replace these after Technical prototype. location of current should be in level json file
+		Current[] curs = new Current[4];
+		for(int ii = 0; ii < 4; ii ++){
+			curs[ii] = new Current();
+			curs[ii].setTexture(currentTexture);
+			objects.add(curs[ii]);
+		}
+		curs[0].getPosition().set(width/4, height/4);
+		curs[1].getPosition().set(3 * width/4, height/4);
+		curs[2].getPosition().set(width/4, 3 * height/4);
+		curs[3].getPosition().set(3 * width/4, 3 * height/4);
 
 		// Player must be in object list.
 		objects.add(player);
@@ -256,7 +263,6 @@ public class GameplayController {
 		case WOOD:
 			Wood w = (Wood) o;
 			player_health += w.getWood();
-//			System.out.println("Wood of " + w.getWood() + " taken by player!");
 			break;
 		case TARGET:
 			target = null;
@@ -322,6 +328,17 @@ public class GameplayController {
 			return getPlayer().getPosition();
 		}else{
 			return player_dead_position;
+		}
+	}
+
+	/** @return the player's star level */
+	public int getStar(){
+		if(player_health > 70){
+			return 3;
+		}else if(player_health > 25){
+			return 2;
+		}else{
+			return 1;
 		}
 	}
 }

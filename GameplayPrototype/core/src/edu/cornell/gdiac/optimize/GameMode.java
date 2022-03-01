@@ -284,7 +284,17 @@ public class GameMode implements Screen {
 			String end_message = "Game Over!";
 			String blink_message = "Press R to Restart";
 			if(gameState == GameState.WIN){
-				top_message = "You found my Walker!";
+				switch(gameplayController.getStar()){
+					case 3:
+						top_message = "3 Stars! You are the best!";
+						break;
+					case 2:
+						top_message = "2 Stars! You found my Walker!";
+						break;
+					default:
+						top_message = "1 Star! You made it!";
+						break;
+				}
 				end_message = "You Win!";
 			}
 			canvas.drawTextCentered(end_message,displayFont, 1.5f * GAME_OVER_OFFSET);
