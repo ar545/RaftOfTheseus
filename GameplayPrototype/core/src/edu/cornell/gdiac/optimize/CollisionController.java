@@ -23,6 +23,8 @@ import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.math.*;
 import edu.cornell.gdiac.optimize.entity.*;
 
+import static edu.cornell.gdiac.optimize.Environment.ObjectType.*;
+
 /**
  * Controller implementing simple game physics.
  */
@@ -93,16 +95,33 @@ public class CollisionController {
 		// Process player bounds
 		handleBounds(player);
 
-		// For each dynamic object, check for collisions with the player
+		// For each dynamic object, check for collisions with the player (except the player)
 		for (GameObject o : objects) {
-			if (o.getType() == GameObject.ObjectType.WOOD) {
-				handleCollision(player, (Wood)o);
-			}else if(o.getType() == GameObject.ObjectType.TARGET){
-				handleCollision(player, (Target)o);
-			}else if(o.getType() == Environment.ObjectType.ENEMY){
-				handleCollision(player, (Enemy)o);
+			if (o != player) {
+				handleCollision(player, o);
 			}
 		}
+	}
+
+	// TODO: decide and implement how we will handle collisions between two game objs -> does wood colliding do anything?
+	/** handleCollision overload to find correct call
+	 * @param player - the ship/player
+	 * @param obj   - the collision object */
+	private void handleCollision(Ship player, GameObject obj) {
+		switch (obj.getType()){
+			case WOOD:
+				handleCollision(player, (Wood)obj);
+				break;
+			case TARGET:
+				handleCollision(player, (Target)obj);
+				break;
+			case ENEMY:
+				handleCollision(player, (Enemy)obj);
+				break;
+			default:
+				throw new IllegalStateException("Unrecognized GameObject Type: " + obj.getType());
+		}
+
 	}
 
 	/**
@@ -118,9 +137,9 @@ public class CollisionController {
 
 		// For each static env object, check for collisions with the player
 		for(Environment e : envs){
-			if(e.getType() == Environment.ObjectType.OBSTACLE){
+			if(e.getType() == OBSTACLE){
 				handleCollision(player, (Obstacle)e);
-			}else if(e.getType() == Environment.ObjectType.CURRENT){
+			}else if(e.getType() == CURRENT){
 				handleCollision(player, (Current)e);
 			}
 		}
