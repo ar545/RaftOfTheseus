@@ -126,8 +126,11 @@ public class CollisionController {
 		calcCellCollisions(player);
 	}
 
-	// TODO: someone add documentation for these please
-
+	/**
+	 * Clears grid from previous loop and repopulates grid with objects that have not been destroyed based upon
+	 * their movement from the previous loop
+	 * @param objects list of live objects to input into remade cells
+	 */
 	public void remakeCells(Array<GameObject> objects){
 		for (Array<GameObject> cell : cells){
 			cell.clear();
@@ -140,6 +143,11 @@ public class CollisionController {
 		}
 	}
 
+	/**
+	 * Checks NEIGHBORING cells for a collision. When a collision is detected,
+	 * calls a separate function to handle the corresponding collision.
+	 * @param player the player that is being checked for collisions
+	 */
 	public void calcCellCollisions(Ship player){
 		for (int i = 0; i < cells.size; i++){
 			Array<GameObject> cell = cells.get(i);
