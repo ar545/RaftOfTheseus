@@ -101,9 +101,6 @@ public class CollisionController {
 
 	/* IMPORTANT: All game objects are separated into moving objects and static environment,
 	to reduce the burden of checking for collision between static objects.  */
-	// TODO: It is efficient right now to O(n) through all object to find the player and compute collision between
-	// TODO: the player and others. However, since we are implementing enemies, we should follow the Lab3 design where
-	// TODO: all possible collision between object are checked but only those meaningful are handled. -- Leo
 	/**
 	 * Check for collision between player and dynamic objects (should update to check inter-dynamic obj collisions)
 	 *
