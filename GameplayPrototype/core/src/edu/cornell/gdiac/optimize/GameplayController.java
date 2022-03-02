@@ -49,7 +49,7 @@ public class GameplayController {
 	/** Texture for all rock, as they look the same */
 	private Texture rockTexture;
 	/** Texture for current placeholder: texture alas in future */
-	private Texture currentTexture;
+	private Texture currentTextures[];
 	/** Texture for current placeholder: texture alas in future */
 	private Texture enemyTexture;
 
@@ -109,7 +109,12 @@ public class GameplayController {
 		doubleTexture = directory.getEntry("double", Texture.class);
 		targetTexture = directory.getEntry("target", Texture.class);
 		rockTexture = directory.getEntry("rock", Texture.class);
-		currentTexture = directory.getEntry("current", Texture.class);
+		currentTextures = new Texture[] {
+				directory.getEntry("east_current", Texture.class),
+				directory.getEntry("west_current", Texture.class),
+				directory.getEntry("north_current", Texture.class),
+				directory.getEntry("south_current", Texture.class)
+		};
 		enemyTexture = directory.getEntry("enemy", Texture.class);
 	}
 
@@ -220,7 +225,20 @@ public class GameplayController {
 		Current[] curs = new Current[4];
 		for(int ii = 0; ii < 4; ii ++){
 			curs[ii] = new Current();
-			curs[ii].setTexture(currentTexture);
+			switch (curs[ii].getDirection()) {
+				case EAST:
+					curs[ii].setTexture(currentTextures[0]);
+					break;
+				case WEST:
+					curs[ii].setTexture(currentTextures[1]);
+					break;
+				case NORTH:
+					curs[ii].setTexture(currentTextures[2]);
+					break;
+				case SOUTH:
+					curs[ii].setTexture(currentTextures[3]);
+					break;
+			}
 			envs.add(curs[ii]);
 		}
 		curs[0].getPosition().set(width/4, height/4);

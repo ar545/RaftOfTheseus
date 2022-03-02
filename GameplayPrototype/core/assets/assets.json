@@ -7,7 +7,10 @@
       "rock":     "images/rock.png",
       "double":     "images/double.png",
       "target":     "images/target.png",
-      "current":     "images/current.png",
+      "east_current": "images/east_current.png",
+      "west_current": "images/west_current.png",
+      "south_current": "images/south_current.png",
+      "north_current": "images/north_current.png",
       "enemy":     "images/enemy.png",
       "water_tile":     "images/water_tile.png",
       "progress": {
