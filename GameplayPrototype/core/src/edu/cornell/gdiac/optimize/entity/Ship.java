@@ -38,6 +38,14 @@ public class Ship extends GameObject {
 	private Vector2 movement = new Vector2(0f,0f);
 	/** The most recent non-zero movement of the player this turn */
 	public Vector2 last_movement = new Vector2(0f,0f);
+
+	// TODO: uncomment these 3 lines once we "uncouple" the player's health with GameplayController
+	/** The health of the ship. This must be >=0. */
+	// protected float health;
+	/** Maximum player health */
+	// protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
+	/** Initial player health */
+	// protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
 	
 	/**
 	 * Returns the type of this object.
@@ -67,11 +75,20 @@ public class Ship extends GameObject {
 	public void setMovement(Vector2 value) {
 		movement = value;
 	}
+
+	// TODO: uncomment these 2 methods once we "uncouple" the player's health with GameplayController
+	//	public float getHealth() { return health; }
+	//
+	//	public void setHealth(float newHealth) {
+	//		health = Math.max(0, newHealth);
+	//	}
 	
 	/**
 	 * Initialize a ship with trivial starting position.
 	 */
 	public Ship() {
+		// TODO: uncomment this line once we "uncouple" the player's health with GameplayController
+		// health = INITIAL_PLAYER_HEALTH;
 	}
 	
 	public void setTexture(Texture texture) {
