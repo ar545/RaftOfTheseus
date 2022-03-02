@@ -39,6 +39,13 @@ public class CollisionController {
 	// Cache objects for collision calculations
 	private Vector2 temp1;
 //	private Vector2 temp2;
+
+	/** Number of cells along x-axis of screen */
+	private int cellsx;
+	/** Number of cells along y-axis of screen */
+	private int cellsy;
+	/** Cells to check collision in */
+	private Array<Array<GameObject>> cells;
 	
 	/// ACCESSORS
 	
@@ -58,6 +65,29 @@ public class CollisionController {
 		return height;
 	}
 
+	/**
+	 * Creates a CollisionController for the given screen dimensions and collision check cells.
+	 *
+	 * @param width   Width of the screen
+	 * @param height  Height of the screen
+	 * @param cellsx  Number of cells along x-axis of screen
+	 * @param cellsy  Number of cells along y-axis of screen
+	 *
+	 */
+	public CollisionController(float width, float height, int cellsx, int cellsy) {
+		this.width = width;
+		this.height = height;
+
+		// Initialize cache objects
+		temp1 = new Vector2();
+		this.cellsx=cellsx;
+		this.cellsy=cellsy;
+		this.cells = new Array<>(cellsx * cellsy);
+		for (int i =0; i< cellsx * cellsy; i++){
+			this.cells.add(new Array<GameObject>());
+		}
+//		temp2 = new Vector2();
+	}
 	
 	/**
 	 * Creates a CollisionController for the given screen dimensions.
@@ -66,12 +96,7 @@ public class CollisionController {
 	 * @param height  Height of the screen 
 	 */
 	public CollisionController(float width, float height) {
-		this.width = width;
-		this.height = height;
-		
-		// Initialize cache objects
-		temp1 = new Vector2();
-//		temp2 = new Vector2();
+		this(width, height, 100, 100);
 	}
 
 	/* IMPORTANT: All game objects are separated into moving objects and static environment,
@@ -91,19 +116,88 @@ public class CollisionController {
 		if(player == null){
 			return;
 		}
-
+		remakeCells(objects);
 		// Process player bounds
 		handleBounds(player);
 
 		// For each dynamic object, check for collisions with the player (except the player)
-		for (GameObject o : objects) {
-			if (o != player) {
-				handleCollision(player, o);
+//		for (GameObject o : objects) {
+//			if (o != player) {
+//				handleCollision(player, o);
+//			}
+//		}
+		calcCellCollisions(player);
+	}
+
+	// TODO: someone add documentation for these please
+
+	public void remakeCells(Array<GameObject> objects){
+		for (Array<GameObject> cell : cells){
+			cell.clear();
+		}
+		for (GameObject object : objects){
+			int row = Math.max(Math.min((int) Math.floor(object.getY() / height * cellsy), cellsy - 1), 0);
+			int col = Math.max(Math.min((int) Math.floor(object.getX() / width * cellsx), cellsx - 1), 0);
+			if (!object.isDestroyed())
+				cells.get(row * cellsx + col).add(object);
+		}
+	}
+
+	public void calcCellCollisions(Ship player){
+		for (int i = 0; i < cells.size; i++){
+			Array<GameObject> cell = cells.get(i);
+			Array<Array<GameObject>> checkCells = new Array<>();
+			checkCells.add(cell);
+			// dont add it if it's on the respective boundary
+			if ((i + 1) % cellsx != 0)
+				checkCells.add(cells.get(i + 1));
+			if (i % cellsx != 0)
+				checkCells.add(cells.get(i - 1));
+			if (i + cellsx < cells.size)
+				checkCells.add(cells.get(i + cellsx));
+			if (i - cellsx > 0)
+				checkCells.add(cells.get(i - cellsx));
+			for (int k = 0; k < checkCells.size; k++){
+				Array<GameObject> checkCell = checkCells.get(k);
+				for (GameObject checkObject : checkCell){
+					if (checkObject != player) {
+						handleCollision(player, checkObject);
+					}
+				}
 			}
+
+			// TODO: Uncomment this for when we do object object collisions
+//			for (int j = 0; j < cell.size; j++){
+//				GameObject object = cell.get(j);
+//				for (int k = 0; k < checkCells.size; k++){
+//					Array<GameObject> checkCell = checkCells.get(k);
+//					for (GameObject checkObject : checkCell){
+//						if (checkObject != player)
+//							processCollision(object, checkObject);
+//					}
+//				}
+//			}
+
 		}
 	}
 
 	// TODO: decide and implement how we will handle collisions between two game objs -> does wood colliding do anything?
+
+	/** handleCollision overload to find correct call
+	 * @param obj1 - obj1 to check collisions for
+	 * @param obj2   - obj2 to check collisions for */
+	private void handleCollision(GameObject obj1, GameObject obj2) {
+		switch (obj1.getType()){
+			case SHIP:
+				handleCollision((Ship) obj1, obj2);
+				break;
+			default:
+				throw new IllegalStateException("Unrecognized GameObject Type: " + obj1.getType());
+		}
+
+	}
+
+
 	/** handleCollision overload to find correct call
 	 * @param player - the ship/player
 	 * @param obj   - the collision object */
@@ -237,6 +331,8 @@ public class CollisionController {
 		}
 
 		// destroy the player
+		//TODO: this is problematic because it shows that ship's health is not coupled with the ship itself.
+		// currently we cannot easily set the ship's health from here since it's in GameplayController. refactor?
 		player.setDestroyed(true);
 	}
 
