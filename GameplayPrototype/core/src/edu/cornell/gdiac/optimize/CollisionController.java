@@ -177,7 +177,7 @@ public class CollisionController {
 //				for (int k = 0; k < checkCells.size; k++){
 //					Array<GameObject> checkCell = checkCells.get(k);
 //					for (GameObject checkObject : checkCell){
-//						if (checkObject != player)
+//						if (checkObject != object)
 //							processCollision(object, checkObject);
 //					}
 //				}
