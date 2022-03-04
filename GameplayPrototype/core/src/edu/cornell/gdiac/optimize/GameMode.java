@@ -164,7 +164,7 @@ public class GameMode implements Screen {
 	 * @param directory 	Reference to the asset directory.
 	 */
 	public void populate(AssetDirectory directory) {
-		background  = directory.getEntry("new_background",Texture.class);
+		background  = directory.getEntry("background",Texture.class);
 		displayFont = directory.getEntry("times",BitmapFont.class);
 		alternateFont = directory.getEntry("grande",BitmapFont.class);
 
@@ -270,7 +270,8 @@ public class GameMode implements Screen {
 
 		canvas.begin();
 		//draw background
-		canvas.drawBackgroundAffine(background, offset2);
+		canvas.drawBackground(background, 0, 0);
+//		canvas.drawBackgroundAffine(background, offset2);
 		// draw grid
 		gameplayController.getGrid().drawAffine(canvas, offset2);
 
