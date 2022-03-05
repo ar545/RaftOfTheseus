@@ -85,7 +85,7 @@ public class GameplayController {
 		backing = new Array<GameObject>();
 		envs = new Array<Environment>();
 		// TODO replace with data centric constructor
-		grid = new Grid(24, 20);
+		grid = new Grid(12, 10);
 	}
 
 	/**
@@ -211,7 +211,7 @@ public class GameplayController {
 		// TODO: Replace these after Technical prototype. location of rock should be in level json file
 		Obstacle rock = new Obstacle();
 		rock.setTexture(rockTexture);
-		rock.getPosition().set(width/2, height/2); // center of map
+		rock.getPosition().set(width/2-50, height/2-50); // center of map
 		envs.add(rock);
 
 		// Create some currents to environment
@@ -236,10 +236,10 @@ public class GameplayController {
 //			}
 			envs.add(curs[ii]);
 		}
-		curs[0].getPosition().set(width/4, height/4);
-		curs[1].getPosition().set(3 * width/4, height/4);
-		curs[2].getPosition().set(width/4, 3 * height/4);
-		curs[3].getPosition().set(3 * width/4, 3 * height/4);
+		curs[0].getPosition().set(width/4-50, height/4);
+		curs[1].getPosition().set(3 * width/4+50, height/4);
+		curs[2].getPosition().set(width/4-50, 3 * height/4);
+		curs[3].getPosition().set(3 * width/4+50, 3 * height/4);
 
 		// Add some enemy to the environment
 		// TODO: Replace these after Technical prototype. location of current should be in level json file
