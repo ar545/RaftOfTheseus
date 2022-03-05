@@ -235,7 +235,7 @@ public class GameMode implements Screen {
 		}
 
 		// if no player is alive, declare game over
-		if (!gameplayController.isAlive()) {
+		else if (!gameplayController.isAlive()) {
 			gameState = GameState.OVER;
 		}
 
@@ -291,7 +291,7 @@ public class GameMode implements Screen {
 		String top_message = "Current player health: 0";
 		if(gameState == GameState.PLAY){
 			// Output a simple debugging message stating the health on the screen
-			top_message = "Current player health: " + (int) (gameplayController.player_health) + ".0";
+			top_message = "Current player health: " + (int)gameplayController.getPlayerHealth() + ".0";
 		}else{
 			String end_message = "Game Over!";
 			String blink_message = "Press R to Restart";

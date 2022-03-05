@@ -336,9 +336,7 @@ public class CollisionController {
 		}
 
 		// destroy the player
-		//TODO: this is problematic because it shows that ship's health is not coupled with the ship itself.
-		// currently we cannot easily set the ship's health from here since it's in GameplayController. refactor?
-		player.setDestroyed(true);
+		player.setHealth(0);
 	}
 
 	/**

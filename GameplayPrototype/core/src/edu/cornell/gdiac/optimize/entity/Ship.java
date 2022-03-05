@@ -31,7 +31,7 @@ public class Ship extends GameObject {
 	// TODO: design choice: ship_life is implemented in Gameplay Control
 	// CONSTANTS
 	/** Horizontal speed **/
-	private static final float RAFT_SPEED = 4.0f;
+	private static final float RAFT_SPEED = 2.0f;
 	
 	// ATTRIBUTES
 	/** The movement of the player this turn */
@@ -39,13 +39,12 @@ public class Ship extends GameObject {
 	/** The most recent non-zero movement of the player this turn */
 	public Vector2 last_movement = new Vector2(0f,0f);
 
-	// TODO: uncomment these 3 lines once we "uncouple" the player's health with GameplayController
 	/** The health of the ship. This must be >=0. */
-	// protected float health;
+	private float health;
 	/** Maximum player health */
-	// protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
+	public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
 	/** Initial player health */
-	// protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
+	public static final float INITIAL_PLAYER_HEALTH = 20.0f;
 	
 	/**
 	 * Returns the type of this object.
@@ -76,19 +75,21 @@ public class Ship extends GameObject {
 		movement = value;
 	}
 
-	// TODO: uncomment these 2 methods once we "uncouple" the player's health with GameplayController
-	//	public float getHealth() { return health; }
-	//
-	//	public void setHealth(float newHealth) {
-	//		health = Math.max(0, newHealth);
-	//	}
+	public float getHealth() { return health; }
+
+	public void setHealth(float newHealth) {
+		health = Math.max(0, newHealth);
+	}
+
+	public void addHealth(float wood) {
+		health = Math.min(health + wood, MAXIMUM_PLAYER_HEALTH);
+	}
 	
 	/**
 	 * Initialize a ship with trivial starting position.
 	 */
 	public Ship() {
-		// TODO: uncomment this line once we "uncouple" the player's health with GameplayController
-		// health = INITIAL_PLAYER_HEALTH;
+		 health = INITIAL_PLAYER_HEALTH;
 	}
 	
 	public void setTexture(Texture texture) {
@@ -106,7 +107,9 @@ public class Ship extends GameObject {
 		// Call superclasses' update
 		super.update(delta);
 
-		// Movement handling, used to be "position.x += movement.x * BEETLE_SPEED;"
+		// Movement handling
+		health -= movement.len() * RAFT_SPEED * 0.04f; // scale health by distance traveled
+		if (health < 0) health = 0;
 		position.add(movement.scl(RAFT_SPEED));
 		if(!movement.isZero()){
 			last_movement.set(getMovement());

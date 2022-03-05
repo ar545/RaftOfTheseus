@@ -70,14 +70,10 @@ public class GameplayController {
 	/** The environments */
 	private Array<Environment> envs;
 
-	/** Health: increase player health when wood is destroyed */
-	protected float player_health;
 	/** The position where the player dead */
 	private Vector2 player_dead_position;
-	/** Maximum player health */
-	protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
-	/** initial player health */
-	protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
+	/** The player's last known health value, if the ship has been deleted */
+	private float player_cached_health;
 
 	/**
 	 * Creates a new GameplayController with no active elements.
@@ -88,7 +84,6 @@ public class GameplayController {
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
 		envs = new Array<Environment>();
-		player_health = INITIAL_PLAYER_HEALTH;
 		// TODO replace with data centric constructor
 		grid = new Grid(24, 20);
 	}
@@ -182,7 +177,6 @@ public class GameplayController {
 
 		// TODO: these values should be defined in level json file. Replace these after Technical prototype
 		player.getPosition().set(getPlayer().getRadius(), getPlayer().getRadius()); // Initial player position: down-left
-		player_health = GameplayController.INITIAL_PLAYER_HEALTH; // Initial player health: full health
 
 		// Create the target to objects
 		target = new Target();
@@ -307,9 +301,6 @@ public class GameplayController {
 	 * Some objects do something special (e.g. explode) on destruction. That is handled 
 	 * in this method.
 	 *
-	 * Notice that this allocates memory to the heap.  If we were REALLY worried about 
-	 * performance, we would use a memory pool here.
-	 *
 	 * @param o Object to destroy
 	 */
 	protected void destroy(GameObject o) {
@@ -320,10 +311,8 @@ public class GameplayController {
 			break;
 		case WOOD:
 			Wood w = (Wood) o;
-			player_health += w.getWood();
-			if(player_health > MAXIMUM_PLAYER_HEALTH){
-				player_health = MAXIMUM_PLAYER_HEALTH;
-			}
+			if (player != null)
+				player.addHealth(w.getWood());
 			break;
 		case TARGET:
 			target = null;
@@ -335,9 +324,7 @@ public class GameplayController {
 	}
 	
 	/**
-	 * Resolve the actions of all game objects (player and shells)
-	 *
-	 * You will probably want to modify this heavily in Part 2.
+	 * Resolve the actions of all game objects
 	 *
 	 * @param input  Reference to the input controller
 	 * @param delta  Number of seconds since last animation frame
@@ -348,9 +335,12 @@ public class GameplayController {
 			resolvePlayer(input,delta);
 		}
 
-		// If player is dead, kill the player
-		if(player != null && player_health < 0){
-			player.setDestroyed(true);
+		// Update cached health if player has beaten the level, or destroy the player
+		if(player != null){
+			if (target != null)
+				player_cached_health = player.getHealth();
+			if (player.getHealth() <= 0)
+				player.setDestroyed(true);
 		}
 
 		// Process the other (non-ship) objects.
@@ -362,22 +352,18 @@ public class GameplayController {
 	/**
 	 * Process the player's actions.
 	 *
-	 * Notice that firing bullets allocates memory to the heap.  If we were REALLY 
-	 * worried about performance, we would use a memory pool here.
-	 *
 	 * @param input  Reference to the input controller
 	 * @param delta  Number of seconds since last animation frame
 	 */
 	public void resolvePlayer(InputController input, float delta) {
 		Vector2 movement = input.getMovement();
-		player_health -= Math.abs(movement.len());
 		player.setMovement(movement);
 		player.update(delta);
 	}
 
 	/** @return float represent the health of the player */
 	public float getProgress(){
-		return player_health / MAXIMUM_PLAYER_HEALTH;
+		return getPlayerHealth()/player.MAXIMUM_PLAYER_HEALTH;
 	}
 
 	/** @return boolean represent if the player has won the game */
@@ -394,13 +380,23 @@ public class GameplayController {
 		}
 	}
 
+	/** @return the player's last known health */
+	public float getPlayerHealth() {
+		if(player != null){
+			return player.getHealth();
+		}else{
+			return player_cached_health;
+		}
+	}
+
 	/** @return the player's star level */
 	public int getStar(){
-		if(player_health > 70){
+		float h = getPlayerHealth();
+		if (h > 70) {
 			return 3;
-		}else if(player_health > 25){
+		} else if (h > 25) {
 			return 2;
-		}else{
+		} else {
 			return 1;
 		}
 	}
