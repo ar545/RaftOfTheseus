@@ -27,6 +27,7 @@ public class Wood extends GameObject {
         }else{
             wood = MINIMUM_WOOD_GENERATION;
         }
+        radius = 25;
     }
 
     /** get the type of wood objects

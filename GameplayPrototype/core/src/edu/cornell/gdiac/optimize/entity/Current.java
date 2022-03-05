@@ -46,20 +46,25 @@ public class Current extends Environment {
         switch(RandomController.rollInt(0,3)){
             case 0:
                 this.direction = Direction.NORTH;
+                this.rotation = 90.0f;
                 break;
             case 1:
                 this.direction = Direction.EAST;
+                this.rotation = 0.0f;
                 break;
             case 2:
                 this.direction = Direction.SOUTH;
+                this.rotation = -90.0f;
                 break;
             case 3:
                 this.direction = Direction.WEST;
+                this.rotation = 180.0f;
                 break;
             default:
                 this.direction = Direction.NONE;
                 break;
         }
+        radius = 50;
     }
 
     /** get the direction of the current */

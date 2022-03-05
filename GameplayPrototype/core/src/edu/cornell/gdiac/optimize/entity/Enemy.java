@@ -3,6 +3,10 @@ package edu.cornell.gdiac.optimize.entity;
 import edu.cornell.gdiac.optimize.GameObject;
 
 public class Enemy extends GameObject {
+    public Enemy() {
+        radius = 50;
+    }
+
     /** get the type of wood objects
      * @return object type wood */
     @Override

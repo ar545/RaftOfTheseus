@@ -274,7 +274,7 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius() /*+ t.getRadius()*/ ) {
+		if (dist > player.getRadius() + t.getRadius()) {
 			return;
 		}
 
@@ -294,7 +294,7 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius() /*+ o.getRadius()*/ ) {
+		if (dist > player.getRadius() + o.getRadius()) {
 			return;
 		}
 
@@ -331,7 +331,7 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius()  /* + e.getRadius() */ ) {
+		if (dist > player.getRadius() + e.getRadius()) {
 			return;
 		}
 

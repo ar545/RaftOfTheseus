@@ -105,13 +105,14 @@ public class Ship extends GameObject {
 	 */
 	public Ship() {
 		 health = INITIAL_PLAYER_HEALTH;
+		 radius = 50;
 	}
 	
-	public void setTexture(Texture texture) {
-		animator = new FilmStrip(texture,1,1, 1);
-		radius = animator.getRegionHeight() / 2.0f;
-		origin = new Vector2(animator.getRegionWidth()/2.0f, animator.getRegionHeight()/2.0f);
-	}
+//	public void setTexture(Texture texture) {
+//		animator = new FilmStrip(texture,1,1, 1);
+//		radius = animator.getRegionHeight() / 2.0f;
+//		origin = new Vector2(animator.getRegionWidth()/2.0f, animator.getRegionHeight()/2.0f);
+//	}
 	
 	/**
 	 * Updates the animation frame and position of this ship.
