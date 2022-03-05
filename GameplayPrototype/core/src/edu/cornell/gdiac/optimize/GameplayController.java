@@ -243,7 +243,7 @@ public class GameplayController {
 
 		// Add some enemy to the environment
 		// TODO: Replace these after Technical prototype. location of current should be in level json file
-		Enemy e = new Enemy();
+		Enemy e = new Enemy(player);
 		e.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
 		e.setTexture(enemyTexture);
 		objects.add(e);
@@ -331,23 +331,18 @@ public class GameplayController {
 	 * @param delta  Number of seconds since last animation frame
 	 */
 	public void resolveActions(InputController input, float delta) {
-		// If player is alive and not reach the target Process the player
-		if (player != null && target != null) {
-			resolvePlayer(input,delta);
-		}
-
-		// Update cached health if player has beaten the level, or destroy the player
-		if(player != null){
-			if (target != null)
-				player_cached_health = player.getHealth();
-			if (player.getHealth() <= 0)
-				player.setDestroyed(true);
-		}
-
-		// Process the other (non-ship) objects.
-		for (GameObject o : objects) {
-			if (o.getType() != Environment.ObjectType.SHIP)
-				o.update(delta);
+		if (isAlive()) {
+			if (!isWin()) { // If player is alive and hasn't reached the target,
+				resolvePlayer(input,delta); // process the player
+				if (player.getHealth() <= 0) // destroy player if health is 0
+					player.setDestroyed(true);
+				// Process the other (non-player) objects.
+				for (GameObject o : objects) {
+					if (o.getType() != Environment.ObjectType.SHIP)
+						o.update(delta);
+				}
+			}
+			player_cached_health = player.getHealth(); // cache player health
 		}
 	}
 
