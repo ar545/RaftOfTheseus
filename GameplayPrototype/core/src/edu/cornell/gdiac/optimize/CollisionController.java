@@ -336,7 +336,7 @@ public class CollisionController {
 		}
 
 		// destroy the player
-		player.setHealth(0);
+		player.setHealth(player.getHealth() - e.DAMAGE_PER_FRAME);
 	}
 
 	/**

@@ -43,6 +43,8 @@ public class Current extends Environment {
 
     /** constructor with random direction */
     public Current(){
+        super();
+        radius = 50;
         switch(RandomController.rollInt(0,3)){
             case 0:
                 this.direction = Direction.NORTH;
@@ -64,7 +66,6 @@ public class Current extends Environment {
                 this.direction = Direction.NONE;
                 break;
         }
-        radius = 50;
     }
 
     /** get the direction of the current */

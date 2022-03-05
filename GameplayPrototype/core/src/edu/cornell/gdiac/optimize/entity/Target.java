@@ -4,6 +4,7 @@ import edu.cornell.gdiac.optimize.GameObject;
 
 public class Target extends GameObject {
     public Target() {
+        super();
         radius = 50;
     }
 

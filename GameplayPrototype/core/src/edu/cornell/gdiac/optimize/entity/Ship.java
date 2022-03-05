@@ -32,7 +32,7 @@ public class Ship extends GameObject {
 	/** Movement speed **/
 	private static final float RAFT_SPEED = 7.0f;
 	/** Movement cost for a pixel distance **/
-	private static final float MOVE_COST = 0.03f;
+	private static final float MOVE_COST = 0.04f;
 
 	
 	// ATTRIBUTES
@@ -103,8 +103,9 @@ public class Ship extends GameObject {
 	 * Initialize a ship with trivial starting position.
 	 */
 	public Ship() {
-		health = INITIAL_PLAYER_HEALTH;
+		super();
 		radius = 50;
+		health = INITIAL_PLAYER_HEALTH;
 	}
 	
 	/**

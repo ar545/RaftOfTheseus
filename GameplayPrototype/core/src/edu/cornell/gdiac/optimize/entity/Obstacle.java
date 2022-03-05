@@ -4,6 +4,7 @@ import edu.cornell.gdiac.optimize.Environment;
 
 public class Obstacle extends Environment {
     public Obstacle() {
+        super();
         radius = 50;
     }
 

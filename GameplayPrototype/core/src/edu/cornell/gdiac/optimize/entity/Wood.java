@@ -21,13 +21,14 @@ public class Wood extends GameObject {
 
     /** Constructor, build a pile of wood with random number of logs */
     public Wood(boolean doubled){
+        super();
+        radius = 40;
         // Consider: wood = RandomController.rollInt(MINIMUM_WOOD_GENERATION, MAXIMUM_WOOD_GENERATION);
         if(doubled){
             wood = MAXIMUM_WOOD_GENERATION;
         }else{
             wood = MINIMUM_WOOD_GENERATION;
         }
-        radius = 25;
     }
 
     /** get the type of wood objects
