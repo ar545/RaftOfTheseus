@@ -6,6 +6,8 @@ import edu.cornell.gdiac.optimize.GameObject;
 public class Enemy extends GameObject {
     /** How much damage an enemy deals to the player upon collision, per animation frame */
     public static final float DAMAGE_PER_FRAME = 0.5f;
+    /** How fast the enemy moves towards its target, in pixel per frame */
+    public static final float ENEMY_SPEED = 1.5f;
 
     /** This is the player, if this enemy is targeting the player. */
     private Ship targetShip;
@@ -32,7 +34,7 @@ public class Enemy extends GameObject {
         if (targetShip != null) {
             Vector2 temp = targetShip.getPosition().cpy();
             temp.sub(position);
-            velocity = temp.nor();
+            velocity = temp.nor().scl(ENEMY_SPEED);
         }
         position.add(velocity);
     }

@@ -32,7 +32,7 @@ public class Ship extends GameObject {
 	/** Movement speed **/
 	private static final float RAFT_SPEED = 7.0f;
 	/** Movement cost for a pixel distance **/
-	private static final float MOVE_COST = 0.04f;
+	private static final float MOVE_COST = 0.05f;
 
 	
 	// ATTRIBUTES
@@ -47,7 +47,7 @@ public class Ship extends GameObject {
 	/** Maximum player health */
 	public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
 	/** Initial player health */
-	public static final float INITIAL_PLAYER_HEALTH = 20.0f;
+	public static final float INITIAL_PLAYER_HEALTH = 40.0f;
 	
 	/**
 	 * Returns the type of this object.

@@ -48,7 +48,7 @@ public class Grid {
     // Texture to store background tiles to draw.
     private Texture ocean_tile;
     // Size in pixels of a tile // TODO load from json or another class
-    private final int tile_size = 100;
+    private final float tile_size;
 
 
     /**
@@ -56,7 +56,8 @@ public class Grid {
      * @param horz
      * @param vert
      */
-    public Grid(int horz, int vert){
+    public Grid(int horz, int vert, float tile_size){
+        this.tile_size = tile_size;
         grid = new Array<>();
         for(int ii = 0; ii < horz; ii++){
             Array<Tile> temp = new Array<>();
@@ -72,6 +73,7 @@ public class Grid {
      * @param data
      */
     public Grid(JsonValue data){
+        tile_size = 0.0f;
     }
 
     /**

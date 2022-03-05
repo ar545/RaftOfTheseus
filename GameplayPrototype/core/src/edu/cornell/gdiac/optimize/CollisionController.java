@@ -92,11 +92,12 @@ public class CollisionController {
 	/**
 	 * Creates a CollisionController for the given screen dimensions.
 	 *
-	 * @param width   Width of the screen 
-	 * @param height  Height of the screen 
+	 * @param width   Width of the level in tiles
+	 * @param height  Height of the level in tiles
+	 * @param tile_size  Size of a tile in pixels
 	 */
-	public CollisionController(float width, float height) {
-		this(width, height, 100, 100);
+	public CollisionController(int width, int height, float tile_size) {
+		this(width*tile_size, height*tile_size, 100, 100);
 	}
 
 	/* IMPORTANT: All game objects are separated into moving objects and static environment,
