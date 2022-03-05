@@ -30,14 +30,18 @@ import com.badlogic.gdx.graphics.*;
 public class Ship extends GameObject {
 	// TODO: design choice: ship_life is implemented in Gameplay Control
 	// CONSTANTS
-	/** Horizontal speed **/
-	private static final float RAFT_SPEED = 2.0f;
+	/** Movement speed **/
+	private static final float RAFT_SPEED = 6.0f;
+	/** Movement cost for a unit distance **/
+	private static final float MOVE_COST = 0.3f;
+
 	
 	// ATTRIBUTES
 	/** The movement of the player this turn */
 	private Vector2 movement = new Vector2(0f,0f);
 	/** The most recent non-zero movement of the player this turn */
-	public Vector2 last_movement = new Vector2(0f,0f);
+	private Vector2 last_movement = new Vector2(0f,0f);
+
 
 	/** The health of the ship. This must be >=0. */
 	private float health;
@@ -72,9 +76,10 @@ public class Ship extends GameObject {
 	 * @param value the current player movement input.
 	 */
 	public void setMovement(Vector2 value) {
-		movement = value;
+		movement.set(value);
 	}
 
+	/** Getter and setters for health */
 	public float getHealth() { return health; }
 
 	public void setHealth(float newHealth) {
@@ -83,6 +88,16 @@ public class Ship extends GameObject {
 
 	public void addHealth(float wood) {
 		health = Math.min(health + wood, MAXIMUM_PLAYER_HEALTH);
+	}
+
+	/** If the player collides with a border/rock, this is called to prevent that movement from costing health */
+	public void cancelLastMovementCost() {
+		health += last_movement.len()*MOVE_COST;
+	}
+
+	/** If the player collides with a rock, this is called to undo that movement's change to the raft position */
+	public void cancelLastMovement() {
+		position.add(last_movement.cpy().scl(-RAFT_SPEED));
 	}
 	
 	/**
@@ -107,12 +122,13 @@ public class Ship extends GameObject {
 		// Call superclasses' update
 		super.update(delta);
 
-		// Movement handling
-		health -= movement.len() * RAFT_SPEED * 0.04f; // scale health by distance traveled
+		// Apply movement
+		Vector2 temp = movement.cpy();
+		position.add(temp.scl(RAFT_SPEED));
+		health -= movement.len() * MOVE_COST; // scale health by distance traveled
 		if (health < 0) health = 0;
-		position.add(movement.scl(RAFT_SPEED));
 		if(!movement.isZero()){
-			last_movement.set(getMovement());
+			last_movement.set(movement);
 		}
 	}
 	

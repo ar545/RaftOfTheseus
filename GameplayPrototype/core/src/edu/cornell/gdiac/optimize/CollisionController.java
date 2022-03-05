@@ -299,8 +299,8 @@ public class CollisionController {
 		}
 
 		// push the player away from rock
-		player.getPosition().add(player.last_movement.scl(-4));
-
+		player.cancelLastMovementCost();
+		player.cancelLastMovement();
 	}
 
 	/** Handle the collision between player and current. Push the player toward the direction of the current
@@ -346,18 +346,28 @@ public class CollisionController {
 	 * @param sh Ship to check 
 	 */
 	private void handleBounds(Ship sh) {
+		boolean anyCollision = false;
+
 		// Do not let the ship go off-world on both-axis: x
-		if (sh.getX() <= sh.getRadius()) {
+		if (sh.getX() < sh.getRadius()) {
 			sh.setX(sh.getRadius());
-		} else if (sh.getX() >= getWidth() - sh.getRadius()) {
+			anyCollision = true;
+		} else if (sh.getX() > getWidth() - sh.getRadius()) {
 			sh.setX(getWidth() - sh.getRadius());
+			anyCollision = true;
 		}
 
 		// Do not let the ship go off-world on both-axis: y
-		if (sh.getY() <= sh.getRadius()) {
+		if (sh.getY() < sh.getRadius()) {
 			sh.setY(sh.getRadius());
-		} else if (sh.getY() >= getHeight() - sh.getRadius()) {
+			anyCollision = true;
+		} else if (sh.getY() > getHeight() - sh.getRadius()) {
 			sh.setY(getHeight() - sh.getRadius());
+			anyCollision = true;
 		}
+
+		// if the player collided with any border, it doesn't cost health
+		if (anyCollision)
+			sh.cancelLastMovementCost();
 	}
 }

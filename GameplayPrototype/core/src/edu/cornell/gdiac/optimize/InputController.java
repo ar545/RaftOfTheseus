@@ -133,6 +133,10 @@ public class InputController {
 			mouseAllowed = !mouseAllowed;
 		}
 		// set up the offset
+		// TODO: Currently the way this is set up, if the player connects both a keyboard and gamepad controller, they
+		//  can move twice as fast by using both input methods at the same time. This doesn't matter for now since the
+		//  gameplay prototype won't be using an XBox controller (why did we add support for this to the prototype if
+		//  we can't even test it?), but we should be wary of this if we reuse this code.
 		x_offset = (secondary ? x_offset : 0.0f);
 		y_offset = (secondary ? y_offset : 0.0f);
 
@@ -151,6 +155,8 @@ public class InputController {
 		}
 
 		//read mouse inputs
+		// TODO: Same problem as above. If using both the mouse and keyboard, the player can move twice as fast.
+		//  We actually aren't going to use the mouse this way at all, so the fix is just to remove mouse support here.
 		if(mouseAllowed){
 			if (Gdx.input.getDeltaX() > 0) {
 				x_offset += 1.0f;

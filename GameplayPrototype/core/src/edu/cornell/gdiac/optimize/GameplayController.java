@@ -345,7 +345,8 @@ public class GameplayController {
 
 		// Process the other (non-ship) objects.
 		for (GameObject o : objects) {
-			o.update(delta);
+			if (o.getType() != Environment.ObjectType.SHIP)
+				o.update(delta);
 		}
 	}
 
