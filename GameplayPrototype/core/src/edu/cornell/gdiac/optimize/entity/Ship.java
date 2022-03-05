@@ -28,12 +28,11 @@ import com.badlogic.gdx.graphics.*;
  * Model class for the player ship.
  */
 public class Ship extends GameObject {
-	// TODO: design choice: ship_life is implemented in Gameplay Control
 	// CONSTANTS
 	/** Movement speed **/
-	private static final float RAFT_SPEED = 6.0f;
-	/** Movement cost for a unit distance **/
-	private static final float MOVE_COST = 0.3f;
+	private static final float RAFT_SPEED = 7.0f;
+	/** Movement cost for a pixel distance **/
+	private static final float MOVE_COST = 0.03f;
 
 	
 	// ATTRIBUTES
@@ -92,7 +91,7 @@ public class Ship extends GameObject {
 
 	/** If the player collides with a border/rock, this is called to prevent that movement from costing health */
 	public void cancelLastMovementCost() {
-		health += last_movement.len()*MOVE_COST;
+		health += last_movement.len()*RAFT_SPEED*MOVE_COST;
 	}
 
 	/** If the player collides with a rock, this is called to undo that movement's change to the raft position */
@@ -104,15 +103,9 @@ public class Ship extends GameObject {
 	 * Initialize a ship with trivial starting position.
 	 */
 	public Ship() {
-		 health = INITIAL_PLAYER_HEALTH;
-		 radius = 50;
+		health = INITIAL_PLAYER_HEALTH;
+		radius = 50;
 	}
-	
-//	public void setTexture(Texture texture) {
-//		animator = new FilmStrip(texture,1,1, 1);
-//		radius = animator.getRegionHeight() / 2.0f;
-//		origin = new Vector2(animator.getRegionWidth()/2.0f, animator.getRegionHeight()/2.0f);
-//	}
 	
 	/**
 	 * Updates the animation frame and position of this ship.
@@ -126,7 +119,7 @@ public class Ship extends GameObject {
 		// Apply movement
 		Vector2 temp = movement.cpy();
 		position.add(temp.scl(RAFT_SPEED));
-		health -= movement.len() * MOVE_COST; // scale health by distance traveled
+		health -= movement.len() * RAFT_SPEED * MOVE_COST; // scale health by distance traveled
 		if (health < 0) health = 0;
 		if(!movement.isZero()){
 			last_movement.set(movement);

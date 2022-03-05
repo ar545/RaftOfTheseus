@@ -288,11 +288,8 @@ public class GameMode implements Screen {
 		drawProgress(canvas, gameplayController.getProgress(), ((int)totalTime / TIME_CONSTANT) % 2 == 0 );
 
 		// Draw text
-		String top_message = "Current player health: 0";
-		if(gameState == GameState.PLAY){
-			// Output a simple debugging message stating the health on the screen
-			top_message = "Current player health: " + (int)gameplayController.getPlayerHealth() + ".0";
-		}else{
+		String top_message = String.format("Current player health: %.1f", gameplayController.getPlayerHealth());
+		if(gameState != GameState.PLAY) {
 			String end_message = "Game Over!";
 			String blink_message = "Press R to Restart";
 			if(gameState == GameState.WIN){
@@ -301,7 +298,7 @@ public class GameMode implements Screen {
 						top_message = "3 Stars! You are the best!";
 						break;
 					case 2:
-						top_message = "2 Stars! You found my Walker!";
+						top_message = "2 Stars! You found the goal!";
 						break;
 					default:
 						top_message = "1 Star! You made it!";
@@ -311,9 +308,9 @@ public class GameMode implements Screen {
 			}
 			canvas.drawTextCentered(end_message,displayFont, 1.5f * GAME_OVER_OFFSET);
 			// make restart line blinking
-			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
+//			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
 				canvas.drawTextCentered(blink_message, alternateFont, GAME_OVER_OFFSET);
-			}
+//			}
 		}
 		canvas.drawText(top_message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 
