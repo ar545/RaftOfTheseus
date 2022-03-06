@@ -1,17 +1,16 @@
 {
 	"textures": {
       "background": "images/background.png",
-      "new_background": "images/new_background.png",
-      "raft":     "images/raft.png",
-      "wood":     "images/wood.png",
-      "rock":     "images/rock.png",
-      "double":     "images/double.png",
+      "raft":     "images/raft_2.png",
+      "wood":     "images/one_wood_v2.png",
+      "rock":     "images/rock_2.png",
+      "double":     "images/two_wood_v2.png",
       "target":     "images/target.png",
-      "east_current": "images/east_current.png",
+      "east_current": "images/current_square.png",
       "west_current": "images/west_current.png",
       "south_current": "images/south_current.png",
       "north_current": "images/north_current.png",
-      "enemy":     "images/enemy.png",
+      "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
       "progress": {
         "file":      "images/progressbar.png",
