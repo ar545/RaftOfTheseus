@@ -92,11 +92,12 @@ public class CollisionController {
 	/**
 	 * Creates a CollisionController for the given screen dimensions.
 	 *
-	 * @param width   Width of the screen 
-	 * @param height  Height of the screen 
+	 * @param width   Width of the level in tiles
+	 * @param height  Height of the level in tiles
+	 * @param tile_size  Size of a tile in pixels
 	 */
-	public CollisionController(float width, float height) {
-		this(width, height, 100, 100);
+	public CollisionController(int width, int height, float tile_size) {
+		this(width*tile_size, height*tile_size, 100, 100);
 	}
 
 	/* IMPORTANT: All game objects are separated into moving objects and static environment,
@@ -274,7 +275,7 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius() /*+ t.getRadius()*/ ) {
+		if (dist > player.getRadius() + t.getRadius()) {
 			return;
 		}
 
@@ -294,13 +295,13 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius() /*+ o.getRadius()*/ ) {
+		if (dist > player.getRadius() + o.getRadius()) {
 			return;
 		}
 
 		// push the player away from rock
-		player.getPosition().add(player.last_movement.scl(-4));
-
+		player.cancelLastMovementCost();
+		player.cancelLastMovement();
 	}
 
 	/** Handle the collision between player and current. Push the player toward the direction of the current
@@ -331,14 +332,12 @@ public class CollisionController {
 		float dist = temp1.len();
 
 		// Too far away
-		if (dist > player.getRadius()  /* + e.getRadius() */ ) {
+		if (dist > player.getRadius() + e.getRadius()) {
 			return;
 		}
 
 		// destroy the player
-		//TODO: this is problematic because it shows that ship's health is not coupled with the ship itself.
-		// currently we cannot easily set the ship's health from here since it's in GameplayController. refactor?
-		player.setDestroyed(true);
+		player.setHealth(player.getHealth() - e.DAMAGE_PER_FRAME);
 	}
 
 	/**
@@ -348,18 +347,28 @@ public class CollisionController {
 	 * @param sh Ship to check 
 	 */
 	private void handleBounds(Ship sh) {
+		boolean anyCollision = false;
+
 		// Do not let the ship go off-world on both-axis: x
-		if (sh.getX() <= sh.getRadius()) {
+		if (sh.getX() < sh.getRadius()) {
 			sh.setX(sh.getRadius());
-		} else if (sh.getX() >= getWidth() - sh.getRadius()) {
+			anyCollision = true;
+		} else if (sh.getX() > getWidth() - sh.getRadius()) {
 			sh.setX(getWidth() - sh.getRadius());
+			anyCollision = true;
 		}
 
 		// Do not let the ship go off-world on both-axis: y
-		if (sh.getY() <= sh.getRadius()) {
+		if (sh.getY() < sh.getRadius()) {
 			sh.setY(sh.getRadius());
-		} else if (sh.getY() >= getHeight() - sh.getRadius()) {
+			anyCollision = true;
+		} else if (sh.getY() > getHeight() - sh.getRadius()) {
 			sh.setY(getHeight() - sh.getRadius());
+			anyCollision = true;
 		}
+
+		// if the player collided with any border, it doesn't cost health
+		if (anyCollision)
+			sh.cancelLastMovementCost();
 	}
 }

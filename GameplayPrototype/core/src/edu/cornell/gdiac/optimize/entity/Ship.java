@@ -28,24 +28,26 @@ import com.badlogic.gdx.graphics.*;
  * Model class for the player ship.
  */
 public class Ship extends GameObject {
-	// TODO: design choice: ship_life is implemented in Gameplay Control
 	// CONSTANTS
-	/** Horizontal speed **/
-	private static final float RAFT_SPEED = 4.0f;
+	/** Movement speed **/
+	private static final float RAFT_SPEED = 7.0f;
+	/** Movement cost for a pixel distance **/
+	private static final float MOVE_COST = 0.05f;
+
 	
 	// ATTRIBUTES
 	/** The movement of the player this turn */
 	private Vector2 movement = new Vector2(0f,0f);
 	/** The most recent non-zero movement of the player this turn */
-	public Vector2 last_movement = new Vector2(0f,0f);
+	private Vector2 last_movement = new Vector2(0f,0f);
 
-	// TODO: uncomment these 3 lines once we "uncouple" the player's health with GameplayController
+
 	/** The health of the ship. This must be >=0. */
-	// protected float health;
+	private float health;
 	/** Maximum player health */
-	// protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
+	public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
 	/** Initial player health */
-	// protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
+	public static final float INITIAL_PLAYER_HEALTH = 40.0f;
 	
 	/**
 	 * Returns the type of this object.
@@ -73,28 +75,37 @@ public class Ship extends GameObject {
 	 * @param value the current player movement input.
 	 */
 	public void setMovement(Vector2 value) {
-		movement = value;
+		movement.set(value);
 	}
 
-	// TODO: uncomment these 2 methods once we "uncouple" the player's health with GameplayController
-	//	public float getHealth() { return health; }
-	//
-	//	public void setHealth(float newHealth) {
-	//		health = Math.max(0, newHealth);
-	//	}
+	/** Getter and setters for health */
+	public float getHealth() { return health; }
+
+	public void setHealth(float newHealth) {
+		health = Math.max(0, newHealth);
+	}
+
+	public void addHealth(float wood) {
+		health = Math.min(health + wood, MAXIMUM_PLAYER_HEALTH);
+	}
+
+	/** If the player collides with a border/rock, this is called to prevent that movement from costing health */
+	public void cancelLastMovementCost() {
+		health += last_movement.len()*RAFT_SPEED*MOVE_COST;
+	}
+
+	/** If the player collides with a rock, this is called to undo that movement's change to the raft position */
+	public void cancelLastMovement() {
+		position.add(last_movement.cpy().scl(-RAFT_SPEED));
+	}
 	
 	/**
 	 * Initialize a ship with trivial starting position.
 	 */
 	public Ship() {
-		// TODO: uncomment this line once we "uncouple" the player's health with GameplayController
-		// health = INITIAL_PLAYER_HEALTH;
-	}
-	
-	public void setTexture(Texture texture) {
-		animator = new FilmStrip(texture,1,1, 1);
-		radius = animator.getRegionHeight() / 2.0f;
-		origin = new Vector2(animator.getRegionWidth()/2.0f, animator.getRegionHeight()/2.0f);
+		super();
+		radius = 50;
+		health = INITIAL_PLAYER_HEALTH;
 	}
 	
 	/**
@@ -106,10 +117,13 @@ public class Ship extends GameObject {
 		// Call superclasses' update
 		super.update(delta);
 
-		// Movement handling, used to be "position.x += movement.x * BEETLE_SPEED;"
-		position.add(movement.scl(RAFT_SPEED));
+		// Apply movement
+		Vector2 temp = movement.cpy();
+		position.add(temp.scl(RAFT_SPEED));
+		health -= movement.len() * RAFT_SPEED * MOVE_COST; // scale health by distance traveled
+		if (health < 0) health = 0;
 		if(!movement.isZero()){
-			last_movement.set(getMovement());
+			last_movement.set(movement);
 		}
 	}
 	

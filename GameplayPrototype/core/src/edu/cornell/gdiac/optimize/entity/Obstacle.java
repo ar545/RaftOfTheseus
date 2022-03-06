@@ -3,6 +3,11 @@ package edu.cornell.gdiac.optimize.entity;
 import edu.cornell.gdiac.optimize.Environment;
 
 public class Obstacle extends Environment {
+    public Obstacle() {
+        super();
+        radius = 50;
+    }
+
     /** get the type of rock objects
      * @return object type obstacle */
     @Override

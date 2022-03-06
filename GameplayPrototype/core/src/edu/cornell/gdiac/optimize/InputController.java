@@ -52,7 +52,9 @@ public class InputController {
 	 * @return the amount of sideways movement. 
 	 */
 	public Vector2 getMovement() {
-		return new Vector2(x_offset, y_offset);
+		Vector2 m = new Vector2(x_offset, y_offset);
+		m.nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
+		return m;
 	}
 
 	/**
@@ -129,10 +131,14 @@ public class InputController {
 		resetPressed = (secondary && resetPressed) || (Gdx.input.isKeyPressed(Input.Keys.R));
 		exitPressed  = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
 		// Press M to enable mouse
-		if(Gdx.input.isKeyJustPressed(Input.Keys.M)){
-			mouseAllowed = !mouseAllowed;
-		}
+//		if(Gdx.input.isKeyJustPressed(Input.Keys.M)){
+//			mouseAllowed = !mouseAllowed;
+//		}
 		// set up the offset
+		// TODO: Currently the way this is set up, if the player connects both a keyboard and gamepad controller, they
+		//  can move twice as fast by using both input methods at the same time. This doesn't matter for now since the
+		//  gameplay prototype won't be using an XBox controller (why did we add support for this to the prototype if
+		//  we can't even test it?), but we should be wary of this if we reuse this code.
 		x_offset = (secondary ? x_offset : 0.0f);
 		y_offset = (secondary ? y_offset : 0.0f);
 
@@ -151,20 +157,20 @@ public class InputController {
 		}
 
 		//read mouse inputs
-		if(mouseAllowed){
-			if (Gdx.input.getDeltaX() > 0) {
-				x_offset += 1.0f;
-			}
-			if (Gdx.input.getDeltaX() < 0) {
-				x_offset -= 1.0f;
-			}
-			if (Gdx.input.getDeltaY() < 0) {
-				y_offset += 1.0f;
-			}
-			if (Gdx.input.getDeltaY() > 0) {
-				y_offset -= 1.0f;
-			}
-		}
-
+		// NOTE if you uncomment this, this code is bugged and allows the player to move twice as fast when using both mouse and another input method.
+//		if(mouseAllowed){
+//			if (Gdx.input.getDeltaX() > 0) {
+//				x_offset += 1.0f;
+//			}
+//			if (Gdx.input.getDeltaX() < 0) {
+//				x_offset -= 1.0f;
+//			}
+//			if (Gdx.input.getDeltaY() < 0) {
+//				y_offset += 1.0f;
+//			}
+//			if (Gdx.input.getDeltaY() > 0) {
+//				y_offset -= 1.0f;
+//			}
+//		}
 	}
 }

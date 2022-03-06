@@ -29,15 +29,16 @@ public abstract class Environment {
     protected Vector2 position;
     /** Reference to texture origin */
     protected Vector2 origin;
-    /** Radius of the object (used for collisions) */
+    /** Radius of the object (used for collisions and display) */
     protected float radius;
+    /** Rotation of object (used for displaying, in degrees clockwise) */
+    protected float rotation = 0.0f;
     /** CURRENT image for this object. May change over time. */
     protected FilmStrip animator;
 
     // ACCESSORS
     public void setTexture(Texture texture) {
         animator = new FilmStrip(texture,1,1,1);
-        radius = animator.getRegionHeight() / 2.0f;
         origin = new Vector2(animator.getRegionWidth()/2.0f, animator.getRegionHeight()/2.0f);
     }
 
@@ -136,8 +137,9 @@ public abstract class Environment {
      * @param canvas The drawing context
      */
     public void drawAffine(GameCanvas canvas, Vector2 affine) {
+        float s = 2.0f*radius / animator.getRegionHeight();
         canvas.draw(animator, Color.WHITE, origin.x, origin.y,
-                position.x + affine.x, position.y + affine.y, 0.0f, 1.0f, 1.f);
+                position.x + affine.x, position.y + affine.y, rotation, s, s);
     }
 
     /**

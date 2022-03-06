@@ -93,10 +93,15 @@ public class GameMode implements Screen {
 
 	// MAP CONSTANTS
 	// TODO: substitute this with level JSON in Technical Prototype
-	/** temporary world size: width */
-	private static final float WORLD_WIDTH = 1200f;
-	/** temporary world size: height */
-	private static final float WORLD_HEIGHT = 1000f;
+	/** temporary world size: width (in tiles) */
+	private static final int WORLD_WIDTH = 13;
+	/** temporary world size: height (in tiles) */
+	private static final int WORLD_HEIGHT = 11;
+	/** Size of a tile (in pixels) */
+	private static final float WORLD_TILE_SIZE = 100.0f;
+	/** How many wood pieces to place on the level */
+	private static final int WORLD_WOOD_AMOUNT = 24;
+
 
 	// reference to gameplay elements
 	/** Reference to drawing context to display graphics (VIEW CLASS) */
@@ -139,7 +144,7 @@ public class GameMode implements Screen {
 		gameplayController = new GameplayController();
 		// TODO for technical prototype
 		// TODO: change to gameplayController.start(level JSON class);
-		physicsController = new CollisionController(WORLD_WIDTH, WORLD_HEIGHT);
+		physicsController = new CollisionController(WORLD_WIDTH, WORLD_HEIGHT, WORLD_TILE_SIZE);
 		canvas_height = canvas.getHeight();
 		canvas_width = canvas.getWidth();
 	}
@@ -198,7 +203,7 @@ public class GameMode implements Screen {
 			gameState = GameState.PLAY;
 			// TODO for technical prototype
 			// TODO: change to gameplayController.start(level JSON class);
-			gameplayController.start(WORLD_WIDTH, WORLD_HEIGHT);
+			gameplayController.start(WORLD_WIDTH, WORLD_HEIGHT, WORLD_TILE_SIZE, WORLD_WOOD_AMOUNT);
 			break;
 
 		case WIN:
@@ -208,7 +213,7 @@ public class GameMode implements Screen {
 				gameplayController.reset();
 				// TODO for technical prototype
 				// TODO: change to gameplayController.start(level JSON class);
-				gameplayController.start(WORLD_WIDTH, WORLD_HEIGHT);
+				gameplayController.start(WORLD_WIDTH, WORLD_HEIGHT, WORLD_TILE_SIZE, WORLD_WOOD_AMOUNT);
 
 			} else {
 				play(delta);
@@ -235,7 +240,7 @@ public class GameMode implements Screen {
 		}
 
 		// if no player is alive, declare game over
-		if (!gameplayController.isAlive()) {
+		else if (!gameplayController.isAlive()) {
 			gameState = GameState.OVER;
 		}
 
@@ -289,11 +294,8 @@ public class GameMode implements Screen {
 		drawProgress(canvas, gameplayController.getProgress(), ((int)totalTime / TIME_CONSTANT) % 2 == 0 );
 
 		// Draw text
-		String top_message = "Current player health: 0";
-		if(gameState == GameState.PLAY){
-			// Output a simple debugging message stating the health on the screen
-			top_message = "Current player health: " + (int) (gameplayController.player_health) + ".0";
-		}else{
+		String top_message = String.format("Current player health: %.1f", gameplayController.getPlayerHealth());
+		if(gameState != GameState.PLAY) {
 			String end_message = "Game Over!";
 			String blink_message = "Press R to Restart";
 			if(gameState == GameState.WIN){
@@ -302,7 +304,7 @@ public class GameMode implements Screen {
 						top_message = "3 Stars! You are the best!";
 						break;
 					case 2:
-						top_message = "2 Stars! You found my Walker!";
+						top_message = "2 Stars! You found the goal!";
 						break;
 					default:
 						top_message = "1 Star! You made it!";
@@ -312,9 +314,9 @@ public class GameMode implements Screen {
 			}
 			canvas.drawTextCentered(end_message,displayFont, 1.5f * GAME_OVER_OFFSET);
 			// make restart line blinking
-			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
+//			if(((int)totalTime / TIME_CONSTANT) % 2 == 0 ){
 				canvas.drawTextCentered(blink_message, alternateFont, GAME_OVER_OFFSET);
-			}
+//			}
 		}
 		canvas.drawText(top_message, displayFont, COUNTER_OFFSET, canvas.getHeight()-COUNTER_OFFSET);
 

@@ -70,14 +70,10 @@ public class GameplayController {
 	/** The environments */
 	private Array<Environment> envs;
 
-	/** Health: increase player health when wood is destroyed */
-	protected float player_health;
 	/** The position where the player dead */
 	private Vector2 player_dead_position;
-	/** Maximum player health */
-	protected static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
-	/** initial player health */
-	protected static final float INITIAL_PLAYER_HEALTH = 20.0f;
+	/** The player's last known health value, if the ship has been deleted */
+	private float player_cached_health;
 
 	/**
 	 * Creates a new GameplayController with no active elements.
@@ -88,9 +84,6 @@ public class GameplayController {
 		objects = new Array<GameObject>();
 		backing = new Array<GameObject>();
 		envs = new Array<Environment>();
-		player_health = INITIAL_PLAYER_HEALTH;
-		// TODO replace with data centric constructor
-		grid = new Grid(24, 20);
 	}
 
 	/**
@@ -175,14 +168,15 @@ public class GameplayController {
 	 * @param width Canvas width
 	 * @param height Canvas height
 	 */
-	public void start(float width, float height) {
+	public void start(int width, int height, float tile_size, int wood_amount) {
+		grid = new Grid(width, height, tile_size);
+
 		// Create the player's ship to objects
 		player = new Ship();
 		player.setTexture(raftTexture);
 
 		// TODO: these values should be defined in level json file. Replace these after Technical prototype
 		player.getPosition().set(getPlayer().getRadius(), getPlayer().getRadius()); // Initial player position: down-left
-		player_health = GameplayController.INITIAL_PLAYER_HEALTH; // Initial player health: full health
 
 		// Create the target to objects
 		target = new Target();
@@ -190,17 +184,19 @@ public class GameplayController {
 
 		// TODO: location of target should be in level json file. Replace these after Technical prototype
 		int random_target_selection = RandomController.rollInt(0, 2); // Select one of the three corners
+		Vector2 tilePosition;
 		if(random_target_selection == 0){
-			target.getPosition().set(target.getRadius(), height - target.getRadius()); // Top-right corner
+			tilePosition = new Vector2(0, height-1); // Top-right corner
 		}else if(random_target_selection == 1){
-			target.getPosition().set(width - target.getRadius(), target.getRadius()); // Down-right corner
+			tilePosition = new Vector2(width-1, 0); // Down-right corner
 		}else{
-			target.getPosition().set(width - target.getRadius(), height - target.getRadius()); // Top-left corner
+			tilePosition = new Vector2(width-1, height-1); // Top-left corner
 		}
+		positionObjectOnTile(target, tilePosition, tile_size);
 
 		// add driftwood to objects
 		// TODO: Replace these after Technical prototype. location of wood should be in level json file
-		for (int ii = 0; ii < 32; ii ++) {
+		for (int ii = 0; ii < wood_amount; ii ++) {
 			Wood wood;
 			if(RandomController.rollInt(0, 1) == 0){
 				wood = new Wood(true);
@@ -209,7 +205,8 @@ public class GameplayController {
 				wood = new Wood(false);
 				wood.setTexture(woodTexture);
 			}
-			wood.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
+			tilePosition.set((int)(width*Math.random()), (int)(height*Math.random()));
+			positionObjectOnTile(wood, tilePosition, tile_size);
 			objects.add(wood);
 		}
 
@@ -217,39 +214,34 @@ public class GameplayController {
 		// TODO: Replace these after Technical prototype. location of rock should be in level json file
 		Obstacle rock = new Obstacle();
 		rock.setTexture(rockTexture);
-		rock.getPosition().set(width/2, height/2); // center of map
+		tilePosition.set((int)(width*0.5f), (int)(height*0.5f)); // center of map
+		positionObjectOnTile(rock, tilePosition, tile_size);
 		envs.add(rock);
 
 		// Create some currents to environment
 		// TODO: Replace these after Technical prototype. location of current should be in level json file
-		Current[] curs = new Current[4];
-		for(int ii = 0; ii < 4; ii ++){
-			curs[ii] = new Current();
-			switch (curs[ii].getDirection()) {
-				case EAST:
-					curs[ii].setTexture(currentTextures[0]);
-					break;
-				case WEST:
-					curs[ii].setTexture(currentTextures[1]);
-					break;
-				case NORTH:
-					curs[ii].setTexture(currentTextures[2]);
-					break;
-				case SOUTH:
-					curs[ii].setTexture(currentTextures[3]);
-					break;
+		int sep = 3;// creates currents in a loop which is 3 tiles away from the border
+		int clockwise = RandomController.rollInt(0, 1);// controls direction of loop
+		int num_currents = (width-2*sep)*(height-2*sep)-(width-2*sep-2)*(height-2*sep-2);
+		if(num_currents >= 4) {
+			if (clockwise == 1) {
+				createLineOfCurrent(sep, sep, sep, height-sep-2, tile_size);
+				createLineOfCurrent(sep, height-sep-1, width-sep-2, height-sep-1, tile_size);
+				createLineOfCurrent(width-sep-1, height-sep-1, width-sep-1, sep+1, tile_size);
+				createLineOfCurrent(width-sep-1, sep, sep+1, sep, tile_size);
+			} else {
+				createLineOfCurrent(width-sep-1, sep, width-sep-1, height-sep-2, tile_size);
+				createLineOfCurrent(width-sep-1, height-sep-1, sep+1, height-sep-1, tile_size);
+				createLineOfCurrent(sep, height-sep-1, sep, sep+1, tile_size);
+				createLineOfCurrent(sep, sep, width-sep-2, sep, tile_size);
 			}
-			envs.add(curs[ii]);
 		}
-		curs[0].getPosition().set(width/4, height/4);
-		curs[1].getPosition().set(3 * width/4, height/4);
-		curs[2].getPosition().set(width/4, 3 * height/4);
-		curs[3].getPosition().set(3 * width/4, 3 * height/4);
 
 		// Add some enemy to the environment
 		// TODO: Replace these after Technical prototype. location of current should be in level json file
-		Enemy e = new Enemy();
-		e.getPosition().set((float)(width*Math.random()), (float)(height*Math.random()));
+		Enemy e = new Enemy(player);
+		tilePosition.set((int)(width*Math.random()), (int)(height*Math.random()));
+		positionObjectOnTile(e, tilePosition, tile_size);
 		e.setTexture(enemyTexture);
 		objects.add(e);
 
@@ -263,6 +255,45 @@ public class GameplayController {
 		// TODO Find better way to set textures?
 		grid.setOceanTexture(oceanTexture);
 
+	}
+
+	/**
+	 * Creates a line of current tiles from the tile (x0, y0) to the tile (x1, y1) and adds them to envs.
+	 * Automatically gives currents the right direction.
+	 * Requires that either x0==x1 or y0==y1, but not both. Otherwise, nothing will happen.
+	 */
+	private void createLineOfCurrent(int x0, int y0, int x1, int y1, float tile_size) {
+		if (x0 == x1 && y0 != y1) {
+			int tilex = x0;
+			Current.Direction dir = (y1 > y0) ? Current.Direction.NORTH : Current.Direction.SOUTH;
+			for (int i = 0; i < Math.abs(y1-y0)+1; i++) {
+				int tiley = y0 + i * (y1 > y0 ? 1 : -1);
+				Current cur = new Current(dir);
+				cur.setTexture(currentTextures[0]);// one texture for all directions
+				positionObjectOnTile(cur, new Vector2(tilex, tiley), tile_size);
+				envs.add(cur);
+			}
+		} else if (y0 == y1 && x0 != x1) {
+			int tiley = y0;
+			Current.Direction dir = (x1 > x0) ? Current.Direction.EAST : Current.Direction.WEST;
+			for (int i = 0; i < Math.abs(x1-x0)+1; i++) {
+				int tilex = x0 + i * (x1 > x0 ? 1 : -1);
+				Current cur = new Current(dir);
+				cur.setTexture(currentTextures[0]);// one texture for all directions
+				positionObjectOnTile(cur, new Vector2(tilex, tiley), tile_size);
+				envs.add(cur);
+			}
+		} else {
+			System.out.println("The method createLineOfCurrent was used improperly and no currents were created.");
+		}
+	}
+
+	/**
+	 * Sets the position of the given object to be centered on the given tile (in integer tile coords).
+	 * This modifies both objects.
+	 */
+	private void positionObjectOnTile(Environment obj, Vector2 tile, float tile_size) {
+		obj.getPosition().set(tile.add(0.5f, 0.5f).scl(tile_size));
 	}
 
 	/**
@@ -307,9 +338,6 @@ public class GameplayController {
 	 * Some objects do something special (e.g. explode) on destruction. That is handled 
 	 * in this method.
 	 *
-	 * Notice that this allocates memory to the heap.  If we were REALLY worried about 
-	 * performance, we would use a memory pool here.
-	 *
 	 * @param o Object to destroy
 	 */
 	protected void destroy(GameObject o) {
@@ -320,10 +348,8 @@ public class GameplayController {
 			break;
 		case WOOD:
 			Wood w = (Wood) o;
-			player_health += w.getWood();
-			if(player_health > MAXIMUM_PLAYER_HEALTH){
-				player_health = MAXIMUM_PLAYER_HEALTH;
-			}
+			if (player != null)
+				player.addHealth(w.getWood());
 			break;
 		case TARGET:
 			target = null;
@@ -335,49 +361,42 @@ public class GameplayController {
 	}
 	
 	/**
-	 * Resolve the actions of all game objects (player and shells)
-	 *
-	 * You will probably want to modify this heavily in Part 2.
+	 * Resolve the actions of all game objects
 	 *
 	 * @param input  Reference to the input controller
 	 * @param delta  Number of seconds since last animation frame
 	 */
 	public void resolveActions(InputController input, float delta) {
-		// If player is alive and not reach the target Process the player
-		if (player != null && target != null) {
-			resolvePlayer(input,delta);
-		}
-
-		// If player is dead, kill the player
-		if(player != null && player_health < 0){
-			player.setDestroyed(true);
-		}
-
-		// Process the other (non-ship) objects.
-		for (GameObject o : objects) {
-			o.update(delta);
+		if (isAlive()) {
+			if (!isWin()) { // If player is alive and hasn't reached the target,
+				resolvePlayer(input,delta); // process the player
+				if (player.getHealth() <= 0) // destroy player if health is 0
+					player.setDestroyed(true);
+				// Process the other (non-player) objects.
+				for (GameObject o : objects) {
+					if (o.getType() != Environment.ObjectType.SHIP)
+						o.update(delta);
+				}
+			}
+			player_cached_health = player.getHealth(); // cache player health
 		}
 	}
 
 	/**
 	 * Process the player's actions.
 	 *
-	 * Notice that firing bullets allocates memory to the heap.  If we were REALLY 
-	 * worried about performance, we would use a memory pool here.
-	 *
 	 * @param input  Reference to the input controller
 	 * @param delta  Number of seconds since last animation frame
 	 */
 	public void resolvePlayer(InputController input, float delta) {
 		Vector2 movement = input.getMovement();
-		player_health -= Math.abs(movement.len());
 		player.setMovement(movement);
 		player.update(delta);
 	}
 
 	/** @return float represent the health of the player */
 	public float getProgress(){
-		return player_health / MAXIMUM_PLAYER_HEALTH;
+		return getPlayerHealth()/player.MAXIMUM_PLAYER_HEALTH;
 	}
 
 	/** @return boolean represent if the player has won the game */
@@ -394,13 +413,23 @@ public class GameplayController {
 		}
 	}
 
+	/** @return the player's last known health */
+	public float getPlayerHealth() {
+		if(player != null){
+			return player.getHealth();
+		}else{
+			return player_cached_health;
+		}
+	}
+
 	/** @return the player's star level */
 	public int getStar(){
-		if(player_health > 70){
+		float h = getPlayerHealth();
+		if (h > 70) {
 			return 3;
-		}else if(player_health > 25){
+		} else if (h > 25) {
 			return 2;
-		}else{
+		} else {
 			return 1;
 		}
 	}

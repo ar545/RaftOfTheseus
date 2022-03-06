@@ -38,26 +38,51 @@ public class Current extends Environment {
 
     /** constructor with known direction */
     public Current(Direction direction){
+        super();
+        radius = 50;
         this.direction = direction;
+        setRotationFromDirection();
     }
 
     /** constructor with random direction */
     public Current(){
+        super();
+        radius = 50;
         switch(RandomController.rollInt(0,3)){
             case 0:
-                this.direction = Direction.NORTH;
+                direction = Direction.NORTH;
                 break;
             case 1:
-                this.direction = Direction.EAST;
+                direction = Direction.EAST;
                 break;
             case 2:
-                this.direction = Direction.SOUTH;
+                direction = Direction.SOUTH;
                 break;
             case 3:
-                this.direction = Direction.WEST;
+                direction = Direction.WEST;
                 break;
             default:
-                this.direction = Direction.NONE;
+                direction = Direction.NONE;
+                break;
+        }
+        setRotationFromDirection();
+    }
+
+    private void setRotationFromDirection() {
+        switch(direction){
+            case EAST:
+                rotation = 0.0f;
+                break;
+            case NORTH:
+                rotation = 90.0f;
+                break;
+            case WEST:
+                rotation = 180.0f;
+                break;
+            case SOUTH:
+                rotation = -90.0f;
+                break;
+            default:
                 break;
         }
     }
