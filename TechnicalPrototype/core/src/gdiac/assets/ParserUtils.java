@@ -6,7 +6,7 @@
  * @author Walker M. White
  * @data   04/20/2020
  */
-package assets;
+package gdiac.assets;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;

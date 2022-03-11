@@ -7,7 +7,7 @@
  * @author Walker M. White
  * @data   04/20/2020
  */
-package assets;
+package gdiac.assets;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.utils.JsonValue;

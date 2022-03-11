@@ -1,69 +1,61 @@
 /*
- * SoundBufferLoader.java
+ * JsonValueLoader.java
  *
- * This is a simple loader for processing sound buffers (and making them assets managed
- * by the asset manager.  This is required for using the new audio engine.
+ * This is a simple loader for processing json files (and making them assets managed
+ * by the asset manager.
  *
  * This code is based on the template for SoundLoader by mzechner.
  *
  * @author Walker M. White
  * @data   04/20/2020
  */
-package assets;
+package gdiac.assets;
 
-import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.assets.loaders.*;
 import com.badlogic.gdx.assets.loaders.resolvers.InternalFileHandleResolver;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.audio.*;
 
 /**
- * This class is an {@link AssetLoader} to load {@link Sound} assets.
- *
- * Given the primitive state of LibGDX audio, we cannot do much more than
- * specify the filename when loading the asset.
+ * This class is an {@link AssetLoader} to load {@link JsonValue} assets.
  */
-public class SoundLoader extends AsynchronousAssetLoader<Sound, SoundLoader.SoundParameters> {
-    /** A reference to the file handle resolver (inaccessible in parent class) */
-    protected FileHandleResolver resolver;
-    /** The asynchronously read Sound */
-    private Sound cachedSound;
+public class JsonValueLoader extends AsynchronousAssetLoader<JsonValue, JsonValueLoader.JsonValueParameters> {
+    /** The asynchronously read JsonValue */
+    protected JsonValue cachedData;
 
     /**
-     * The definable parameters for a {@link Sound} object.
+     * The definable parameters for a {@link JsonValue}.
      */
-	static public class SoundParameters extends AssetLoaderParameters<Sound> {
+    public static class JsonValueParameters extends AssetLoaderParameters<JsonValue> {
         // Since everything is defined in the file, nothing to do here
     }
-
+    
     /**
-     * Creates a new SoundBufferLoader with an internal file resolver
+     * Creates a new JsonValueLoader with an internal file resolver
      */
-    public SoundLoader() {
+    public JsonValueLoader() {
         this(new InternalFileHandleResolver());
     }
 
     /**
-     * Creates a new SoundBufferLoader with the given file resolver
+     * Creates a new JsonValueLoader with the given file resolver
      *
      * @param resolver    The file resolver
      */
-    public SoundLoader(FileHandleResolver resolver) {
+    public JsonValueLoader (FileHandleResolver resolver) {
         super(resolver);
-        this.resolver = resolver;
     }
 
     /** 
-     * Returns the {@link Sound} instance currently loaded by this loader.
+     * Returns the {@link JsonValue} instance currently loaded by this loader.
      *
      * If nothing has been loaded, this returns {@code null}.
      *
-     * @return the {@link Sound} instance currently loaded by this loader.
+     * @return the {@link JsonValue} instance currently loaded by this loader.
      */
-    protected Sound getLoadedSound () {
-        return cachedSound;
+    protected JsonValue getLoadedJSON() {
+        return cachedData;
     }
 
     /** 
@@ -78,8 +70,9 @@ public class SoundLoader extends AsynchronousAssetLoader<Sound, SoundLoader.Soun
      * @param params    The parameters to use for loading the asset 
      */
     @Override
-    public void loadAsync (AssetManager manager, String fileName, FileHandle file, SoundParameters params) {
-        cachedSound = Gdx.audio.newSound(file);
+    public void loadAsync (AssetManager manager, String fileName, FileHandle file, JsonValueParameters params) {
+        JsonReader reader = new JsonReader();
+        cachedData = reader.parse(file);
     }
 
     /** 
@@ -94,10 +87,10 @@ public class SoundLoader extends AsynchronousAssetLoader<Sound, SoundLoader.Soun
      * @param params    The parameters to use for loading the asset 
      */
     @Override
-    public Sound loadSync (AssetManager manager, String fileName, FileHandle file, SoundParameters params) {
-        Sound sound = cachedSound;
-        cachedSound = null;
-        return sound;
+    public JsonValue loadSync (AssetManager manager, String fileName, FileHandle file, JsonValueParameters params) {
+        JsonValue json = cachedData;
+        cachedData = null;
+        return json;
     }
 
     /** 
@@ -113,8 +106,8 @@ public class SoundLoader extends AsynchronousAssetLoader<Sound, SoundLoader.Soun
      * @return the other assets this asset requires to be loaded first. 
      */
     @Override
-    public Array<AssetDescriptor> getDependencies (String fileName, FileHandle file, SoundParameters params) {
+    public Array<AssetDescriptor> getDependencies (String fileName, FileHandle file, JsonValueParameters params) {
         return null;
     }
 
-}  
+}

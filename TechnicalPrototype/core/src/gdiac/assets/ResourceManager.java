@@ -11,7 +11,7 @@
  * @author Walker M. White
  * @date   4/1/2020
  */
-package assets;
+package gdiac.assets;
 
 import com.badlogic.gdx.utils.*;
 
