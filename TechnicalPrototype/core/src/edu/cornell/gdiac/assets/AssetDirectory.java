@@ -14,7 +14,7 @@
  * @author Walker M. White
  * @date   4/18/2020
  */
-package gdiac.assets;
+package edu.cornell.gdiac.assets;
 
 import com.badlogic.gdx.assets.loaders.MusicLoader;
 import com.badlogic.gdx.assets.loaders.SoundLoader;

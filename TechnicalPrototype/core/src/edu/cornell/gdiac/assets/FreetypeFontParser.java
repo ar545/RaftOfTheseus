@@ -8,7 +8,7 @@
  * @author Walker M. White
  * @data   04/20/2020
  */
-package gdiac.assets;
+package edu.cornell.gdiac.assets;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Color;

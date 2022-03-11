@@ -1,4 +1,4 @@
-package gdiac.assets;
+package edu.cornell.gdiac.assets;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
