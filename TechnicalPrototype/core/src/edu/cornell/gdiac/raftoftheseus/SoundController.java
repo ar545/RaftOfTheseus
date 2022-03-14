@@ -3,6 +3,7 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -12,10 +13,12 @@ public class SoundController {
     private float sfxVolume = 1.0f;
     /** Master volume for Music */
     private float musicVolume = 1.0f;
+    /** Set screen distance to calculate sound decay */
+    private float decayDistance = 400f;
     /** Json to hold all sfx names for future reference. */
-    private JsonValue sfxNames;
+    private Array<JsonValue> sfxPresets;
     /** Json to hold all music names for future reference. */
-    private JsonValue musicNames;
+    private Array<JsonValue> musicPresets;
     /** ArrayMap to link sfx names to Sound instances. */
     private ArrayMap<String, Sound> sfx;
     /** ArrayMap to link music names to Music instances. */
@@ -33,10 +36,10 @@ public class SoundController {
      * @param directory	Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
+        if (!assertObjects(sfxPresets, musicPresets)) throw new NullPointerException("Constructor not called.");
         dir = directory;
-        sfxNames = dir.getEntry("sfx", JsonValue.class);
-        musicNames = dir.getEntry("music", JsonValue.class);
-        if (!assertObjects(sfxNames, musicNames)) throw new NullPointerException("Sound and music not loaded properly.");
+        sfxPresets.add(dir.getEntry("sfx", JsonValue.class));
+        musicPresets.add(dir.getEntry("music", JsonValue.class));
     }
 
     /**
@@ -52,17 +55,19 @@ public class SoundController {
      * Constructor that initializes sfx and music variables.
      */
     public SoundController(){
+        sfxPresets = new Array<>();
+        musicPresets = new Array<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
     }
 
     /**
-     * Sets the values in sfx and music based on provided JsonValue.
+     * Sets the values in sfx and music based on provided ids.
      * Must be called every Controller change due to memory constraints on sounds.
      * @param sounds is the JsonValue that contains text references to all sounds
      */
-    public void setSounds(JsonValue sounds){
-        sounds.getString("wood", "");
+    public void setSFXPreset(int sfxPreset, int musicPreset){
+
     }
 
     /**
@@ -82,14 +87,37 @@ public class SoundController {
     }
 
     /**
-     * Plays sfx with the filename name. Returns if not found.
+     * Plays sfx with the filename name at given volume sfxvol. Returns if not found.
      * @param name of sfx
+     * @param sfxvol between 0 and 1.
      */
-    public void playSound(String name){
+    private void playSound(float sfxvol, String name){
         Sound s = sfx.get(name);
         if (s == null) return;
         long id = s.play();
-        s.setVolume(id, sfxVolume);
+        s.setVolume(id, sfxvol);
+    }
+
+    /**
+     * Plays sfx with the filename name at full sfxVolume. Returns if not found.
+     * @param name of sfx
+     */
+    public void playSound(String name){
+        playSound(sfxVolume, name);
+    }
+
+    /**
+     * Plays sfx with the filename at volume governed by distance.
+     * @param name of sfx
+     * @param distance of source from player
+     */
+    public void playSound(String name, float distance){
+        // Play at full volume
+        if (distance < decayDistance){
+            playSound(name);
+        }
+        // Calculate new volume with v2 = v1 * r1/r2
+        playSound(sfxVolume * decayDistance / distance, name);
     }
 
     /**
