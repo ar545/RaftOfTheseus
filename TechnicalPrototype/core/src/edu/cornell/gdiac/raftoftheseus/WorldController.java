@@ -17,13 +17,6 @@ import java.util.Iterator;
 public class WorldController implements Screen, ContactListener {
 
     // CONSTANTS
-    /** Width of the game world in Box2d units */
-    protected static final float DEFAULT_WIDTH  = 32.0f;
-    /** Height of the game world in Box2d units */
-    protected static final float DEFAULT_HEIGHT = 18.0f;
-    /** The default value of gravity (going down) */
-    protected static final float DEFAULT_GRAVITY = -4.9f;
-
     /** Exit code for quitting the game */
     public static final int EXIT_QUIT = 0;
     /** Exit code for advancing to next level */
@@ -65,22 +58,12 @@ public class WorldController implements Screen, ContactListener {
     private boolean complete;
     /** Whether we have failed at this world (and need a reset) */
     private boolean failed;
-    /** Whether or not debug mode is active */
-    private boolean debug;
+//    /** Whether or not debug mode is active */
+//    private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
 
-    /**
-     * Creates a new game world with the default values.
-     *
-     * The game world is scaled so that the screen coordinates do not agree
-     * with the Box2d coordinates.  The bounds are in terms of the Box2d
-     * world, not the screen.
-     */
-    protected WorldController() {
-        this(new Rectangle(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),
-                new Vector2(0,DEFAULT_GRAVITY));
-    }
+
 
     /**
      * Creates a new game world
@@ -88,21 +71,17 @@ public class WorldController implements Screen, ContactListener {
      * The game world is scaled so that the screen coordinates do not agree
      * with the Box2d coordinates.  The bounds are in terms of the Box2d
      * world, not the screen.
-     *
-     * @param bounds	The game bounds in Box2d coordinates
-     * @param gravity	The gravitational force on this Box2d world
      */
-    protected WorldController(Rectangle bounds, Vector2 gravity) {
+    protected WorldController() {
         levelModel = new LevelModel();
-        levelModel.world = new World(gravity,false);
-        levelModel.bounds = new Rectangle(bounds);
-        levelModel.scale = new Vector2(1,1);
         this.complete = false;
         this.failed = false;
-        this.debug  = false;
+//        this.debug  = false;
         this.active = false;
         this.countdown = -1;
     }
+
+    /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
 
     /**
      * Returns the canvas associated with this controller
@@ -125,8 +104,6 @@ public class WorldController implements Screen, ContactListener {
      */
     public void setCanvas(GameCanvas canvas) {
         this.canvas = canvas;
-//        this.scale.x = canvas.getWidth()/bounds.getWidth();
-//        this.scale.y = canvas.getHeight()/bounds.getHeight();
     }
 
 
@@ -188,6 +165,7 @@ public class WorldController implements Screen, ContactListener {
         levelModel.directory = directory;
     }
 
+    /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
 
     /**
      * Returns whether to process the update loop
@@ -203,21 +181,21 @@ public class WorldController implements Screen, ContactListener {
     public boolean preUpdate(float dt) {
 //        InputController input = InputController.getInstance();
 //        input.readInput(bounds, scale);
-//        if (listener == null) {
-//            return true;
-//        }
-//
-//        // Toggle debug
+        if (listener == null) {
+            return true;
+        }
+
+        // Toggle debug
 //        if (input.didDebug()) {
 //            debug = !debug;
 //        }
-//
-//        // Handle resets
+
+        // Handle resets
 //        if (input.didReset()) {
-//            reset();
+            reset();
 //        }
-//
-//        // Now it is time to maybe switch screens.
+
+        // Now it is time to maybe switch screens.
 //        if (input.didExit()) {
 //            pause();
 //            listener.exitScreen(this, EXIT_QUIT);
@@ -282,21 +260,22 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void update(float dt){
-//        // Process actions in object model
-//        levelModel.raft.setMovement(InputController.getInstance().getHorizontal() * levelModel.getPlayer().getForce());
-//        levelModel.raft.setJumping(InputController.getInstance().didPrimary());
-//        levelModel.raft.setShooting(InputController.getInstance().didSecondary());
-//
-//        // Add a bullet if we fire
-//        if (levelModel.raft.isShooting()) {
-//            createBullet();
-//        }
-//
-//        levelModel.raft.applyForce();
-//        if (levelModel.raft.isJumping()) {
-//            jumpId = playSound( jumpSound, jumpId, volume );
+        // Process actions in object model
+//        levelModel.getPlayer().setMovementX(InputController.getInstance().getHorizontal() * levelModel.getPlayer().getForce());
+//        levelModel.getPlayer().setMovementY(InputController.getInstance().getHorizontal() * levelModel.getPlayer().getForce());
+//        levelModel.getPlayer().setShooting(InputController.getInstance().didPrimary());
+//        levelModel.getPlayer().setDashing(InputController.getInstance().didSecondary());
+
+        // Add a bullet if we fire
+//        if (levelModel.getPlayer().isShooting()) {
+            createBullet();
 //        }
 
+//        levelModel.getPlayer().applyForce();
+        resolveSounds();
+    }
+
+    private void resolveSounds() {
     }
 
     /**
@@ -345,11 +324,11 @@ public class WorldController implements Screen, ContactListener {
     @Override
     public void render(float delta) {
         if (active) {
-            if (preUpdate(delta)) {
-                update(delta); // This is the one that must be defined.
-                postUpdate(delta);
+            if (preUpdate(delta)) { // Check for level reset and win/lose condition
+                update(delta); // Update player actions, set Forces
+                postUpdate(delta); // Call Physics Engine and update enemy AI
             }
-            draw(delta);
+            draw(delta); // Draw to canvas
         }
     }
 
@@ -363,9 +342,7 @@ public class WorldController implements Screen, ContactListener {
      * @param height The new height in pixels
      */
     @Override
-    public void resize(int width, int height) {
-
-    }
+    public void resize(int width, int height) {}
 
     /**
      * Called when the Screen is paused.
@@ -374,9 +351,7 @@ public class WorldController implements Screen, ContactListener {
      * also paused before it is destroyed.
      */
     @Override
-    public void pause() {
-
-    }
+    public void pause() {}
 
     /**
      * Dispose of all (non-static) resources allocated to this mode.
@@ -413,9 +388,7 @@ public class WorldController implements Screen, ContactListener {
         active = false;
     }
 
-    /*
-    ******************************** PHYSICS ************************************/
-
+    /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
     /**
      * Remove a new bullet from the world.
      *
@@ -519,8 +492,7 @@ public class WorldController implements Screen, ContactListener {
 
     }
 
-    /*
-     ******************************** Set and Reset Level ************************************/
+    /*=*=*=*=*=*=*=*=*=* Set and Reset Level *=*=*=*=*=*=*=*=*=*/
     /**
      * Sets whether the level is completed.
      *

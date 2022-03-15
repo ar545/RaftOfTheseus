@@ -29,6 +29,17 @@ public class LevelModel {
     protected Vector2 grid_size;
     /** Vector 2 holding the temp position vector for the game object to create */
     private Vector2 compute_temp = new Vector2(0, 0);
+    /** Default width and height of a single grid in Box2d units */
+    protected static final float DEFAULT_GIRD_EDGE_LENGTH = 3.0f;
+    /** Default boundary width and height of a single grid in Box2d units */
+    protected static final float DEFAULT_BOUNDARY = 1.0f;
+    /** Default num of rows in the map (y, height) */
+    protected static final int DEFAULT_GRID_ROW = 6;
+    /** Default num of columns in the map (x, width) */
+    protected static final int DEFAULT_GRID_COL = 10;
+
+
+
 
     /** All the objects in the world. */
     private PooledList<GameObject> objects  = new PooledList<GameObject>();
@@ -61,7 +72,7 @@ public class LevelModel {
      *
      * @return true if the object is in bounds.
      */
-    public boolean inBounds(GameObject obj) {
+    private boolean inBounds(GameObject obj) {
         boolean horiz = (bounds.x <= obj.getX() && obj.getX() <= bounds.x+bounds.width);
         boolean vert  = (bounds.y <= obj.getY() && obj.getY() <= bounds.y+bounds.height);
         return horiz && vert;
@@ -76,7 +87,7 @@ public class LevelModel {
      *
      * param obj The object to add
      */
-    public void addQueuedObject(GameObject obj) {
+    protected void addQueuedObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         addQueue.add(obj);
     }
@@ -138,19 +149,35 @@ public class LevelModel {
 
     /** Set the physical boundary of the level. This boundary will be enforced when adding objects */
     private void setBound(JsonValue world_data) {
-        int num_col = world_data.getInt("num_col", 1);
-        int num_row = world_data.getInt("num_row", 1);
-        float col_width = world_data.getFloat("col_width", 1f);
-        float row_height = world_data.getFloat("row_height", 1f);
+        int num_col = world_data.getInt("num_col", DEFAULT_GRID_COL);
+        int num_row = world_data.getInt("num_row", DEFAULT_GRID_ROW);
+        float col_width = world_data.getFloat("col_width", DEFAULT_GIRD_EDGE_LENGTH);
+        float row_height = world_data.getFloat("row_height", DEFAULT_GIRD_EDGE_LENGTH);
         this.grid_size = new Vector2(col_width, row_height);
-        this.bounds = new Rectangle(0,0,col_width * num_col,row_height * num_row);
-        this.scale = new Vector2(world_data.getFloat("draw_scale_x", 1), world_data.getFloat("draw_scale_y", 1));
-
+        this.bounds = new Rectangle(0,0,col_width * num_col + 2 * DEFAULT_BOUNDARY,
+                row_height * num_row + 2 * DEFAULT_BOUNDARY);
+        this.scale = new Vector2(world_data.getFloat("draw_scale_x", 1),
+                world_data.getFloat("draw_scale_y", 1));
+        addWall(col_width * num_col, row_height * num_row);
     }
 
-    /** Populate the level with the game objects
+    private void addWall(float x, float y) {
+//        addObject(new Wall(0, 0, x+ LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY)); // GameObject south_wall
+//        addObject(new Wall(0, LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY));  // GameObject west_wall
+//        addObject(new Wall(LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY, x+2* LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY)); // GameObject north_wall
+//        addObject(new Wall(x+ LevelModel.DEFAULT_BOUNDARY, 0, x+2* LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY)); // GameObject east_wall
+    }
+
+//    private void addWallAlternative(float x, float y, float k) {
+//        addObject(new Wall(0, 0, x+k, k)); // GameObject south_wall
+//        addObject(new Wall(0, k, k, y+2*k));  // GameObject west_wall
+//        addObject(new Wall(k, y+k, x+2*k, y+2*k)); // GameObject north_wall
+//        addObject(new Wall(x+k, 0, x+2*k, y+k)); // GameObject east_wall
+//    }
+
+    /** Populate the level with the game objects.
      * Precondition: gameObject list has been cleared. */
-    public void populateLevel() {
+    protected void populateLevel() {
         addCurrent(level_data.get("current"));
         addWood(level_data.get("wood"));
         addRocks(level_data.get("rocks"));
