@@ -8,7 +8,7 @@
     "current_quantity" : 10,
     "rock_quantity" : 10
   },
-  "world" :  {
+  "bounds" :  {
     "num_col" : 10,
     "num_row" : 10,
     "col_width" : 100,

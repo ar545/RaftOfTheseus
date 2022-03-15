@@ -124,7 +124,32 @@ public class LevelModel {
     }
 
 
-    /** Precondition: gameObject list has been cleared. */
+
+
+    /** Load the level representing by the parameter level_int.
+     * Read the level from the json file and call corresponding functions.
+     * Precondition: gameObject list has been cleared.
+     *
+     * @param level_int an integer representing the level selection, i.e. which json file to read from. */
+    public void loadLevel(int level_int){
+        level_data = directory.getEntry("levels:" + level_int, JsonValue.class);
+        setBound(level_data.get("bounds"));
+        populateLevel();
+    }
+
+    /** Set the physical boundary of the level. This boundary will be enforced when adding objects */
+    private void setBound(JsonValue world_data) {
+        int num_col = world_data.getInt("num_col", 1);
+        int num_row = world_data.getInt("num_row", 1);
+        float col_width = world_data.getFloat("col_width", 1f);
+        float row_height = world_data.getFloat("row_height", 1f);
+        this.bounds = new Rectangle(0,0,col_width * num_col,row_height * num_row);
+        this.scale = new Vector2(world_data.getFloat("draw_scale_x", 1), world_data.getFloat("draw_scale_y", 1));
+
+    }
+
+    /** Populate the level with the game objects
+     * Precondition: gameObject list has been cleared. */
     public void populateLevel() {
         addCurrent(level_data.get("current"), objects);
         addWood(level_data.get("wood"), objects);
@@ -133,15 +158,11 @@ public class LevelModel {
         addObject(addGoal(level_data.get("goal")));
     }
 
-    public void loadLevel(int level_int){
-        level_data = directory.getEntry("levels:" + level_int, JsonValue.class);
-        setWorld(level_data.get("world"), world);
-        populateLevel();
-    }
-
+    /** Add Goal Objects to the world */
     private GameObject addGoal(JsonValue goal) {
         return null;
     }
+
 
     private GameObject addRaft(JsonValue raft) {
         return null;
@@ -168,7 +189,5 @@ public class LevelModel {
         }
     }
 
-    private void setWorld(JsonValue world, World world1) {
 
-    }
 }
