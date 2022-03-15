@@ -144,7 +144,7 @@ public class WorldController implements Screen, ContactListener {
 //        canvas.clear();
 
         canvas.begin();
-        for(GameObject obj : levelModel.objects) {
+        for(GameObject obj : levelModel.getObjects()) {
             obj.draw(canvas);
         }
         canvas.end();
@@ -250,9 +250,9 @@ public class WorldController implements Screen, ContactListener {
     private void createBullet() {
 //        JsonValue bulletjv = constants.get("bullet");
 //        float offset = bulletjv.getFloat("offset",0);
-//        offset *= (avatar.isFacingRight() ? 1 : -1);
+//        offset *= (getPlayer().isFacingRight() ? 1 : -1);
 //        float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
-//        WheelObstacle bullet = new WheelObstacle(avatar.getX()+offset, avatar.getY(), radius);
+//        WheelObstacle bullet = new WheelObstacle(getPlayer().getX()+offset, getPlayer().getY(), radius);
 //
 //        bullet.setName("bullet");
 //        bullet.setDensity(bulletjv.getFloat("density", 0));
@@ -263,7 +263,7 @@ public class WorldController implements Screen, ContactListener {
 //
 //        // Compute position and velocity
 //        float speed = bulletjv.getFloat( "speed", 0 );
-//        speed  *= (avatar.isFacingRight() ? 1 : -1);
+//        speed  *= (getPlayer().isFacingRight() ? 1 : -1);
 //        bullet.setVX(speed);
 //        addQueuedObject(bullet);
 //
@@ -283,17 +283,17 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
 //        // Process actions in object model
-//        levelModel.avatar.setMovement(InputController.getInstance().getHorizontal() * levelModel.avatar.getForce());
-//        levelModel.avatar.setJumping(InputController.getInstance().didPrimary());
-//        levelModel.avatar.setShooting(InputController.getInstance().didSecondary());
+//        levelModel.raft.setMovement(InputController.getInstance().getHorizontal() * levelModel.getPlayer().getForce());
+//        levelModel.raft.setJumping(InputController.getInstance().didPrimary());
+//        levelModel.raft.setShooting(InputController.getInstance().didSecondary());
 //
 //        // Add a bullet if we fire
-//        if (levelModel.avatar.isShooting()) {
+//        if (levelModel.raft.isShooting()) {
 //            createBullet();
 //        }
 //
-//        levelModel.avatar.applyForce();
-//        if (levelModel.avatar.isJumping()) {
+//        levelModel.raft.applyForce();
+//        if (levelModel.raft.isJumping()) {
 //            jumpId = playSound( jumpSound, jumpId, volume );
 //        }
 
@@ -310,8 +310,8 @@ public class WorldController implements Screen, ContactListener {
      */
     public void postUpdate(float dt) {
         // Add any objects created by actions
-        while (!levelModel.addQueue.isEmpty()) {
-            levelModel.addObject(levelModel.addQueue.poll());
+        while (!levelModel.getAddQueue().isEmpty()) {
+            levelModel.addObject(levelModel.getAddQueue().poll());
         }
 
         // Turn the physics engine crank.
@@ -320,7 +320,7 @@ public class WorldController implements Screen, ContactListener {
         // Garbage collect the deleted objects.
         // Note how we use the linked list nodes to delete O(1) in place.
         // This is O(n) without copying.
-        Iterator<PooledList<GameObject>.Entry> iterator = levelModel.objects.entryIterator();
+        Iterator<PooledList<GameObject>.Entry> iterator = levelModel.getObjects().entryIterator();
         while (iterator.hasNext()) {
             PooledList<GameObject>.Entry entry = iterator.next();
             GameObject obj = entry.getValue();
@@ -451,24 +451,24 @@ public class WorldController implements Screen, ContactListener {
             GameObject bd2 = (GameObject)body2.getUserData();
 
             // Test bullet collision with world
-            if (bd1.getName().equals("bullet") && bd2 != levelModel.raft) {
+            if (bd1.getName().equals("bullet") && bd2 != levelModel.getPlayer()) {
                 removeBullet(bd1);
             }
 
-            if (bd2.getName().equals("bullet") && bd1 != levelModel.raft) {
+            if (bd2.getName().equals("bullet") && bd1 != levelModel.getPlayer()) {
                 removeBullet(bd2);
             }
 
 //            // See if we have landed on the ground.
-//            if ((levelModel.avatar.getSensorName().equals(fd2) && levelModel.avatar != bd1) ||
-//                    (levelModel.avatar.getSensorName().equals(fd1) && levelModel.avatar != bd2)) {
-//                levelModel.avatar.setGrounded(true);
-//                sensorFixtures.add(levelModel.avatar == bd1 ? fix2 : fix1); // Could have more than one ground
+//            if ((levelModel.getPlayer().getSensorName().equals(fd2) && levelModel.getPlayer() != bd1) ||
+//                    (levelModel.getPlayer().getSensorName().equals(fd1) && levelModel.getPlayer() != bd2)) {
+//                levelModel.getPlayer().setGrounded(true);
+//                sensorFixtures.add(levelModel.getPlayer() == bd1 ? fix2 : fix1); // Could have more than one ground
 //            }
 
             // Check for win condition
-            if ((bd1 == levelModel.raft && bd2 == levelModel.goal) ||
-                    (bd1 == levelModel.goal && bd2 == levelModel.raft)) {
+            if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
+                    (bd1 == levelModel.getGoal() && bd2 == levelModel.getPlayer())) {
                 setComplete(true);
             }
         } catch (Exception e) {
@@ -498,11 +498,11 @@ public class WorldController implements Screen, ContactListener {
 //        Object bd1 = body1.getUserData();
 //        Object bd2 = body2.getUserData();
 //
-//        if ((levelModel.avatar.getSensorName().equals(fd2) && levelModel.avatar != bd1) ||
-//                (levelModel.avatar.getSensorName().equals(fd1) && levelModel.avatar != bd2)) {
-//            sensorFixtures.remove(levelModel.avatar == bd1 ? fix2 : fix1);
+//        if ((levelModel.getPlayer().getSensorName().equals(fd2) && levelModel.getPlayer() != bd1) ||
+//                (levelModel.getPlayer().getSensorName().equals(fd1) && levelModel.getPlayer() != bd2)) {
+//            sensorFixtures.remove(levelModel.getPlayer() == bd1 ? fix2 : fix1);
 ////            if (sensorFixtures.size == 0) {
-////                levelModel.avatar.setGrounded(false);
+////                levelModel.getPlayer().setGrounded(false);
 ////            }
 //        }
     }
@@ -583,7 +583,7 @@ public class WorldController implements Screen, ContactListener {
         levelModel.world.setContactListener(this);
         setComplete(false);
         setFailure(false);
-        levelModel.setLevel(level_int);
+        levelModel.loadLevel(level_int);
 
     }
 

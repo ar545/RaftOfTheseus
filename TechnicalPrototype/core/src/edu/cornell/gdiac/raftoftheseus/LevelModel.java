@@ -9,8 +9,11 @@ import edu.cornell.gdiac.util.PooledList;
 
 public class LevelModel {
 
-    public GameObject raft;
-    public GameObject goal;
+
+    // TODO: class Raft/Player
+    private GameObject raft;
+    // TODO: class Goal/Target
+    private GameObject goal;
     public AssetDirectory directory;
     JsonValue level_data;
     /** The Box2D world */
@@ -19,15 +22,31 @@ public class LevelModel {
     protected Rectangle bounds;
     /** The world scale */
     protected Vector2 scale;
+
     /** All the objects in the world. */
-    protected PooledList<GameObject> objects  = new PooledList<GameObject>();
+    private PooledList<GameObject> objects  = new PooledList<GameObject>();
     /** Queue for adding objects */
-    protected PooledList<GameObject> addQueue = new PooledList<GameObject>();
+    private PooledList<GameObject> addQueue = new PooledList<GameObject>();
 
     public static final Vector2 NO_GRAVITY = new Vector2(0f ,0f );
 
 
+    public GameObject getPlayer() {
+        return raft;
+    }
 
+    public GameObject getGoal() {
+        return goal;
+    }
+
+
+    public PooledList<GameObject> getObjects() {
+        return objects;
+    }
+
+    public PooledList<GameObject> getAddQueue() {
+        return addQueue;
+    }
 
 
     /**
@@ -105,14 +124,16 @@ public class LevelModel {
     }
 
 
+    /** Precondition: gameObject list has been cleared. */
     public void populateLevel() {
         addCurrent(level_data.get("current"), objects);
         addWood(level_data.get("wood"), objects);
         addRocks(level_data.get("rocks"), objects);
-        objects.add(addRaft(level_data.get("raft")));
-        objects.add(addGoal(level_data.get("goal")));
+        addObject(addRaft(level_data.get("raft")));
+        addObject(addGoal(level_data.get("goal")));
     }
-    public void setLevel(int level_int){
+
+    public void loadLevel(int level_int){
         level_data = directory.getEntry("levels:" + level_int, JsonValue.class);
         setWorld(level_data.get("world"), world);
         populateLevel();
@@ -129,21 +150,21 @@ public class LevelModel {
     private void addRocks(JsonValue rocks, PooledList<GameObject> objs) {
         for (JsonValue rock: rocks) {
 //            GameObject this_rock = new Rock(rock.get("x"), rock.get("y"));
-//            objs.add(this_rock);
+//            addObject(this_rock);
         }
     }
 
     private void addWood(JsonValue woods, PooledList<GameObject> objs) {
         for (JsonValue wood: woods) {
 //            GameObject this_wood = new Wood(wood.get("x"), wood.get("y"), wood.get("value"));
-//            objs.add(this_wood);
+//            addObject(this_wood);
         }
     }
 
     private void addCurrent(JsonValue currents, PooledList<GameObject> objs) {
         for (JsonValue current : currents) {
 //            GameObject this_current = new Current(current.get("x"), current.get("y"), current.get("direction"), current.get("speed"));
-//            objs.add(this_current);
+//            addObject(this_current);
         }
     }
 
