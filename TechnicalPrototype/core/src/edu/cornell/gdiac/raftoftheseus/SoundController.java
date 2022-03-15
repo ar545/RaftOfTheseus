@@ -71,7 +71,7 @@ public class SoundController {
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
-        isTrading = false;
+        STATE = TradeState.STEADY;
     }
 
     /**
