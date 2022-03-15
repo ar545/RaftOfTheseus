@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -88,13 +89,15 @@ public class SoundController {
      * Loads sfx with the appropriate sound instances.
      */
     private void setSFXs(){
-
+        sfx.clear();
     }
 
     /**
      * Loads music with the appropriate music instances.
      */
-    private void setMusic(){}
+    private void setMusic(){
+        music.clear();
+    }
 
     /**
      * Sets the values in sfx and music based on provided ids.
@@ -134,11 +137,11 @@ public class SoundController {
      * @param name of sfx
      * @param sfxvol between 0 and 1.
      */
-    private void playSFX(float sfxvol, String name){
+    private void playSFX(float pan, float sfxvol, String name){
         Sound s = sfx.get(name);
         if (s == null) return;
         long id = s.play();
-        s.setVolume(id, sfxvol);
+        s.setPan(id, pan, sfxvol);
     }
 
     /**
@@ -146,7 +149,7 @@ public class SoundController {
      * @param name of sfx
      */
     public void playSFX(String name){
-        playSFX(sfxVolume, name);
+        playSFX(0, sfxVolume, name);
     }
 
     /**
@@ -154,13 +157,13 @@ public class SoundController {
      * @param name of sfx
      * @param distance of source from player
      */
-    public void playSFX(String name, float distance){
-        // Play at full volume
-        if (distance < decayDistance){
+    public void playSFX(String name, Vector2 distance){
+        // Play at full volume, no pan
+        if (distance.len() < decayDistance){
             playSFX(name);
         }
-        // Calculate new volume with v2 = v1 * r1/r2
-        playSFX(sfxVolume * decayDistance / distance, name);
+        // Calculate new volume with v2 = v1 * r1/r2 and pan with x component
+        playSFX(distance.nor().x,sfxVolume * decayDistance / distance.len(), name);
     }
 
     /**
