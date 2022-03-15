@@ -17,17 +17,23 @@ public class SoundController {
     private float decayDistance = 400f;
     /** Current preset being used for sfx. */
     private int sfxPreset;
-    /** Current preset bein gused for music. */
+    /** Current preset being used for music. */
     private  int musicPreset;
-    /** Json to hold all sfx names for future reference. */
+    /** Structure to hold all sfx presets for future reference. */
     private ArrayMap<Integer, JsonValue> sfxPresets;
-    /** Json to hold all music names for future reference. */
+    /** Structure to hold all music presets for future reference. */
     private ArrayMap<Integer, JsonValue> musicPresets;
     /** ArrayMap to link sfx names to Sound instances. */
     private ArrayMap<String, Sound> sfx;
     /** ArrayMap to link music names to Music instances. */
     private ArrayMap<String, Music> music;
-
+    /** Whether or not a music trade is in progress. */
+    private enum TradeState {
+        ENTER_DANGER,
+        LEAVE_DANGER,
+        STEADY
+    }
+    private TradeState STATE;
 
     /**
      * Gather the all sound and music assets for this controller.
@@ -65,6 +71,7 @@ public class SoundController {
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
+        isTrading = false;
     }
 
     /**
@@ -85,6 +92,7 @@ public class SoundController {
      * @param sfxPreset is the JsonValue that contains text references to all sounds
      */
     public void setPresets(int sfxPreset, int musicPreset){
+        STATE = TradeState.STEADY;
         if (this.sfxPreset != sfxPreset){
             this.sfxPreset = sfxPreset;
             setSFXs();
@@ -99,7 +107,7 @@ public class SoundController {
      * Set master musicVolume from settings.
      * @param musicVolume Float between 0-1
      */
-    public void setMusicVolume(float musicVolume) {
+    public void setMasterMusicVolume(float musicVolume) {
         this.musicVolume = musicVolume;
     }
 
@@ -107,7 +115,7 @@ public class SoundController {
      * Set master musicVolume from settings.
      * @param sfxVolume Float between 0-1
      */
-    public void setSfxVolume(float sfxVolume) {
+    public void setMasterSfxVolume(float sfxVolume) {
         this.sfxVolume = sfxVolume;
     }
 
@@ -146,11 +154,10 @@ public class SoundController {
     }
 
     /**
-     * Plays music with the filename name. Returns if not found.
-     * @param name of music
+     * Plays the explore music of the preset. Returns if not found.
      */
-    public void playMusic(String name){
-        Music m = music.get(name);
+    private void playMusic(String index){
+        Music m = music.get(index);
         if (m == null) return;
         if (!m.isPlaying()) {
             m.play();
@@ -158,37 +165,73 @@ public class SoundController {
         }
     }
 
+    private void playBackgroundMusic(){
+        playMusic("background");
+    }
+
+    private void playExploreMusic(){
+        playMusic("explore");
+    }
+
+    private void playDangerMusic(){
+        playMusic("danger");
+    }
+
+    public void startMusic(){
+        playExploreMusic();
+        playBackgroundMusic();
+    }
+
     /**
-     * Trades music with name1 out and name2 in for soundtrack switching.
-     * Changes volume linearly.
+     * Trades explore/danger music for soundtrack switching.
      * Returns if either name does not exist || name1 is not playing || name2 is playing
-     * @param name1 background music (explore/battle)
-     * @param name2 background music (battle/explore) different version of name1
+     * @param index1 either "explore" or "danger"
+     * @param index2 same as index1 but reversed.
      */
-    public void tradeMusic(String name1, String name2){
+    private boolean tradeMusic(String index1, String index2){
         // Gets music and check precondition
-        Music m1 = music.get(name1);
-        Music m2 = music.get(name2);
-        if (!assertObjects(m1, m2) || !m1.isPlaying() || m2.isPlaying()) return;
-
-        playMusic(name2);
-        // Decrease volume of m1 and increase volume of m2, run on separate thread.
-
+        Music m1 = music.get(index1);
+        Music m2 = music.get(index2);
+        if (!assertObjects(m1, m2) || !m1.isPlaying() || m2.isPlaying()) return false;
+        playMusic(index2);
+        return true;
     }
 
     /**
      * Trades music with name1 out and name2 in for soundtrack switching if reverse is false.
-     * Should be called only when the player situation CHANGES from EXPLORE to DANGER (2 enemies nearby)
-     * @param name1 background music (explore/battle)
-     * @param name2 background music (battle/explore) different version of name1
-     * @param reverse true if name2 is faded out.
+     * Should be called only when the player situation CHANGES from EXPLORE to DANGER (2 enemies nearby).
+     * @param reverse Whether danger is faded out for explore music
      */
-    public void tradeMusic(String name1, String name2, boolean reverse){
+    public void tradeMusic(boolean reverse){
+        if (STATE != TradeState.STEADY) return;
         if (reverse){
-            tradeMusic(name2, name1);
+            if (tradeMusic("danger", "explore")){
+                STATE = TradeState.LEAVE_DANGER;
+            }
         }
         else{
-            tradeMusic(name1, name2);
+            if (tradeMusic("explore", "danger")){
+                STATE = TradeState.ENTER_DANGER;
+            }
+        }
+    }
+
+    private void setMusicVolume(){
+
+    }
+
+    private void setSfxVolume(){
+
+    }
+
+    public void updateMusic(){
+        if(STATE == TradeState.ENTER_DANGER){
+            setMusicVolume();
+            setMusicVolume();
+        }
+        if(STATE == TradeState.LEAVE_DANGER){
+            setMusicVolume();
+            setMusicVolume();
         }
     }
 
