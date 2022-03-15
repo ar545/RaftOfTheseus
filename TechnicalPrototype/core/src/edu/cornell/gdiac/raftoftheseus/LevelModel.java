@@ -11,9 +11,12 @@ public class LevelModel {
 
 
     // TODO: class Raft/Player
+    /** The player of the level */
     private GameObject raft;
     // TODO: class Goal/Target
+    /** The goal of the level */
     private GameObject goal;
+    /** Reference to the game assets directory */
     public AssetDirectory directory;
     JsonValue level_data;
     /** The Box2D world */
@@ -22,31 +25,31 @@ public class LevelModel {
     protected Rectangle bounds;
     /** The world scale */
     protected Vector2 scale;
+    /** Representing the length and width of a single gird unit on the board */
+    protected Vector2 grid_size;
+    /** Vector 2 holding the temp position vector for the game object to create */
+    private Vector2 compute_temp = new Vector2(0, 0);
 
     /** All the objects in the world. */
     private PooledList<GameObject> objects  = new PooledList<GameObject>();
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<GameObject>();
-
+    /** Top-down game with no gravity */
     public static final Vector2 NO_GRAVITY = new Vector2(0f ,0f );
 
+    /** Constructor call for this singleton class */
+    public LevelModel(){}
 
-    public GameObject getPlayer() {
-        return raft;
-    }
+    /** get the reference to the player avatar */
+    public GameObject getPlayer() { return raft; }
 
-    public GameObject getGoal() {
-        return goal;
-    }
+    /** get a reference to the goal */
+    public GameObject getGoal() { return goal; }
 
+    /** get the objects (list) of the world */
+    public PooledList<GameObject> getObjects() { return objects; }
 
-    public PooledList<GameObject> getObjects() {
-        return objects;
-    }
-
-    public PooledList<GameObject> getAddQueue() {
-        return addQueue;
-    }
+    public PooledList<GameObject> getAddQueue() { return addQueue; }
 
 
     /**
@@ -118,13 +121,9 @@ public class LevelModel {
         objects.clear();
         addQueue.clear();
         world.dispose();
-
         world = new World(NO_GRAVITY,false);
 
     }
-
-
-
 
     /** Load the level representing by the parameter level_int.
      * Read the level from the json file and call corresponding functions.
@@ -143,6 +142,7 @@ public class LevelModel {
         int num_row = world_data.getInt("num_row", 1);
         float col_width = world_data.getFloat("col_width", 1f);
         float row_height = world_data.getFloat("row_height", 1f);
+        this.grid_size = new Vector2(col_width, row_height);
         this.bounds = new Rectangle(0,0,col_width * num_col,row_height * num_row);
         this.scale = new Vector2(world_data.getFloat("draw_scale_x", 1), world_data.getFloat("draw_scale_y", 1));
 
@@ -151,42 +151,69 @@ public class LevelModel {
     /** Populate the level with the game objects
      * Precondition: gameObject list has been cleared. */
     public void populateLevel() {
-        addCurrent(level_data.get("current"), objects);
-        addWood(level_data.get("wood"), objects);
-        addRocks(level_data.get("rocks"), objects);
-        addObject(addRaft(level_data.get("raft")));
-        addObject(addGoal(level_data.get("goal")));
+        addCurrent(level_data.get("current"));
+        addWood(level_data.get("wood"));
+        addRocks(level_data.get("rocks"));
+        addRaft(level_data.get("raft"));
+        addGoal(level_data.get("goal"));
+
     }
 
-    /** Add Goal Objects to the world */
-    private GameObject addGoal(JsonValue goal) {
-        return null;
+    /** Add Goal Objects to the world, using the Json value for goal.
+     * @param JSGoal the JS value that represents the goal */
+    private void addGoal(JsonValue JSGoal) {
+        computePosition(JSGoal.getInt("x", 0), JSGoal.getInt("y", 0));
+//        GameObject this_goal = new Goal(compute_temp);
+//        addObject(this_goal);
+//        goal = this_goal;
     }
 
-
-    private GameObject addRaft(JsonValue raft) {
-        return null;
+    /** Add Raft Objects to the world, using the Json value for raft
+     * @param JSRaft the JS value that represents the raft */
+    private void addRaft(JsonValue JSRaft) {
+        computePosition(JSRaft.getInt("x", 0), JSRaft.getInt("y", 0));
+//        GameObject this_raft = new Raft(compute_temp, JSRaft.getInt("speed", 1));
+//        addObject(this_raft);
+//        raft = this_raft;
     }
 
-    private void addRocks(JsonValue rocks, PooledList<GameObject> objs) {
+    /** Add Goal Objects to the world, using the Json value for goal
+     * @param rocks the JS value that represents the goal */
+    private void addRocks(JsonValue rocks) {
         for (JsonValue rock: rocks) {
-//            GameObject this_rock = new Rock(rock.get("x"), rock.get("y"));
+            computePosition(rock.getInt("x", 0), rock.getInt("y", 0));
+//            GameObject this_rock = new Rock(compute_temp);
 //            addObject(this_rock);
         }
     }
 
-    private void addWood(JsonValue woods, PooledList<GameObject> objs) {
+    /** Add Goal Objects to the world, using the Json value for goal
+     * @param woods the JS value that represents the goal */
+    private void addWood(JsonValue woods) {
         for (JsonValue wood: woods) {
-//            GameObject this_wood = new Wood(wood.get("x"), wood.get("y"), wood.get("value"));
+            computePosition(wood.getInt("x", 0), wood.getInt("y", 0));
+//            GameObject this_wood = new Wood(compute_temp, wood.getInt("value", 1));
 //            addObject(this_wood);
         }
     }
 
-    private void addCurrent(JsonValue currents, PooledList<GameObject> objs) {
+    /** Add Goal Objects to the world, using the Json value for goal
+     * @param currents the JS value that represents the goal */
+    private void addCurrent(JsonValue currents) {
         for (JsonValue current : currents) {
-//            GameObject this_current = new Current(current.get("x"), current.get("y"), current.get("direction"), current.get("speed"));
+            computePosition(current.getInt("x", 0), current.getInt("y", 0));
+//            GameObject this_current = new Current(compute_temp, current.getString("direction"), current.getInt("speed", 1));
 //            addObject(this_current);
         }
+    }
+
+    /** compute the position of the object in the world given the grid location.
+     * Result stored in compute_temp.
+     * @param x_col the x grid value
+     * @param y_row the y grid value */
+    private void computePosition(int x_col, int y_row){
+        compute_temp.x = ((float) x_col + 0.5f) * grid_size.x;
+        compute_temp.y = ((float) y_row + 0.5f) * grid_size.y;
     }
 
 
