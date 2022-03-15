@@ -1,10 +1,8 @@
 package edu.cornell.gdiac.raftoftheseus;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.utils.ArrayMap;
-import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 
@@ -15,6 +13,10 @@ public class SoundController {
     private float musicVolume = 1.0f;
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
+    /** Rate at which music is transitioned. */
+    private float tradeRate = 0.01f;
+    /** When transition is finished. */
+    private float tradeThreshold = 0.05f;
     /** Current preset being used for sfx. */
     private int sfxPreset;
     /** Current preset being used for music. */
@@ -28,28 +30,36 @@ public class SoundController {
     /** ArrayMap to link music names to Music instances. */
     private ArrayMap<String, Music> music;
     /** Whether or not a music trade is in progress. */
-    private enum TradeState {
+    private enum MusicState {
         ENTER_DANGER,
         LEAVE_DANGER,
         STEADY
     }
-    private TradeState STATE;
+    private MusicState STATE;
 
     /**
      * Gather the all sound and music assets for this controller.
      *
-     * This method extracts the asset variables from the given asset directory. It
-     * should only be called after the asset directory is completed.
-     * Postcondition: Throws error if there is loading issue or sfx or music is null
+     * This method extracts the asset variables from the given asset directory.
+     * It should only be called after the asset directory is completed.
+     * It should be called before an sfx or music is initiated.
+     * Postcondition: Throws error if there is loading issue or sfx or music is null.
      *
      * @param directory	Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
         if (!assertObjects(sfxPresets, musicPresets)) throw new NullPointerException("Constructor not called.");
-        for(JsonValue s : directory.getEntry("sfx_presets", JsonValue.class)){
+        JsonValue dir = directory.getEntry("assets", JsonValue.class);
+
+        // Set values
+        sfxVolume = dir.getFloat("sfx_volume", 1.0f);
+        musicVolume = dir.getFloat("music_volume", 1.0f);
+        tradeRate = dir.getFloat("trade_rate", 0.01f);
+        tradeThreshold = dir.getFloat("trade_threshold", 0.05f);
+        for(JsonValue s : dir.get("sfx_presets")){
             sfxPresets.put(s.getInt("preset_number", 0), s);
         }
-        for(JsonValue m : directory.getEntry("music_presets", JsonValue.class)){
+        for(JsonValue m : directory.getEntry("assets", JsonValue.class).get("music_presets")){
             musicPresets.put(m.getInt("preset_number", 0), m);
         }
     }
@@ -71,7 +81,7 @@ public class SoundController {
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
-        STATE = TradeState.STEADY;
+        STATE = MusicState.STEADY;
     }
 
     /**
@@ -92,7 +102,7 @@ public class SoundController {
      * @param sfxPreset is the JsonValue that contains text references to all sounds
      */
     public void setPresets(int sfxPreset, int musicPreset){
-        STATE = TradeState.STEADY;
+        STATE = MusicState.STEADY;
         if (this.sfxPreset != sfxPreset){
             this.sfxPreset = sfxPreset;
             setSFXs();
@@ -154,32 +164,43 @@ public class SoundController {
     }
 
     /**
-     * Plays the explore music of the preset. Returns if not found.
+     * Plays a music file at specified volume with reference index.
+     * Precondition: volume > 0 and < musicVolume
+     * @param index
+     */
+    private Music playMusic(String index, float volume){
+        Music m = music.get(index);
+        if (m != null && !m.isPlaying()) {
+            m.play();
+            m.setVolume(volume);
+        }
+        return m;
+    }
+
+    /**
+     * Plays a music file at musicVolume with reference index starting at position in seconds and 0 volume.
+     * @param index
+     */
+    private void playMusic(String index, float volume, float position){
+        Music m = playMusic(index, volume);
+        if (m == null) return;
+        m.setPosition(position);
+    }
+
+    /**
+     * Plays a music file at musicVolume with reference index at musicVolume.
+     * @param index
      */
     private void playMusic(String index){
-        Music m = music.get(index);
-        if (m == null) return;
-        if (!m.isPlaying()) {
-            m.play();
-            m.setVolume(musicVolume);
-        }
+        playMusic(index, musicVolume);
     }
 
-    private void playBackgroundMusic(){
-        playMusic("background");
-    }
-
-    private void playExploreMusic(){
-        playMusic("explore");
-    }
-
-    private void playDangerMusic(){
-        playMusic("danger");
-    }
-
+    /**
+     * Starts the music for a level.
+     */
     public void startMusic(){
-        playExploreMusic();
-        playBackgroundMusic();
+        playMusic("explore");
+        playMusic("background");
     }
 
     /**
@@ -192,8 +213,11 @@ public class SoundController {
         // Gets music and check precondition
         Music m1 = music.get(index1);
         Music m2 = music.get(index2);
-        if (!assertObjects(m1, m2) || !m1.isPlaying() || m2.isPlaying()) return false;
-        playMusic(index2);
+        if (!assertObjects(m1, m2) || (!m1.isPlaying() && m2.isPlaying())) return false;
+        if( m1.isPlaying() && !m2.isPlaying()){
+            playMusic(index2, 0, m1.getPosition());
+        }
+        // Otherwise both are still playing, in state of flux
         return true;
     }
 
@@ -203,35 +227,76 @@ public class SoundController {
      * @param reverse Whether danger is faded out for explore music
      */
     public void tradeMusic(boolean reverse){
-        if (STATE != TradeState.STEADY) return;
+        // if (STATE != MusicState.STEADY) return;
         if (reverse){
             if (tradeMusic("danger", "explore")){
-                STATE = TradeState.LEAVE_DANGER;
+                STATE = MusicState.LEAVE_DANGER;
             }
         }
         else{
             if (tradeMusic("explore", "danger")){
-                STATE = TradeState.ENTER_DANGER;
+                STATE = MusicState.ENTER_DANGER;
             }
         }
     }
 
-    private void setMusicVolume(){
-
-    }
-
-    private void setSfxVolume(){
-
-    }
-
-    public void updateMusic(){
-        if(STATE == TradeState.ENTER_DANGER){
-            setMusicVolume();
-            setMusicVolume();
+    private void stopMusic(String index){
+        Music m = music.get(index);
+        if (m != null && m.isPlaying()) {
+            m.stop();
         }
-        if(STATE == TradeState.LEAVE_DANGER){
-            setMusicVolume();
-            setMusicVolume();
+    }
+
+    /**
+     * Takes the music with key index and decreases its volume by dv.
+     * @param index key of music
+     * @param dv between 0-1
+     */
+    private float changeMusicVolume(String index, float dv){
+        Music m = music.get(index);
+        if (m != null && m.isPlaying()) {
+            float nv = m.getVolume()-dv;
+            m.setVolume(nv);
+            return nv;
+        }
+        // Should never reach here
+        throw new RuntimeException("Music file for " + index + " not found!");
+    }
+
+    /**
+     * Takes the music with key index and decreases its volume by dv.
+     * @param index key of music
+     * @param volume between 0-1
+     */
+    private void setMusicVolume(String index, float volume){
+        Music m = music.get(index);
+        if (m != null && m.isPlaying()) {
+            m.setVolume(volume);
+        }
+    }
+
+    /**
+     * Method to call every update loop to transition the music.
+     */
+    public void updateMusic(){
+        float v;
+        if(STATE == MusicState.ENTER_DANGER){
+            v = changeMusicVolume("explore", tradeRate);
+            changeMusicVolume("danger", -tradeRate);
+            if (v < tradeThreshold){
+                stopMusic("explore");
+                setMusicVolume("danger", musicVolume);
+                STATE = MusicState.STEADY;
+            }
+        }
+        else if(STATE == MusicState.LEAVE_DANGER){
+            v = changeMusicVolume("danger", tradeRate);
+            changeMusicVolume("explore", -tradeRate);
+            if (v < tradeThreshold){
+                stopMusic("danger");
+                setMusicVolume("explore", musicVolume);
+                STATE = MusicState.STEADY;
+            }
         }
     }
 
