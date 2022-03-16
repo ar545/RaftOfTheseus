@@ -1,0 +1,60 @@
+{
+  "level": 0,
+  "defaults" : {
+    "level" : 0,
+    "friction": 0.4,
+    "density" : 0.0,
+    "restitution": 0.1,
+    "volume": 0.8
+  },
+  "bounds" :  {
+    "num_col" : 10,
+    "num_row" : 8,
+    "col_width" : 3.0,
+    "row_height" : 3.0,
+    "draw_scale_x" : 1.0,
+    "draw_scale_y" : 1.0
+  },
+  "goal" : {
+    "x": 10,
+    "y": 10
+  },
+  "raft" : {
+    "x": 10,
+    "y": 10,
+    "speed": 3.0
+  },
+  "wood" : [
+    { "value": 10, "x" : 3, "y" :  4},
+    { "value": 10, "x" : 4, "y" :  5},
+    { "value": 10, "x" : 5, "y" :  6},
+    { "value": 10, "x" : 1, "y" :  2},
+    { "value": 10, "x" : 2, "y" :  3}
+  ],
+  "current" : [
+    { "direction": "north", "x" : 2, "y" :  2, "speed" :  1.0},
+    { "direction": "north", "x" : 2, "y" :  3, "speed" :  1.0},
+    { "direction": "east", "x" : 2, "y" :  4, "speed" :  1.0},
+    { "direction": "east", "x" : 3, "y" :  4, "speed" :  1.0},
+    { "direction": "east", "x" : 4, "y" :  4, "speed" :  1.0},
+    { "direction": "south", "x" : 5, "y" :  4, "speed" :  1.0},
+    { "direction": "south", "x" : 5, "y" :  3, "speed" :  1.0},
+    { "direction": "west", "x" : 5, "y" :  2, "speed" :  1.0},
+    { "direction": "west", "x" : 4, "y" :  2, "speed" :  1.0},
+    { "direction": "west", "x" : 3, "y" :  2, "speed" :  1.0}
+  ],
+  "bullet": {
+    "offset" : 0.2,
+    "speed"  : 20.0,
+    "density": 10.0
+  },
+  "rocks":	[
+    { "x" : 3, "y" :  4},
+    { "x" : 4, "y" :  5},
+    { "x" : 5, "y" :  6},
+    { "x" : 1, "y" :  2},
+    { "x" : 2, "y" :  3}
+  ],
+  "sfx_preset" : 1,
+  "music_preset" : 1
+}
