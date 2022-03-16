@@ -325,8 +325,8 @@ public class WorldController implements Screen, ContactListener {
     public void render(float delta) {
         if (active) {
             if (preUpdate(delta)) { // Check for level reset and win/lose condition
-                update(delta); // Update player actions, set Forces
-                postUpdate(delta); // Call Physics Engine and update enemy AI
+                update(delta); // Update player actions, set Forces, and update enemy AI
+                postUpdate(delta); // Call Physics Engine
             }
             draw(delta); // Draw to canvas
         }
