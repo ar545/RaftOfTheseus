@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.Vector2;
@@ -76,24 +77,28 @@ public class SoundController {
 
     /**
      * Constructor that initializes sfx and music variables.
+     * @param demo whether this SoundController is loaded for the Technical Prototype
      */
-    public SoundController(){
+    public SoundController(boolean demo){
         sfxPresets = new ArrayMap<>();
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
         STATE = MusicState.STEADY;
+        if (demo) {
+            music.put("demo", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/RoT_Menu.mp3")));
+        }
     }
 
     /**
-     * Loads sfx with the appropriate sound instances.
+     * TODO Loads sfx with the appropriate sound instances.
      */
     private void setSFXs(){
         sfx.clear();
     }
 
     /**
-     * Loads music with the appropriate music instances.
+     * TODO Loads music with the appropriate music instances.
      */
     private void setMusic(){
         music.clear();
@@ -199,11 +204,18 @@ public class SoundController {
     }
 
     /**
-     * Starts the music for a level.
+     * Starts the music for a level, fails silently if proper preset is not loaded.
      */
-    public void startMusic(){
+    public void startLevelMusic(){
         playMusic("explore");
         playMusic("background");
+    }
+
+    /**
+     * Starts the music for the menu, fails silently if proper preset is not loaded.
+     */
+    public void startMenuMusic(){
+        playMusic("demo");
     }
 
     /**
