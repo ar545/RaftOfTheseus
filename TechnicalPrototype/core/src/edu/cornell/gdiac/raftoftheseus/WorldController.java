@@ -234,25 +234,14 @@ public class WorldController implements Screen, ContactListener {
      * Add a new bullet to the world and send it in the right direction.
      */
     private void createBullet() {
-//        JsonValue bulletjv = constants.get("bullet");
-//        float offset = bulletjv.getFloat("offset",0);
-//        offset *= (getPlayer().isFacingRight() ? 1 : -1);
-//        float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
-//        WheelObstacle bullet = new WheelObstacle(getPlayer().getX()+offset, getPlayer().getY(), radius);
-//
-//        bullet.setName("bullet");
-//        bullet.setDensity(bulletjv.getFloat("density", 0));
-//        bullet.setDrawScale(scale);
+        // Compute position and velocity
+        GameObject bullet = new Bullet(levelModel.getPlayer().position);
+//        bullet.velocity = (levelModel.getPlayer().getFacing());
+        levelModel.addQueuedObject(bullet);
+
 //        bullet.setTexture(bulletTexture);
+//        float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
 //        bullet.setBullet(true);
-//        bullet.setGravityScale(0);
-//
-//        // Compute position and velocity
-//        float speed = bulletjv.getFloat( "speed", 0 );
-//        speed  *= (getPlayer().isFacingRight() ? 1 : -1);
-//        bullet.setVX(speed);
-//        addQueuedObject(bullet);
-//
 //        fireId = playSound( fireSound, fireId );
     }
 

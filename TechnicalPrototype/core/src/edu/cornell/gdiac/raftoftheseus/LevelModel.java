@@ -61,12 +61,10 @@ public class LevelModel {
     private static final int LAYER_ENE = 2;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
-    // TODO: class Raft/Player
     /** The player of the level */
-    private GameObject raft;
-    // TODO: class Goal/Target
+    private Raft raft;
     /** The goal of the level */
-    private GameObject goal;
+    private Goal goal;
     /** Reference to the game assets directory */
     private AssetDirectory directory;
     /** The read-in level data */
@@ -82,11 +80,11 @@ public class LevelModel {
     /** Vector 2 holding the temp position vector for the game object to create */
     private Vector2 compute_temp = new Vector2(0, 0);
     /** All the objects in the world. */
-    private PooledList<GameObject> objects  = new PooledList<GameObject>();
+    private PooledList<GameObject> objects  = new PooledList<>();
     /** Queue for adding objects */
-    private PooledList<GameObject> addQueue = new PooledList<GameObject>();
+    private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<GameObject> enemies = new PooledList<GameObject>();
+    private PooledList<Enemy> enemies = new PooledList<>();
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -96,7 +94,7 @@ public class LevelModel {
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
-    public PooledList<GameObject> getEnemies() { return enemies; }
+    public PooledList<Enemy> getEnemies() { return enemies; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -149,7 +147,7 @@ public class LevelModel {
      *
      * param obj The object to add
      */
-    protected void addObject(GameObject obj, int enemy_type) {
+    protected void addObject(Enemy obj, int enemy_type) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -204,8 +202,8 @@ public class LevelModel {
             level_data = directory.getEntry("levels:" + level_int, JsonValue.class);
 
             // Read in the grid map size
-            int num_col = level_data.getInt("width", DEFAULT_GRID_COL);
-            int num_row = level_data.getInt("height", DEFAULT_GRID_ROW);
+            map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
+            map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
 
             // Reset boundary of world
             setBound();
@@ -295,7 +293,17 @@ public class LevelModel {
         }else if(tile_int == TILE_GOAL){
             addGoal(row, col);
         }else if(tile_int >= TILE_CURRENT && tile_int <= TILE_CURRENT + TILE_WEST){
-            addCurrent(row, col, tile_int - TILE_CURRENT, 1f);
+            addCurrent(row, col, compute_direction(tile_int - TILE_CURRENT), 1f);
+        }
+    }
+
+    private Current.Direction compute_direction(int i) {
+        switch (i){
+            case TILE_NORTH: return Current.Direction.NORTH;
+            case TILE_SOUTH: return Current.Direction.SOUTH;
+            case TILE_EAST: return Current.Direction.EAST;
+            case TILE_WEST: return Current.Direction.WEST;
+            default: return Current.Direction.NONE;
         }
     }
 
@@ -304,7 +312,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addRock(int row, int col) {
         computePosition(col, row);
-//        GameObject this_rock = new Rock(compute_temp); addObject(this_rock);
+        GameObject this_rock = new Rock(compute_temp); addObject(this_rock);
     }
 
     /** Add Enemy Objects to the world, using the Json value for goal.
@@ -312,7 +320,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-//        GameObject this_enemy = new Enemy(compute_temp); addObject(this_enemy, enemy_type);
+        Enemy this_enemy = new Enemy(compute_temp, null); addObject(this_enemy, enemy_type);
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -320,7 +328,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-//        GameObject this_treasure = new Treasure(compute_temp); addObject(this_treasure);
+        GameObject this_treasure = new Treasure(compute_temp); addObject(this_treasure);
     }
 
     /** Add Goal Objects to the world, using the Json value for goal.
@@ -328,9 +336,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addGoal(int row, int col) {
         computePosition(col, row);
-//        GameObject this_goal = new Goal(compute_temp);
-//        addObject(this_goal);
-//        goal = this_goal;
+        Goal this_goal = new Goal(compute_temp);
+        addObject(this_goal);
+        goal = this_goal;
     }
 
     /** Add Raft Objects to the world, using the Json value for raft
@@ -338,9 +346,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addRaft(int row, int col, float speed) {
         computePosition(col, row);
-//        GameObject this_raft = new Raft(compute_temp, speed);
-//        addObject(this_raft);
-//        raft = this_raft;
+        Raft this_raft = new Raft(compute_temp, speed);
+        addObject(this_raft);
+        raft = this_raft;
     }
 
     /** Add wood Objects to the world, using the Json value for goal
@@ -349,8 +357,8 @@ public class LevelModel {
      * @param value the JS value that represents the goal */
     private void addWood(int row, int col, int value) {
        computePosition(col, row);
-//       GameObject this_wood = new Wood(compute_temp, value);
-//       addObject(this_wood);
+       GameObject this_wood = new Wood(compute_temp, value);
+       addObject(this_wood);
     }
 
     /** Add current Objects to the world, using the Json value for goal
@@ -358,10 +366,10 @@ public class LevelModel {
      * @param col the column grid position
      * @param direction the direction
      * @param speed the speed */
-    private void addCurrent(int row, int col, int direction, float speed) {
+    private void addCurrent(int row, int col, Current.Direction direction, float speed) {
         computePosition(col, row);
-//        GameObject this_current = new Current(compute_temp, direction, speed);
-//        addObject(this_current);
+        GameObject this_current = new Current(compute_temp, direction, speed);
+        addObject(this_current);
     }
 
     /** Compute the position of the object in the world given the grid location.
@@ -373,8 +381,7 @@ public class LevelModel {
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE.y;
     }
 
-//    /** Add Goal Objects to the world, using the Json value for goal
-//     * @param rocks the JS value that represents the goal */
+    /*
 //    private void addRocks(JsonValue rocks) {
 //        for (JsonValue rock: rocks) {
 //            computePosition(rock.getInt("x", 0), rock.getInt("y", 0));
@@ -382,5 +389,6 @@ public class LevelModel {
 //            addObject(this_rock);
 //        }
 //    }
+    */
 
 }
