@@ -34,117 +34,144 @@ import edu.cornell.gdiac.util.XBoxController;
 public class InputController {
 	// Fields to manage game state
 	/** Whether the reset button was pressed. */
-	protected boolean resetPressed;
+	private boolean resetPressed;
+	private boolean resetPrevious;
+	/** Whether the button to advanced worlds was pressed. */
+	private boolean nextPressed;
+	private boolean nextPrevious;
+	/** Whether the button to step back worlds was pressed. */
+	private boolean prevPressed;
+	private boolean prevPrevious;
+	/** Whether the map button was pressed. */
+	private boolean mapPressed;
+	private boolean mapPrevious;
+	/** Whether the fire button was pressed. */
+	private boolean firePressed;
+	private boolean firePrevious;
+	/** Whether the debug toggle was pressed. */
+	private boolean debugPressed;
+	private boolean debugPrevious;
 	/** Whether the exit button was pressed. */
-	protected boolean exitPressed;
-	/** Whether the mouse input should be considered */
-	protected boolean mouseAllowed;
+	private boolean exitPressed;
+	private boolean exitPrevious;
 	/** How much did we move (left/right)? */
 	private float x_offset;
 	/** How much did we move (up/down)? */
 	private float y_offset;
-	/** XBox Controller support */
-	private final XBoxController xbox;
-	
+	/** How much did we move in 2D? */
+	private Vector2 mov_offset;
+	/** Where did we fire? */
+	private Vector2 fire_location;
+	/** The singleton instance of the input controller */
+	private static InputController theController = null;
+
 	/**
-	 * Returns the amount of sideways movement. 
-	 *
-	 * -1 = left, 1 = right, 0 = still
-	 *
-	 * @return the amount of sideways movement. 
+	 * @return the singleton instance of the input controller
 	 */
-	public Vector2 getMovement() {
-		Vector2 m = new Vector2(x_offset, y_offset);
-		m.nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
-		return m;
+	public static InputController getInstance() {
+		if (theController == null) {
+			theController = new InputController();
+		}
+		return theController;
 	}
 
 	/**
-	 * Returns true if the reset button was pressed.
-	 *
+	 * -1 = down/left, 1 = up/right, 0 = still
+	 * @return the amount of vertical and horizontal movement
+	 */
+	public Vector2 getMovement() {
+		mov_offset.set(x_offset, y_offset);
+		mov_offset.nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
+		return mov_offset;
+	}
+
+	/**
+	 * @return where the mouse was clicked in screen coordinates
+	 */
+	public Vector2 getFireLocation() {
+		fire_location.set(x_offset, y_offset);
+		return fire_location;
+	}
+
+	/**
+	 * @return true if the map button was pressed.
+	 */
+	public boolean didNext() { return nextPressed && !nextPrevious; }
+
+	/**
+	 * @return true if the map button was pressed.
+	 */
+	public boolean didPrevious() {
+		return prevPressed && !prevPrevious;
+	}
+
+	/**
+	 * @return true if the map button was pressed.
+	 */
+	public boolean didMap() {
+		return mapPressed && !mapPrevious;
+	}
+
+	/**
+	 * @return true if the fire button was pressed.
+	 */
+	public boolean didFire() {
+		return firePressed && !firePrevious;
+	}
+
+	/**
 	 * @return true if the reset button was pressed.
 	 */
 	public boolean didReset() {
-		return resetPressed;
+		return resetPressed && !resetPrevious;
 	}
 
 	/**
-	 * Returns true if the exit button was pressed.
-	 *
 	 * @return true if the exit button was pressed.
 	 */
-	public boolean didExit() {
-		return exitPressed;
-	}
+	public boolean didExit() { return exitPressed && !exitPrevious; }
+
+
 	
 	/**
-	 * Creates a new input controller
-	 * 
-	 * The input controller attempts to connect to the X-Box controller at device 0,
-	 * if it exists.  Otherwise, it falls back to the keyboard control.
+	 * Creates a new input controller for mouse and keyboard.
 	 */
-	public InputController() { 
-		// If we have a game-pad for id, then use it.
-		Array<XBoxController> controllers = Controllers.get().getXBoxControllers();
-		mouseAllowed = false;
-		if (controllers.size > 0) {
-			xbox = controllers.get(0);
-		} else {
-			xbox = null;
-		}
+	public InputController() {
+		mov_offset = new Vector2();
+		fire_location = new Vector2();
 	}
 
 	/**
 	 * Reads the input for the player and converts the result into game logic.
 	 */
 	public void readInput() {
-		// Check to see if a GamePad is connected
-		if (xbox != null && xbox.isConnected()) {
-			readGamepad();
-			readKeyboard(true); // Read as a back-up
-		} else {
-			readKeyboard(false);
-		}
+		// Store previous values
+		resetPrevious  = resetPressed;
+		nextPrevious = nextPressed;
+		prevPrevious = prevPressed;
+		mapPrevious = mapPressed;
+		firePrevious = firePressed;
+		debugPrevious  = debugPressed;
+		exitPrevious = exitPressed;
+
+		// Read new input
+		readKeyboard();
+		readMouse();
 	}
 
 	/**
-	 * Reads input from an X-Box controller connected to this computer.
+	 * Reads input from the keyboard for movement.
 	 */
-	private void readGamepad() {
-		resetPressed = xbox.getA();
-		exitPressed  = xbox.getBack();
+	private void readKeyboard() {
+		// Read special action keys
+		nextPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_1);
+		prevPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
+		mapPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
+		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
+		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.F);
+		exitPressed  = Gdx.input.isKeyPressed(Input.Keys.ESCAPE);
 
-		// Increase animation frame, but only if trying to move
-		x_offset = xbox.getLeftX();
-		y_offset = xbox.getLeftY();
-	}
-
-	/**
-	 * Reads input from the keyboard and mouse for movement
-	 *
-	 * This controller reads from the keyboard regardless of whether an X-Box
-	 * controller is connected.  However, if a controller is connected, this method
-	 * gives priority to the X-Box controller.
-	 *
-	 * @param secondary true if the keyboard should give priority to a gamepad
-	 */
-	private void readKeyboard(boolean secondary) {
-		// Give priority to gamepad results
-		resetPressed = (secondary && resetPressed) || (Gdx.input.isKeyPressed(Input.Keys.R));
-		exitPressed  = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
-		// Press M to enable mouse
-//		if(Gdx.input.isKeyJustPressed(Input.Keys.M)){
-//			mouseAllowed = !mouseAllowed;
-//		}
-		// set up the offset
-		// TODO: Currently the way this is set up, if the player connects both a keyboard and gamepad controller, they
-		//  can move twice as fast by using both input methods at the same time. This doesn't matter for now since the
-		//  gameplay prototype won't be using an XBox controller (why did we add support for this to the prototype if
-		//  we can't even test it?), but we should be wary of this if we reuse this code.
-		x_offset = (secondary ? x_offset : 0.0f);
-		y_offset = (secondary ? y_offset : 0.0f);
-
-		// Read keyboard inputs
+		// Read direction key inputs
 		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
 			x_offset += 1.0f;
 		}
@@ -154,25 +181,18 @@ public class InputController {
 		if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) {
 			y_offset += 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)  || Gdx.input.isKeyPressed(Input.Keys.S)) {
+		if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
 			y_offset -= 1.0f;
 		}
+	}
 
-		//read mouse inputs
-		// NOTE if you uncomment this, this code is bugged and allows the player to move twice as fast when using both mouse and another input method.
-//		if(mouseAllowed){
-//			if (Gdx.input.getDeltaX() > 0) {
-//				x_offset += 1.0f;
-//			}
-//			if (Gdx.input.getDeltaX() < 0) {
-//				x_offset -= 1.0f;
-//			}
-//			if (Gdx.input.getDeltaY() < 0) {
-//				y_offset += 1.0f;
-//			}
-//			if (Gdx.input.getDeltaY() > 0) {
-//				y_offset -= 1.0f;
-//			}
-//		}
+	/**
+	 * Reads input from the mouse for firing and direction.
+	 */
+	private void readMouse() {
+		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
+		if (firePressed) {
+			fire_location.set(Gdx.input.getX(), Gdx.input.getY());
+		}
 	}
 }

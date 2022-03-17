@@ -162,7 +162,7 @@ public class WorldController implements Screen, ContactListener {
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
-        levelModel.directory = directory;
+        levelModel.setDirectory(directory);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -542,7 +542,7 @@ public class WorldController implements Screen, ContactListener {
         levelModel.world.setContactListener(this);
         setComplete(false);
         setFailure(false);
-        levelModel.populateLevel();
+        levelModel.loadLevel(LevelModel.LEVEL_RESTART_CODE);
     }
 
     /**
