@@ -85,6 +85,8 @@ public class LevelModel {
     private PooledList<GameObject> objects  = new PooledList<GameObject>();
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<GameObject>();
+    /** All enemy objects in the world */
+    private PooledList<GameObject> enemies = new PooledList<GameObject>();
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -93,6 +95,8 @@ public class LevelModel {
     public GameObject getGoal() { return goal; }
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
+    /** get the enemies (list) of the world */
+    public PooledList<GameObject> getEnemies() { return enemies; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -140,6 +144,18 @@ public class LevelModel {
         obj.activatePhysics(world);
     }
 
+    /**
+     * Immediately adds the object to the physics world
+     *
+     * param obj The object to add
+     */
+    protected void addObject(GameObject obj, int enemy_type) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        enemies.add(obj);
+    }
+
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
     /**
@@ -150,6 +166,7 @@ public class LevelModel {
             obj.deactivatePhysics(world);
         }
         objects.clear();
+        enemies.clear();
         addQueue.clear();
         world.dispose();
         objects = null;
@@ -169,6 +186,7 @@ public class LevelModel {
             obj.deactivatePhysics(world);
         }
         objects.clear();
+        enemies.clear();
         addQueue.clear();
         world.dispose();
         world = new World(NO_GRAVITY,false);
@@ -251,7 +269,7 @@ public class LevelModel {
     private void populateEnemies(int row, int col, int tile_int) {
         switch (tile_int){
             case TILE_ENEMY:
-                addEnemy(row, col);
+                addEnemy(row, col, 0);
                 break;
             case TILE_START:
                 addRaft(row, col, 1f);
@@ -292,9 +310,9 @@ public class LevelModel {
     /** Add Enemy Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position */
-    private void addEnemy(int row, int col) {
+    private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-//        GameObject this_enemy = new Enemy(compute_temp); addObject(this_enemy);
+//        GameObject this_enemy = new Enemy(compute_temp); addObject(this_enemy, enemy_type);
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.

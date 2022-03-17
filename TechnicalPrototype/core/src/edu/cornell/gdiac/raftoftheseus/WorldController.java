@@ -58,8 +58,10 @@ public class WorldController implements Screen, ContactListener {
     private boolean complete;
     /** Whether we have failed at this world (and need a reset) */
     private boolean failed;
-//    /** Whether or not debug mode is active */
-//    private boolean debug;
+    /** Whether the map mode is active */
+    private boolean map;
+    /** Whether the debug draw mode is active */
+    private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
 
@@ -76,7 +78,8 @@ public class WorldController implements Screen, ContactListener {
         levelModel = new LevelModel();
         this.complete = false;
         this.failed = false;
-//        this.debug  = false;
+        this.map  = false;
+        this.debug = false;
         this.active = false;
         this.countdown = -1;
     }
@@ -126,13 +129,21 @@ public class WorldController implements Screen, ContactListener {
         }
         canvas.end();
 
-//        if (debug) {
+        if (debug) {
 //            canvas.beginDebug();
-//            for(Obstacle obj : objects) {
+            for(GameObject obj : levelModel.getObjects()) {
 //                obj.drawDebug(canvas);
-//            }
+            }
 //            canvas.endDebug();
-//        }
+        }
+
+        if (map) {
+//            canvas.beginMap();
+            for(GameObject obj : levelModel.getObjects()) {
+//                obj.drawMap(canvas);
+            }
+//            canvas.endMap();
+        }
 
         // Final message
         if (complete && !failed) {
@@ -147,7 +158,6 @@ public class WorldController implements Screen, ContactListener {
             canvas.end();
         }
     }
-
 
     /**
      * Gather the assets for this controller.
@@ -179,46 +189,44 @@ public class WorldController implements Screen, ContactListener {
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
-//        InputController input = InputController.getInstance();
-//        input.readInput(bounds, scale);
+        InputController input = InputController.getInstance();
+        input.readInput();
         if (listener == null) {
             return true;
         }
 
-        // Toggle debug
-//        if (input.didDebug()) {
-//            debug = !debug;
-//        }
+//      if (input.didDebug()) { debug = !debug; } // Toggle debug
+        if (input.didMap()) { map = !map; } // Toggle map
 
         // Handle resets
-//        if (input.didReset()) {
+        if (input.didReset()) {
             reset();
-//        }
+        }
 
         // Now it is time to maybe switch screens.
-//        if (input.didExit()) {
-//            pause();
-//            listener.exitScreen(this, EXIT_QUIT);
-//            return false;
-//        } else if (input.didAdvance()) {
-//            pause();
-//            listener.exitScreen(this, EXIT_NEXT);
-//            return false;
-//        } else if (input.didRetreat()) {
-//            pause();
-//            listener.exitScreen(this, EXIT_PREV);
-//            return false;
-//        } else if (countdown > 0) {
-//            countdown--;
-//        } else if (countdown == 0) {
-//            if (failed) {
-//                reset();
-//            } else if (complete) {
-//                pause();
-//                listener.exitScreen(this, EXIT_NEXT);
-//                return false;
-//            }
-//        }
+        if (input.didExit()) {
+            pause();
+            listener.exitScreen(this, EXIT_QUIT);
+            return false;
+        } else if (input.didNext()) {
+            pause();
+            listener.exitScreen(this, EXIT_NEXT);
+            return false;
+        } else if (input.didPrevious()) {
+            pause();
+            listener.exitScreen(this, EXIT_PREV);
+            return false;
+        } else if (countdown > 0) {
+            countdown--;
+        } else if (countdown == 0) {
+            if (failed) {
+                reset();
+            } else if (complete) {
+                pause();
+                listener.exitScreen(this, EXIT_NEXT);
+                return false;
+            }
+        }
         return true;
     }
 
@@ -261,10 +269,9 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
-//        levelModel.getPlayer().setMovementX(InputController.getInstance().getHorizontal() * levelModel.getPlayer().getForce());
-//        levelModel.getPlayer().setMovementY(InputController.getInstance().getHorizontal() * levelModel.getPlayer().getForce());
-//        levelModel.getPlayer().setShooting(InputController.getInstance().didPrimary());
-//        levelModel.getPlayer().setDashing(InputController.getInstance().didSecondary());
+//        levelModel.getPlayer().setMovementX(InputController.getInstance().getMovement().x * levelModel.getPlayer().getForce());
+//        levelModel.getPlayer().setMovementY(InputController.getInstance().getMovement().y * levelModel.getPlayer().getForce());
+//        levelModel.getPlayer().setShooting(InputController.getInstance().didFire());
 
         // Add a bullet if we fire
 //        if (levelModel.getPlayer().isShooting()) {
@@ -273,9 +280,23 @@ public class WorldController implements Screen, ContactListener {
 
 //        levelModel.getPlayer().applyForce();
         resolveSounds();
+
+        // update enemy
+        resolveEnemies();
     }
 
+    /***/
+    private void resolveEnemies() {
+        for (GameObject enemy:levelModel.getEnemies()) { // TODO: type should be enemy
+//            enemy.resolveAction(levelModel.getPlayer());
+        }
+    }
+
+    /***/
     private void resolveSounds() {
+//        if(true){
+//            soundController.updateMusic();
+//        }
     }
 
     /**
