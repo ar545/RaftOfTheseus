@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -64,6 +65,7 @@ public class WorldController implements Screen, ContactListener {
     private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
+    SoundController soundctrl;
 
 
 
@@ -82,6 +84,8 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+
+        soundctrl = new SoundController(true);
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -235,8 +239,8 @@ public class WorldController implements Screen, ContactListener {
      */
     private void createBullet() {
         // Compute position and velocity
-        GameObject bullet = new Bullet(levelModel.getPlayer().position);
-//        bullet.velocity = (levelModel.getPlayer().getFacing());
+        GameObject bullet = new Bullet(levelModel.getPlayer().getPosition());
+        bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
         levelModel.addQueuedObject(bullet);
 
 //        bullet.setTexture(bulletTexture);
@@ -258,26 +262,25 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
-//        levelModel.getPlayer().setMovementX(InputController.getInstance().getMovement().x * levelModel.getPlayer().getForce());
-//        levelModel.getPlayer().setMovementY(InputController.getInstance().getMovement().y * levelModel.getPlayer().getForce());
-//        levelModel.getPlayer().setShooting(InputController.getInstance().didFire());
+        levelModel.getPlayer().setMovementX(InputController.getInstance().getMovement().x * levelModel.getPlayer().getForce());
+        levelModel.getPlayer().setMovementY(InputController.getInstance().getMovement().y * levelModel.getPlayer().getForce());
+        levelModel.getPlayer().setFire(InputController.getInstance().didFire());
 
         // Add a bullet if we fire
-//        if (levelModel.getPlayer().isShooting()) {
+        if (levelModel.getPlayer().isFire()) {
             createBullet();
-//        }
-
-//        levelModel.getPlayer().applyForce();
-        resolveSounds();
+        }
 
         // update enemy
         resolveEnemies();
+        levelModel.getPlayer().applyForce();
+        resolveSounds();
     }
 
     /***/
     private void resolveEnemies() {
-        for (GameObject enemy:levelModel.getEnemies()) { // TODO: type should be enemy
-//            enemy.resolveAction(levelModel.getPlayer());
+        for (Enemy enemy : levelModel.getEnemies()) {
+            enemy.resolveAction(levelModel.getPlayer());
         }
     }
 
@@ -313,7 +316,7 @@ public class WorldController implements Screen, ContactListener {
         while (iterator.hasNext()) {
             PooledList<GameObject>.Entry entry = iterator.next();
             GameObject obj = entry.getValue();
-            if (obj.isRemoved()) {
+            if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);
                 entry.remove();
             } else {
@@ -405,7 +408,7 @@ public class WorldController implements Screen, ContactListener {
      * @param  bullet   the bullet to remove
      */
     public void removeBullet(GameObject bullet) {
-        bullet.markRemoved(true);
+        bullet.setDestroyed(true);
 //        plopId = playSound( plopSound, plopId );
     }
 
@@ -434,20 +437,13 @@ public class WorldController implements Screen, ContactListener {
             GameObject bd2 = (GameObject)body2.getUserData();
 
             // Test bullet collision with world
-            if (bd1.getName().equals("bullet") && bd2 != levelModel.getPlayer()) {
+            if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2 != levelModel.getPlayer()) {
                 removeBullet(bd1);
             }
 
-            if (bd2.getName().equals("bullet") && bd1 != levelModel.getPlayer()) {
+            if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1 != levelModel.getPlayer()) {
                 removeBullet(bd2);
             }
-
-//            // See if we have landed on the ground.
-//            if ((levelModel.getPlayer().getSensorName().equals(fd2) && levelModel.getPlayer() != bd1) ||
-//                    (levelModel.getPlayer().getSensorName().equals(fd1) && levelModel.getPlayer() != bd2)) {
-//                levelModel.getPlayer().setGrounded(true);
-//                sensorFixtures.add(levelModel.getPlayer() == bd1 ? fix2 : fix1); // Could have more than one ground
-//            }
 
             // Check for win condition
             if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
@@ -566,7 +562,6 @@ public class WorldController implements Screen, ContactListener {
         setComplete(false);
         setFailure(false);
         levelModel.loadLevel(level_int);
-
     }
 
 }

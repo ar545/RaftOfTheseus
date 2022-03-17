@@ -13,13 +13,11 @@ public class Raft extends GameObject {
     /** Movement cost for a pixel distance **/
     private static final float MOVE_COST = 0.05f; // keep?
 
-
     // ATTRIBUTES
     /** The movement of the player this turn */
-    private Vector2 movement = new Vector2(0f,0f); // keep?
+    private Vector2 movement = new Vector2(0f,0f);
     /** The most recent non-zero movement of the player this turn */
-    private Vector2 last_movement = new Vector2(0f,0f); // keep?
-
+    private Vector2 last_movement = new Vector2(0f,0f);
 
     /** The health of the raft. This must be >=0. */
     private float health;
@@ -28,10 +26,16 @@ public class Raft extends GameObject {
     /** Initial player health */
     public static final float INITIAL_PLAYER_HEALTH = 40.0f;
 
-    /** Raft's current position. */
-    public Vector2 position;
     /** Raft's current speed. */
-    public float speed;
+    private float force;
+    /** Whether the raft is actively firing */
+    private boolean fire;
+    /** The amount to slow the character down */
+    private final float damping = 1f;
+    /** The maximum character speed */
+    private final float maxSpeed = 10f;
+    /** Cache for internal force calculations */
+    private final Vector2 forceCache = new Vector2();
 
     // METHODS
     /**
@@ -45,29 +49,89 @@ public class Raft extends GameObject {
         return ObjectType.RAFT;
     }
 
-    /** Getter and setters for position */
-    public Vector2 getPosition() { return position; }
-
-    public void setPosition(Vector2 pos) {
-        position = pos;
-    }
-
     /**
      * Returns the current player (left/right) movement input.
      *
      * @return the current player movement input.
      */
-    public Vector2 getMovement() {
-        return movement;
-    }
+    protected Vector2 getMovement() { return movement; }
+
+    /** @return Last movement is the facing of the player */
+    public Vector2 getFacing() { return last_movement; }
 
     /**
      * Sets the current player (left/right) movement input.
      *
      * @param value the current player movement input.
      */
-    public void setMovement(Vector2 value) {
+    private void setMovement(Vector2 value) {
         movement.set(value);
+    }
+
+    /**
+     * Sets the current player movement input on the x-axis
+     * @param value the current player movement input on x-axis
+     */
+    public void setMovementX(float value) {
+        movement.x = value;
+    }
+
+    /**
+     * Sets the current player movement input on the y-axis
+     * @param value the current player movement input on y-axis
+     */
+    public void setMovementY(float value) {
+        movement.y = value;
+    }
+
+    /** @return whether the player is actively firing */
+    public boolean isFire() { return fire; }
+
+    /** @param fire whether to set the player to actively firing */
+    public void setFire(boolean fire) { this.fire = fire; }
+
+    /** Get the force float of the player */
+    public float getForce() { return force; }
+
+    /** @return how hard the brakes are applied to get a dude to stop moving */
+    public float getDamping() { return damping; }
+
+    /** @return the upper limit on dude vertical and horizontal movement.
+     */
+    public float getMaxSpeed() {
+        return maxSpeed;
+    }
+
+    /**
+     * Applies the force to the body of this dude
+     *
+     * This method should be called after the force attribute is set.
+     */
+    public void applyForce() {
+        if (super.isDestroyed()) {
+            return;
+        }
+
+        // Don't want to be moving. Damp out player motion
+        if (getMovement().x == 0f) {
+            forceCache.set(-getDamping()*getVX(),0);
+            body.applyForce(forceCache,getPosition(),true);
+        }
+        if (getMovement().y == 0f) {
+            forceCache.set(-getDamping()*getVY(),0);
+            body.applyForce(forceCache,getPosition(),true);
+        }
+
+        // Velocity too high, clamp it
+        if (Math.abs(getVX()) >= getMaxSpeed()) {
+            setVX(Math.signum(getVX())*getMaxSpeed());
+        } else if (Math.abs(getVY()) >= getMaxSpeed()) {
+            setVX(Math.signum(getVY())*getMaxSpeed());
+        } else {
+            forceCache.set(getMovement());
+            body.applyForce(forceCache,getPosition(),true);
+        }
+
     }
 
     /** Getter and setters for health */
@@ -83,32 +147,29 @@ public class Raft extends GameObject {
 
     /** If the player collides with a border/rock, this is called to prevent that movement from costing health */
     public void cancelLastMovementCost() {
-        health += last_movement.len()*speed*MOVE_COST;
+        health += last_movement.len()* force *MOVE_COST;
     }
 
     /** If the player collides with a rock, this is called to undo that movement's change to the raft position */
     public void cancelLastMovement() {
-        position.add(last_movement.cpy().scl(-speed));
+        setPosition(getPosition().add(last_movement.cpy().scl(-force)));
     }
 
     /** Constructor for Raft object
      * @param position: position of raft
-     * @param speed: speed of raft
+     * @param force: speed of raft
      */
-    public Raft(Vector2 position, float speed) {
+    public Raft(Vector2 position, float force) {
         super();
-        this.position = position;
-        this.speed = speed;
+        setPosition(position);
+        this.force = force;
     }
 
     public void update(float dt) {
-        // Call superclasses' update
-        position.add(velocity);
-
         // Apply movement
         Vector2 temp = movement.cpy();
-        position.add(temp.scl(speed));
-        health -= movement.len() * speed * MOVE_COST; // scale health by distance traveled
+        setPosition(getPosition().add(temp.scl(force)));
+        health -= movement.len() * force * MOVE_COST; // scale health by distance traveled
         if (health < 0) health = 0;
         if(!movement.isZero()){
             last_movement.set(movement);

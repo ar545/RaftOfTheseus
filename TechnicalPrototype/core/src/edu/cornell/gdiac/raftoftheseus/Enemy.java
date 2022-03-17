@@ -17,9 +17,6 @@ public class Enemy extends GameObject {
     /** This is the player, if this enemy is targeting the player. */
     private Raft targetRaft;
 
-    /** Enemy's current position. */
-    public Vector2 position;
-
     public Enemy() {
         super();
         radius = 50;
@@ -29,17 +26,17 @@ public class Enemy extends GameObject {
         super();
         this.targetRaft = targetRaft;
         radius = 50;
-        this.position = position;
+        setPosition(position);
     }
 
     // TODO: this will change depending on implementation of AIController
     public void update(float dt) {
         if (targetRaft != null) {
             Vector2 temp = targetRaft.getPosition().cpy();
-            temp.sub(position);
-            velocity = temp.nor().scl(ENEMY_SPEED);
+            temp.sub(getPosition());
+            setLinearVelocity(temp.nor().scl(ENEMY_SPEED));
         }
-        position.add(velocity);
+
     }
 
     // TODO: fix
@@ -87,4 +84,7 @@ public class Enemy extends GameObject {
 //            bodyinfo.active = false;
 //
     }
+
+    /** call for AI controller */
+    public void resolveAction(Raft player) {}
 }

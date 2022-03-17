@@ -88,9 +88,9 @@ public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
-    public GameObject getPlayer() { return raft; }
+    public Raft getPlayer() { return raft; }
     /** get a reference to the goal */
-    public GameObject getGoal() { return goal; }
+    public Goal getGoal() { return goal; }
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
