@@ -1,12 +1,10 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -29,9 +27,9 @@ public class WorldController implements Screen, ContactListener {
 
     /** The amount of time for a physics engine step. */
     public static final float WORLD_STEP = 1/60.0f;
-    /** Number of velocity iterations for the constrain solvers */
-    public static final int WORLD_VELOC = 6;
-    /** Number of position iterations for the constrain solvers */
+    /** Number of velocity iterations for the constraint solvers */
+    public static final int WORLD_VELOCITY = 6;
+    /** Number of position iterations for the constraint solvers */
     public static final int WORLD_POSIT = 2;
 
     // FIELDS
@@ -53,7 +51,7 @@ public class WorldController implements Screen, ContactListener {
     protected LevelModel levelModel;
 
     // LEVEL STATUS
-    /** Whether or not this is an active controller */
+    /** Whether this is an active controller */
     private boolean active;
     /** Whether we have completed this level */
     private boolean complete;
@@ -65,7 +63,7 @@ public class WorldController implements Screen, ContactListener {
     private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
-    SoundController soundctrl;
+    SoundController soundController;
 
 
 
@@ -85,7 +83,7 @@ public class WorldController implements Screen, ContactListener {
         this.active = false;
         this.countdown = -1;
 
-        soundctrl = new SoundController(true);
+        soundController = new SoundController(true);
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -118,7 +116,7 @@ public class WorldController implements Screen, ContactListener {
      * Draw the physics objects to the canvas
      *
      * For simple worlds, this method is enough by itself.  It will need
-     * to be overriden if the world needs fancy backgrounds or the like.
+     * to be overridden if the world needs fancy backgrounds or the like.
      *
      * The method draws all objects in the order that they were added.
      *
@@ -243,6 +241,7 @@ public class WorldController implements Screen, ContactListener {
         bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
         levelModel.addQueuedObject(bullet);
 
+        // TODO: set the texture for bullet? should be part of the populate texture function
 //        bullet.setTexture(bulletTexture);
 //        float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
 //        bullet.setBullet(true);
@@ -274,18 +273,19 @@ public class WorldController implements Screen, ContactListener {
         // update enemy
         resolveEnemies();
         levelModel.getPlayer().applyForce();
-        resolveSounds();
+        resolveMusic();
     }
 
-    /***/
+    /** get enemies take actions according to their AI */
     private void resolveEnemies() {
         for (Enemy enemy : levelModel.getEnemies()) {
             enemy.resolveAction(levelModel.getPlayer());
         }
     }
 
-    /***/
-    private void resolveSounds() {
+    // TODO: When to switch music (not sound effects)?
+    /** Update the level themed music according the game status */
+    private void resolveMusic() {
 //        if(true){
 //            soundController.updateMusic();
 //        }
@@ -307,7 +307,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // Turn the physics engine crank.
-        levelModel.world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+        levelModel.world.step(WORLD_STEP, WORLD_VELOCITY,WORLD_POSIT);
 
         // Garbage collect the deleted objects.
         // Note how we use the linked list nodes to delete O(1) in place.
@@ -425,42 +425,115 @@ public class WorldController implements Screen, ContactListener {
     public void beginContact(Contact contact) {
         Fixture fix1 = contact.getFixtureA();
         Fixture fix2 = contact.getFixtureB();
-
         Body body1 = fix1.getBody();
         Body body2 = fix2.getBody();
-
-        Object fd1 = fix1.getUserData();
-        Object fd2 = fix2.getUserData();
 
         try {
             GameObject bd1 = (GameObject)body1.getUserData();
             GameObject bd2 = (GameObject)body2.getUserData();
-
-            // Test bullet collision with world
-            if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2 != levelModel.getPlayer()) {
-                removeBullet(bd1);
+            // Check for rock collision with any entity
+            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
+                revertRecentMovement(bd2);
+            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
+                revertRecentMovement(bd1);
             }
-
-            if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1 != levelModel.getPlayer()) {
-                removeBullet(bd2);
+            // Check for non-rock entity interaction with current
+            else if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+                pushEntity((Current) bd1, bd2);
+            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
+                pushEntity((Current) bd2, bd1);
             }
-
+            // Check for bullet collision with enemy (projectiles kill enemies)
+            else if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
+                ResolveCollision((Bullet) bd1, (Enemy) bd2);
+            }else if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1.getType().equals(GameObject.ObjectType.ENEMY)) {
+                ResolveCollision((Bullet) bd2, (Enemy) bd1);
+            }
+            // Check for player collision with wood (health+)
+            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.WOOD)){
+                ResolveCollision((Raft)bd1, (Wood)bd2);
+            } else if(bd1.getType().equals(GameObject.ObjectType.WOOD) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                ResolveCollision((Raft)bd2, (Wood)bd1);
+            }
+            // Check for player kill enemies (health-)
+            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.ENEMY)){
+                ResolveCollision((Raft)bd1, (Enemy) bd2);
+            }else if(bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                ResolveCollision((Raft)bd2, (Enemy) bd1);
+            }
+            // Check for player collision with treasure (star+)
+            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
+                ResolveCollision((Raft)bd1, (Treasure) bd2);
+            } else if(bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                ResolveCollision((Raft)bd2, (Treasure) bd1);
+            }
             // Check for win condition
-            if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
+            else if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
                     (bd1 == levelModel.getGoal() && bd2 == levelModel.getPlayer())) {
                 setComplete(true);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
+    // TODO: Should we push current before we step the physics engine?
+    /** Push o according to c
+     * @param c the current
+     * @param o the object to push
+     * Precondition: object o is guaranteed not to be rock/obstacle */
+    private void pushEntity(Current c, GameObject o) { o.setPosition(c.getDirectionVector().add(o.getPosition())); }
+
+    /** Place the object back to its position cache to revert its most recent movement
+     * @param o the game object to revert */
+    private void revertRecentMovement(GameObject o) { o.setPosition(o.getPositionCache()); }
+
+    /** Resolve collision between two objects of specific types
+     * @param b bullet
+     * @param e enemy */
+    private void ResolveCollision(Bullet b, Enemy e) {
+        // destroy bullet
+        removeBullet(b);
+        // destroy enemy
+        e.setDestroyed(true);
+    }
+
+    /** Resolve collision between two objects of specific types
+     * @param r raft
+     * @param e enemy */
+    private void ResolveCollision(Raft r, Enemy e) {
+        // update player health
+        r.addHealth(Enemy.ENEMY_DAMAGE);
+        // destroy enemy
+        e.setDestroyed(true);
+    }
+
+    /** Resolve collision between two objects of specific types
+     * @param r raft
+     * @param w wood */
+    private void ResolveCollision(Raft r, Wood w) {
+        // update player health
+        r.addHealth(w.getWood());
+        // destroy wood
+        w.setDestroyed(true);
+    }
+
+    /** Resolve collision between two objects of specific types
+     * @param r raft
+     * @param t treasure */
+    private void ResolveCollision(Raft r, Treasure t) {
+        // update player health
+        r.addStar();
+        // destroy treasure
+        t.setDestroyed(true);
+    }
+
+    // TODO: When current not in touch with objects, do we need to stop acting force on it?
     /**
      * Callback method for the start of a collision
      *
      * This method is called when two objects cease to touch.  The main use of this method
-     * is to determine when the characer is NOT on the ground.  This is how we prevent
+     * is to determine when the character is NOT on the ground.  This is how we prevent
      * double jumping.
      */
     @Override
@@ -480,23 +553,50 @@ public class WorldController implements Screen, ContactListener {
 //        if ((levelModel.getPlayer().getSensorName().equals(fd2) && levelModel.getPlayer() != bd1) ||
 //                (levelModel.getPlayer().getSensorName().equals(fd1) && levelModel.getPlayer() != bd2)) {
 //            sensorFixtures.remove(levelModel.getPlayer() == bd1 ? fix2 : fix1);
-////            if (sensorFixtures.size == 0) {
-////                levelModel.getPlayer().setGrounded(false);
-////            }
+//            if (sensorFixtures.size == 0) {
+//                levelModel.getPlayer().setGrounded(false);
+//            }
 //        }
     }
 
-    /** Unused ContactListener method */
+    /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
+        //TODO: below are imported from Lab 4. Question: What sound effects do we want?
+        float speed = 0;
+        Vector2 cache = new Vector2();
+        float bumpThresh = 5f;
 
+        // Use Ian Par-berry's method to compute a speed threshold
+        Body body1 = contact.getFixtureA().getBody();
+        Body body2 = contact.getFixtureB().getBody();
+        WorldManifold worldManifold = contact.getWorldManifold();
+        Vector2 wp = worldManifold.getPoints()[0];
+        cache.set(body1.getLinearVelocityFromWorldPoint(wp));
+        cache.sub(body2.getLinearVelocityFromWorldPoint(wp));
+        speed = cache.dot(worldManifold.getNormal());
+
+        // Play a sound if above threshold (otherwise too many sounds)
+        if (speed > bumpThresh) {
+            GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
+            GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
+            if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY) {
+                playSoundEffect();
+            }
+            if (s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
+                playSoundEffect();
+            }
+        }
+    }
+
+    // TODO: What sound effect are needed and when do we want them?
+    /** Play sound effect according to the situation */
+    private void playSoundEffect() {
     }
 
     /** Unused ContactListener method */
     @Override
-    public void postSolve(Contact contact, ContactImpulse impulse) {
-
-    }
+    public void postSolve(Contact contact, ContactImpulse impulse) {}
 
     /*=*=*=*=*=*=*=*=*=* Set and Reset Level *=*=*=*=*=*=*=*=*=*/
     /**
@@ -520,9 +620,7 @@ public class WorldController implements Screen, ContactListener {
      *
      * @return true if the level is failed.
      */
-    public boolean isFailure( ) {
-        return failed;
-    }
+    public boolean isFailure( ) {return failed;}
 
     /**
      * Sets whether the level is failed.

@@ -75,7 +75,7 @@ public abstract class GameObject {
     /** Whether the object should be removed from the world (object list) at next timestamp. */
     protected boolean destroyed;
 
-    // ABSTRACT METHODDS
+    // ABSTRACT METHODS
 
     /**
      * Returns the type of this object.
@@ -413,6 +413,11 @@ public abstract class GameObject {
      */
     public void setAngularVelocity(float value) {
         bodyinfo.angularVelocity = value;
+    }
+
+    /** @return the most recent aka cached position */
+    public Vector2 getPositionCache() {
+        return positionCache;
     }
 
 }

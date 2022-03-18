@@ -25,6 +25,10 @@ public class Raft extends GameObject {
     public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
     /** Initial player health */
     public static final float INITIAL_PLAYER_HEALTH = 40.0f;
+    /** The star of the level. This must be >=0. */
+    private int star;
+    /** Initial player health */
+    private static final int INITIAL_PLAYER_STAR = 0;
 
     /** Raft's current speed. */
     private float force;
@@ -163,6 +167,8 @@ public class Raft extends GameObject {
         super();
         setPosition(position);
         this.force = force;
+        this.health = INITIAL_PLAYER_HEALTH;
+        this.star = INITIAL_PLAYER_STAR;
     }
 
     public void update(float dt) {
@@ -220,5 +226,11 @@ public class Raft extends GameObject {
 //            body = null;
 //            bodyinfo.active = false;
 //
-        }
+    }
+
+    /** Add one star to the player star count */
+    protected void addStar() { star++; }
+
+    /** Get the star of the level */
+    protected int getStar() { return star; }
 }
