@@ -11,7 +11,6 @@ public class Treasure extends GameObject {
 
     public Treasure(Vector2 position) {
         super();
-        radius = 50;
         setPosition(position);
         collected = false;
     }

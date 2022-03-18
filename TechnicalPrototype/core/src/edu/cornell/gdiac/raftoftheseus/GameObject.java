@@ -39,7 +39,7 @@ public abstract class GameObject {
 
     /** Reference to texture origin */
     protected Vector2 origin;
-    /** Radius of the object in pixels (used for display only) */
+    /** Radius of the object in box2d units (used for display only) */
     protected float radius;
     /** Rotation of object (used for displaying, in degrees clockwise) -*/
     protected float rotation = 0.0f;
@@ -149,6 +149,8 @@ public abstract class GameObject {
      * The created object has no position or size.  These should be set by the subclasses.
      */
     public GameObject() {
+        radius = 1.49f;// slightly less than 1/2 the size of a grid square
+
         // code copied from Physics lab Obstacle constructor
 
         // Object has yet to be deactivated
@@ -182,10 +184,10 @@ public abstract class GameObject {
      *
      * @param canvas The drawing context
      */
-    public void drawAffine(GameCanvas canvas, Vector2 affine) {
-        float s = 2.0f*radius / animator.getRegionHeight();
+    public void drawAffine(GameCanvas canvas, Vector2 affine, float pixelsPerUnit) {
+        float s = 2.0f*radius*pixelsPerUnit / animator.getRegionHeight();
         canvas.draw(animator, Color.WHITE, origin.x, origin.y,
-                100.0f/3.0f*getX() + affine.x, 100.0f/3.0f*getY() + affine.y, rotation, s, s);
+                pixelsPerUnit*getX() + affine.x, pixelsPerUnit*getY() + affine.y, rotation, s, s);
     }
 
     /// BodyDef Methods

@@ -11,7 +11,6 @@ public class Goal extends GameObject {
     public Goal(Vector2 position) {
         super();
         setPosition(position);
-        radius = 50;
     }
 
     // goal shouldn't update

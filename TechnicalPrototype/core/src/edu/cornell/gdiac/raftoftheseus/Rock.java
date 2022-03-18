@@ -15,7 +15,6 @@ public class Rock extends GameObject {
 
     public Rock(Vector2 position) {
         super();
-        radius = 50;
         setPosition(position);
     }
 

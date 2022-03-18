@@ -55,13 +55,11 @@ public class Enemy extends GameObject {
 
     public Enemy() {
         super();
-        radius = 50;
     }
 
     public Enemy(Vector2 position, Raft targetRaft) {
         super();
         this.targetRaft = targetRaft;
-        radius = 50;
         setPosition(position);
     }
 

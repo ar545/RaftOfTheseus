@@ -40,7 +40,6 @@ public class Current extends GameObject {
     /** constructor with known direction */
     public Current(Vector2 position, Direction direction, float speed){
         super();
-        radius = 50;
         this.direction = direction;
         this.speed = speed;
         setPosition(position);

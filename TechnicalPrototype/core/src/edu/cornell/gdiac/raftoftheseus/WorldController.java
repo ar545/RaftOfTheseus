@@ -135,14 +135,16 @@ public class WorldController implements Screen, ContactListener {
             return;
         }
 
+        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
+
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
         Vector2 offset2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
-        offset2.sub(levelModel.getPlayer().getPosition().scl(100.0f/3.0f));
+        offset2.sub(levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
 
 //        canvas.clear();
         canvas.begin();
         for(GameObject obj : levelModel.getObjects()) {
-            obj.drawAffine(canvas, offset2);
+            obj.drawAffine(canvas, offset2, pixelsPerUnit);
         }
         canvas.end();
 
