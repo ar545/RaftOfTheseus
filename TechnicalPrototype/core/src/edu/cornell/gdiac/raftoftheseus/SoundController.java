@@ -86,7 +86,9 @@ public class SoundController {
         music = new ArrayMap<>();
         STATE = MusicState.STEADY;
         if (demo) {
-            music.put("demo", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/RoT_Menu.mp3")));
+            music.put("menu", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Menu_RoTTheme.ogg")));
+            music.put("explore", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Explore_Longing.ogg")));
+            music.put("danger", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Danger_Longing.ogg")));
         }
     }
 
@@ -138,37 +140,46 @@ public class SoundController {
     }
 
     /**
+     * TODO Store id
      * Plays sfx with the filename name at given volume sfxvol. Returns if not found.
-     * @param name of sfx
+     * @param pan between -1 and 1.
      * @param sfxvol between 0 and 1.
+     * @param name of sfx.
+     * @param loop whether this sfx will loop.
      */
-    private void playSFX(float pan, float sfxvol, String name){
+    private void playSFX(float pan, float sfxvol, String name, boolean loop){
         Sound s = sfx.get(name);
         if (s == null) return;
-        long id = s.play();
-        s.setPan(id, pan, sfxvol);
+        long id;
+        if (loop) {
+            id = s.loop(sfxvol, 1.0f, pan);
+        } else {
+            id = s.play(sfxvol, 1, pan);
+        }
     }
 
     /**
      * Plays sfx with the filename name at full sfxVolume. Returns if not found.
      * @param name of sfx
+     * @param loop whether this sfx will loop.
      */
-    public void playSFX(String name){
-        playSFX(0, sfxVolume, name);
+    public void playSFX(String name, boolean loop){
+        playSFX(0f, sfxVolume, name, loop);
     }
 
     /**
      * Plays sfx with the filename at volume governed by distance.
      * @param name of sfx
-     * @param distance of source from player
+     * @param distance of source from player.
+     * @param loop whether this sfx will loop.
      */
-    public void playSFX(String name, Vector2 distance){
+    public void playSFX(String name, Vector2 distance, boolean loop){
         // Play at full volume, no pan
         if (distance.len() < decayDistance){
-            playSFX(name);
+            playSFX(name, loop);
         }
         // Calculate new volume with v2 = v1 * r1/r2 and pan with x component
-        playSFX(distance.nor().x,sfxVolume * decayDistance / distance.len(), name);
+        playSFX(distance.nor().x,sfxVolume * decayDistance / distance.len(), name, loop);
     }
 
     /**
