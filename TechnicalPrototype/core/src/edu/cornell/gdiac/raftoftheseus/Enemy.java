@@ -13,6 +13,8 @@ public class Enemy extends GameObject {
     public static final float DAMAGE_PER_FRAME = 0.5f;
     /** How fast the enemy moves towards its target, in pixel per frame */
     public static final float ENEMY_SPEED = 1.5f;
+    /** How much health will enemy take from player upon collision */
+    protected static final float ENEMY_DAMAGE = 10.0f;
 
     /** This is the player, if this enemy is targeting the player. */
     private Raft targetRaft;
