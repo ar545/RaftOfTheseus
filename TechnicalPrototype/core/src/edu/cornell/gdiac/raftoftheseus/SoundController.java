@@ -8,6 +8,12 @@ import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 
+/**
+ * Class to control starting, looping, and stopping sounds for the game.
+ * Requires updating every time controllers or levels are changed due to memory constraints of music.
+ * Usage is as follows: Constructor -> gatherAssets() -> setPresets() -> playSFX(), playMusic() etc.
+ * Changed loaded sounds with setPresets() as needed.
+ */
 public class SoundController {
     /** Master volume for SFX */
     private float sfxVolume = 1.0f;
@@ -51,13 +57,14 @@ public class SoundController {
      */
     public void gatherAssets(AssetDirectory directory) {
         if (!assertObjects(sfxPresets, musicPresets)) throw new NullPointerException("Constructor not called.");
-        JsonValue dir = directory.getEntry("assets", JsonValue.class);
+        JsonValue dir = directory.getEntry("assets", JsonValue.class).get("sounds");
 
         // Set values
         sfxVolume = dir.getFloat("sfx_volume", 1.0f);
         musicVolume = dir.getFloat("music_volume", 1.0f);
         tradeRate = dir.getFloat("trade_rate", 0.01f);
         tradeThreshold = dir.getFloat("trade_threshold", 0.05f);
+        // Load presets
         for(JsonValue s : dir.get("sfx_presets")){
             sfxPresets.put(s.getInt("preset_number", 0), s);
         }
