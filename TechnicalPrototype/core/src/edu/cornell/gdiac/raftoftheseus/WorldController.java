@@ -64,7 +64,8 @@ public class WorldController implements Screen, ContactListener {
     /** Countdown active for winning or losing */
     private int countdown;
     SoundController soundController;
-
+    /** array of controls for each enemy**/
+    private AIController[] controls;
 
 
     /**
@@ -82,6 +83,11 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+        PooledList<Enemy> enemies = levelModel.getEnemies();
+        controls = new AIController[enemies.size()];
+        for (int i = 1; i < enemies.size(); i++) {
+            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+        }
 
         soundController = new SoundController(true);
     }
@@ -286,8 +292,10 @@ public class WorldController implements Screen, ContactListener {
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies() {
-        for (Enemy enemy : levelModel.getEnemies()) {
-            enemy.resolveAction(levelModel.getPlayer());
+        PooledList<Enemy> el = levelModel.getEnemies();
+        for (int i = 0; i< el.size(); i++) {
+            Enemy enemy = el.get(i);
+            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
     }
 
