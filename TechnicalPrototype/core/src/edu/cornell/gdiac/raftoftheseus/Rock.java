@@ -4,10 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class Rock extends GameObject {
-
-    /** Rock's position. */
-    public Vector2 position;
-
     public ObjectType getType() {
         return ObjectType.OBSTACLE;
     }
@@ -20,7 +16,7 @@ public class Rock extends GameObject {
     public Rock(Vector2 position) {
         super();
         radius = 50;
-        this.position = position;
+        setPosition(position);
     }
 
     // TODO: fix

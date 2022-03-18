@@ -165,6 +165,7 @@ public class Raft extends GameObject {
      */
     public Raft(Vector2 position, float force) {
         super();
+        radius = 50;
         setPosition(position);
         this.force = force;
         this.health = INITIAL_PLAYER_HEALTH;

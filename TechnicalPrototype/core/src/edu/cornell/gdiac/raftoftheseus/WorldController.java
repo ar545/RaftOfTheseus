@@ -136,8 +136,8 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
-        Vector2 offset2 = new Vector2((float)canvas.width/2, (float)canvas.height/2);
-        offset2.sub(levelModel.getPlayer().getPosition());
+        Vector2 offset2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
+        offset2.sub(levelModel.getPlayer().getPosition().scl(100.0f/3.0f));
 
 //        canvas.clear();
         canvas.begin();
@@ -279,8 +279,8 @@ public class WorldController implements Screen, ContactListener {
         // Process actions in object model
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
-        player.setMovementX(ic.getMovement().x * player.getForce());
-        player.setMovementY(ic.getMovement().y * player.getForce());
+        player.setMovementX(ic.getMovement().x);
+        player.setMovementY(ic.getMovement().y);
         player.setFire(ic.didFire());
 
         // Add a bullet if we fire
@@ -290,7 +290,7 @@ public class WorldController implements Screen, ContactListener {
 
         // update enemy
         resolveEnemies();
-        player.applyForce();
+//        player.applyForce();
         resolveMusic();
     }
 

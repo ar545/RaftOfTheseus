@@ -4,17 +4,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 
 public class Goal extends GameObject {
-
-    /** Goal's position. */
-    public Vector2 position;
-
     public ObjectType getType() {
         return ObjectType.GOAL;
     }
 
     public Goal(Vector2 position) {
         super();
-        this.position = position;
+        setPosition(position);
         radius = 50;
     }
 

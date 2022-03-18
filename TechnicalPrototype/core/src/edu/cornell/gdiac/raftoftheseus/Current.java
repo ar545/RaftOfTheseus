@@ -28,8 +28,6 @@ public class Current extends GameObject {
     private Direction direction;
     /** Current speed */
     private float speed;
-    /** Current position */
-    public Vector2 position;
 
 //    /** speed of the current (keep in mind current speed of the player is 4) */
 //    private static final int CURRENT_SPEED = 2;
@@ -45,7 +43,7 @@ public class Current extends GameObject {
         radius = 50;
         this.direction = direction;
         this.speed = speed;
-        this.position = position;
+        setPosition(position);
         setRotationFromDirection();
     }
 

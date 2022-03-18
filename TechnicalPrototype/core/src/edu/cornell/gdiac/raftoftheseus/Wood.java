@@ -10,8 +10,6 @@ public class Wood extends GameObject  {
     // ATTRIBUTES
     /** How many logs is in this pile of wood. player health will add correspondingly */
     private final float wood;
-    /** Wood's current position. */
-    public Vector2 position;
 
     // CONSTANTS
     /** the maximum log generated for each pile of wood */
@@ -24,14 +22,14 @@ public class Wood extends GameObject  {
     }
 
     /** Constructor for Wood object
-     * @param pos: position of wood
+     * @param position: position of wood
      * @param value: amount of wood
      */
-    public Wood(Vector2 pos, int value) {
+    public Wood(Vector2 position, int value) {
         super();
         radius = 40;
         wood = value;
-        position = pos;
+        setPosition(position);
     }
 
     /** return the number of logs in this pile of wood

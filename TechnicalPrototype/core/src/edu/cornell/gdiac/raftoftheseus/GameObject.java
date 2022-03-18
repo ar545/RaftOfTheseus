@@ -39,7 +39,7 @@ public abstract class GameObject {
 
     /** Reference to texture origin */
     protected Vector2 origin;
-    /** Radius of the object (used for collisions and display) */
+    /** Radius of the object in pixels (used for display only) */
     protected float radius;
     /** Rotation of object (used for displaying, in degrees clockwise) -*/
     protected float rotation = 0.0f;
@@ -185,7 +185,7 @@ public abstract class GameObject {
     public void drawAffine(GameCanvas canvas, Vector2 affine) {
         float s = 2.0f*radius / animator.getRegionHeight();
         canvas.draw(animator, Color.WHITE, origin.x, origin.y,
-                getX() + affine.x, getY() + affine.y, rotation, s, s);
+                100.0f/3.0f*getX() + affine.x, 100.0f/3.0f*getY() + affine.y, rotation, s, s);
     }
 
     /// BodyDef Methods

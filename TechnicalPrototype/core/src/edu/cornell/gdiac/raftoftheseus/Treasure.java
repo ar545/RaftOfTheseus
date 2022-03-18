@@ -8,13 +8,11 @@ public class Treasure extends GameObject {
     // ATTRIBUTES
     /** Has the treasure been collected yet? */
     protected boolean collected;
-    /** Treasure's position. */
-    public Vector2 position;
 
     public Treasure(Vector2 position) {
         super();
         radius = 50;
-        this.position = position;
+        setPosition(position);
         collected = false;
     }
 

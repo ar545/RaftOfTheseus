@@ -353,7 +353,7 @@ public class LevelModel {
     private void addTreasure(int row, int col) {
         computePosition(col, row);
         GameObject this_treasure = new Treasure(compute_temp);
-        this_treasure.setTexture(raftTexture); // TODO use correct texture
+        this_treasure.setTexture(targetTexture); // TODO use correct texture
         addObject(this_treasure);
     }
 
