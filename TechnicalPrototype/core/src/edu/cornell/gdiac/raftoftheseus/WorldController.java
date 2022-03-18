@@ -123,11 +123,19 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-//        canvas.clear();
+        // return if no canvas pointer
+        if(canvas == null){
+            return;
+        }
 
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
+        Vector2 offset2 = new Vector2((float)canvas.width/2, (float)canvas.height/2);
+        offset2.sub(levelModel.getPlayer().getPosition());
+
+//        canvas.clear();
         canvas.begin();
         for(GameObject obj : levelModel.getObjects()) {
-            obj.draw(canvas);
+            obj.drawAffine(canvas, offset2);
         }
         canvas.end();
 
