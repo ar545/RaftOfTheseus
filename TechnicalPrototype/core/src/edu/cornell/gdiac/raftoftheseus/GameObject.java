@@ -3,9 +3,7 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.util.FilmStrip;
 
 /**
@@ -151,7 +149,20 @@ public abstract class GameObject {
      * The created object has no position or size.  These should be set by the subclasses.
      */
     public GameObject() {
+        // code copied from Physics lab Obstacle constructor
+
+        // Object has yet to be deactivated
         destroyed = false;
+
+        // Allocate the body information
+        bodyinfo = new BodyDef();
+        bodyinfo.awake  = true;
+        bodyinfo.allowSleep = true;
+        bodyinfo.gravityScale = 1.0f;
+//        bodyinfo.position.set(x,y);
+        bodyinfo.fixedRotation = false;
+        // Objects are physics objects unless otherwise noted
+        bodyinfo.type = BodyDef.BodyType.DynamicBody;
     }
 
     /**

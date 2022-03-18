@@ -75,7 +75,8 @@ public class WorldController implements Screen, ContactListener {
      * with the Box2d coordinates.  The bounds are in terms of the Box2d
      * world, not the screen.
      */
-    protected WorldController() {
+    protected WorldController(GameCanvas canvas) {
+        this.canvas = canvas;
         levelModel = new LevelModel();
         this.complete = false;
         this.failed = false;
@@ -162,17 +163,17 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // Final message
-        if (complete && !failed) {
-            displayFont.setColor(Color.YELLOW);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-            canvas.end();
-        } else if (failed) {
-            displayFont.setColor(Color.RED);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-            canvas.end();
-        }
+//        if (complete && !failed) {
+//            displayFont.setColor(Color.YELLOW);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+//            canvas.end();
+//        } else if (failed) {
+//            displayFont.setColor(Color.RED);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+//            canvas.end();
+//        }
     }
 
     /**
@@ -185,10 +186,11 @@ public class WorldController implements Screen, ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
-        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
-        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+//        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+//        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+//        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
         levelModel.setDirectory(directory);
+        levelModel.gatherAssets(directory);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -275,18 +277,20 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
-        levelModel.getPlayer().setMovementX(InputController.getInstance().getMovement().x * levelModel.getPlayer().getForce());
-        levelModel.getPlayer().setMovementY(InputController.getInstance().getMovement().y * levelModel.getPlayer().getForce());
-        levelModel.getPlayer().setFire(InputController.getInstance().didFire());
+        InputController ic = InputController.getInstance();
+        Raft player = levelModel.getPlayer();
+        player.setMovementX(ic.getMovement().x * player.getForce());
+        player.setMovementY(ic.getMovement().y * player.getForce());
+        player.setFire(ic.didFire());
 
         // Add a bullet if we fire
-        if (levelModel.getPlayer().isFire()) {
+        if (player.isFire()) {
             createBullet();
         }
 
         // update enemy
         resolveEnemies();
-        levelModel.getPlayer().applyForce();
+        player.applyForce();
         resolveMusic();
     }
 
@@ -295,7 +299,9 @@ public class WorldController implements Screen, ContactListener {
         PooledList<Enemy> el = levelModel.getEnemies();
         for (int i = 0; i< el.size(); i++) {
             Enemy enemy = el.get(i);
-            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            //TODO
+            // this line is commented out because it was crashing. The list controls[] was a different size from the list getEnemies().
+//            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
     }
 
@@ -416,6 +422,16 @@ public class WorldController implements Screen, ContactListener {
         // Useless if called in outside animation loop
         active = false;
     }
+
+    /**
+     * Sets the ScreenListener for this mode
+     *
+     * The ScreenListener will respond to requests to quit.
+     */
+    public void setScreenListener(ScreenListener listener) {
+        this.listener = listener;
+    }
+
 
     /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
     /**
@@ -678,4 +694,6 @@ public class WorldController implements Screen, ContactListener {
         levelModel.loadLevel(level_int);
     }
 
+    public void setScreenListener(GDXRoot gdxRoot) {
+    }
 }

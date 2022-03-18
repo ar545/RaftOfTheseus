@@ -44,5 +44,8 @@
     "background": "sounds/Msc_Background_CalmOcean.ogg",
     "explore": "sounds/Msc_Explore_Longing.ogg",
     "danger": "sounds/Msc_Danger_Longing.ogg"
+  },
+  "jsons" : {
+    "level:0" : "levels/level0.json"
   }
 }

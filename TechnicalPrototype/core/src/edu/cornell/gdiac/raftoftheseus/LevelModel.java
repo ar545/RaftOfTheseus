@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -85,6 +86,24 @@ public class LevelModel {
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Enemy> enemies = new PooledList<>();
+
+    // Graphics assets for the entities
+    /** Texture for all ships, as they look the same */
+    private Texture raftTexture;
+    /** Texture for the ocean tiles */
+    private Texture oceanTexture;
+    /** Texture for wood pieces that represent single pile of log */
+    private Texture woodTexture;
+    /** Texture for wood pieces that represents double pile of logs */
+    private Texture doubleTexture;
+    /** Texture for all target, as they look the same */
+    private Texture targetTexture;
+    /** Texture for all rock, as they look the same */
+    private Texture rockTexture;
+    /** Texture for current placeholder: texture alas in future */
+    private Texture currentTextures[];
+    /** Texture for current placeholder: texture alas in future */
+    private Texture enemyTexture;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -186,7 +205,8 @@ public class LevelModel {
         objects.clear();
         enemies.clear();
         addQueue.clear();
-        world.dispose();
+        if (world != null)
+            world.dispose();
         world = new World(NO_GRAVITY,false);
 
     }
@@ -199,7 +219,7 @@ public class LevelModel {
     public void loadLevel(int level_int){
         if(level_int != LEVEL_RESTART_CODE){
             // Load in new level
-            level_data = directory.getEntry("levels:" + level_int, JsonValue.class);
+            level_data = directory.getEntry("level:"+level_int, JsonValue.class);
 
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
@@ -256,9 +276,9 @@ public class LevelModel {
         for(int row = 0; row < map_size.y; row ++){
             for(int col = 0; col < map_size.x; col ++){
                 int index = row * map_size.x + col;
-                populateEnv(row, col, environment.getInt(index));
-                populateCollect(row, col, collectables.getInt(index));
-                populateEnemies(row, col, enemies.getInt(index));
+                populateEnv(row, col, environment.get("data").getInt(index));
+                populateCollect(row, col, collectables.get("data").getInt(index));
+                populateEnemies(row, col, enemies.get("data").getInt(index));
             }
         }
     }
@@ -312,7 +332,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addRock(int row, int col) {
         computePosition(col, row);
-        GameObject this_rock = new Rock(compute_temp); addObject(this_rock);
+        GameObject this_rock = new Rock(compute_temp);
+        this_rock.setTexture(rockTexture);
+        addObject(this_rock);
     }
 
     /** Add Enemy Objects to the world, using the Json value for goal.
@@ -320,7 +342,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-        Enemy this_enemy = new Enemy(compute_temp, null); addObject(this_enemy, enemy_type);
+        Enemy this_enemy = new Enemy(compute_temp, null);
+        this_enemy.setTexture(enemyTexture);
+        addObject(this_enemy, enemy_type);
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -328,7 +352,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-        GameObject this_treasure = new Treasure(compute_temp); addObject(this_treasure);
+        GameObject this_treasure = new Treasure(compute_temp);
+        this_treasure.setTexture(raftTexture); // TODO use correct texture
+        addObject(this_treasure);
     }
 
     /** Add Goal Objects to the world, using the Json value for goal.
@@ -337,6 +363,7 @@ public class LevelModel {
     private void addGoal(int row, int col) {
         computePosition(col, row);
         Goal this_goal = new Goal(compute_temp);
+        this_goal.setTexture(targetTexture);
         addObject(this_goal);
         goal = this_goal;
     }
@@ -347,6 +374,7 @@ public class LevelModel {
     private void addRaft(int row, int col, float speed) {
         computePosition(col, row);
         Raft this_raft = new Raft(compute_temp, speed);
+        this_raft.setTexture(raftTexture);
         addObject(this_raft);
         raft = this_raft;
     }
@@ -356,9 +384,10 @@ public class LevelModel {
      * @param col the column grid position
      * @param value the JS value that represents the goal */
     private void addWood(int row, int col, int value) {
-       computePosition(col, row);
-       GameObject this_wood = new Wood(compute_temp, value);
-       addObject(this_wood);
+        computePosition(col, row);
+        GameObject this_wood = new Wood(compute_temp, value);
+        this_wood.setTexture(woodTexture); // TODO use correct texture
+        addObject(this_wood);
     }
 
     /** Add current Objects to the world, using the Json value for goal
@@ -369,6 +398,7 @@ public class LevelModel {
     private void addCurrent(int row, int col, Current.Direction direction, float speed) {
         computePosition(col, row);
         GameObject this_current = new Current(compute_temp, direction, speed);
+        this_current.setTexture(currentTextures[0]); // TODO set correct current texture
         addObject(this_current);
     }
 
@@ -379,6 +409,22 @@ public class LevelModel {
     private void computePosition(int x_col, int y_row){
         compute_temp.x = ((float) x_col + 0.5f) * GRID_SIZE.x;
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE.y;
+    }
+
+    public void gatherAssets(AssetDirectory directory) {
+        raftTexture = directory.getEntry("raft", Texture.class);
+        oceanTexture = directory.getEntry("water_tile", Texture.class);
+        woodTexture = directory.getEntry("wood", Texture.class);
+        doubleTexture = directory.getEntry("double", Texture.class);
+        targetTexture = directory.getEntry("target", Texture.class);
+        rockTexture = directory.getEntry("rock", Texture.class);
+        currentTextures = new Texture[] {
+                directory.getEntry("east_current", Texture.class),
+                directory.getEntry("west_current", Texture.class),
+                directory.getEntry("north_current", Texture.class),
+                directory.getEntry("south_current", Texture.class)
+        };
+        enemyTexture = directory.getEntry("enemy", Texture.class);
     }
 
     /*
