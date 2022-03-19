@@ -152,13 +152,13 @@ public class WorldController implements Screen, ContactListener {
         }
         canvas.end();
 
-//        if (debug) {
-//            canvas.beginDebug();
-//            for(GameObject obj : levelModel.getObjects()) {
-//                obj.drawDebug(canvas);
-//            }
-//            canvas.endDebug();
-//        }
+        if (debug) {
+            canvas.beginDebug();
+            for(GameObject obj : levelModel.getObjects()) {
+                obj.drawDebug(canvas);
+            }
+            canvas.endDebug();
+        }
 
         if (map) {
 //            canvas.beginMap();
@@ -296,7 +296,7 @@ public class WorldController implements Screen, ContactListener {
 
         // update enemy
         resolveEnemies();
-//        player.applyForce();
+        player.applyForce();
         resolveMusic();
     }
 
@@ -469,20 +469,20 @@ public class WorldController implements Screen, ContactListener {
         try {
             GameObject bd1 = (GameObject)body1.getUserData();
             GameObject bd2 = (GameObject)body2.getUserData();
-            // Check for rock collision with any entity
-            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
-                revertRecentMovement(bd2);
-            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
-                revertRecentMovement(bd1);
-            }
+//            // Check for rock collision with any entity
+//            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
+//                revertRecentMovement(bd2);
+//            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
+//                revertRecentMovement(bd1);
+//            }
             // Check for non-rock entity interaction with current
-            else if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
                 pushEntity((Current) bd1, bd2);
             } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
                 pushEntity((Current) bd2, bd1);
             }
             // Check for bullet collision with enemy (projectiles kill enemies)
-            else if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
+            if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd1, (Enemy) bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd2, (Enemy) bd1);
@@ -520,11 +520,14 @@ public class WorldController implements Screen, ContactListener {
      * @param c the current
      * @param o the object to push
      * Precondition: object o is guaranteed not to be rock/obstacle */
-    private void pushEntity(Current c, GameObject o) { o.setPosition(c.getDirectionVector().add(o.getPosition())); }
+    private void pushEntity(Current c, GameObject o) {
+//        o.setPosition(c.getDirectionVector().add(o.getPosition()));
+        o.getBody().applyLinearImpulse(c.getDirectionVector(), o.getPosition(), true);
+    }
 
-    /** Place the object back to its position cache to revert its most recent movement
-     * @param o the game object to revert */
-    private void revertRecentMovement(GameObject o) { o.setPosition(o.getPositionCache()); }
+//    /** Place the object back to its position cache to revert its most recent movement
+//     * @param o the game object to revert */
+//    private void revertRecentMovement(GameObject o) { o.setPosition(o.getPositionCache()); }
 
     /** Resolve collision between two objects of specific types
      * @param b bullet

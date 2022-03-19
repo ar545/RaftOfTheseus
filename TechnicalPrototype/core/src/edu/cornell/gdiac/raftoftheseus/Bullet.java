@@ -18,12 +18,4 @@ public class Bullet extends GameObject {
     public void update(float dt) {
 
     }
-
-    public boolean activatePhysics(World world) {
-        return false;
-    }
-
-    public void deactivatePhysics(World world) {
-
-    }
 }

@@ -31,14 +31,4 @@ public class Treasure extends GameObject {
             this.setDestroyed(true);
         }
     }
-
-    // need to be implemented?
-    public boolean activatePhysics(World world) {
-        return false;
-    }
-
-    // need to be implemented?
-    public void deactivatePhysics(World world) {
-
-    }
 }

@@ -290,7 +290,7 @@ public class LevelModel {
                 addEnemy(row, col, 0);
                 break;
             case TILE_START:
-                addRaft(row, col, 1f);
+                addRaft(row, col, 100f);
                 break;
             default:
                 break;
@@ -313,7 +313,7 @@ public class LevelModel {
         }else if(tile_int == TILE_GOAL){
             addGoal(row, col);
         }else if(tile_int >= TILE_CURRENT && tile_int <= TILE_CURRENT + TILE_WEST){
-            addCurrent(row, col, compute_direction(tile_int - TILE_CURRENT), 1f);
+            addCurrent(row, col, compute_direction(tile_int - TILE_CURRENT), 10f);
         }
     }
 

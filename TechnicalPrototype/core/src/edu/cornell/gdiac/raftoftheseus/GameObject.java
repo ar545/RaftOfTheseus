@@ -76,6 +76,10 @@ public abstract class GameObject extends WheelObstacle {
     public GameObject() {
         super(1.49f);
         setDrawScale(100.0f/3.0f, 100.0f/3.0f);
+        setDensity(1.0f);
+        setFriction(0.1f);
+        setRestitution(0.1f);
+        setFixedRotation(true);
     }
 
     /**
@@ -92,5 +96,4 @@ public abstract class GameObject extends WheelObstacle {
     public Vector2 getPositionCache() {
         return positionCache;
     }
-
 }
