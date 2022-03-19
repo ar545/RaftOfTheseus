@@ -12,6 +12,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class WorldController implements Screen, ContactListener {
@@ -85,11 +86,6 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
-        PooledList<Enemy> enemies = levelModel.getEnemies();
-        controls = new AIController[enemies.size()];
-        for (int i = 1; i < enemies.size(); i++) {
-            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
-        }
 
         soundController = new SoundController(true);
     }
@@ -305,11 +301,19 @@ public class WorldController implements Screen, ContactListener {
     /** get enemies take actions according to their AI */
     private void resolveEnemies() {
         PooledList<Enemy> el = levelModel.getEnemies();
+//        System.out.println("hi");
+
         for (int i = 0; i< el.size(); i++) {
             Enemy enemy = el.get(i);
+//            System.out.println(i);
+//            System.out.println(enemy);
+//            System.out.println(Arrays.toString(controls));
+//            System.out.println(controls.length);
+//            System.out.println(controls[i]);
+//            System.out.println(i);
             //TODO
             // this line is commented out because it was crashing. The list controls[] was a different size from the list getEnemies().
-//            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
     }
 
@@ -704,6 +708,13 @@ public class WorldController implements Screen, ContactListener {
         setComplete(false);
         setFailure(false);
         levelModel.loadLevel(level_int);
+        PooledList<Enemy> enemies = levelModel.getEnemies();
+
+        controls = new AIController[enemies.size()];
+        for (int i = 0; i < enemies.size(); i++) {
+            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+        }
+//        System.out.println(Arrays.toString(controls));
     }
 
 }
