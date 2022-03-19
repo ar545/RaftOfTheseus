@@ -302,6 +302,9 @@ public class LevelModel {
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 populateEnemies(row, col, enemies.get("data").getInt(index));
+                // TODO: if we populate the raft field before instantiating enemies,
+                //  we can properly instantiate instead of putting null for target raft field
+                //  see the        Enemy this_enemy = new Enemy(compute_temp, null); on line 379
                 populateEnemiesRaftField();
             }
         }

@@ -68,7 +68,6 @@ public class Enemy extends WheelObstacle {
         setPosition(position);
     }
 
-    // TODO: this will change depending on implementation of AIController
     public void update(float dt) {
 //        System.out.println(moveVector);
         if (targetRaft != null && moveVector != null) {
