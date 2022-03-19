@@ -61,7 +61,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		canvas  = new GameCanvas();
 		loading = new LoadingMode("assets.json",canvas,1);
 		playing = new WorldController(canvas);
-		
+
 		loading.setScreenListener(this);
 		setScreen(loading);
 	}

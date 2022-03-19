@@ -123,7 +123,11 @@ public class InputController {
 	 * @return true if the reset button was pressed.
 	 */
 	public boolean didReset() {
+		if(resetPressed && !resetPrevious){
+			System.out.println("reset tried 4");
+		}
 		return resetPressed && !resetPrevious;
+
 	}
 
 	/**
@@ -186,6 +190,10 @@ public class InputController {
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
 			y_offset -= 1.0f;
+		}
+
+		if(resetPressed && !resetPrevious){
+			System.out.println("reset tried 1");
 		}
 	}
 

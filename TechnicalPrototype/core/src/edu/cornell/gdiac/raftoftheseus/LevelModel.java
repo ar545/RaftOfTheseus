@@ -296,9 +296,10 @@ public class LevelModel {
         JsonValue enemies = layers.get(LAYER_ENE);
 
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
-        for(int row = 0; row < map_size.y; row ++){
+        for(int row_reversed = 0; row_reversed < map_size.y; row_reversed ++){
+            int row = map_size.y - row_reversed - 1;
             for(int col = 0; col < map_size.x; col ++){
-                int index = row * map_size.x + col;
+                int index = row_reversed * map_size.x + col;
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 populateEnemies(row, col, enemies.get("data").getInt(index));

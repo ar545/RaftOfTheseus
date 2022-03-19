@@ -215,9 +215,6 @@ public class WorldController implements Screen, ContactListener {
     public boolean preUpdate(float dt) {
         InputController input = InputController.getInstance();
         input.readInput();
-        if (listener == null) {
-            return true;
-        }
 
 //      if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
@@ -225,6 +222,10 @@ public class WorldController implements Screen, ContactListener {
         // Handle resets
         if (input.didReset()) {
             reset();
+        }
+
+        if (listener == null) {
+            return true;
         }
 
         // Now it is time to maybe switch screens.
@@ -684,6 +685,7 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
+        System.out.println("reset tried 3") ;
         levelModel.reset();
         levelModel.world.setContactListener(this);
         setComplete(false);
@@ -704,6 +706,4 @@ public class WorldController implements Screen, ContactListener {
         levelModel.loadLevel(level_int);
     }
 
-    public void setScreenListener(GDXRoot gdxRoot) {
-    }
 }
