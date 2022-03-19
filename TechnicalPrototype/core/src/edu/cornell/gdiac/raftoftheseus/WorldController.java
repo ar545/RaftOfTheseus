@@ -288,6 +288,7 @@ public class WorldController implements Screen, ContactListener {
         player.setMovementX(ic.getMovement().x);
         player.setMovementY(ic.getMovement().y);
         player.setFire(ic.didFire());
+//        System.out.println(player.getPosition().x + "/" + player.getPosition().y);
 
         // Add a bullet if we fire
         if (player.isFire()) {

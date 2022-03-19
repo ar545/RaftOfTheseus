@@ -5,13 +5,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 /**
  * Base class for all Model objects in the game.
  */
-public abstract class GameObject extends WheelObstacle {
+public abstract class GameObject extends SimpleObstacle {
     /**
      * Enum specifying the type of this game object.
      */
@@ -35,14 +37,9 @@ public abstract class GameObject extends WheelObstacle {
     }
 
     /** How much to scale the texture before displaying (screen pixels / texture pixels) */
-    private Vector2 textureScale;
+    public Vector2 textureScale;
 
-    // ACCESSORS
-    public void setTexture(Texture texture) {
-        super.setTexture(new TextureRegion(texture));
-        textureScale = new Vector2(2.0f*getRadius()*drawScale.x / texture.getWidth(),
-                2.0f*getRadius()*drawScale.x / texture.getHeight());
-    }
+
 
     // ABSTRACT METHODS
 
@@ -73,14 +70,15 @@ public abstract class GameObject extends WheelObstacle {
     /**
      * Constructs a trivial game object
      */
-    public GameObject() {
-        super(1.49f);
-        setDrawScale(100.0f/3.0f, 100.0f/3.0f);
+    public GameObject(float x, float y) {
+        super(x, y);
+
         setDensity(1.0f);
         setFriction(0.1f);
         setRestitution(0.1f);
         setFixedRotation(true);
     }
+
 
     /**
      * Draws the texture physics object.
@@ -96,4 +94,5 @@ public abstract class GameObject extends WheelObstacle {
     public Vector2 getPositionCache() {
         return positionCache;
     }
+
 }

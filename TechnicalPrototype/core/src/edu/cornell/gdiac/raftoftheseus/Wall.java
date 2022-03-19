@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Rock extends WheelObstacle {
+public class Wall extends PolygonObstacle {
     public ObjectType getType() {
         return ObjectType.OBSTACLE;
     }
@@ -16,11 +16,10 @@ public class Rock extends WheelObstacle {
         // nothing
     }
 
-    /** Constructor for rock */
-    public Rock(Vector2 position) {
-        super();
-        setPosition(position);
+    /** Constructor for wall */
+    public Wall(float[] polygonVertices){
+        super(polygonVertices);
         setBodyType(BodyDef.BodyType.StaticBody);
-    }
 
+    }
 }

@@ -16,6 +16,7 @@
 package edu.cornell.gdiac.raftoftheseus.obstacle;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.EarClippingTriangulator;
@@ -33,7 +34,7 @@ import edu.cornell.gdiac.raftoftheseus.*;
  * center.  In addition the texture coordinates are computed automatically
  * from the texture size, using the same policy as PolygonSpriteBatch.
  */
-public class PolygonObstacle extends SimpleObstacle {
+public abstract class PolygonObstacle extends GameObject {
 	/** An earclipping triangular to make sure we work with convex shapes */
 	private static final EarClippingTriangulator TRIANGULATOR = new EarClippingTriangulator();
 	
@@ -157,11 +158,13 @@ public class PolygonObstacle extends SimpleObstacle {
 	 */
 	public PolygonObstacle(float[] points, float x, float y) {
 		super(x, y);
+
 		assert points.length % 2 == 0;
 		
 		// Compute the bounds.
 		initShapes(points);
 		initBounds();
+		setDrawScale(100.0f/3.0f, 100.0f/3.0f);
 	}
 
 	/**
@@ -383,5 +386,13 @@ public class PolygonObstacle extends SimpleObstacle {
 			canvas.drawPhysics(tri,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
 		}
 	}
+
+	// ACCESSORS
+//	public void setTexture(Texture texture) {
+//		super.setTexture(new TextureRegion(texture));
+//		textureScale = new Vector2(1, 1);
+//
+//
+//	}
 	
 }
