@@ -93,9 +93,9 @@ public class SoundController {
         music = new ArrayMap<>();
         STATE = MusicState.STEADY;
         if (demo) {
-            music.put("menu", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Menu_RoTTheme.ogg")));
-            music.put("explore", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Explore_Longing.ogg")));
-            music.put("danger", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Danger_Longing.ogg")));
+//            music.put("menu", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Menu_RoTTheme.ogg")));
+//            music.put("explore", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Explore_Longing.ogg")));
+//            music.put("danger", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Danger_Longing.ogg")));
         }
     }
 

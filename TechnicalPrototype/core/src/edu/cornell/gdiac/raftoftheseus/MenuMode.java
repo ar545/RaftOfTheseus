@@ -72,7 +72,7 @@ public class MenuMode implements Screen, InputProcessor {
      */
     public void populate(AssetDirectory directory) {
         background = directory.getEntry("menu", Texture.class);
-        levels = new Texture[9];
+        levels = new Texture[LEVEL_COUNT];
         for (int i = 0; i < LEVEL_COUNT; i++) {
             levels[i] = directory.getEntry("level_" + i, Texture.class);
         }
@@ -138,6 +138,7 @@ public class MenuMode implements Screen, InputProcessor {
     public void render(float delta) {
         if (active) {
             draw();
+            System.out.println("Here");
             if (isReady() && listener != null) {
                 listener.exitScreen(this, 0);
             }
@@ -185,7 +186,7 @@ public class MenuMode implements Screen, InputProcessor {
      * @return whether the input was processed
      */
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (levelPressState == 2) return true;
+        if (levels == null || levelPressState == 2) return true;
 
         screenY = heightY - screenY;
         for (int i = 0; i < levels.length; i++) {

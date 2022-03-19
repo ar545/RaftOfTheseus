@@ -118,18 +118,19 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else if (screen == loading) {
+			System.out.println("here");
 			menu.setScreenListener(this);
 			directory = loading.getAssets();
 			menu.populate(directory);
+			setScreen(menu);
+			loading.dispose();
+			loading = null;
 		} else if (screen == menu) {
 			playing.setScreenListener(this);
 			directory = loading.getAssets();
 			playing.gatherAssets(directory);
 			playing.setLevel(menu.getSelectedLevel());
 			setScreen(playing);
-
-			loading.dispose();
-			loading = null;
 		} else {
 			// We quit the main application
 			Gdx.app.exit();
