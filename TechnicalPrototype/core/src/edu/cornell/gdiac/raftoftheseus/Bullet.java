@@ -12,7 +12,7 @@ public class Bullet extends GameObject {
     public Bullet(Vector2 position) {
         super();
         setPosition(position);
-        radius = 25;
+        setRadius(0.75f);
     }
 
     public void update(float dt) {

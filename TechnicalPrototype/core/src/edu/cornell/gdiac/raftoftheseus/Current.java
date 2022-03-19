@@ -54,7 +54,6 @@ public class Current extends GameObject {
     /** constructor with random direction */
     public Current(){
         super();
-        radius = 50;
 
         switch(rollInt(0,3)){
             case 0:
@@ -79,16 +78,16 @@ public class Current extends GameObject {
     private void setRotationFromDirection() {
         switch(direction){
             case EAST:
-                rotation = 0.0f;
+                setAngle(0.0f);
                 break;
             case NORTH:
-                rotation = 90.0f;
+                setAngle(90.0f);
                 break;
             case WEST:
-                rotation = 180.0f;
+                setAngle(180.0f);
                 break;
             case SOUTH:
-                rotation = -90.0f;
+                setAngle(-90.0f);
                 break;
             default:
                 break;

@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -140,21 +141,24 @@ public class WorldController implements Screen, ContactListener {
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
         Vector2 offset2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
         offset2.sub(levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
+        Affine2 cameraTransform = new Affine2();
+        cameraTransform.setToTranslation(offset2);
 
         canvas.clear();
-        canvas.begin();
+        canvas.begin(cameraTransform);
         for(GameObject obj : levelModel.getObjects()) {
-            obj.drawAffine(canvas, offset2, pixelsPerUnit);
+//            obj.drawAffine(canvas, offset2, pixelsPerUnit);
+            obj.draw(canvas);
         }
         canvas.end();
 
-        if (debug) {
+//        if (debug) {
 //            canvas.beginDebug();
-            for(GameObject obj : levelModel.getObjects()) {
+//            for(GameObject obj : levelModel.getObjects()) {
 //                obj.drawDebug(canvas);
-            }
+//            }
 //            canvas.endDebug();
-        }
+//        }
 
         if (map) {
 //            canvas.beginMap();

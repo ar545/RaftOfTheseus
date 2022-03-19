@@ -27,7 +27,7 @@ public class Wood extends GameObject  {
      */
     public Wood(Vector2 position, int value) {
         super();
-        radius = 1.25f;
+        setRadius(1.25f);
         wood = value;
         setPosition(position);
     }
