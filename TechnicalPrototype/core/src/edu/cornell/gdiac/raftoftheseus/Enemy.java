@@ -2,10 +2,11 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 import java.util.Random;
 
-public class Enemy extends GameObject {
+public class Enemy extends WheelObstacle {
 
     private Random rand = new Random();
 

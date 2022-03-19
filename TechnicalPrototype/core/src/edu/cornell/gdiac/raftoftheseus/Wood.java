@@ -2,11 +2,12 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.World;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 /**
  * Model class for driftwood.
  */
-public class Wood extends GameObject  {
+public class Wood extends WheelObstacle {
     // ATTRIBUTES
     /** How many logs is in this pile of wood. player health will add correspondingly */
     private final float wood;

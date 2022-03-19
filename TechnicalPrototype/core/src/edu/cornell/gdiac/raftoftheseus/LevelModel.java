@@ -1,12 +1,16 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.PooledList;
 
 public class LevelModel {
@@ -15,7 +19,7 @@ public class LevelModel {
     /** Default width and height of a single grid in Box2d units */
     private static final float DEFAULT_GIRD_EDGE_LENGTH = 3.0f;
     /** Default boundary width and height of a single grid in Box2d units */
-    private static final float DEFAULT_BOUNDARY = 1.0f;
+    private static final float DEFAULT_BOUNDARY = 3.0f;
     /** Default num of rows in the map (y, height) */
     private static final int DEFAULT_GRID_ROW = 8;
     /** Default num of columns in the map (x, width) */
@@ -104,6 +108,8 @@ public class LevelModel {
     private Texture currentTextures[];
     /** Texture for current placeholder: texture alas in future */
     private Texture enemyTexture;
+    /** Texture for wall */
+    private TextureRegion earthTile;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -246,7 +252,7 @@ public class LevelModel {
                 GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY);
 
         // Add wall to the world
-        addWall(GRID_SIZE.x * map_size.x, GRID_SIZE.y * map_size.y);
+        computeWall(GRID_SIZE.x * map_size.x, GRID_SIZE.y * map_size.y);
     }
 
     /**
@@ -256,11 +262,28 @@ public class LevelModel {
      * North wall rectangle: (k, y+k, x+2*k, y+2*k)
      * East wall rectangle: (x+k, 0, x+2*k, y+k)
      * */
-    private void addWall(float x, float y) {
-//        addObject(new Wall(0, 0, x+ LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY)); // GameObject south_wall
-//        addObject(new Wall(0, LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY));  // GameObject west_wall
-//        addObject(new Wall(LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY, x+2* LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY)); // GameObject north_wall
-//        addObject(new Wall(x+ LevelModel.DEFAULT_BOUNDARY, 0, x+2* LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY)); // GameObject east_wall
+    private void computeWall(float x, float y) {
+
+        generateRectangle(0f, 0f, x+ LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY); // south_wall
+        generateRectangle(0, LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY); // west_wall
+        generateRectangle(LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY,
+                x+2* LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY); // north_wall
+        generateRectangle(x+ LevelModel.DEFAULT_BOUNDARY, 0, x+2* LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY); // east_wall
+    }
+
+    /** Add Wall Objects to the world, using the Json value for goal.
+     */
+    private void generateRectangle(float x1, float y1, float x2, float y2) {
+        x1 += -DEFAULT_BOUNDARY;
+        x2 += -DEFAULT_BOUNDARY;
+        y1 += -DEFAULT_BOUNDARY;
+        y2 += -DEFAULT_BOUNDARY;
+//        float[] polygonVertices = { 16.0f, 18.0f, 16.0f, 17.0f,  1.0f, 17.0f,  1.0f,  1.0f, 16.0f,  1.0f, 16.0f,  0.0f,  0.0f,  0.0f,  0.0f, 18.0f};
+//        System.out.println(x1 + "/" + y1 + "\\" + x2 + "/" + y2);
+        float[] polygonVertices = {x1, y1, x2, y1, x2, y2, x1, y2};
+        Wall this_wall = new Wall(polygonVertices);
+        this_wall.setTexture(earthTile);
+        addObject(this_wall);
     }
 
     /**
@@ -332,10 +355,11 @@ public class LevelModel {
      * @param col the column grid position */
     private void addRock(int row, int col) {
         computePosition(col, row);
-        GameObject this_rock = new Rock(compute_temp);
+        Rock this_rock = new Rock(compute_temp);
         this_rock.setTexture(rockTexture);
         addObject(this_rock);
     }
+
 
     /** Add Enemy Objects to the world, using the Json value for goal.
      * @param row the row gird position
@@ -352,7 +376,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-        GameObject this_treasure = new Treasure(compute_temp);
+        Treasure this_treasure = new Treasure(compute_temp);
         this_treasure.setTexture(targetTexture); // TODO use correct texture
         addObject(this_treasure);
     }
@@ -385,7 +409,7 @@ public class LevelModel {
      * @param value the JS value that represents the goal */
     private void addWood(int row, int col, int value) {
         computePosition(col, row);
-        GameObject this_wood = new Wood(compute_temp, value);
+        Wood this_wood = new Wood(compute_temp, value);
         this_wood.setTexture(woodTexture); // TODO use correct texture
         addObject(this_wood);
     }
@@ -397,7 +421,7 @@ public class LevelModel {
      * @param speed the speed */
     private void addCurrent(int row, int col, Current.Direction direction, float speed) {
         computePosition(col, row);
-        GameObject this_current = new Current(compute_temp, direction, speed);
+        Current this_current = new Current(compute_temp, direction, speed);
         this_current.setTexture(currentTextures[0]); // TODO set correct current texture
         addObject(this_current);
     }
@@ -425,6 +449,7 @@ public class LevelModel {
                 directory.getEntry("south_current", Texture.class)
         };
         enemyTexture = directory.getEntry("enemy", Texture.class);
+        earthTile = new TextureRegion(directory.getEntry( "earth", Texture.class ));
     }
 
     /*

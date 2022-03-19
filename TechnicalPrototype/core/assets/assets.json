@@ -1,5 +1,10 @@
 {
 	"textures": {
+      "earth" : {
+        "file":  "images/earthtile.png",
+        "wrapU": "repeated",
+        "wrapV": "repeated"
+      },
       "background": "images/background.png",
       "menu_background": "images/menu.png",
       "raft":     "images/raft_2.png",

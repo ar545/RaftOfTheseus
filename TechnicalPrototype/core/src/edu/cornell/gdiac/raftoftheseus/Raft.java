@@ -2,12 +2,13 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.World;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 
 /**
  * Model class for the player raft.
  */
-public class Raft extends GameObject {
+public class Raft extends WheelObstacle {
 
     // CONSTANTS
     /** Movement cost for a pixel distance **/
