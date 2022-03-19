@@ -161,11 +161,12 @@ public class WorldController implements Screen, ContactListener {
         }
 
         if (map) {
-//            canvas.beginMap();
+
+            canvas.begin();
             for(GameObject obj : levelModel.getObjects()) {
-//                obj.drawMap(canvas);
+                obj.drawMap(canvas);
             }
-//            canvas.endMap();
+            canvas.end();
         }
 
         // Final message

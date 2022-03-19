@@ -92,6 +92,14 @@ public abstract class GameObject extends WheelObstacle {
         }
     }
 
+    public void drawMap(GameCanvas canvas) {
+        if (texture != null) {
+            if (getType() != ObjectType.ENEMY && getType() != ObjectType.WOOD && getType() != ObjectType.TREASURE) {
+                canvas.draw(texture, Color.LIGHT_GRAY, origin.x*1.5f, origin.y*1.5f, getX()*drawScale.x*1.5f, getY()*drawScale.x*1.5f,getAngle(),textureScale.x*0.5f,textureScale.y*0.5f);
+            }
+        }
+    }
+
     /** @return the most recent aka cached position */
     public Vector2 getPositionCache() {
         return positionCache;
