@@ -1,6 +1,7 @@
 {
 	"textures": {
       "background": "images/background.png",
+      "menu_background": "images/menu.png",
       "raft":     "images/raft_2.png",
       "wood":     "images/one_wood_v2.png",
       "rock":     "images/rock_2.png",
@@ -12,6 +13,14 @@
       "north_current": "images/north_current.png",
       "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
+      "level_one": "level_one.png",
+      "level_two": "level_two.png",
+      "level_three": "level_three.png",
+      "level_four": "level_four.png",
+      "level_five": "level_five.png",
+      "level_six": "level_six.png",
+      "level_seven": "level_seven.png",
+      "level_eight": "level_eight.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
