@@ -302,7 +302,14 @@ public class LevelModel {
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 populateEnemies(row, col, enemies.get("data").getInt(index));
+                populateEnemiesRaftField();
             }
+        }
+    }
+
+    private void populateEnemiesRaftField(){
+        for (Enemy enemy : enemies){
+            enemy.setTargetRaft(raft);
         }
     }
 
