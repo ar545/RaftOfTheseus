@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -75,7 +76,8 @@ public class WorldController implements Screen, ContactListener {
      * with the Box2d coordinates.  The bounds are in terms of the Box2d
      * world, not the screen.
      */
-    protected WorldController() {
+    protected WorldController(GameCanvas canvas) {
+        this.canvas = canvas;
         levelModel = new LevelModel();
         this.complete = false;
         this.failed = false;
@@ -134,23 +136,28 @@ public class WorldController implements Screen, ContactListener {
             return;
         }
 
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
-        Vector2 offset2 = new Vector2((float)canvas.width/2, (float)canvas.height/2);
-        offset2.sub(levelModel.getPlayer().getPosition());
+        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
 
-//        canvas.clear();
-        canvas.begin();
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
+        Vector2 offset2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
+        offset2.sub(levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
+        Affine2 cameraTransform = new Affine2();
+        cameraTransform.setToTranslation(offset2);
+
+        canvas.clear();
+        canvas.begin(cameraTransform);
         for(GameObject obj : levelModel.getObjects()) {
-            obj.drawAffine(canvas, offset2);
+//            obj.drawAffine(canvas, offset2, pixelsPerUnit);
+            obj.draw(canvas);
         }
         canvas.end();
 
         if (debug) {
-//            canvas.beginDebug();
+            canvas.beginDebug();
             for(GameObject obj : levelModel.getObjects()) {
-//                obj.drawDebug(canvas);
+                obj.drawDebug(canvas);
             }
-//            canvas.endDebug();
+            canvas.endDebug();
         }
 
         if (map) {
@@ -162,17 +169,17 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // Final message
-        if (complete && !failed) {
-            displayFont.setColor(Color.YELLOW);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-            canvas.end();
-        } else if (failed) {
-            displayFont.setColor(Color.RED);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-            canvas.end();
-        }
+//        if (complete && !failed) {
+//            displayFont.setColor(Color.YELLOW);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+//            canvas.end();
+//        } else if (failed) {
+//            displayFont.setColor(Color.RED);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+//            canvas.end();
+//        }
     }
 
     /**
@@ -185,10 +192,11 @@ public class WorldController implements Screen, ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
-        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
-        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+//        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+//        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+//        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
         levelModel.setDirectory(directory);
+        levelModel.gatherAssets(directory);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -275,18 +283,20 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
-        levelModel.getPlayer().setMovementX(InputController.getInstance().getMovement().x * levelModel.getPlayer().getForce());
-        levelModel.getPlayer().setMovementY(InputController.getInstance().getMovement().y * levelModel.getPlayer().getForce());
-        levelModel.getPlayer().setFire(InputController.getInstance().didFire());
+        InputController ic = InputController.getInstance();
+        Raft player = levelModel.getPlayer();
+        player.setMovementX(ic.getMovement().x);
+        player.setMovementY(ic.getMovement().y);
+        player.setFire(ic.didFire());
 
         // Add a bullet if we fire
-        if (levelModel.getPlayer().isFire()) {
+        if (player.isFire()) {
             createBullet();
         }
 
         // update enemy
         resolveEnemies();
-        levelModel.getPlayer().applyForce();
+        player.applyForce();
         resolveMusic();
     }
 
@@ -295,7 +305,9 @@ public class WorldController implements Screen, ContactListener {
         PooledList<Enemy> el = levelModel.getEnemies();
         for (int i = 0; i< el.size(); i++) {
             Enemy enemy = el.get(i);
-            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            //TODO
+            // this line is commented out because it was crashing. The list controls[] was a different size from the list getEnemies().
+//            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
     }
 
@@ -417,6 +429,16 @@ public class WorldController implements Screen, ContactListener {
         active = false;
     }
 
+    /**
+     * Sets the ScreenListener for this mode
+     *
+     * The ScreenListener will respond to requests to quit.
+     */
+    public void setScreenListener(ScreenListener listener) {
+        this.listener = listener;
+    }
+
+
     /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
     /**
      * Remove a new bullet from the world.
@@ -447,20 +469,20 @@ public class WorldController implements Screen, ContactListener {
         try {
             GameObject bd1 = (GameObject)body1.getUserData();
             GameObject bd2 = (GameObject)body2.getUserData();
-            // Check for rock collision with any entity
-            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
-                revertRecentMovement(bd2);
-            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
-                revertRecentMovement(bd1);
-            }
+//            // Check for rock collision with any entity
+//            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
+//                revertRecentMovement(bd2);
+//            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
+//                revertRecentMovement(bd1);
+//            }
             // Check for non-rock entity interaction with current
-            else if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
                 pushEntity((Current) bd1, bd2);
             } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
                 pushEntity((Current) bd2, bd1);
             }
             // Check for bullet collision with enemy (projectiles kill enemies)
-            else if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
+            if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd1, (Enemy) bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd2, (Enemy) bd1);
@@ -498,11 +520,14 @@ public class WorldController implements Screen, ContactListener {
      * @param c the current
      * @param o the object to push
      * Precondition: object o is guaranteed not to be rock/obstacle */
-    private void pushEntity(Current c, GameObject o) { o.setPosition(c.getDirectionVector().add(o.getPosition())); }
+    private void pushEntity(Current c, GameObject o) {
+//        o.setPosition(c.getDirectionVector().add(o.getPosition()));
+        o.getBody().applyLinearImpulse(c.getDirectionVector(), o.getPosition(), true);
+    }
 
-    /** Place the object back to its position cache to revert its most recent movement
-     * @param o the game object to revert */
-    private void revertRecentMovement(GameObject o) { o.setPosition(o.getPositionCache()); }
+//    /** Place the object back to its position cache to revert its most recent movement
+//     * @param o the game object to revert */
+//    private void revertRecentMovement(GameObject o) { o.setPosition(o.getPositionCache()); }
 
     /** Resolve collision between two objects of specific types
      * @param b bullet
@@ -678,4 +703,6 @@ public class WorldController implements Screen, ContactListener {
         levelModel.loadLevel(level_int);
     }
 
+    public void setScreenListener(GDXRoot gdxRoot) {
+    }
 }

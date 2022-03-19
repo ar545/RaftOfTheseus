@@ -171,6 +171,9 @@ public class InputController {
 		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.F);
 		exitPressed  = Gdx.input.isKeyPressed(Input.Keys.ESCAPE);
 
+		x_offset = 0;
+		y_offset = 0;
+
 		// Read direction key inputs
 		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
 			x_offset += 1.0f;

@@ -1,7 +1,6 @@
 {
 	"textures": {
       "background": "images/background.png",
-      "menu_background": "images/menu.png",
       "raft":     "images/raft_2.png",
       "wood":     "images/one_wood_v2.png",
       "rock":     "images/rock_2.png",
@@ -13,14 +12,6 @@
       "north_current": "images/north_current.png",
       "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
-      "level_one": "level_one.png",
-      "level_two": "level_two.png",
-      "level_three": "level_three.png",
-      "level_four": "level_four.png",
-      "level_five": "level_five.png",
-      "level_six": "level_six.png",
-      "level_seven": "level_seven.png",
-      "level_eight": "level_eight.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
@@ -46,15 +37,30 @@
         }
     },
   "sounds" : {
-    "current_flow": "sounds/Sfx_Current_Flow1.0.ogg",
-    "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
-    "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
-    "menu": "sounds/Msc_Menu_RoTTheme.ogg",
-    "background": "sounds/Msc_Background_CalmOcean.ogg",
-    "explore": "sounds/Msc_Explore_Longing.ogg",
-    "danger": "sounds/Msc_Danger_Longing.ogg"
-  },
-  "jsons" : {
-    "level:0" : "levels/level0.json"
+    "music_volume": 1.0,
+    "sfx_volume": 1.0,
+    "decay_distance": 400.0,
+    "trade_rate": 0.01,
+    "trade_threshold": 0.05,
+    "sfx_presets": [
+      {
+        "preset_number": 1,
+        "current_flow": "sounds/Sfx_Current_Flow1.0.ogg",
+        "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
+        "raft_throw": "sounds/Sfx_Raft_Throw.ogg"
+      }
+    ],
+    "music_presets": [
+      {
+        "preset_number": 1,
+        "menu": "sounds/Msc_Menu_RoTTheme.ogg"
+      },
+      {
+        "preset_number": 2,
+        "background": "sounds/Msc_Background_CalmOcean.ogg",
+        "explore": "sounds/Msc_Explore_Longing.ogg",
+        "danger": "sounds/Msc_Danger_Longing.ogg"
+      }
+    ]
   }
 }

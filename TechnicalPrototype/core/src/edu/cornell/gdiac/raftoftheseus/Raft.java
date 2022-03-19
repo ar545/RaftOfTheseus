@@ -35,7 +35,7 @@ public class Raft extends GameObject {
     /** Whether the raft is actively firing */
     private boolean fire;
     /** The amount to slow the character down */
-    private final float damping = 1f;
+    private final float damping = 2f;
     /** The maximum character speed */
     private final float maxSpeed = 10f;
     /** Cache for internal force calculations */
@@ -106,6 +106,8 @@ public class Raft extends GameObject {
         return maxSpeed;
     }
 
+
+
     /**
      * Applies the force to the body of this dude
      *
@@ -117,25 +119,19 @@ public class Raft extends GameObject {
         }
 
         // Don't want to be moving. Damp out player motion
-        if (getMovement().x == 0f) {
-            forceCache.set(-getDamping()*getVX(),0);
-            body.applyForce(forceCache,getPosition(),true);
-        }
-        if (getMovement().y == 0f) {
-            forceCache.set(-getDamping()*getVY(),0);
-            body.applyForce(forceCache,getPosition(),true);
-        }
+        forceCache.set(getLinearVelocity().scl(-getDamping()));
+        body.applyForce(forceCache,getPosition(),true);
+
+        forceCache.set(getMovement());
+        body.applyLinearImpulse(forceCache,getPosition(),true);
 
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX())*getMaxSpeed());
-        } else if (Math.abs(getVY()) >= getMaxSpeed()) {
-            setVX(Math.signum(getVY())*getMaxSpeed());
-        } else {
-            forceCache.set(getMovement());
-            body.applyForce(forceCache,getPosition(),true);
         }
-
+        if (Math.abs(getVY()) >= getMaxSpeed()) {
+            setVY(Math.signum(getVY())*getMaxSpeed());
+        }
     }
 
     /** Getter and setters for health */
@@ -172,60 +168,16 @@ public class Raft extends GameObject {
     }
 
     public void update(float dt) {
+        // TODO we can't apply movement here because we're already applying it in applyForce().
+        //  however, we still need to decrease health somewhere. I dunno where that code should go
         // Apply movement
-        Vector2 temp = movement.cpy();
-        setPosition(getPosition().add(temp.scl(force)));
-        health -= movement.len() * force * MOVE_COST; // scale health by distance traveled
-        if (health < 0) health = 0;
-        if(!movement.isZero()){
-            last_movement.set(movement);
-        }
-    }
-
-    // TODO: fix
-    /**
-     * Creates the physics Body(s) for this object, adding them to the world.
-     *
-     * Implementations of this method should NOT retain a reference to World.
-     * That is a tight coupling that we should avoid.
-     *
-     * @param world Box2D world to store body
-     *
-     * @return true if object allocation succeeded
-     */
-    public boolean activatePhysics(World world) {
-//        // Make a body, if possible
-//        bodyinfo.active = true;
-//        body = world.createBody(bodyinfo);
-//        body.setUserData(this);
-//
-//        // Only initialize if a body was created.
-//        if (body != null) {
-//            createFixtures();
-//            return true;
+//        Vector2 temp = movement.cpy();
+//        setPosition(getPosition().add(temp.scl(force)));
+//        health -= movement.len() * force * MOVE_COST; // scale health by distance traveled
+//        if (health < 0) health = 0;
+//        if(!movement.isZero()){
+//            last_movement.set(movement);
 //        }
-//
-//        bodyinfo.active = false;
-//        return false;
-        return false;
-    }
-
-    // TODO: fix
-    /**
-     * Destroys the physics Body(s) of this object if applicable,
-     * removing them from the world.
-     *
-     * @param world Box2D world that stores body
-     */
-    public void deactivatePhysics(World world) {
-        // Should be good for most (simple) applications.
-//        if (body != null) {
-//            // Snapshot the values
-//            setBodyState(body);
-//            world.destroyBody(body);
-//            body = null;
-//            bodyinfo.active = false;
-//
     }
 
     /** Add one star to the player star count */

@@ -8,13 +8,10 @@ public class Treasure extends GameObject {
     // ATTRIBUTES
     /** Has the treasure been collected yet? */
     protected boolean collected;
-    /** Treasure's position. */
-    public Vector2 position;
 
     public Treasure(Vector2 position) {
         super();
-        radius = 50;
-        this.position = position;
+        setPosition(position);
         collected = false;
     }
 
@@ -33,15 +30,5 @@ public class Treasure extends GameObject {
             // TODO: update player score
             this.setDestroyed(true);
         }
-    }
-
-    // need to be implemented?
-    public boolean activatePhysics(World world) {
-        return false;
-    }
-
-    // need to be implemented?
-    public void deactivatePhysics(World world) {
-
     }
 }

@@ -10,8 +10,6 @@ public class Wood extends GameObject  {
     // ATTRIBUTES
     /** How many logs is in this pile of wood. player health will add correspondingly */
     private final float wood;
-    /** Wood's current position. */
-    public Vector2 position;
 
     // CONSTANTS
     /** the maximum log generated for each pile of wood */
@@ -24,14 +22,14 @@ public class Wood extends GameObject  {
     }
 
     /** Constructor for Wood object
-     * @param pos: position of wood
+     * @param position: position of wood
      * @param value: amount of wood
      */
-    public Wood(Vector2 pos, int value) {
+    public Wood(Vector2 position, int value) {
         super();
-        radius = 40;
+        setRadius(1.25f);
         wood = value;
-        position = pos;
+        setPosition(position);
     }
 
     /** return the number of logs in this pile of wood
@@ -49,51 +47,5 @@ public class Wood extends GameObject  {
     // TODO: should the wood update? (i.e. does it move on currents?)
     public void update(float dt) {
         // nothing for now
-    }
-
-    // TODO: fix
-    /**
-     * Creates the physics Body(s) for this object, adding them to the world.
-     *
-     * Implementations of this method should NOT retain a reference to World.
-     * That is a tight coupling that we should avoid.
-     *
-     * @param world Box2D world to store body
-     *
-     * @return true if object allocation succeeded
-     */
-    public boolean activatePhysics(World world) {
-//        // Make a body, if possible
-//        bodyinfo.active = true;
-//        body = world.createBody(bodyinfo);
-//        body.setUserData(this);
-//
-//        // Only initialize if a body was created.
-//        if (body != null) {
-//            createFixtures();
-//            return true;
-//        }
-//
-//        bodyinfo.active = false;
-//        return false;
-        return false;
-    }
-
-    // TODO: fix
-    /**
-     * Destroys the physics Body(s) of this object if applicable,
-     * removing them from the world.
-     *
-     * @param world Box2D world that stores body
-     */
-    public void deactivatePhysics(World world) {
-        // Should be good for most (simple) applications.
-//        if (body != null) {
-//            // Snapshot the values
-//            setBodyState(body);
-//            world.destroyBody(body);
-//            body = null;
-//            bodyinfo.active = false;
-//
     }
 }
