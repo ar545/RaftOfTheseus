@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -60,17 +61,18 @@ public class Enemy extends WheelObstacle {
 
     public Enemy(Vector2 position, Raft targetRaft) {
         super();
-        this.targetRaft = targetRaft;
         setPosition(position);
+        setBodyType(BodyDef.BodyType.DynamicBody);
+        this.targetRaft = targetRaft;
     }
 
-    // TODO: this will change depending on implementation of AIController
-    public void update(float dt) {
-        if (targetRaft != null) {
-            setLinearVelocity(moveVector);
-        }
-
-    }
+//    // TODO: this will change depending on implementation of AIController
+//    public void update(float dt) {
+//        if (targetRaft != null) {
+//            setLinearVelocity(moveVector);
+//        }
+//
+//    }
 
     /**
      * call for AI controller

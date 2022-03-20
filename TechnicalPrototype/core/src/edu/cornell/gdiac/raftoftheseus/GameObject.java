@@ -39,6 +39,27 @@ public abstract class GameObject extends SimpleObstacle {
     /** How much to scale the texture before displaying (screen pixels / texture pixels) */
     public Vector2 textureScale;
 
+    /** combined force vectors of all currents affecting this object */
+    private Vector2 currentsCache = new Vector2();
+    /** actual force applied by all currents (normalized and scaled) */
+    private Vector2 currentsForce = new Vector2();
+    /** magnitude of force applied by current */
+    private final float currentsMagnitude = 20.0f;
+
+    public void enterCurrent(Vector2 f) {
+        currentsCache.add(f);
+        currentsForce.set(currentsCache).nor().scl(currentsMagnitude);
+    }
+
+    public void exitCurrent(Vector2 f) {
+        currentsCache.sub(f);
+        if (currentsCache.isZero(0.01f)) {
+            currentsCache.setZero();
+            currentsForce.setZero();
+        }
+        else
+            currentsForce.set(currentsCache).nor().scl(currentsMagnitude);
+    }
 
 
     // ABSTRACT METHODS
@@ -90,9 +111,15 @@ public abstract class GameObject extends SimpleObstacle {
         }
     }
 
-    /** @return the most recent aka cached position */
-    public Vector2 getPositionCache() {
-        return positionCache;
+    @Override
+    public void update(float delta) {
+        super.update(delta);
+        body.applyForce(currentsForce, getPosition(), true);
     }
+
+//    /** @return the most recent aka cached position */
+//    public Vector2 getPositionCache() {
+//        return positionCache;
+//    }
 
 }

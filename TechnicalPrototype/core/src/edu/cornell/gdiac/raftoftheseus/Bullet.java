@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -12,11 +13,12 @@ public class Bullet extends WheelObstacle {
 
     public Bullet(Vector2 position) {
         super();
-        setPosition(position);
         setRadius(0.75f);
+        setPosition(position);
+        setBodyType(BodyDef.BodyType.StaticBody);
     }
 
-    public void update(float dt) {
-
-    }
+//    public void update(float dt) {
+//
+//    }
 }

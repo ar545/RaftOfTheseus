@@ -42,12 +42,12 @@ public class Current extends WheelObstacle {
     /** constructor with known direction */
     public Current(Vector2 position, Direction direction, float speed){
         super();
-        this.direction = direction;
-        this.speed = speed;
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         setSensor(true);
+        this.direction = direction;
         setRotationFromDirection();
+        this.speed = speed;
     }
 
     private void setRotationFromDirection() {
@@ -101,8 +101,8 @@ public class Current extends WheelObstacle {
         this.direction = direction;
     }
 
-    // TODO: should the currents update?
-    public void update(float dt) {
-        // nothing for now
-    }
+//    // TODO: should the currents update?
+//    public void update(float dt) {
+//        // nothing for now
+//    }
 }

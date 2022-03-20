@@ -11,10 +11,10 @@ public class Rock extends WheelObstacle {
         return ObjectType.OBSTACLE;
     }
 
-    // rocks don't update
-    public void update(float dt) {
-        // nothing
-    }
+//    // rocks don't update
+//    public void update(float dt) {
+//        // nothing
+//    }
 
     /** Constructor for rock */
     public Rock(Vector2 position) {

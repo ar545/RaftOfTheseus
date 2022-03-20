@@ -11,15 +11,14 @@ public class Wall extends PolygonObstacle {
         return ObjectType.OBSTACLE;
     }
 
-    // rocks don't update
-    public void update(float dt) {
-        // nothing
-    }
+//    // rocks don't update
+//    public void update(float dt) {
+//        // nothing
+//    }
 
     /** Constructor for wall */
     public Wall(float[] polygonVertices){
         super(polygonVertices);
         setBodyType(BodyDef.BodyType.StaticBody);
-
     }
 }

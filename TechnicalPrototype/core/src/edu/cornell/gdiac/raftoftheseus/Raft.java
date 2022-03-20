@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -163,23 +164,24 @@ public class Raft extends WheelObstacle {
     public Raft(Vector2 position, float force) {
         super();
         setPosition(position);
+        setBodyType(BodyDef.BodyType.DynamicBody);
         this.force = force;
         this.health = INITIAL_PLAYER_HEALTH;
         this.star = INITIAL_PLAYER_STAR;
     }
 
-    public void update(float dt) {
-        // TODO we can't apply movement here because we're already applying it in applyForce().
-        //  however, we still need to decrease health somewhere. I dunno where that code should go
-        // Apply movement
-//        Vector2 temp = movement.cpy();
-//        setPosition(getPosition().add(temp.scl(force)));
-//        health -= movement.len() * force * MOVE_COST; // scale health by distance traveled
-//        if (health < 0) health = 0;
-//        if(!movement.isZero()){
-//            last_movement.set(movement);
-//        }
-    }
+//    public void update(float dt) {
+//        // TODO we can't apply movement here because we're already applying it in applyForce().
+//        //  however, we still need to decrease health somewhere. I dunno where that code should go
+//        // Apply movement
+////        Vector2 temp = movement.cpy();
+////        setPosition(getPosition().add(temp.scl(force)));
+////        health -= movement.len() * force * MOVE_COST; // scale health by distance traveled
+////        if (health < 0) health = 0;
+////        if(!movement.isZero()){
+////            last_movement.set(movement);
+////        }
+//    }
 
     /** Add one star to the player star count */
     protected void addStar() { star++; }

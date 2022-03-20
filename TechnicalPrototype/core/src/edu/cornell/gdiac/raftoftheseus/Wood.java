@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -29,24 +30,14 @@ public class Wood extends WheelObstacle {
     public Wood(Vector2 position, int value) {
         super();
         setRadius(1.25f);
-        wood = value;
         setPosition(position);
+        setBodyType(BodyDef.BodyType.DynamicBody);
+        wood = value;
     }
 
     /** return the number of logs in this pile of wood
      * @return float representing player health replenish */
     public float getWood() {
         return wood;
-    }
-
-    /** set this pile of wood to be destroyed
-     * @param value whether to set the wood as destroyed */
-    public void setDestroyed(boolean value) {
-        super.setDestroyed(value);
-    }
-
-    // TODO: should the wood update? (i.e. does it move on currents?)
-    public void update(float dt) {
-        // nothing for now
     }
 }

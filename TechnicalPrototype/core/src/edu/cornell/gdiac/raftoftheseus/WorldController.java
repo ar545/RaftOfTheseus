@@ -455,8 +455,7 @@ public class WorldController implements Screen, ContactListener {
      * Callback method for the start of a collision
      *
      * This method is called when we first get a collision between two objects.  We use
-     * this method to test if it is the "right" kind of collision.  In particular, we
-     * use it to test if we made it to the win door.
+     * this method to test if it is the "right" kind of collision.
      *
      * @param contact The two bodies that collided
      */
@@ -470,20 +469,14 @@ public class WorldController implements Screen, ContactListener {
         try {
             GameObject bd1 = (GameObject)body1.getUserData();
             GameObject bd2 = (GameObject)body2.getUserData();
-//            // Check for rock collision with any entity
-//            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
-//                revertRecentMovement(bd2);
-//            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
-//                revertRecentMovement(bd1);
-//            }
-            // Check for non-rock entity interaction with current
+            // Check for object interaction with current
             if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
-                pushEntity((Current) bd1, bd2);
+                enterCurrent((Current) bd1, bd2);
             } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
-                pushEntity((Current) bd2, bd1);
+                enterCurrent((Current) bd2, bd1);
             }
             // Check for bullet collision with enemy (projectiles kill enemies)
-            if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
+            else if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd1, (Enemy) bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd2, (Enemy) bd1);
@@ -516,14 +509,44 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    // TODO: Should we push current before we step the physics engine?
-    /** Push o according to c
-     * @param c the current
-     * @param o the object to push
-     * Precondition: object o is guaranteed not to be rock/obstacle */
-    private void pushEntity(Current c, GameObject o) {
-//        o.setPosition(c.getDirectionVector().add(o.getPosition()));
-        o.getBody().applyLinearImpulse(c.getDirectionVector(), o.getPosition(), true);
+    /**
+     * Callback method for the end of a collision
+     *
+     * This method is called when two objects cease to touch.
+     */
+    @Override
+    public void endContact(Contact contact) {
+        Fixture fix1 = contact.getFixtureA();
+        Fixture fix2 = contact.getFixtureB();
+        Body body1 = fix1.getBody();
+        Body body2 = fix2.getBody();
+
+        try {
+            GameObject bd1 = (GameObject)body1.getUserData();
+            GameObject bd2 = (GameObject)body2.getUserData();
+            // Check for object interaction with current
+            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+                exitCurrent((Current) bd1, bd2);
+            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
+                exitCurrent((Current) bd2, bd1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Push o according to c
+     */
+    private void enterCurrent(Current c, GameObject o) {
+        o.enterCurrent(c.getDirectionVector());
+    }
+
+    /**
+     * Push o according to c
+     */
+    private void exitCurrent(Current c, GameObject o) {
+        o.exitCurrent(c.getDirectionVector());
     }
 
 //    /** Place the object back to its position cache to revert its most recent movement
@@ -568,37 +591,6 @@ public class WorldController implements Screen, ContactListener {
         r.addStar();
         // destroy treasure
         t.setDestroyed(true);
-    }
-
-    // TODO: When current not in touch with objects, do we need to stop acting force on it?
-    /**
-     * Callback method for the start of a collision
-     *
-     * This method is called when two objects cease to touch.  The main use of this method
-     * is to determine when the character is NOT on the ground.  This is how we prevent
-     * double jumping.
-     */
-    @Override
-    public void endContact(Contact contact) {
-//        Fixture fix1 = contact.getFixtureA();
-//        Fixture fix2 = contact.getFixtureB();
-//
-//        Body body1 = fix1.getBody();
-//        Body body2 = fix2.getBody();
-//
-//        Object fd1 = fix1.getUserData();
-//        Object fd2 = fix2.getUserData();
-//
-//        Object bd1 = body1.getUserData();
-//        Object bd2 = body2.getUserData();
-//
-//        if ((levelModel.getPlayer().getSensorName().equals(fd2) && levelModel.getPlayer() != bd1) ||
-//                (levelModel.getPlayer().getSensorName().equals(fd1) && levelModel.getPlayer() != bd2)) {
-//            sensorFixtures.remove(levelModel.getPlayer() == bd1 ? fix2 : fix1);
-//            if (sensorFixtures.size == 0) {
-//                levelModel.getPlayer().setGrounded(false);
-//            }
-//        }
     }
 
     /** Unused ContactListener method. May be used to play sound effects */
