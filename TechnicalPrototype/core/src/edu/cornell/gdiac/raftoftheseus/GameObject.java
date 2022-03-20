@@ -97,6 +97,7 @@ public abstract class GameObject extends SimpleObstacle {
         setDensity(1.0f);
         setFriction(0.1f);
         setRestitution(0.1f);
+        setLinearDamping(0.1f);
         setFixedRotation(true);
     }
 

@@ -66,28 +66,10 @@ public class Raft extends WheelObstacle {
     public Vector2 getFacing() { return last_movement; }
 
     /**
-     * Sets the current player (left/right) movement input.
-     *
-     * @param value the current player movement input.
+     * Sets the player movement input.
      */
-    private void setMovement(Vector2 value) {
+    public void setMovement(Vector2 value) {
         movement.set(value);
-    }
-
-    /**
-     * Sets the current player movement input on the x-axis
-     * @param value the current player movement input on x-axis
-     */
-    public void setMovementX(float value) {
-        movement.x = value;
-    }
-
-    /**
-     * Sets the current player movement input on the y-axis
-     * @param value the current player movement input on y-axis
-     */
-    public void setMovementY(float value) {
-        movement.y = value;
     }
 
     /** @return whether the player is actively firing */
@@ -107,8 +89,6 @@ public class Raft extends WheelObstacle {
     public float getMaxSpeed() {
         return maxSpeed;
     }
-
-
 
     /**
      * Applies the force to the body of this dude
@@ -150,16 +130,6 @@ public class Raft extends WheelObstacle {
         health = Math.min(health + wood, MAXIMUM_PLAYER_HEALTH);
     }
 
-    /** If the player collides with a border/rock, this is called to prevent that movement from costing health */
-    public void cancelLastMovementCost() {
-        health += last_movement.len()* force *MOVE_COST;
-    }
-
-    /** If the player collides with a rock, this is called to undo that movement's change to the raft position */
-    public void cancelLastMovement() {
-        setPosition(getPosition().add(last_movement.cpy().scl(-force)));
-    }
-
     /** Constructor for Raft object
      * @param position: position of raft
      * @param force: speed of raft
@@ -172,19 +142,6 @@ public class Raft extends WheelObstacle {
         this.health = INITIAL_PLAYER_HEALTH;
         this.star = INITIAL_PLAYER_STAR;
     }
-
-//    public void update(float dt) {
-//        // TODO we can't apply movement here because we're already applying it in applyForce().
-//        //  however, we still need to decrease health somewhere. I dunno where that code should go
-//        // Apply movement
-////        Vector2 temp = movement.cpy();
-////        setPosition(getPosition().add(temp.scl(force)));
-////        health -= movement.len() * force * MOVE_COST; // scale health by distance traveled
-////        if (health < 0) health = 0;
-////        if(!movement.isZero()){
-////            last_movement.set(movement);
-////        }
-//    }
 
     /** Add one star to the player star count */
     protected void addStar() { star++; }

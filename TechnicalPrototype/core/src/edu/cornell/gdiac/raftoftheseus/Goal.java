@@ -15,9 +15,4 @@ public class Goal extends WheelObstacle {
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
     }
-
-//    // goal shouldn't update
-//    public void update(float dt) {
-//        // nothing for now
-//    }
 }

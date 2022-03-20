@@ -270,15 +270,17 @@ public class WorldController implements Screen, ContactListener {
      * Add a new bullet to the world and send it in the right direction.
      */
     private void createBullet() {
+        // TODO this whole method wasn't working for multiple reasons. Bullets would be invisible and would push the player.
+        //  - LevelModel can't activate a physics object during a box2D update loop
+        //  - We don't have a Bullet texture
+        //  - bullets are supposed to auto target an enemy, not go to the mouse position
         // Compute position and velocity
-        GameObject bullet = new Bullet(levelModel.getPlayer().getPosition());
-        bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
-        levelModel.addQueuedObject(bullet);
-
-        // TODO: set the texture for bullet? should be part of the populate texture function
-//        bullet.setTexture(bulletTexture);
-//        float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
+//        GameObject bullet = new Bullet(levelModel.getPlayer().getPosition());
+//        bullet.setTexture(greyBar);// TODO should be bulletTexture
 //        bullet.setBullet(true);
+//        bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
+//        levelModel.addQueuedObject(bullet);
+
 //        fireId = playSound( fireSound, fireId );
     }
 
@@ -297,8 +299,7 @@ public class WorldController implements Screen, ContactListener {
         // Process actions in object model
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
-        player.setMovementX(ic.getMovement().x);
-        player.setMovementY(ic.getMovement().y);
+        player.setMovement(ic.getMovement());
         player.setFire(ic.didFire());
 
         // Add a bullet if we fire

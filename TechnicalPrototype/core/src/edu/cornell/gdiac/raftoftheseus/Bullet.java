@@ -15,10 +15,6 @@ public class Bullet extends WheelObstacle {
         super();
         setRadius(0.75f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.StaticBody);
+        setBodyType(BodyDef.BodyType.DynamicBody);
     }
-
-//    public void update(float dt) {
-//
-//    }
 }
