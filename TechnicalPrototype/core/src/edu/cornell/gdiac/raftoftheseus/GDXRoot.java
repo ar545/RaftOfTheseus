@@ -65,8 +65,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
 
-		loading.setScreenListener(this);
 		setScreen(loading);
+		loading.setScreenListener(this);
 	}
 
 	/** 
@@ -118,8 +118,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else if (screen == loading) {
-			System.out.println("here");
 			menu.setScreenListener(this);
+			Gdx.input.setInputProcessor(menu);
 			directory = loading.getAssets();
 			menu.populate(directory);
 			setScreen(menu);

@@ -413,14 +413,11 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 */
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		if (playButton == null || pressState == 2) {
-			System.out.println("play button null");
 			return true;
 		}
 		
 		// Flip to match graphics coordinates
 		screenY = heightY-screenY;
-
-		System.out.println("here2");
 
 		// TODO: Fix scaling
 		// Play button is a circle.

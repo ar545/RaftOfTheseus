@@ -33,9 +33,9 @@ public class MenuMode implements Screen, InputProcessor {
     /** Standard button scale */
     private static float BUTTON_SCALE  = 0.75f;
     /** Level button padding along the x-axis */
-    private static int PADDING_X = 20;
+    private static int PADDING_X = 100;
     /** Level button padding along the y-axis */
-    private static int PADDING_Y = 20;
+    private static int PADDING_Y = 100;
     /** Scaling factor. */
     private float scale;
     /** The height of the canvas window (necessary since sprite origin != screen origin) */
@@ -59,7 +59,6 @@ public class MenuMode implements Screen, InputProcessor {
         this.canvas = canvas;
         // resize with canvas dimensions
         resize(canvas.getWidth(),canvas.getHeight());
-        Gdx.input.setInputProcessor(this);
         active = true;
         levelPressState = 0;
         selectedLevel = -1;
@@ -71,10 +70,12 @@ public class MenuMode implements Screen, InputProcessor {
      * @param directory Reference to the asset directory.
      */
     public void populate(AssetDirectory directory) {
-        background = directory.getEntry("menu", Texture.class);
+        background = directory.getEntry("menu_background", Texture.class);
         levels = new Texture[LEVEL_COUNT];
         for (int i = 0; i < LEVEL_COUNT; i++) {
             levels[i] = directory.getEntry("level_" + i, Texture.class);
+            System.out.print("i: " + i);
+            System.out.println(levels[i]);
         }
     }
 
@@ -124,10 +125,13 @@ public class MenuMode implements Screen, InputProcessor {
         canvas.begin();
         canvas.draw(background, 0, 0);
         for (int i = 0; i < LEVEL_COUNT; i++) {
-            canvas.draw(levels[i], Color.WHITE, levels[i].getWidth(), levels[i].getHeight(),
-                    (i + 1) * PADDING_X + i * levels[i].getWidth(),
-                    (int) (canvas.height / 4 )  + (i < LEVEL_COUNT ? PADDING_Y : levels[i].getHeight() + PADDING_Y),
-                    0, BUTTON_SCALE * scale, BUTTON_SCALE * scale);
+            Texture levelButton = levels[i];
+            System.out.print("");
+            int buttonX = (i + 1) * PADDING_X + (i ) * levelButton.getWidth();
+            int buttonY = (int) (canvas.height / 4 )  +
+                    (i < LEVEL_COUNT ? PADDING_Y : levelButton.getHeight() + PADDING_Y);
+            canvas.draw(levels[i], Color.WHITE, levels[i].getWidth() / 2, levels[i].getHeight() / 2, buttonX,
+                    buttonY, 0, BUTTON_SCALE * scale, BUTTON_SCALE * scale);
         }
         canvas.end();
     }
@@ -138,7 +142,6 @@ public class MenuMode implements Screen, InputProcessor {
     public void render(float delta) {
         if (active) {
             draw();
-            System.out.println("Here");
             if (isReady() && listener != null) {
                 listener.exitScreen(this, 0);
             }
@@ -191,7 +194,7 @@ public class MenuMode implements Screen, InputProcessor {
         screenY = heightY - screenY;
         for (int i = 0; i < levels.length; i++) {
             Texture levelButton = levels[i];
-            int buttonX = (i + 1) * PADDING_X + i * levelButton.getWidth();
+            int buttonX = (i % 4 + 1) * PADDING_X + (i % 4) * levelButton.getWidth();
             int buttonY = (int) (canvas.height / 4 )  +
                     (i < LEVEL_COUNT ? PADDING_Y : levelButton.getHeight() + PADDING_Y);
             if (buttonX <= screenX && screenX <= buttonX + levelButton.getWidth() &&
