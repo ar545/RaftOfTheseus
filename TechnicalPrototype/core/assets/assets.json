@@ -47,15 +47,9 @@
         "size": 32
       }
     },
-  "sound_settings" : {
-    "music_volume": 1.0,
-    "sfx_volume": 1.0,
-    "decay_distance": 400.0,
-    "trade_rate": 0.01,
-    "trade_threshold": 0.05
-  },
   "sounds" : {
       "current_flow": "sounds/Sfx_Current_Flow1.ogg",
+      "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
       "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
       "raft_throw": "sounds/Sfx_Raft_Throw.ogg"
   },
@@ -66,6 +60,7 @@
       "danger": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
+    "sound_settings" : "sound_settings.json",
     "level:0" : "levels/level0.json"
   }
 }

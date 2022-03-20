@@ -19,7 +19,7 @@ public class SoundController {
     /** Master volume for SFX */
     private float sfxVolume = 1.0f;
     /** Master volume for Music */
-    private float musicVolume = 0.5f;
+    private float musicVolume = 0.3f;
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
     /** Rate at which music is transitioned. */
@@ -70,14 +70,12 @@ public class SoundController {
      */
     public void gatherAssets(AssetDirectory directory) {
         if (!assertObjects(sfxPresets, musicPresets)) throw new NullPointerException("Constructor not called.");
-//        JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
-//        JsonValue soundEffects = directory.getEntry("sounds", JsonValue.class);
-
+        JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         // Set values
-//        sfxVolume = set.getFloat("sfx_volume", 1.0f);
-//        musicVolume = set.getFloat("music_volume", 1.0f);
-//        tradeRate = set.getFloat("trade_rate", 0.01f);
-//        tradeThreshold = set.getFloat("trade_threshold", 0.05f);
+        sfxVolume = set.getFloat("sfx_volume", 1.0f);
+        musicVolume = set.getFloat("music_volume", 1.0f);
+        tradeRate = set.getFloat("trade_rate", 0.01f);
+        tradeThreshold = set.getFloat("trade_threshold", 0.05f);
         // Load presets
 //        for(JsonValue s : soundEffects){
 //            String n = s.getString("preset_number", null);
@@ -87,11 +85,10 @@ public class SoundController {
 //            musicPresets.put(m.getInt("preset_number", 0), m);
 //        }
 
-        Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw"});
+        Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw", "wood_pickup"});
         Array<String> tempmsc = new Array<>(new String[]{"background", "explore", "danger"});
+
         for(String s : tempsfx){
-            System.out.println(s);
-            System.out.println(directory.getEntry(s, Sound.class));
             sfx.put(s, directory.getEntry(s, Sound.class));
         }
         for(String m : tempmsc){

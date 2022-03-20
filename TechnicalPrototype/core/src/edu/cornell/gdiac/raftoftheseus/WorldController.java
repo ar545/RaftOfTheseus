@@ -642,10 +642,14 @@ public class WorldController implements Screen, ContactListener {
             GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
             GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
             if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY) {
-                playSoundEffect();
+                SoundController.getInstance().playSFX("raft_breaking", false);
             }
             if (s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
-                playSoundEffect();
+                SoundController.getInstance().playSFX("raft_breaking", false);
+            }
+            if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
+                    || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
+                SoundController.getInstance().playSFX("wood_pickup", false);
             }
         }
     }
@@ -653,6 +657,7 @@ public class WorldController implements Screen, ContactListener {
     // TODO: What sound effect are needed and when do we want them?
     /** Play sound effect according to the situation */
     private void playSoundEffect() {
+
     }
 
     /** Unused ContactListener method */
