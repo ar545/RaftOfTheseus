@@ -54,18 +54,21 @@
         "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
         "raft_throw": "sounds/Sfx_Raft_Throw.ogg"
       }
-    ],
-    "music_presets": [
-      {
-        "preset_number": 1,
+    ]
+  },
+  "music" : {
+    "music_presets": {
+      "preset_1": {
         "menu": "sounds/Msc_Menu_RoTTheme.ogg"
       },
-      {
+      "preset_2": {
         "preset_number": 2,
         "background": "sounds/Msc_Background_CalmOcean.ogg",
         "explore": "sounds/Msc_Explore_Longing.ogg",
         "danger": "sounds/Msc_Danger_Longing.ogg"
       }
-    ]
+    }
   }
 }
+
+

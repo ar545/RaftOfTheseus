@@ -7,7 +7,7 @@ public class AIController {
     /**
      * How close a target must be for us to chase it
      */
-    private static final int CHASE_DIST = 200;
+    private static final int CHASE_DIST = 12;
 
     private int id;
 
@@ -49,12 +49,17 @@ public class AIController {
         return state;
     }
 
+    public Enemy.enemyState getState(){
+        return state;
+    }
+
     private double dist(){
         return Math.sqrt(Math.pow(enemy.getX() - raft.getX(), 2) + Math.pow(enemy.getY() - raft.getY(), 2));
     }
 
 
     private void changeStateIfApplicable() {
+//        System.out.println(dist());
         switch (state) {
             case SPAWN:
                 state = WANDER;

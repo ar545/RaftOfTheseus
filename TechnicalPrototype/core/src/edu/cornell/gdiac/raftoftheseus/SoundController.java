@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -11,14 +12,14 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 /**
  * Class to control starting, looping, and stopping sounds for the game.
  * Requires updating every time controllers or levels are changed due to memory constraints of music.
- * Usage is as follows: Constructor -> gatherAssets() -> setPresets() -> playSFX(), playMusic() etc.
+ * Usage is as follows: getInstance() -> gatherAssets() -> setPresets() -> playSFX(), playMusic() etc.
  * Changed loaded sounds with setPresets() as needed.
  */
 public class SoundController {
     /** Master volume for SFX */
     private float sfxVolume = 1.0f;
     /** Master volume for Music */
-    private float musicVolume = 1.0f;
+    private float musicVolume = 0.3f;
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
     /** Rate at which music is transitioned. */
@@ -44,6 +45,18 @@ public class SoundController {
         STEADY
     }
     private MusicState STATE;
+    /** The singleton instance of the input controller */
+    private static SoundController theController = null;
+
+    /**
+     * @return the singleton instance of the input controller
+     */
+    public static SoundController getInstance() {
+        if (theController == null) {
+            theController = new SoundController();
+        }
+        return theController;
+    }
 
     /**
      * Gather the all sound and music assets for this controller.
@@ -57,19 +70,29 @@ public class SoundController {
      */
     public void gatherAssets(AssetDirectory directory) {
         if (!assertObjects(sfxPresets, musicPresets)) throw new NullPointerException("Constructor not called.");
-        JsonValue dir = directory.getEntry("assets", JsonValue.class).get("sounds");
-
+        JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         // Set values
-        sfxVolume = dir.getFloat("sfx_volume", 1.0f);
-        musicVolume = dir.getFloat("music_volume", 1.0f);
-        tradeRate = dir.getFloat("trade_rate", 0.01f);
-        tradeThreshold = dir.getFloat("trade_threshold", 0.05f);
+        sfxVolume = set.getFloat("sfx_volume", 1.0f);
+        musicVolume = set.getFloat("music_volume", 1.0f);
+        tradeRate = set.getFloat("trade_rate", 0.01f);
+        tradeThreshold = set.getFloat("trade_threshold", 0.05f);
         // Load presets
-        for(JsonValue s : dir.get("sfx_presets")){
-            sfxPresets.put(s.getInt("preset_number", 0), s);
+//        for(JsonValue s : soundEffects){
+//            String n = s.getString("preset_number", null);
+//            sfx.put(n, directory.getEntry(n, Sound.class));
+//        }
+//        for(JsonValue m : directory.getEntry("assets", JsonValue.class).get("music_presets")){
+//            musicPresets.put(m.getInt("preset_number", 0), m);
+//        }
+
+        Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw", "wood_pickup", "raft_damage"});
+        Array<String> tempmsc = new Array<>(new String[]{"background", "explore", "danger"});
+
+        for(String s : tempsfx){
+            sfx.put(s, directory.getEntry(s, Sound.class));
         }
-        for(JsonValue m : directory.getEntry("assets", JsonValue.class).get("music_presets")){
-            musicPresets.put(m.getInt("preset_number", 0), m);
+        for(String m : tempmsc){
+            music.put(m, directory.getEntry(m, Music.class));
         }
     }
 
@@ -84,19 +107,13 @@ public class SoundController {
 
     /**
      * Constructor that initializes sfx and music variables.
-     * @param demo whether this SoundController is loaded for the Technical Prototype
      */
-    public SoundController(boolean demo){
+    public SoundController(){
         sfxPresets = new ArrayMap<>();
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
         STATE = MusicState.STEADY;
-        if (demo) {
-//            music.put("menu", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Menu_RoTTheme.ogg")));
-//            music.put("explore", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Explore_Longing.ogg")));
-//            music.put("danger", Gdx.audio.newMusic(Gdx.files.internal("core/assets/sounds/Msc_Danger_Longing.ogg")));
-        }
     }
 
     /**
@@ -225,15 +242,22 @@ public class SoundController {
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
     public void startLevelMusic(){
+        System.out.println(music.get("explore"));
+        System.out.println(music.get("background"));
         playMusic("explore");
         playMusic("background");
     }
 
+
     /**
-     * Starts the music for the menu, fails silently if proper preset is not loaded.
+     * For playing menu music only.
+     * @param name
+     * @param m
      */
-    public void startMenuMusic(){
-        playMusic("demo");
+    public void playMusic(String name, Music m){
+        m.play();
+        m.setVolume(musicVolume);
+        music.put(name, m);
     }
 
     /**
@@ -273,6 +297,10 @@ public class SoundController {
         }
     }
 
+    /**
+     * Stops a given music file.
+     * @param index file to be stopped.
+     */
     private void stopMusic(String index){
         Music m = music.get(index);
         if (m != null && m.isPlaying()) {
@@ -314,21 +342,21 @@ public class SoundController {
     public void updateMusic(){
         float v;
         if(STATE == MusicState.ENTER_DANGER){
-            v = changeMusicVolume("explore", tradeRate);
-            changeMusicVolume("danger", -tradeRate);
-            if (v < tradeThreshold){
-                stopMusic("explore");
+            if(music.get("explore").getVolume() < tradeThreshold){
                 setMusicVolume("danger", musicVolume);
                 STATE = MusicState.STEADY;
+            } else {
+                changeMusicVolume("explore", tradeRate);
+                changeMusicVolume("danger", -tradeRate);
             }
         }
         else if(STATE == MusicState.LEAVE_DANGER){
-            v = changeMusicVolume("danger", tradeRate);
-            changeMusicVolume("explore", -tradeRate);
-            if (v < tradeThreshold){
-                stopMusic("danger");
+            if (music.get("danger").getVolume() < tradeThreshold){
                 setMusicVolume("explore", musicVolume);
                 STATE = MusicState.STEADY;
+            } else {
+                changeMusicVolume("danger", tradeRate);
+                changeMusicVolume("explore", -tradeRate);
             }
         }
     }

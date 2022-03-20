@@ -65,6 +65,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
 
+<<<<<<< HEAD
+=======
+		loading.setScreenListener(this);
+>>>>>>> main
 		setScreen(loading);
 		loading.setScreenListener(this);
 	}
@@ -79,6 +83,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		Screen screen = getScreen();
 		setScreen(null);
 		screen.dispose();
+		SoundController.getInstance().dispose();
 		canvas.dispose();
 		canvas = null;
 	
@@ -114,7 +119,13 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param exitCode The state of the screen upon exit
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
-		if (exitCode != 0) {
+		if(exitCode == WorldController.EXIT_PREV){
+			playing.setLevel(0);
+			setScreen(playing);
+		}else if(exitCode == WorldController.EXIT_NEXT){
+			playing.setLevel(1);
+			setScreen(playing);
+		} else if (exitCode != WorldController.EXIT_QUIT) {
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else if (screen == loading) {
@@ -126,8 +137,14 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			loading.dispose();
 			loading = null;
 		} else if (screen == menu) {
+			// Stop menu sounds
+
+			SoundController.getInstance().haltSounds();
+			// Load level
 			playing.setScreenListener(this);
 			directory = loading.getAssets();
+			// Load rest of sounds?
+			SoundController.getInstance().gatherAssets(directory);
 			playing.gatherAssets(directory);
 			playing.setLevel(menu.getSelectedLevel());
 			setScreen(playing);

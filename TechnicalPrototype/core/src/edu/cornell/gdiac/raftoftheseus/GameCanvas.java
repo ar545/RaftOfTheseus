@@ -32,7 +32,8 @@ import com.badlogic.gdx.physics.box2d.*;
  * that mode must be done in a separate begin/end pass.
  */
 public class GameCanvas {
-	/** Enumeration to track which pass we are in */
+
+    /** Enumeration to track which pass we are in */
 	private enum DrawPass {
 		/** We are not drawing */
 		INACTIVE,
@@ -63,6 +64,9 @@ public class GameCanvas {
 
 	/** Drawing context to handle textures AND POLYGONS as sprites */
 	private PolygonSpriteBatch spriteBatch;
+
+	/** Drawing context for non-sprite things */
+	private ShapeRenderer shapeRender;
 
 	/** Rendering context for the debug outlines */
 	private ShapeRenderer debugRender;
@@ -100,6 +104,7 @@ public class GameCanvas {
 	public GameCanvas() {
 		active = DrawPass.INACTIVE;
 		spriteBatch = new PolygonSpriteBatch();
+		shapeRender = new ShapeRenderer();
 		debugRender = new ShapeRenderer();
 
 		// Set the projection matrix (for proper scaling)
@@ -1132,6 +1137,16 @@ public class GameCanvas {
 		float h = shape.getRadius()*sy;
 		debugRender.setColor(color);
 		debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
+	}
+
+	/**
+	 * Draw a circle representing player health at the center of the screen
+	 */
+	public void drawHealthCircle(float r) {
+		shapeRender.setColor(Color.RED);
+		shapeRender.begin(ShapeRenderer.ShapeType.Line);
+		shapeRender.circle(getWidth()/2, getHeight()/2, r);
+		shapeRender.end();
 	}
 
 	/**

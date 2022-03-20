@@ -31,9 +31,6 @@ public class Current extends WheelObstacle {
     /** Current speed */
     private float speed;
 
-//    /** speed of the current (keep in mind current speed of the player is 4) */
-//    private static final int CURRENT_SPEED = 2;
-
     // METHODS
     public ObjectType getType() {
         return ObjectType.CURRENT;
@@ -42,12 +39,12 @@ public class Current extends WheelObstacle {
     /** constructor with known direction */
     public Current(Vector2 position, Direction direction, float speed){
         super();
-        this.direction = direction;
-        this.speed = speed;
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         setSensor(true);
+        this.direction = direction;
         setRotationFromDirection();
+        this.speed = speed;
     }
 
     private void setRotationFromDirection() {
@@ -88,21 +85,5 @@ public class Current extends WheelObstacle {
             default:
                 return new Vector2(0, 0);
         }
-    }
-
-    public float getSpeed() {return speed;}
-
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    /** set the direction of the current */
-    public void setDirection(Direction direction) {
-        this.direction = direction;
-    }
-
-    // TODO: should the currents update?
-    public void update(float dt) {
-        // nothing for now
     }
 }

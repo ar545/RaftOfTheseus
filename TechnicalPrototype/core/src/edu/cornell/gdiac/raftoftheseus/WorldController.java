@@ -12,6 +12,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 public class WorldController implements Screen, ContactListener {
@@ -33,6 +34,9 @@ public class WorldController implements Screen, ContactListener {
     /** Number of position iterations for the constraint solvers */
     public static final int WORLD_POSIT = 2;
 
+    /** Scale for the health bar */
+    private static final float HEALTH_BAR_SCALE = 0.6f;
+
     // FIELDS
     // CANVAS AND OBJECT LIST
     /** Reference to the game canvas */
@@ -42,9 +46,9 @@ public class WorldController implements Screen, ContactListener {
 
     //TEXTURE
     /** The texture for walls and platforms */
-    protected TextureRegion earthTile;
+    protected Texture greenBar;
     /** The texture for the exit condition */
-    protected TextureRegion goalTile;
+    protected TextureRegion greyBar;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
 
@@ -64,7 +68,6 @@ public class WorldController implements Screen, ContactListener {
     private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
-    SoundController soundController;
     /** array of controls for each enemy**/
     private AIController[] controls;
 
@@ -85,13 +88,6 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
-        PooledList<Enemy> enemies = levelModel.getEnemies();
-        controls = new AIController[enemies.size()];
-        for (int i = 1; i < enemies.size(); i++) {
-            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
-        }
-
-        soundController = new SoundController(true);
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -151,6 +147,7 @@ public class WorldController implements Screen, ContactListener {
             obj.draw(canvas);
         }
         canvas.end();
+        drawHealthBar(levelModel.getPlayer().getHealthRatio());
 
         if (debug) {
             canvas.beginDebug();
@@ -169,17 +166,38 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // Final message
-//        if (complete && !failed) {
-//            displayFont.setColor(Color.YELLOW);
-//            canvas.begin(); // DO NOT SCALE
-//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-//            canvas.end();
-//        } else if (failed) {
-//            displayFont.setColor(Color.RED);
-//            canvas.begin(); // DO NOT SCALE
-//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-//            canvas.end();
-//        }
+        if (complete && !failed) {
+            displayFont.setColor(Color.YELLOW);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+            canvas.end();
+        } else if (failed) {
+            displayFont.setColor(Color.RED);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+            canvas.end();
+        }
+
+        // force player remain with their current health
+        float temporary_scalar = 0.5f; // player health circle scalar
+        float r = levelModel.getPlayer().getHealth() * pixelsPerUnit * temporary_scalar;
+        // TODO: this isn't the right expression, because acceleration != distance
+        // TODO: However, this expression is meaningful in the way that it shows the thrust the player remain
+        // TODO: The core decision we have to make here is that, do we want the player to cost health
+        // TODO:  proportional to the distance of moving (as in gameplay) or proportional to the force they applied
+        canvas.drawHealthCircle(r);
+    }
+
+    /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
+    private void drawHealthBar(float health) {
+        Color c = new Color(1, Math.min(health * 1.5f, 1), Math.max(0, 1 - health * 1.5f), 1);
+        TextureRegion RatioGreenBar = new TextureRegion(greenBar, (int)(greenBar.getWidth() * health), greenBar.getHeight());
+        float x_origin = (canvas.getWidth() - greyBar.getRegionWidth()*HEALTH_BAR_SCALE)  / (2f*HEALTH_BAR_SCALE);
+        float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
+        canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
+        canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.draw(RatioGreenBar,c,x_origin, y_origin, RatioGreenBar.getRegionWidth(), RatioGreenBar.getRegionHeight());
+        canvas.end();
     }
 
     /**
@@ -192,9 +210,9 @@ public class WorldController implements Screen, ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
-//        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-//        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
-//        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+        greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
+        greenBar  = directory.getEntry( "green_bar", Texture.class );
+        displayFont = directory.getEntry( "end" ,BitmapFont.class);
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
     }
@@ -215,9 +233,6 @@ public class WorldController implements Screen, ContactListener {
     public boolean preUpdate(float dt) {
         InputController input = InputController.getInstance();
         input.readInput();
-        if (listener == null) {
-            return true;
-        }
 
 //      if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
@@ -225,6 +240,10 @@ public class WorldController implements Screen, ContactListener {
         // Handle resets
         if (input.didReset()) {
             reset();
+        }
+
+        if (listener == null) {
+            return true;
         }
 
         // Now it is time to maybe switch screens.
@@ -258,15 +277,17 @@ public class WorldController implements Screen, ContactListener {
      * Add a new bullet to the world and send it in the right direction.
      */
     private void createBullet() {
+        // TODO this whole method wasn't working for multiple reasons. Bullets would be invisible and would push the player.
+        //  - LevelModel can't activate a physics object during a box2D update loop
+        //  - We don't have a Bullet texture
+        //  - bullets are supposed to auto target an enemy, not go to the mouse position
         // Compute position and velocity
-        GameObject bullet = new Bullet(levelModel.getPlayer().getPosition());
-        bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
-        levelModel.addQueuedObject(bullet);
-
-        // TODO: set the texture for bullet? should be part of the populate texture function
-//        bullet.setTexture(bulletTexture);
-//        float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
+//        GameObject bullet = new Bullet(levelModel.getPlayer().getPosition());
+//        bullet.setTexture(greyBar);// TODO should be bulletTexture
 //        bullet.setBullet(true);
+//        bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
+//        levelModel.addQueuedObject(bullet);
+
 //        fireId = playSound( fireSound, fireId );
     }
 
@@ -285,39 +306,42 @@ public class WorldController implements Screen, ContactListener {
         // Process actions in object model
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
-        player.setMovementX(ic.getMovement().x);
-        player.setMovementY(ic.getMovement().y);
+        player.setMovement(ic.getMovement());
         player.setFire(ic.didFire());
-//        System.out.println(player.getPosition().x + "/" + player.getPosition().y);
 
         // Add a bullet if we fire
         if (player.isFire()) {
             createBullet();
         }
 
-        // update enemy
+        // update enemy, forces, music, player health
         resolveEnemies();
         player.applyForce();
-        resolveMusic();
+        if(ic.Moved()){
+            player.subtractHealth();
+        }
+        if(player.isDead()){
+            setFailure(true);
+        }
     }
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies() {
         PooledList<Enemy> el = levelModel.getEnemies();
+//        System.out.println("hi");
+
         for (int i = 0; i< el.size(); i++) {
             Enemy enemy = el.get(i);
+//            System.out.println(i);
+//            System.out.println(enemy);
+//            System.out.println(Arrays.toString(controls));
+//            System.out.println(controls.length);
+//            System.out.println(controls[i]);
+//            System.out.println(i);
             //TODO
             // this line is commented out because it was crashing. The list controls[] was a different size from the list getEnemies().
-//            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
-    }
-
-    // TODO: When to switch music (not sound effects)?
-    /** Update the level themed music according the game status */
-    private void resolveMusic() {
-//        if(true){
-//            soundController.updateMusic();
-//        }
     }
 
     /**
@@ -353,6 +377,29 @@ public class WorldController implements Screen, ContactListener {
                 obj.update(dt);
             }
         }
+        resolveMusic();
+    }
+
+    private boolean wasInDanger = false;
+
+    // TODO: When to switch music (not sound effects)?
+    /** Update the level themed music according the game status */
+    private void resolveMusic() {
+        boolean nowInDanger = false;
+        for(AIController ai : controls){
+            if(ai.getState() == Enemy.enemyState.CHASE){
+                nowInDanger = true;
+                break;
+            }
+        }
+        if(!wasInDanger && nowInDanger){
+            SoundController.getInstance().tradeMusic(false);
+        }
+        if(wasInDanger && !nowInDanger){
+            SoundController.getInstance().tradeMusic(true);
+        }
+        SoundController.getInstance().updateMusic();
+        wasInDanger = nowInDanger;
     }
 
     /**
@@ -455,8 +502,7 @@ public class WorldController implements Screen, ContactListener {
      * Callback method for the start of a collision
      *
      * This method is called when we first get a collision between two objects.  We use
-     * this method to test if it is the "right" kind of collision.  In particular, we
-     * use it to test if we made it to the win door.
+     * this method to test if it is the "right" kind of collision.
      *
      * @param contact The two bodies that collided
      */
@@ -470,20 +516,14 @@ public class WorldController implements Screen, ContactListener {
         try {
             GameObject bd1 = (GameObject)body1.getUserData();
             GameObject bd2 = (GameObject)body2.getUserData();
-//            // Check for rock collision with any entity
-//            if(bd1.getType().equals(GameObject.ObjectType.OBSTACLE)){
-//                revertRecentMovement(bd2);
-//            }else if(bd2.getType().equals(GameObject.ObjectType.OBSTACLE)){
-//                revertRecentMovement(bd1);
-//            }
-            // Check for non-rock entity interaction with current
+            // Check for object interaction with current
             if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
-                pushEntity((Current) bd1, bd2);
+                enterCurrent((Current) bd1, bd2);
             } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
-                pushEntity((Current) bd2, bd1);
+                enterCurrent((Current) bd2, bd1);
             }
             // Check for bullet collision with enemy (projectiles kill enemies)
-            if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
+            else if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd1, (Enemy) bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1.getType().equals(GameObject.ObjectType.ENEMY)) {
                 ResolveCollision((Bullet) bd2, (Enemy) bd1);
@@ -516,14 +556,44 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    // TODO: Should we push current before we step the physics engine?
-    /** Push o according to c
-     * @param c the current
-     * @param o the object to push
-     * Precondition: object o is guaranteed not to be rock/obstacle */
-    private void pushEntity(Current c, GameObject o) {
-//        o.setPosition(c.getDirectionVector().add(o.getPosition()));
-        o.getBody().applyLinearImpulse(c.getDirectionVector(), o.getPosition(), true);
+    /**
+     * Callback method for the end of a collision
+     *
+     * This method is called when two objects cease to touch.
+     */
+    @Override
+    public void endContact(Contact contact) {
+        Fixture fix1 = contact.getFixtureA();
+        Fixture fix2 = contact.getFixtureB();
+        Body body1 = fix1.getBody();
+        Body body2 = fix2.getBody();
+
+        try {
+            GameObject bd1 = (GameObject)body1.getUserData();
+            GameObject bd2 = (GameObject)body2.getUserData();
+            // Check for object interaction with current
+            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+                exitCurrent((Current) bd1, bd2);
+            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
+                exitCurrent((Current) bd2, bd1);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Push o according to c
+     */
+    private void enterCurrent(Current c, GameObject o) {
+        o.enterCurrent(c.getDirectionVector());
+    }
+
+    /**
+     * Push o according to c
+     */
+    private void exitCurrent(Current c, GameObject o) {
+        o.exitCurrent(c.getDirectionVector());
     }
 
 //    /** Place the object back to its position cache to revert its most recent movement
@@ -545,7 +615,7 @@ public class WorldController implements Screen, ContactListener {
      * @param e enemy */
     private void ResolveCollision(Raft r, Enemy e) {
         // update player health
-        r.addHealth(Enemy.ENEMY_DAMAGE);
+        r.addHealth(-Enemy.ENEMY_DAMAGE);
         // destroy enemy
         e.setDestroyed(true);
     }
@@ -570,37 +640,6 @@ public class WorldController implements Screen, ContactListener {
         t.setDestroyed(true);
     }
 
-    // TODO: When current not in touch with objects, do we need to stop acting force on it?
-    /**
-     * Callback method for the start of a collision
-     *
-     * This method is called when two objects cease to touch.  The main use of this method
-     * is to determine when the character is NOT on the ground.  This is how we prevent
-     * double jumping.
-     */
-    @Override
-    public void endContact(Contact contact) {
-//        Fixture fix1 = contact.getFixtureA();
-//        Fixture fix2 = contact.getFixtureB();
-//
-//        Body body1 = fix1.getBody();
-//        Body body2 = fix2.getBody();
-//
-//        Object fd1 = fix1.getUserData();
-//        Object fd2 = fix2.getUserData();
-//
-//        Object bd1 = body1.getUserData();
-//        Object bd2 = body2.getUserData();
-//
-//        if ((levelModel.getPlayer().getSensorName().equals(fd2) && levelModel.getPlayer() != bd1) ||
-//                (levelModel.getPlayer().getSensorName().equals(fd1) && levelModel.getPlayer() != bd2)) {
-//            sensorFixtures.remove(levelModel.getPlayer() == bd1 ? fix2 : fix1);
-//            if (sensorFixtures.size == 0) {
-//                levelModel.getPlayer().setGrounded(false);
-//            }
-//        }
-    }
-
     /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
@@ -622,11 +661,13 @@ public class WorldController implements Screen, ContactListener {
         if (speed > bumpThresh) {
             GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
             GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
-            if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY) {
-                playSoundEffect();
+            if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
+                    || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
+                SoundController.getInstance().playSFX("raft_damage", false);
             }
-            if (s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
-                playSoundEffect();
+            if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
+                    || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
+                SoundController.getInstance().playSFX("wood_pickup", false);
             }
         }
     }
@@ -634,6 +675,7 @@ public class WorldController implements Screen, ContactListener {
     // TODO: What sound effect are needed and when do we want them?
     /** Play sound effect according to the situation */
     private void playSoundEffect() {
+
     }
 
     /** Unused ContactListener method */
@@ -678,17 +720,22 @@ public class WorldController implements Screen, ContactListener {
         failed = value;
     }
 
-    /**
-     * Resets the status of the game so that we can play again.
-     * <p>
-     * This method disposes of the world and creates a new one.
-     */
-    public void reset() {
+    /** Empty the level game objects */
+    public void emptyLevel() {
         levelModel.reset();
         levelModel.world.setContactListener(this);
         setComplete(false);
         setFailure(false);
-        levelModel.loadLevel(LevelModel.LEVEL_RESTART_CODE);
+    }
+
+    /** Prepare the AI for the enemy in the level */
+    public void prepareEnemy(){
+        PooledList<Enemy> enemies = levelModel.getEnemies();
+        controls = new AIController[enemies.size()];
+        for (int i = 0; i < enemies.size(); i++) {
+            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+        }
+//        System.out.println(Arrays.toString(controls));
     }
 
     /**
@@ -697,13 +744,20 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
-        levelModel.reset();
-        levelModel.world.setContactListener(this);
-        setComplete(false);
-        setFailure(false);
+        emptyLevel();
         levelModel.loadLevel(level_int);
+        prepareEnemy();
+
+        SoundController.getInstance().startLevelMusic();
     }
 
-    public void setScreenListener(GDXRoot gdxRoot) {
+    /**
+     * Resets the status of the game so that we can play again.
+     * <p>
+     * This method disposes of the world and creates a new one.
+     */
+    public void reset() {
+       setLevel(LevelModel.LEVEL_RESTART_CODE);
     }
+
 }

@@ -27,6 +27,8 @@
       "level_6": "images/level_6.png",
       "level_7": "images/level_7.png",
       "level_8": "images/level_8.png",
+      "green_bar":     "images/green_bar.png",
+      "grey_bar":     "images/grey_bar.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
@@ -49,18 +51,28 @@
         "times": {
             "file": "fonts/TimesRoman.ttf",
             "size": 32
-        }
+        },
+      "end": {
+        "file": "fonts/RetroGame.ttf",
+        "size": 32
+      }
     },
   "sounds" : {
-    "current_flow": "sounds/Sfx_Current_Flow1.0.ogg",
-    "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
-    "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
-    "menu": "sounds/Msc_Menu_RoTTheme.ogg",
-    "background": "sounds/Msc_Background_CalmOcean.ogg",
-    "explore": "sounds/Msc_Explore_Longing.ogg",
-    "danger": "sounds/Msc_Danger_Longing.ogg"
+      "current_flow": "sounds/Sfx_Current_Flow1.ogg",
+      "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
+      "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
+      "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
+    "raft_damage": "sounds/Sfx_Raft_Damage.mp3"
+  },
+  "music" : {
+      "menu": "sounds/Msc_Menu_RoTTheme.ogg",
+      "background": "sounds/Msc_Background_CalmOcean.ogg",
+      "explore": "sounds/Msc_Explore_Longing.ogg",
+      "danger": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
-    "level:0" : "levels/level0.json"
+    "sound_settings" : "sound_settings.json",
+    "level:0" : "levels/level0.json",
+    "level:1" : "levels/level1.json"
   }
 }

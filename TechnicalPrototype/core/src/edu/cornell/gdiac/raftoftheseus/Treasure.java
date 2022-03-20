@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -13,6 +14,7 @@ public class Treasure extends WheelObstacle {
     public Treasure(Vector2 position) {
         super();
         setPosition(position);
+        setBodyType(BodyDef.BodyType.StaticBody);
         collected = false;
     }
 
@@ -27,6 +29,7 @@ public class Treasure extends WheelObstacle {
     }
 
     public void update(float dt) {
+        super.update(dt);
         if(collected) {
             // TODO: update player score
             this.setDestroyed(true);

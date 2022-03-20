@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -58,39 +59,44 @@ public class Enemy extends WheelObstacle {
         super();
     }
 
+    public void setTargetRaft(Raft targetRaft) {
+        this.targetRaft = targetRaft;
+    }
+
     public Enemy(Vector2 position, Raft targetRaft) {
         super();
-        this.targetRaft = targetRaft;
         setPosition(position);
+        setBodyType(BodyDef.BodyType.DynamicBody);
+        this.targetRaft = targetRaft;
     }
 
-    // TODO: this will change depending on implementation of AIController
-    public void update(float dt) {
-        if (targetRaft != null) {
-            setLinearVelocity(moveVector);
-        }
-
-    }
+//    // TODO: this will change depending on implementation of AIController
+//    public void update(float dt) {
+//        if (targetRaft != null) {
+//            setLinearVelocity(moveVector);
+//        }
+//
+//    }
 
     /**
      * call for AI controller
      */
     public void resolveAction(enemyState controlSignal, Raft player, long ticks) {
+//        System.out.println(controlSignal);
         switch (controlSignal) {
             case SPAWN:
                 break;
             case WANDER:
                 // every once in a while pick a new random direction
-                if (ticks % 120 == 0) {
-                    int p = rand.nextInt(4);
 
+                if (ticks % 60 == 0) {
+                    int p = rand.nextInt(4);
                     Vector2 temp = new Vector2();
                     // move randomly in one of the four directions
                     if (p == 0) {
                         temp.set(temp.x, 1);
                     } else if (p == 1) {
                         temp.set(temp.x, -1);
-
                     } else if (p == 2) {
                         temp.set(-1, temp.y);
                     } else {
@@ -100,8 +106,9 @@ public class Enemy extends WheelObstacle {
                     moveVector = temp;
                     moveVector.nor().scl(ENEMY_WANDER_SPEED);
                 }
+                break;
             case CHASE:
-                Vector2 temp = targetRaft.getPosition().cpy();
+                Vector2 temp = player.getPosition().cpy();
                 temp.sub(getPosition());
                 moveVector = temp;
                 moveVector.nor().scl(ENEMY_CHASE_SPEED);
