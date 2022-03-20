@@ -26,7 +26,7 @@ public class Raft extends WheelObstacle {
     /** Maximum player health */
     public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
     /** Initial player health */
-    public static final float INITIAL_PLAYER_HEALTH = 60.0f;
+    public static final float INITIAL_PLAYER_HEALTH = 40.0f;
     /** The star of the level. This must be >=0. */
     private int star;
     /** Initial player health */

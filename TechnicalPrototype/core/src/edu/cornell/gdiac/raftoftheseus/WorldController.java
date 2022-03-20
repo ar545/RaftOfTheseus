@@ -178,19 +178,25 @@ public class WorldController implements Screen, ContactListener {
             canvas.end();
         }
 
-        float h = levelModel.getPlayer().getHealth(); // player health
-        float r = h*pixelsPerUnit; // distance player can travel with their current health (TODO: this isn't the right expression, because acceleration != distance)
+        // force player remain with their current health
+        float temporary_scalar = 0.5f; // player health circle scalar
+        float r = levelModel.getPlayer().getHealth() * pixelsPerUnit * temporary_scalar;
+        // TODO: this isn't the right expression, because acceleration != distance
+        // TODO: However, this expression is meaningful in the way that it shows the thrust the player remain
+        // TODO: The core decision we have to make here is that, do we want the player to cost health
+        // TODO:  proportional to the distance of moving (as in gameplay) or proportional to the force they applied
         canvas.drawHealthCircle(r);
     }
 
     /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
     private void drawHealthBar(float health) {
+        Color c = new Color(1, Math.min(health * 1.5f, 1), Math.max(0, 1 - health * 1.5f), 1);
         TextureRegion RatioGreenBar = new TextureRegion(greenBar, (int)(greenBar.getWidth() * health), greenBar.getHeight());
         float x_origin = (canvas.getWidth() - greyBar.getRegionWidth()*HEALTH_BAR_SCALE)  / (2f*HEALTH_BAR_SCALE);
         float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
         canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
         canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        canvas.draw(RatioGreenBar,Color.WHITE,x_origin, y_origin, RatioGreenBar.getRegionWidth(), RatioGreenBar.getRegionHeight());
+        canvas.draw(RatioGreenBar,c,x_origin, y_origin, RatioGreenBar.getRegionWidth(), RatioGreenBar.getRegionHeight());
         canvas.end();
     }
 
