@@ -13,7 +13,7 @@ public class Raft extends WheelObstacle {
 
     // CONSTANTS
     /** Movement cost for a pixel distance **/
-    private static final float MOVE_COST = 0.05f; // keep?
+    private static final float MOVE_COST = 0.001f; // keep?
 
     // ATTRIBUTES
     /** The movement of the player this turn */
@@ -26,7 +26,7 @@ public class Raft extends WheelObstacle {
     /** Maximum player health */
     public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
     /** Initial player health */
-    public static final float INITIAL_PLAYER_HEALTH = 40.0f;
+    public static final float INITIAL_PLAYER_HEALTH = 60.0f;
     /** The star of the level. This must be >=0. */
     private int star;
     /** Initial player health */
@@ -139,6 +139,9 @@ public class Raft extends WheelObstacle {
     /** Getter and setters for health */
     public float getHealth() { return health; }
 
+    /** Getter and setters for health */
+    public float getHealthRatio() { return health / MAXIMUM_PLAYER_HEALTH; }
+
     public void setHealth(float newHealth) {
         health = Math.max(0, newHealth);
     }
@@ -188,4 +191,11 @@ public class Raft extends WheelObstacle {
 
     /** Get the star of the level */
     protected int getStar() { return star; }
+
+    /** take the health cost for player. This the always scaled to 1 move_cost because player move are normalized,
+     * i.e. movement.len() = 1 always hold */
+    public void subtractHealth() { health = health - (MOVE_COST  * force); }
+
+    /** @return whether the player health is below zero */
+    public boolean isDead() { return health < 0f; }
 }

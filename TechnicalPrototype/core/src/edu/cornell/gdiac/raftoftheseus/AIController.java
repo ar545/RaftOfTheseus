@@ -7,7 +7,7 @@ public class AIController {
     /**
      * How close a target must be for us to chase it
      */
-    private static final int CHASE_DIST = 200;
+    private static final int CHASE_DIST = 12;
 
     private int id;
 
@@ -55,6 +55,7 @@ public class AIController {
 
 
     private void changeStateIfApplicable() {
+//        System.out.println(dist());
         switch (state) {
             case SPAWN:
                 state = WANDER;

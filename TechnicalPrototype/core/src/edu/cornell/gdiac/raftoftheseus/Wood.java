@@ -14,10 +14,10 @@ public class Wood extends WheelObstacle {
     private final float wood;
 
     // CONSTANTS
+    /** the wood health scale */
+    private final static float WOOD_HEALTH_SCALE = 5f;
     /** the maximum log generated for each pile of wood */
-    private final static float MAXIMUM_WOOD_GENERATION = 10f;
-    /** the minimum log generated for each pile of wood */
-    private final static float MINIMUM_WOOD_GENERATION = 5f;
+    private final static float MINIMUM_WOOD_GENERATION = 20f;
 
     public ObjectType getType() {
         return ObjectType.WOOD;
@@ -38,6 +38,6 @@ public class Wood extends WheelObstacle {
     /** return the number of logs in this pile of wood
      * @return float representing player health replenish */
     public float getWood() {
-        return wood;
+        return wood * WOOD_HEALTH_SCALE;
     }
 }

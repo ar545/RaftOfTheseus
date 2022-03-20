@@ -17,6 +17,8 @@
       "north_current": "images/north_current.png",
       "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
+      "green_bar":     "images/green_bar.png",
+      "grey_bar":     "images/grey_bar.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
@@ -39,7 +41,11 @@
         "times": {
             "file": "fonts/TimesRoman.ttf",
             "size": 32
-        }
+        },
+      "end": {
+        "file": "fonts/RetroGame.ttf",
+        "size": 32
+      }
     },
   "sounds" : {
     "current_flow": "sounds/Sfx_Current_Flow1.0.ogg",
@@ -51,6 +57,8 @@
     "danger": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
-    "level:0" : "levels/level0.json"
+    "level:0" : "levels/level0.json",
+    "level:1" : "levels/level1.json",
+    "level:2" : "levels/level2.json"
   }
 }

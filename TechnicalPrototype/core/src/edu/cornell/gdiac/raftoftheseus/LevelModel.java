@@ -230,23 +230,16 @@ public class LevelModel {
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
-
-            // Reset boundary of world
-            setBound();
         }
+        // Reset boundary of world
+        setBound();
+
         // Populate game objects
         populateLevel();
     }
 
     /** Set the physical boundary of the level. This boundary will be enforced when adding objects */
     private void setBound() {
-        // Read in the grid size and scale. This is not included in Tiled format
-//        float col_width = world_data.getFloat("col_width", DEFAULT_GIRD_EDGE_LENGTH);
-//        float row_height = world_data.getFloat("row_height", DEFAULT_GIRD_EDGE_LENGTH);
-//        this.grid_size = new Vector2(col_width, row_height);
-//        this.scale = new Vector2(world_data.getFloat("draw_scale_x", 1),
-//                world_data.getFloat("draw_scale_y", 1));
-
         // Calculate the world bounds base on the grid map size
         this.bounds = new Rectangle(0,0,GRID_SIZE.x * map_size.x + 2 * DEFAULT_BOUNDARY,
                 GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY);
@@ -263,7 +256,6 @@ public class LevelModel {
      * East wall rectangle: (x+k, 0, x+2*k, y+k)
      * */
     private void computeWall(float x, float y) {
-
         generateRectangle(0f, 0f, x+ LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY); // south_wall
         generateRectangle(0, LevelModel.DEFAULT_BOUNDARY, LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY); // west_wall
         generateRectangle(LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY,
@@ -271,15 +263,12 @@ public class LevelModel {
         generateRectangle(x+ LevelModel.DEFAULT_BOUNDARY, 0, x+2* LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY); // east_wall
     }
 
-    /** Add Wall Objects to the world, using the Json value for goal.
-     */
+    /** Add Wall Objects to the world, using the Json value for goal. */
     private void generateRectangle(float x1, float y1, float x2, float y2) {
         x1 += -DEFAULT_BOUNDARY;
         x2 += -DEFAULT_BOUNDARY;
         y1 += -DEFAULT_BOUNDARY;
         y2 += -DEFAULT_BOUNDARY;
-//        float[] polygonVertices = { 16.0f, 18.0f, 16.0f, 17.0f,  1.0f, 17.0f,  1.0f,  1.0f, 16.0f,  1.0f, 16.0f,  0.0f,  0.0f,  0.0f,  0.0f, 18.0f};
-//        System.out.println(x1 + "/" + y1 + "\\" + x2 + "/" + y2);
         float[] polygonVertices = {x1, y1, x2, y1, x2, y2, x1, y2};
         Wall this_wall = new Wall(polygonVertices);
         this_wall.setTexture(earthTile);
@@ -296,13 +285,24 @@ public class LevelModel {
         JsonValue enemies = layers.get(LAYER_ENE);
 
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
-        for(int row = 0; row < map_size.y; row ++){
+        for(int row_reversed = 0; row_reversed < map_size.y; row_reversed ++){
+            int row = map_size.y - row_reversed - 1;
             for(int col = 0; col < map_size.x; col ++){
-                int index = row * map_size.x + col;
+                int index = row_reversed * map_size.x + col;
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 populateEnemies(row, col, enemies.get("data").getInt(index));
+                // TODO: if we populate the raft field before instantiating enemies,
+                //  we can properly instantiate instead of putting null for target raft field
+                //  see the        Enemy this_enemy = new Enemy(compute_temp, null); on line 379
+                populateEnemiesRaftField();
             }
+        }
+    }
+
+    private void populateEnemiesRaftField(){
+        for (Enemy enemy : enemies){
+            enemy.setTargetRaft(raft);
         }
     }
 
