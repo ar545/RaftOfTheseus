@@ -71,12 +71,12 @@ public class Enemy extends WheelObstacle {
     }
 
 //    // TODO: this will change depending on implementation of AIController
-//    public void update(float dt) {
-//        if (targetRaft != null) {
-//            setLinearVelocity(moveVector);
-//        }
-//
-//    }
+    public void update(float dt) {
+        if (moveVector != null && targetRaft != null) {
+            setLinearVelocity(moveVector);
+        }
+
+    }
 
     /**
      * call for AI controller
