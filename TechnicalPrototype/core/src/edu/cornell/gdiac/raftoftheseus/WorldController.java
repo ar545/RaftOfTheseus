@@ -311,7 +311,6 @@ public class WorldController implements Screen, ContactListener {
         // update enemy, forces, music, player health
         resolveEnemies();
         player.applyForce();
-        resolveMusic();
         if(ic.Moved()){
             player.subtractHealth();
         }
@@ -337,14 +336,6 @@ public class WorldController implements Screen, ContactListener {
             // this line is commented out because it was crashing. The list controls[] was a different size from the list getEnemies().
             enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
-    }
-
-    // TODO: When to switch music (not sound effects)?
-    /** Update the level themed music according the game status */
-    private void resolveMusic() {
-//        if(true){
-//            soundController.updateMusic();
-//        }
     }
 
     /**
@@ -380,6 +371,29 @@ public class WorldController implements Screen, ContactListener {
                 obj.update(dt);
             }
         }
+        resolveMusic();
+    }
+
+    private boolean wasInDanger = false;
+
+    // TODO: When to switch music (not sound effects)?
+    /** Update the level themed music according the game status */
+    private void resolveMusic() {
+        boolean nowInDanger = false;
+        for(AIController ai : controls){
+            if(ai.getState() == Enemy.enemyState.CHASE){
+                nowInDanger = true;
+                break;
+            }
+        }
+        if(!wasInDanger && nowInDanger){
+            SoundController.getInstance().tradeMusic(false);
+        }
+        if(wasInDanger && !nowInDanger){
+            SoundController.getInstance().tradeMusic(true);
+        }
+        SoundController.getInstance().updateMusic();
+        wasInDanger = nowInDanger;
     }
 
     /**

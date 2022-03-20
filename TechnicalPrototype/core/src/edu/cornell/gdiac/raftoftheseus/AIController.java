@@ -49,6 +49,10 @@ public class AIController {
         return state;
     }
 
+    public Enemy.enemyState getState(){
+        return state;
+    }
+
     private double dist(){
         return Math.sqrt(Math.pow(enemy.getX() - raft.getX(), 2) + Math.pow(enemy.getY() - raft.getY(), 2));
     }

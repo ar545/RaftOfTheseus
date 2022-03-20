@@ -12,7 +12,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 /**
  * Class to control starting, looping, and stopping sounds for the game.
  * Requires updating every time controllers or levels are changed due to memory constraints of music.
- * Usage is as follows: Constructor -> gatherAssets() -> setPresets() -> playSFX(), playMusic() etc.
+ * Usage is as follows: getInstance() -> gatherAssets() -> setPresets() -> playSFX(), playMusic() etc.
  * Changed loaded sounds with setPresets() as needed.
  */
 public class SoundController {
@@ -248,12 +248,6 @@ public class SoundController {
         playMusic("background");
     }
 
-    /**
-     * Starts the music for the menu, fails silently if proper preset is not loaded.
-     */
-    public void startMenuMusic(){
-        playMusic("demo");
-    }
 
     /**
      * For playing menu music only.
@@ -303,6 +297,10 @@ public class SoundController {
         }
     }
 
+    /**
+     * Stops a given music file.
+     * @param index file to be stopped.
+     */
     private void stopMusic(String index){
         Music m = music.get(index);
         if (m != null && m.isPlaying()) {
