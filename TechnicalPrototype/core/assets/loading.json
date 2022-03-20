@@ -23,5 +23,8 @@
                 "foreright"  : [384, 40, 400, 70]
             }
         }
-	}
+	},
+  "music" : {
+    "menu": "sounds/Msc_Menu_RoTTheme.ogg"
+  }
 }
