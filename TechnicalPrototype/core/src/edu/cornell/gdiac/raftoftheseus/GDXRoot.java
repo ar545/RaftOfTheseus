@@ -111,10 +111,13 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param exitCode The state of the screen upon exit
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
-		if(exitCode == 1){
+		if(exitCode == WorldController.EXIT_PREV){
 			playing.setLevel(0);
 			setScreen(playing);
-		} else if (exitCode != 0) {
+		}else if(exitCode == WorldController.EXIT_NEXT){
+			playing.setLevel(1);
+			setScreen(playing);
+		} else if (exitCode != WorldController.EXIT_QUIT) {
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else if (screen == loading) {

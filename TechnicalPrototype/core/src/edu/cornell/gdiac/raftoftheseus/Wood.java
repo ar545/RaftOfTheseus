@@ -15,7 +15,7 @@ public class Wood extends WheelObstacle {
 
     // CONSTANTS
     /** the wood health scale */
-    private final static float WOOD_HEALTH_SCALE = 5f;
+    private final static float WOOD_HEALTH_SCALE = 4f;
     /** the maximum log generated for each pile of wood */
     private final static float MINIMUM_WOOD_GENERATION = 20f;
 

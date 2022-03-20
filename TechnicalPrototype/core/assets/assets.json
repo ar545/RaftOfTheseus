@@ -57,6 +57,7 @@
     "danger": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
-    "level:0" : "levels/level0.json"
+    "level:0" : "levels/level0.json",
+    "level:1" : "levels/level1.json"
   }
 }
