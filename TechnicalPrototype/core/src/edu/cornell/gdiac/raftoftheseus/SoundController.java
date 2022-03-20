@@ -342,21 +342,21 @@ public class SoundController {
     public void updateMusic(){
         float v;
         if(STATE == MusicState.ENTER_DANGER){
-            v = changeMusicVolume("explore", tradeRate);
-            changeMusicVolume("danger", -tradeRate);
-            if (v < tradeThreshold){
-                stopMusic("explore");
+            if(music.get("explore").getVolume() < tradeThreshold){
                 setMusicVolume("danger", musicVolume);
                 STATE = MusicState.STEADY;
+            } else {
+                changeMusicVolume("explore", tradeRate);
+                changeMusicVolume("danger", -tradeRate);
             }
         }
         else if(STATE == MusicState.LEAVE_DANGER){
-            v = changeMusicVolume("danger", tradeRate);
-            changeMusicVolume("explore", -tradeRate);
-            if (v < tradeThreshold){
-                stopMusic("danger");
+            if (music.get("danger").getVolume() < tradeThreshold){
                 setMusicVolume("explore", musicVolume);
                 STATE = MusicState.STEADY;
+            } else {
+                changeMusicVolume("danger", tradeRate);
+                changeMusicVolume("explore", -tradeRate);
             }
         }
     }

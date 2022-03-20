@@ -3,6 +3,6 @@
   "sfx_volume": 0.3,
   "decay_distance": 400.0,
   "trade_rate": 0.001,
-  "trade_threshold": 0.005,
+  "trade_threshold": 0.002,
   "preset1": {}
 }
