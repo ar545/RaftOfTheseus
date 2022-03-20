@@ -180,6 +180,10 @@ public class WorldController implements Screen, ContactListener {
             canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
             canvas.end();
         }
+
+        float h = levelModel.getPlayer().getHealth(); // player health
+        float r = h*pixelsPerUnit; // distance player can travel with their current health (TODO: this isn't the right expression, because acceleration != distance)
+        canvas.drawHealthCircle(r);
     }
 
     /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
