@@ -641,11 +641,9 @@ public class WorldController implements Screen, ContactListener {
         if (speed > bumpThresh) {
             GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
             GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
-            if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY) {
-                SoundController.getInstance().playSFX("raft_breaking", false);
-            }
-            if (s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
-                SoundController.getInstance().playSFX("raft_breaking", false);
+            if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
+                    || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
+                SoundController.getInstance().playSFX("raft_damage", false);
             }
             if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
                     || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {

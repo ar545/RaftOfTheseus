@@ -85,7 +85,7 @@ public class SoundController {
 //            musicPresets.put(m.getInt("preset_number", 0), m);
 //        }
 
-        Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw", "wood_pickup"});
+        Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw", "wood_pickup", "raft_damage"});
         Array<String> tempmsc = new Array<>(new String[]{"background", "explore", "danger"});
 
         for(String s : tempsfx){

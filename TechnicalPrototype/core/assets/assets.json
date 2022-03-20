@@ -51,7 +51,8 @@
       "current_flow": "sounds/Sfx_Current_Flow1.ogg",
       "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
       "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
-      "raft_throw": "sounds/Sfx_Raft_Throw.ogg"
+      "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
+    "raft_damage": "sounds/Sfx_Raft_Damage.mp3"
   },
   "music" : {
       "menu": "sounds/Msc_Menu_RoTTheme.ogg",
