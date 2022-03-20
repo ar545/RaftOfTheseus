@@ -25,6 +25,7 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
@@ -61,6 +62,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	private Texture background;
 	/** Play button to display when done */
 	private Texture playButton;
+	/** Music to play during loading. */
 	/** Texture atlas to support a progress bar */
 	private Texture statusBar;
 	
@@ -231,6 +233,9 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		for (XBoxController controller : Controllers.get().getXBoxControllers()) {
 			controller.addListener( this );
 		}
+
+		// Start music?
+		SoundController.getInstance().playMusic("menu", internal.getEntry("menu", Music.class));
 
 		// Start loading the real assets
 		assets = new AssetDirectory( file );

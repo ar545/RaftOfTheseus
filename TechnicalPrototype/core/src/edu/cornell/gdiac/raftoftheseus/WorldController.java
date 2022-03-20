@@ -68,7 +68,6 @@ public class WorldController implements Screen, ContactListener {
     private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
-    SoundController soundController;
     /** array of controls for each enemy**/
     private AIController[] controls;
 
@@ -89,8 +88,6 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
-
-        soundController = new SoundController(true);
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -727,6 +724,8 @@ public class WorldController implements Screen, ContactListener {
         emptyLevel();
         levelModel.loadLevel(level_int);
         prepareEnemy();
+
+        SoundController.getInstance().startLevelMusic();
     }
 
     /**

@@ -47,14 +47,23 @@
         "size": 32
       }
     },
+  "sound_settings" : {
+    "music_volume": 1.0,
+    "sfx_volume": 1.0,
+    "decay_distance": 400.0,
+    "trade_rate": 0.01,
+    "trade_threshold": 0.05
+  },
   "sounds" : {
-    "current_flow": "sounds/Sfx_Current_Flow1.0.ogg",
-    "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
-    "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
-    "menu": "sounds/Msc_Menu_RoTTheme.ogg",
-    "background": "sounds/Msc_Background_CalmOcean.ogg",
-    "explore": "sounds/Msc_Explore_Longing.ogg",
-    "danger": "sounds/Msc_Danger_Longing.ogg"
+      "current_flow": "sounds/Sfx_Current_Flow1.ogg",
+      "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
+      "raft_throw": "sounds/Sfx_Raft_Throw.ogg"
+  },
+  "music" : {
+      "menu": "sounds/Msc_Menu_RoTTheme.ogg",
+      "background": "sounds/Msc_Background_CalmOcean.ogg",
+      "explore": "sounds/Msc_Explore_Longing.ogg",
+      "danger": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
     "level:0" : "levels/level0.json"
