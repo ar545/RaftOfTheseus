@@ -85,6 +85,9 @@ public class InputController {
 		return mov_offset;
 	}
 
+	/** Find whether the player moved and should reduce health corrspondingly */
+	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
+
 	/**
 	 * @return where the mouse was clicked in screen coordinates
 	 */
@@ -122,20 +125,12 @@ public class InputController {
 	/**
 	 * @return true if the reset button was pressed.
 	 */
-	public boolean didReset() {
-		if(resetPressed && !resetPrevious){
-			System.out.println("reset tried 4");
-		}
-		return resetPressed && !resetPrevious;
-
-	}
+	public boolean didReset() {return resetPressed && !resetPrevious;}
 
 	/**
 	 * @return true if the exit button was pressed.
 	 */
 	public boolean didExit() { return exitPressed && !exitPrevious; }
-
-
 	
 	/**
 	 * Creates a new input controller for mouse and keyboard.
@@ -190,10 +185,6 @@ public class InputController {
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
 			y_offset -= 1.0f;
-		}
-
-		if(resetPressed && !resetPrevious){
-			System.out.println("reset tried 1");
 		}
 	}
 

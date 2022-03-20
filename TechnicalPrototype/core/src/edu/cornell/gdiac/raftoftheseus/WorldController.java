@@ -34,6 +34,9 @@ public class WorldController implements Screen, ContactListener {
     /** Number of position iterations for the constraint solvers */
     public static final int WORLD_POSIT = 2;
 
+    /** Scale for the health bar */
+    private static final float HEALTH_BAR_SCALE = 0.6f;
+
     // FIELDS
     // CANVAS AND OBJECT LIST
     /** Reference to the game canvas */
@@ -43,9 +46,9 @@ public class WorldController implements Screen, ContactListener {
 
     //TEXTURE
     /** The texture for walls and platforms */
-    protected TextureRegion earthTile;
+    protected Texture greenBar;
     /** The texture for the exit condition */
-    protected TextureRegion goalTile;
+    protected TextureRegion greyBar;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
 
@@ -147,6 +150,7 @@ public class WorldController implements Screen, ContactListener {
             obj.draw(canvas);
         }
         canvas.end();
+        drawHealthBar(levelModel.getPlayer().getHealthRatio());
 
         if (debug) {
             canvas.beginDebug();
@@ -165,17 +169,28 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // Final message
-//        if (complete && !failed) {
-//            displayFont.setColor(Color.YELLOW);
-//            canvas.begin(); // DO NOT SCALE
-//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-//            canvas.end();
-//        } else if (failed) {
-//            displayFont.setColor(Color.RED);
-//            canvas.begin(); // DO NOT SCALE
-//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-//            canvas.end();
-//        }
+        if (complete && !failed) {
+            displayFont.setColor(Color.YELLOW);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+            canvas.end();
+        } else if (failed) {
+            displayFont.setColor(Color.RED);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+            canvas.end();
+        }
+    }
+
+    /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
+    private void drawHealthBar(float health) {
+        TextureRegion RatioGreenBar = new TextureRegion(greenBar, (int)(greenBar.getWidth() * health), greenBar.getHeight());
+        float x_origin = (canvas.getWidth() - greyBar.getRegionWidth()*HEALTH_BAR_SCALE)  / (2f*HEALTH_BAR_SCALE);
+        float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
+        canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
+        canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.draw(RatioGreenBar,Color.WHITE,x_origin, y_origin, RatioGreenBar.getRegionWidth(), RatioGreenBar.getRegionHeight());
+        canvas.end();
     }
 
     /**
@@ -188,9 +203,9 @@ public class WorldController implements Screen, ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
-//        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-//        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
-//        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+        greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
+        greenBar  = directory.getEntry( "green_bar", Texture.class );
+        displayFont = directory.getEntry( "end" ,BitmapFont.class);
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
     }
@@ -285,17 +300,22 @@ public class WorldController implements Screen, ContactListener {
         player.setMovementX(ic.getMovement().x);
         player.setMovementY(ic.getMovement().y);
         player.setFire(ic.didFire());
-//        System.out.println(player.getPosition().x + "/" + player.getPosition().y);
 
         // Add a bullet if we fire
         if (player.isFire()) {
             createBullet();
         }
 
-        // update enemy
+        // update enemy, forces, music, player health
         resolveEnemies();
         player.applyForce();
         resolveMusic();
+        if(ic.Moved()){
+            player.subtractHealth();
+        }
+        if(player.isDead()){
+            setFailure(true);
+        }
     }
 
     /** get enemies take actions according to their AI */
@@ -550,7 +570,7 @@ public class WorldController implements Screen, ContactListener {
      * @param e enemy */
     private void ResolveCollision(Raft r, Enemy e) {
         // update player health
-        r.addHealth(Enemy.ENEMY_DAMAGE);
+        r.addHealth(-Enemy.ENEMY_DAMAGE);
         // destroy enemy
         e.setDestroyed(true);
     }
@@ -683,18 +703,22 @@ public class WorldController implements Screen, ContactListener {
         failed = value;
     }
 
-    /**
-     * Resets the status of the game so that we can play again.
-     * <p>
-     * This method disposes of the world and creates a new one.
-     */
-    public void reset() {
-        System.out.println("reset tried 3") ;
+    /** Empty the level game objects */
+    public void emptyLevel() {
         levelModel.reset();
         levelModel.world.setContactListener(this);
         setComplete(false);
         setFailure(false);
-        levelModel.loadLevel(LevelModel.LEVEL_RESTART_CODE);
+    }
+
+    /** Prepare the AI for the enemy in the level */
+    public void prepareEnemy(){
+        PooledList<Enemy> enemies = levelModel.getEnemies();
+        controls = new AIController[enemies.size()];
+        for (int i = 0; i < enemies.size(); i++) {
+            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+        }
+//        System.out.println(Arrays.toString(controls));
     }
 
     /**
@@ -703,18 +727,18 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
-        levelModel.reset();
-        levelModel.world.setContactListener(this);
-        setComplete(false);
-        setFailure(false);
+        emptyLevel();
         levelModel.loadLevel(level_int);
-        PooledList<Enemy> enemies = levelModel.getEnemies();
+        prepareEnemy();
+    }
 
-        controls = new AIController[enemies.size()];
-        for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
-        }
-//        System.out.println(Arrays.toString(controls));
+    /**
+     * Resets the status of the game so that we can play again.
+     * <p>
+     * This method disposes of the world and creates a new one.
+     */
+    public void reset() {
+       setLevel(LevelModel.LEVEL_RESTART_CODE);
     }
 
 }
