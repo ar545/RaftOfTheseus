@@ -33,6 +33,8 @@ public class Wood extends WheelObstacle {
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         wood = value;
+        fixture.filter.categoryBits = CATEGORY_PUSHABLE;
+        fixture.filter.maskBits = MASK_WOOD;
     }
 
     /** return the number of logs in this pile of wood

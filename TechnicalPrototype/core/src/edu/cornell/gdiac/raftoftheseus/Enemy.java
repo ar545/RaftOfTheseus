@@ -68,6 +68,8 @@ public class Enemy extends WheelObstacle {
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         this.targetRaft = targetRaft;
+        fixture.filter.categoryBits = CATEGORY_ENEMY;
+        fixture.filter.maskBits = MASK_ENEMY;
     }
 
 //    // TODO: this will change depending on implementation of AIController

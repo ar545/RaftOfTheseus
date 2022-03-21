@@ -14,5 +14,7 @@ public class Goal extends WheelObstacle {
         super();
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
+        fixture.filter.categoryBits = CATEGORY_NON_PUSHABLE;
+        fixture.filter.maskBits = MASK_GOAL;
     }
 }

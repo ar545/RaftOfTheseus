@@ -145,6 +145,8 @@ public class Raft extends WheelObstacle {
         this.force = force;
         this.health = INITIAL_PLAYER_HEALTH;
         this.star = INITIAL_PLAYER_STAR;
+        fixture.filter.categoryBits = CATEGORY_PLAYER;
+        fixture.filter.maskBits = MASK_PLAYER;
     }
 
     /** Add one star to the player star count */

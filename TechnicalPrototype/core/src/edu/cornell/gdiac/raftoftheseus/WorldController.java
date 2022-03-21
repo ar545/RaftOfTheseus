@@ -300,13 +300,12 @@ public class WorldController implements Screen, ContactListener {
      *       - Bullets will be activated until the next update loop
      *       - Bullets are supposed to auto target an enemy, not go to the mouse position
      */
-    private void createBullet() {
+    private void createBullet(Enemy nearestEnemy) {
         // Compute position and velocity
-        Vector2 facing = levelModel.getPlayer().getFacing();
+        Vector2 facing = nearestEnemy.getPosition().sub(levelModel.getPlayer().getPosition()).nor().scl(3);
         Bullet bullet = new Bullet(levelModel.getPlayer().getPosition().add(facing));
-
         bullet.setTexture(bullet_texture);
-        bullet.setBullet(true);
+//        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
         bullet.setLinearVelocity(facing);
         levelModel.addQueuedObject(bullet);
         levelModel.getPlayer().addHealth(Bullet.BULLET_HEALTH_COST);
@@ -332,7 +331,19 @@ public class WorldController implements Screen, ContactListener {
 
         // Add a bullet if we fire
         if (player.isFire()) {
-            createBullet();
+            // find nearest enemy to player
+            Enemy nearestEnemy = null;
+            float nearestD2 = -1;
+            for (Enemy e : levelModel.getEnemies()) {
+                float d2 = e.getPosition().dst2(player.getPosition());
+                if (nearestD2 == -1 || d2 < nearestD2) {
+                    nearestD2 = d2;
+                    nearestEnemy = e;
+                }
+            }
+            if (nearestEnemy != null) {
+                createBullet(nearestEnemy);
+            }
         }
 
         // update enemy, forces, music, player health
@@ -543,11 +554,11 @@ public class WorldController implements Screen, ContactListener {
             } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
                 enterCurrent((Current) bd2, bd1);
             }
-            // Check for bullet collision with enemy (projectiles kill enemies)
-            else if (bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.ENEMY)) {
-                ResolveCollision((Bullet) bd1, (Enemy) bd2);
-            }else if (bd2.getType().equals(GameObject.ObjectType.BULLET) && bd1.getType().equals(GameObject.ObjectType.ENEMY)) {
-                ResolveCollision((Bullet) bd2, (Enemy) bd1);
+            // Check for bullet collision with object (terrain or enemy)
+            else if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
+                ResolveCollision((Bullet) bd1, bd2);
+            }else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
+                ResolveCollision((Bullet) bd2, bd1);
             }
             // Check for player collision with wood (health+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.WOOD)){
@@ -624,11 +635,13 @@ public class WorldController implements Screen, ContactListener {
     /** Resolve collision between two objects of specific types
      * @param b bullet
      * @param e enemy */
-    private void ResolveCollision(Bullet b, Enemy e) {
+    private void ResolveCollision(Bullet b, GameObject e) {
+        if(e.getType() == GameObject.ObjectType.ENEMY) {
+            // destroy enemy
+            e.setDestroyed(true);
+        }
         // destroy bullet
         removeBullet(b);
-        // destroy enemy
-        e.setDestroyed(true);
     }
 
     /** Resolve collision between two objects of specific types

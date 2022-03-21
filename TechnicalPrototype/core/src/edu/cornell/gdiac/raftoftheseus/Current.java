@@ -45,6 +45,8 @@ public class Current extends WheelObstacle {
         this.direction = direction;
         setRotationFromDirection();
         this.speed = speed;
+        fixture.filter.categoryBits = CATEGORY_CURRENT;
+        fixture.filter.maskBits = MASK_CURRENT;
     }
 
     private void setRotationFromDirection() {

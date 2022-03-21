@@ -16,6 +16,8 @@ public class Rock extends WheelObstacle {
         super();
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
+        fixture.filter.categoryBits = CATEGORY_TERRAIN;
+        fixture.filter.maskBits = MASK_TERRAIN;
     }
 
 }

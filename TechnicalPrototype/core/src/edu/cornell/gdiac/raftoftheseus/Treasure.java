@@ -16,6 +16,8 @@ public class Treasure extends WheelObstacle {
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         collected = false;
+        fixture.filter.categoryBits = CATEGORY_NON_PUSHABLE;
+        fixture.filter.maskBits = MASK_TREASURE;
     }
 
     public ObjectType getType() {

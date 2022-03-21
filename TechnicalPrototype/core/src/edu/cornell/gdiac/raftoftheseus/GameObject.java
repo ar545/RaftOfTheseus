@@ -1,14 +1,8 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
-import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
-import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
-import edu.cornell.gdiac.util.FilmStrip;
 
 /**
  * Base class for all Model objects in the game.
@@ -51,6 +45,29 @@ public abstract class GameObject extends SimpleObstacle {
          */
         BULLET
     }
+
+    /** Collision filtering categories */
+    protected final static short CATEGORY_PLAYER = 1<<1;
+    protected final static short CATEGORY_ENEMY = 1<<2;
+    protected final static short CATEGORY_PLAYER_BULLET = 1<<3;
+    protected final static short CATEGORY_ENEMY_BULLET = 1<<4;
+    protected final static short CATEGORY_CURRENT = 1<<5;
+    protected final static short CATEGORY_TERRAIN = 1<<6;
+    protected final static short CATEGORY_PUSHABLE = 1<<7;
+    protected final static short CATEGORY_NON_PUSHABLE = 1<<8;
+    /** Collision filtering masks */
+    protected final static short MASK_PLAYER = CATEGORY_ENEMY | CATEGORY_ENEMY_BULLET | CATEGORY_CURRENT
+            | CATEGORY_TERRAIN | CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE;
+    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN;
+    protected final static short MASK_ENEMY = CATEGORY_PLAYER | CATEGORY_PLAYER_BULLET | CATEGORY_CURRENT
+            | CATEGORY_TERRAIN | CATEGORY_PUSHABLE;
+    protected final static short MASK_ENEMY_BULLET = CATEGORY_PLAYER | CATEGORY_TERRAIN;
+    protected final static short MASK_CURRENT = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PUSHABLE;
+    protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PLAYER_BULLET
+            | CATEGORY_ENEMY_BULLET | CATEGORY_PUSHABLE;
+    protected final static short MASK_WOOD = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN;
+    protected final static short MASK_TREASURE = CATEGORY_PLAYER;// treasure isn't pushed around by anything
+    protected final static short MASK_GOAL = CATEGORY_PLAYER;
 
     /**
      * How much to scale the texture before displaying (screen pixels / texture pixels)
