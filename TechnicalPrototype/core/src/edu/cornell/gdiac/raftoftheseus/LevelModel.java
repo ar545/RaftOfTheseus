@@ -81,7 +81,7 @@ public class LevelModel {
     /** The Box2D world */
     protected World world;
     /** The boundary of the world */
-    protected Rectangle bounds;
+    private Rectangle bounds;
     /** The world scale */
     protected Vector2 scale = new Vector2(1, 1);
     /** The map size in grid */
@@ -149,6 +149,19 @@ public class LevelModel {
         boolean vert  = (bounds.y <= obj.getY() && obj.getY() <= bounds.y+bounds.height);
         return horiz && vert;
     }
+
+    /** return the bounds in rectangle */
+    public Rectangle bounds() {
+        return bounds;
+    }
+
+    /** @return the height and width of bounds only
+     * width: GRID_SIZE.x * map_size.x + 2 * DEFAULT_BOUNDARY,
+     * height: GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY */
+    public Vector2 boundsVector2(){
+        return new Vector2(bounds.height, bounds.width);
+    }
+
 
     /**
      *
