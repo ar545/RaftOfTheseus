@@ -81,7 +81,6 @@ public class MenuMode implements Screen, InputProcessor {
         levels = new Texture[LEVEL_COUNT];
         for (int i = 0; i < LEVEL_COUNT; i++) {
             levels[i] = directory.getEntry("level_" + i, Texture.class);
-            System.out.println(levels[i]);
         }
     }
 
