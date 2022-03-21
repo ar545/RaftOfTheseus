@@ -422,6 +422,9 @@ public class LevelModel {
         computePosition(col, row);
         Wood this_wood = new Wood(compute_temp, value);
         this_wood.setTexture(woodTexture); // TODO use correct texture
+        if(value > 3){
+            this_wood.setTexture(doubleTexture);
+        }
         addObject(this_wood);
     }
 
