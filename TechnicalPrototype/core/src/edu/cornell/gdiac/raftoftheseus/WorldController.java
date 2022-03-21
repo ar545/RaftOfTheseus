@@ -232,7 +232,7 @@ public class WorldController implements Screen, ContactListener {
         float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
         canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
         canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        canvas.draw(RatioBar,c,x_origin, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());
+        if(health >= 0){canvas.draw(RatioBar,c,x_origin, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
         canvas.end();
     }
 
@@ -692,6 +692,8 @@ public class WorldController implements Screen, ContactListener {
         r.addStar();
         // destroy treasure
         t.setDestroyed(true);
+        // add random wood
+        levelModel.addRandomWood();
     }
 
     /** Unused ContactListener method. May be used to play sound effects */

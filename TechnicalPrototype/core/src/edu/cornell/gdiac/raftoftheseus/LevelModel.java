@@ -492,4 +492,11 @@ public class LevelModel {
         enemyTexture = directory.getEntry("enemy", Texture.class);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
     }
+
+    /** Add wood Objects to random location in the world */
+    protected void addRandomWood() {
+        Wood this_wood = new Wood(boundsVector2());
+        this_wood.setTexture(doubleTexture); // TODO use correct wood texture
+        addQueuedObject(this_wood);
+    }
 }
