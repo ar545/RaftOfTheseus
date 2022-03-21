@@ -46,7 +46,7 @@ public class WorldController implements Screen, ContactListener {
 
     //TEXTURE
     /** The texture for walls and platforms */
-    protected Texture greenBar;
+    protected Texture colorBar;
     /** The texture for the exit condition */
     protected TextureRegion greyBar;
     /** The font for giving messages to the player */
@@ -158,11 +158,11 @@ public class WorldController implements Screen, ContactListener {
         }
 
         if (map) {
-//            canvas.beginMap();
+            canvas.begin();
             for(GameObject obj : levelModel.getObjects()) {
-//                obj.drawMap(canvas);
+                obj.drawMap(canvas);
             }
-//            canvas.endMap();
+            canvas.end();
         }
 
         // Final message
@@ -188,15 +188,25 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
-    /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
+    /** This function calculate the correct health bar color
+     * @param median for red color the median should be 1/3 and 2/3 for green color
+     * @param health the health percentage for the player
+     * @return the rgb code representing the red or green color
+     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
+    private float makeColor(float median, float health){
+        return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1));
+    }
+
+    /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function
+     * @param health the health percentage for the player */
     private void drawHealthBar(float health) {
-        Color c = new Color(1, Math.min(health * 1.5f, 1), Math.max(0, 1 - health * 1.5f), 1);
-        TextureRegion RatioGreenBar = new TextureRegion(greenBar, (int)(greenBar.getWidth() * health), greenBar.getHeight());
+        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0, 1);
+        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
         float x_origin = (canvas.getWidth() - greyBar.getRegionWidth()*HEALTH_BAR_SCALE)  / (2f*HEALTH_BAR_SCALE);
         float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
         canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
         canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        canvas.draw(RatioGreenBar,c,x_origin, y_origin, RatioGreenBar.getRegionWidth(), RatioGreenBar.getRegionHeight());
+        canvas.draw(RatioBar,c,x_origin, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());
         canvas.end();
     }
 
@@ -211,7 +221,7 @@ public class WorldController implements Screen, ContactListener {
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
-        greenBar  = directory.getEntry( "green_bar", Texture.class );
+        colorBar  = directory.getEntry( "white_bar", Texture.class );
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);

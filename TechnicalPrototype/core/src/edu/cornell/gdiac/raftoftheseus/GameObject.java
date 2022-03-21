@@ -18,32 +18,56 @@ public abstract class GameObject extends SimpleObstacle {
      * Enum specifying the type of this game object.
      */
     public enum ObjectType {
-        /** A ship, which lives until it is destroyed by a shell */
+        /**
+         * A ship, which lives until it is destroyed by a shell
+         */
         RAFT,
-        /** A piece of driftwood */
+        /**
+         * A piece of driftwood
+         */
         WOOD,
-        /** The obstacle that player cannot overcome (e.g. a rock)*/
+        /**
+         * The obstacle that player cannot overcome (e.g. a rock)
+         */
         OBSTACLE,
-        /** The current that player will suffer or benefit from */
+        /**
+         * The current that player will suffer or benefit from
+         */
         CURRENT,
-        /** The enemy */
+        /**
+         * The enemy
+         */
         ENEMY,
-        /** The goal tile */
+        /**
+         * The goal tile
+         */
         GOAL,
-        /** A treasure collectible */
+        /**
+         * A treasure collectible
+         */
         TREASURE,
-        /** A bullet shot by the player */
+        /**
+         * A bullet shot by the player
+         */
         BULLET
     }
 
-    /** How much to scale the texture before displaying (screen pixels / texture pixels) */
+    /**
+     * How much to scale the texture before displaying (screen pixels / texture pixels)
+     */
     public Vector2 textureScale;
 
-    /** combined force vectors of all currents affecting this object */
+    /**
+     * combined force vectors of all currents affecting this object
+     */
     private Vector2 currentsCache = new Vector2();
-    /** actual force applied by all currents (normalized and scaled) */
+    /**
+     * actual force applied by all currents (normalized and scaled)
+     */
     private Vector2 currentsForce = new Vector2();
-    /** magnitude of force applied by current */
+    /**
+     * magnitude of force applied by current
+     */
     private final float currentsMagnitude = 20.0f;
 
     public void enterCurrent(Vector2 f) {
@@ -56,8 +80,7 @@ public abstract class GameObject extends SimpleObstacle {
         if (currentsCache.isZero(0.01f)) {
             currentsCache.setZero();
             currentsForce.setZero();
-        }
-        else
+        } else
             currentsForce.set(currentsCache).nor().scl(currentsMagnitude);
     }
 
@@ -72,6 +95,7 @@ public abstract class GameObject extends SimpleObstacle {
     public abstract ObjectType getType();
 
     // NON-ABSTRACT METHODS
+
     /**
      * Returns true if this object is destroyed.
      */
@@ -104,12 +128,29 @@ public abstract class GameObject extends SimpleObstacle {
 
     /**
      * Draws the texture physics object.
+     *
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
         if (texture != null) {
-            canvas.draw(texture,Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),textureScale.x,textureScale.y);
+            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.x, getAngle(), textureScale.x, textureScale.y);
         }
+    }
+
+    public void drawMap(GameCanvas canvas) {
+//        TODO
+//        if (texture != null) {
+//            if (getType() != ObjectType.ENEMY && getType() != ObjectType.WOOD && getType() != ObjectType.TREASURE) {
+//                canvas.draw(texture, Color.LIGHT_GRAY, origin.x * 1.5f, origin.y * 1.5f, getX() * drawScale.x * 1.5f, getY() * drawScale.x * 1.5f, getAngle(), textureScale.x * 0.5f, textureScale.y * 0.5f);
+//            }
+//        }
+    }
+
+    /**
+     * @return the most recent aka cached position
+     */
+    public Vector2 getPositionCache() {
+        return positionCache;
     }
 
     @Override
@@ -122,5 +163,4 @@ public abstract class GameObject extends SimpleObstacle {
 //    public Vector2 getPositionCache() {
 //        return positionCache;
 //    }
-
 }
