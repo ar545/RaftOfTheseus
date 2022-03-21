@@ -40,6 +40,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private GameCanvas canvas; 
 	/** Player mode for the asset loading screen (CONTROLLER CLASS) */
 	private LoadingMode loading;
+	/** Player mode for level selecting menu (CONTROLLER CLASS) */
+	private MenuMode menu;
 	/** Player mode for the the game proper (CONTROLLER CLASS) */
 	private WorldController playing;
 	
@@ -60,10 +62,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	public void create() {
 		canvas  = new GameCanvas();
 		loading = new LoadingMode("assets.json",canvas,1);
+		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
-
-		loading.setScreenListener(this);
 		setScreen(loading);
+		loading.setScreenListener(this);
 	}
 
 	/** 
@@ -122,8 +124,13 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else if (screen == loading) {
+			menu.setScreenListener(this);
+			Gdx.input.setInputProcessor(menu);
+			directory = loading.getAssets();
+			menu.populate(directory);
+			setScreen(menu);
+		} else if (screen == menu) {
 			// Stop menu sounds
-
 			SoundController.getInstance().haltSounds();
 			// Load level
 			playing.setScreenListener(this);
@@ -131,9 +138,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			// Load rest of sounds?
 			SoundController.getInstance().gatherAssets(directory);
 			playing.gatherAssets(directory);
-			playing.setLevel(0);
+			playing.setLevel(menu.getSelectedLevel() == 0 || menu.getSelectedLevel() == 1 ? menu.getSelectedLevel() : 0);
 			setScreen(playing);
-
 			loading.dispose();
 			loading = null;
 		} else {
