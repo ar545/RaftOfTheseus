@@ -11,10 +11,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
-
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.Vector;
 
 public class WorldController implements Screen, ContactListener {
 
@@ -46,10 +43,12 @@ public class WorldController implements Screen, ContactListener {
     private ScreenListener listener;
 
     //TEXTURE
-    /** The texture for walls and platforms */
+    /** The texture for the colored health bar */
     protected Texture colorBar;
-    /** The texture for the exit condition */
+    /** The texture for the health bar background */
     protected TextureRegion greyBar;
+    /** The texture for the exit condition */
+    protected Texture bullet_texture;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
     /** Texture for map background */
@@ -234,6 +233,7 @@ public class WorldController implements Screen, ContactListener {
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
+        bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
     }
@@ -298,18 +298,17 @@ public class WorldController implements Screen, ContactListener {
      * Add a new bullet to the world and send it in the right direction.
      */
     private void createBullet() {
-        // TODO this whole method wasn't working for multiple reasons. Bullets would be invisible and would push the player.
+        //  TODO: Bullets is now visible and would not push the player.
         //  - LevelModel can't activate a physics object during a box2D update loop
         //  - We don't have a Bullet texture
         //  - bullets are supposed to auto target an enemy, not go to the mouse position
         // Compute position and velocity
-//        GameObject bullet = new Bullet(levelModel.getPlayer().getPosition());
-//        bullet.setTexture(greyBar);// TODO should be bulletTexture
-//        bullet.setBullet(true);
-//        bullet.setLinearVelocity(levelModel.getPlayer().getFacing());
-//        levelModel.addQueuedObject(bullet);
-
-//        fireId = playSound( fireSound, fireId );
+        Vector2 facing = levelModel.getPlayer().getFacing();
+        Bullet bullet = new Bullet(levelModel.getPlayer().getPosition().add(facing));
+        bullet.setTexture(bullet_texture);
+        bullet.setBullet(true);
+        bullet.setLinearVelocity(facing);
+        levelModel.addQueuedObject(bullet);
     }
 
 
@@ -390,6 +389,7 @@ public class WorldController implements Screen, ContactListener {
         while (iterator.hasNext()) {
             PooledList<GameObject>.Entry entry = iterator.next();
             GameObject obj = entry.getValue();
+            levelModel.checkBulletBounds(obj);
             if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);
                 entry.remove();

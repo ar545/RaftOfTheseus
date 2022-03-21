@@ -161,8 +161,4 @@ public abstract class GameObject extends SimpleObstacle {
         body.applyForce(currentsForce, getPosition(), true);
     }
 
-//    /** @return the most recent aka cached position */
-//    public Vector2 getPositionCache() {
-//        return positionCache;
-//    }
 }

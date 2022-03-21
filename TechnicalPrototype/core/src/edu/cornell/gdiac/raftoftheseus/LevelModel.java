@@ -175,6 +175,12 @@ public class LevelModel {
         obj.activatePhysics(world);
     }
 
+    protected void checkBulletBounds(GameObject obj){
+        if(obj.getType() == GameObject.ObjectType.BULLET && !inBounds(obj)){
+            obj.setDestroyed(true);
+        }
+    }
+
     /**
      * Immediately adds the object to the physics world
      *

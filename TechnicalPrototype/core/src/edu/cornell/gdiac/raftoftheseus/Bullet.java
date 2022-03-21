@@ -15,6 +15,6 @@ public class Bullet extends WheelObstacle {
         super();
         setRadius(0.75f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
+        setBodyType(BodyDef.BodyType.KinematicBody);
     }
 }

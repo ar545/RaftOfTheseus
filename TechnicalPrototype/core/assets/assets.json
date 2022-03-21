@@ -6,6 +6,7 @@
         "wrapV": "repeated"
       },
       "background": "images/background.png",
+      "bullet": "images/bullet.png",
       "menu_background": "images/menu.png",
       "menu_title": "images/menu_title.png",
       "map_background": "images/map_background.png",

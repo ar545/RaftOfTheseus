@@ -2,7 +2,6 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 
@@ -13,13 +12,15 @@ public class Raft extends WheelObstacle {
 
     // CONSTANTS
     /** Movement cost for a pixel distance **/
-    private static final float MOVE_COST = 0.001f; // keep?
+    private static final float MOVE_COST = 0.001f;
+    /** Movement cost for a pixel distance **/
+    private static final float BULLET_SPEED = 3f;
 
     // ATTRIBUTES
     /** The movement of the player this turn */
     private Vector2 movement = new Vector2(0f,0f);
     /** The most recent non-zero movement of the player this turn */
-    private Vector2 last_movement = new Vector2(0f,0f);
+    private Vector2 player_facing = new Vector2(1f,0f);
 
     /** The health of the raft. This must be >=0. */
     private float health;
@@ -63,12 +64,15 @@ public class Raft extends WheelObstacle {
     protected Vector2 getMovement() { return movement; }
 
     /** @return Last movement is the facing of the player */
-    public Vector2 getFacing() { return last_movement; }
+    public Vector2 getFacing() { return player_facing; }
 
     /**
      * Sets the player movement input.
      */
     public void setMovement(Vector2 value) {
+        if(!movement.isZero()){
+            player_facing.set(movement).scl(BULLET_SPEED);
+        }
         movement.set(value);
     }
 
