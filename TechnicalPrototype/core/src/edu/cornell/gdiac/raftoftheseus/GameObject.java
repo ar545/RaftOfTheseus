@@ -133,17 +133,19 @@ public abstract class GameObject extends SimpleObstacle {
      */
     public void draw(GameCanvas canvas) {
         if (texture != null) {
-            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.x, getAngle(), textureScale.x, textureScale.y);
+            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+                    getAngle(), textureScale.x, textureScale.y);
         }
     }
 
     public void drawMap(GameCanvas canvas) {
-//        TODO
-//        if (texture != null) {
-//            if (getType() != ObjectType.ENEMY && getType() != ObjectType.WOOD && getType() != ObjectType.TREASURE) {
-//                canvas.draw(texture, Color.LIGHT_GRAY, origin.x * 1.5f, origin.y * 1.5f, getX() * drawScale.x * 1.5f, getY() * drawScale.x * 1.5f, getAngle(), textureScale.x * 0.5f, textureScale.y * 0.5f);
-//            }
-//        }
+        if (texture != null) {
+            if (getType() != ObjectType.OBSTACLE &&  getType() != ObjectType.TREASURE && getType() != ObjectType.ENEMY
+                    && getType() != ObjectType.WOOD) {
+                canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x * 0.5f + canvas.getWidth() / 4,
+                        getY() * drawScale.y * 0.5f + canvas.getHeight() / 4, getAngle(), textureScale.x * 0.5f, textureScale.y * 0.5f);
+            }
+        }
     }
 
     /**

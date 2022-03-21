@@ -14,6 +14,7 @@ import edu.cornell.gdiac.util.PooledList;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Vector;
 
 public class WorldController implements Screen, ContactListener {
 
@@ -51,6 +52,8 @@ public class WorldController implements Screen, ContactListener {
     protected TextureRegion greyBar;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
+    /** Texture for map background */
+    protected Texture mapBackground;
 
     // WORLD
     protected LevelModel levelModel;
@@ -147,7 +150,22 @@ public class WorldController implements Screen, ContactListener {
             obj.draw(canvas);
         }
         canvas.end();
+
         drawHealthBar(levelModel.getPlayer().getHealthRatio());
+
+        if (map) {
+            canvas.begin();
+            float[] polygonVertices = levelModel.getWallVertices();
+            Vector2 wallDrawscale = levelModel.getWallDrawscale();
+            float x2 = polygonVertices[0], y2 = polygonVertices[1];
+            canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
+                    (x2 / 4) * 0.5f * wallDrawscale.x + canvas.getWidth() / 4,
+                    (y2 / 4) * 0.5f * wallDrawscale.y + canvas.getHeight() / 4 - y2, x2 * wallDrawscale.x * 0.5f, y2 * wallDrawscale.y * 0.5f - y2);
+            for(GameObject obj : levelModel.getObjects()) {
+                obj.drawMap(canvas);
+            }
+            canvas.end();
+        }
 
         if (debug) {
             canvas.beginDebug();
@@ -155,14 +173,6 @@ public class WorldController implements Screen, ContactListener {
                 obj.drawDebug(canvas);
             }
             canvas.endDebug();
-        }
-
-        if (map) {
-            canvas.begin();
-            for(GameObject obj : levelModel.getObjects()) {
-                obj.drawMap(canvas);
-            }
-            canvas.end();
         }
 
         // Final message
@@ -213,6 +223,7 @@ public class WorldController implements Screen, ContactListener {
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         greenBar  = directory.getEntry( "green_bar", Texture.class );
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
+        mapBackground = directory.getEntry("map_background", Texture.class);
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
     }

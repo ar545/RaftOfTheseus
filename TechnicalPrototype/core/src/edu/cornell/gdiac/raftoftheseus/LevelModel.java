@@ -17,7 +17,7 @@ public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Default width and height of a single grid in Box2d units */
-    private static final float DEFAULT_GIRD_EDGE_LENGTH = 3.0f;
+    private static final float DEFAULT_GRID_EDGE_LENGTH = 3.0f;
     /** Default boundary width and height of a single grid in Box2d units */
     private static final float DEFAULT_BOUNDARY = 3.0f;
     /** Default num of rows in the map (y, height) */
@@ -25,7 +25,7 @@ public class LevelModel {
     /** Default num of columns in the map (x, width) */
     private static final int DEFAULT_GRID_COL = 10;
     /** Representing the length and width of a single gird unit on the board */
-    private static final Vector2 GRID_SIZE = new Vector2(DEFAULT_GIRD_EDGE_LENGTH, DEFAULT_GIRD_EDGE_LENGTH);
+    private static final Vector2 GRID_SIZE = new Vector2(DEFAULT_GRID_EDGE_LENGTH, DEFAULT_GRID_EDGE_LENGTH);
     /** Top-down game with no gravity */
     protected static final Vector2 NO_GRAVITY = new Vector2(0f ,0f );
     /** This is used as a level int representing restarting the level */
@@ -70,6 +70,10 @@ public class LevelModel {
     private Raft raft;
     /** The goal of the level */
     private Goal goal;
+    /** The wall of the level */
+    private Wall this_wall;
+    /** The vertices of the wall */
+    private float[] polygonVertices;
     /** Reference to the game assets directory */
     private AssetDirectory directory;
     /** The read-in level data */
@@ -124,6 +128,10 @@ public class LevelModel {
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
     protected void setDirectory(AssetDirectory directory) { this.directory = directory; }
+    /** Get boundary wall vertices */
+    public float[] getWallVertices() { return polygonVertices; }
+    /** Get boundary wall drawscale */
+    public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
     /** Constructor call for this singleton class */
     public LevelModel(){}
 
@@ -261,6 +269,9 @@ public class LevelModel {
         generateRectangle(LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY,
                 x+2* LevelModel.DEFAULT_BOUNDARY, y+2* LevelModel.DEFAULT_BOUNDARY); // north_wall
         generateRectangle(x+ LevelModel.DEFAULT_BOUNDARY, 0, x+2* LevelModel.DEFAULT_BOUNDARY, y+ LevelModel.DEFAULT_BOUNDARY); // east_wall
+        float x2 = x+ LevelModel.DEFAULT_BOUNDARY;
+        float y2 = y+ LevelModel.DEFAULT_BOUNDARY;
+        polygonVertices = new float[] { x2, y2 };
     }
 
     /** Add Wall Objects to the world, using the Json value for goal. */
@@ -269,8 +280,8 @@ public class LevelModel {
         x2 += -DEFAULT_BOUNDARY;
         y1 += -DEFAULT_BOUNDARY;
         y2 += -DEFAULT_BOUNDARY;
-        float[] polygonVertices = {x1, y1, x2, y1, x2, y2, x1, y2};
-        Wall this_wall = new Wall(polygonVertices);
+        float[] polygonVertices = new float[] {x1, y1, x2, y1, x2, y2, x1, y2};
+        this_wall = new Wall(polygonVertices);
         this_wall.setTexture(earthTile);
         addObject(this_wall);
     }
