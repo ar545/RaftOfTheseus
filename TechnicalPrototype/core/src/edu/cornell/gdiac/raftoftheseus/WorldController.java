@@ -382,7 +382,6 @@ public class WorldController implements Screen, ContactListener {
 
     private boolean wasInDanger = false;
 
-    // TODO: When to switch music (not sound effects)?
     /** Update the level themed music according the game status */
     private void resolveMusic() {
         boolean nowInDanger = false;
