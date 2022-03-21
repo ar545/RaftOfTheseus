@@ -19,6 +19,9 @@ public class Bullet extends WheelObstacle {
         setRadius(0.75f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
+        setFriction(0);
+        setRestitution(0);
+        setLinearDamping(0);
         // TODO: change this if enemies fire a bullet
         fixture.filter.categoryBits = CATEGORY_PLAYER_BULLET;
         fixture.filter.maskBits = MASK_PLAYER_BULLET;

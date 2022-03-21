@@ -340,7 +340,7 @@ public class LevelModel {
                 addEnemy(row, col, 0);
                 break;
             case TILE_START:
-                addRaft(row, col, 100f);
+                addRaft(row, col);
                 break;
             default:
                 break;
@@ -369,7 +369,7 @@ public class LevelModel {
         }else if(tile_int == TILE_GOAL){
             addGoal(row, col);
         }else if(tile_int >= TILE_CURRENT && tile_int <= TILE_CURRENT + TILE_WEST){
-            addCurrent(row, col, compute_direction(tile_int - TILE_CURRENT), 10f);
+            addCurrent(row, col, compute_direction(tile_int - TILE_CURRENT));
         }
     }
 
@@ -430,9 +430,9 @@ public class LevelModel {
     /** Add Raft Objects to the world, using the Json value for raft
      * @param row the row gird position
      * @param col the column grid position */
-    private void addRaft(int row, int col, float speed) {
+    private void addRaft(int row, int col) {
         computePosition(col, row);
-        Raft this_raft = new Raft(compute_temp, speed);
+        Raft this_raft = new Raft(compute_temp);
         this_raft.setTexture(raftTexture);
         addObject(this_raft);
         raft = this_raft;
@@ -455,11 +455,10 @@ public class LevelModel {
     /** Add current Objects to the world, using the Json value for goal
      * @param row the row gird position
      * @param col the column grid position
-     * @param direction the direction
-     * @param speed the speed */
-    private void addCurrent(int row, int col, Current.Direction direction, float speed) {
+     * @param direction the direction */
+    private void addCurrent(int row, int col, Current.Direction direction) {
         computePosition(col, row);
-        Current this_current = new Current(compute_temp, direction, speed);
+        Current this_current = new Current(compute_temp, direction);
         this_current.setTexture(currentTextures[0]); // TODO set correct current texture
         addCurrentObject(this_current);
     }

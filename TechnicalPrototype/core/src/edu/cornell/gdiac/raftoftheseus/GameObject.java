@@ -74,33 +74,30 @@ public abstract class GameObject extends SimpleObstacle {
      */
     public Vector2 textureScale;
 
-    /**
-     * combined force vectors of all currents affecting this object
-     */
+    /** Combined force vectors of all currents affecting this object */
     private Vector2 currentsCache = new Vector2();
-    /**
-     * actual force applied by all currents (normalized and scaled)
-     */
-    private Vector2 currentsForce = new Vector2();
-    /**
-     * magnitude of force applied by current
-     */
-    private final float currentsMagnitude = 35.0f;
+    /** The speed at which a current flows, in units per second */
+    private final float waterSpeed = 15.0f;
+    /** The average velocity of water flowing near this object */
+    private Vector2 waterVelocity = new Vector2();
+    /** Modifier on force applied by current */
+    private final float dragCoefficient = 0.5f;
+    /** cache vector for calculation */
+    private Vector2 dragCache = new Vector2(0,0);
 
     public void enterCurrent(Vector2 f) {
         currentsCache.add(f);
-        currentsForce.set(currentsCache).nor().scl(currentsMagnitude);
+        waterVelocity.set(currentsCache).nor().scl(waterSpeed);
     }
 
     public void exitCurrent(Vector2 f) {
         currentsCache.sub(f);
         if (currentsCache.isZero(0.01f)) {
             currentsCache.setZero();
-            currentsForce.setZero();
+            waterVelocity.setZero();
         } else
-            currentsForce.set(currentsCache).nor().scl(currentsMagnitude);
+            waterVelocity.set(currentsCache).nor().scl(waterSpeed);
     }
-
 
     // ABSTRACT METHODS
 
@@ -175,7 +172,14 @@ public abstract class GameObject extends SimpleObstacle {
     @Override
     public void update(float delta) {
         super.update(delta);
-        body.applyForce(currentsForce, getPosition(), true);
+//        body.applyForce(currentsForce, getPosition(), true);
+        dragCache.set(waterVelocity).sub(getLinearVelocity());
+        dragCache.scl(dragCache.len() * dragCoefficient * getCrossSectionalArea());
+        body.applyForce(dragCache, getPosition(), true);
     }
 
+    /** The cross-sectional area of this object which is underwater. Used for drag calculation. */
+    public float getCrossSectionalArea() {
+        return 0;
+    }
 }

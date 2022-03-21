@@ -191,12 +191,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // force player remain with their current health
-        float temporary_scalar = 0.5f; // player health circle scalar
-        float r = levelModel.getPlayer().getHealth() * pixelsPerUnit * temporary_scalar;
-        // TODO: this isn't the right expression, because acceleration != distance
-        // TODO: However, this expression is meaningful in the way that it shows the thrust the player remain
-        // TODO: The core decision we have to make here is that, do we want the player to cost health
-        // TODO:  proportional to the distance of moving (as in gameplay) or proportional to the force they applied
+        float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
         canvas.drawHealthCircle(r);
     }
 
@@ -314,19 +309,17 @@ public class WorldController implements Screen, ContactListener {
 
     /**
      * Add a new bullet to the world and send it in the right direction.
-     * TODO: Bullets is now visible and fully functional. However, it has the remaining problem:
-     *       - Bullets will be activated until the next update loop
-     *       - Bullets are supposed to auto target an enemy, not go to the mouse position
      */
     private void createBullet(Enemy nearestEnemy) {
+        Raft player = levelModel.getPlayer();
         // Compute position and velocity
-        Vector2 facing = nearestEnemy.getPosition().sub(levelModel.getPlayer().getPosition()).nor();
-        Bullet bullet = new Bullet(levelModel.getPlayer().getPosition().add(facing.scl(0.5f)));
+        Vector2 facing = nearestEnemy.getPosition().sub(player.getPosition()).nor();
+        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f));
         bullet.setTexture(bullet_texture);
 //        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
-        bullet.setLinearVelocity(facing.scl(8));
+        bullet.setLinearVelocity(facing.scl(4).mulAdd(player.getLinearVelocity(), 0.5f));
         levelModel.addQueuedObject(bullet);
-        levelModel.getPlayer().addHealth(Bullet.BULLET_HEALTH_COST);
+        player.addHealth(Bullet.BULLET_HEALTH_COST);
     }
 
 
@@ -344,7 +337,7 @@ public class WorldController implements Screen, ContactListener {
         // Process actions in object model
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
-        player.setMovement(ic.getMovement());
+        player.setMovementInput(ic.getMovement());
         player.setFire(ic.didFire());
 
         // Add a bullet if we fire
@@ -368,10 +361,10 @@ public class WorldController implements Screen, ContactListener {
 
         // update enemy, forces, music, player health
         resolveEnemies();
-        player.applyForce();
         if(ic.Moved()){
-            player.subtractHealth();
+            player.applyMoveCost(dt);
         }
+        player.applyForce();
         if(player.isDead() && !complete){
             setFailure(true);
         }
@@ -384,14 +377,6 @@ public class WorldController implements Screen, ContactListener {
 
         for (int i = 0; i< el.size(); i++) {
             Enemy enemy = el.get(i);
-//            System.out.println(i);
-//            System.out.println(enemy);
-//            System.out.println(Arrays.toString(controls));
-//            System.out.println(controls.length);
-//            System.out.println(controls[i]);
-//            System.out.println(i);
-            //TODO
-            // this line is commented out because it was crashing. The list controls[] was a different size from the list getEnemies().
             enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
     }
