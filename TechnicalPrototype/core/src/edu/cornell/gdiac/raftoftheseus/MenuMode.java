@@ -283,4 +283,7 @@ public class MenuMode implements Screen, InputProcessor {
      * @return whether to hand the event to other listeners.
      */
     public boolean scrolled(float dx, float dy) { return true; }
+
+    /** Reset the level pressed state */
+    public void resetPressedState(){ levelPressState = 0; }
 }
