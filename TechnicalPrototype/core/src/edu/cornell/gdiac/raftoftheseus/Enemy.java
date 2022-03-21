@@ -30,7 +30,7 @@ public class Enemy extends WheelObstacle {
     /**
      * How much health will enemy take from player upon collision
      */
-    protected static final float ENEMY_DAMAGE = 25.0f;
+    protected static final float ENEMY_DAMAGE = -25.0f;
 
     private Vector2 moveVector;
 

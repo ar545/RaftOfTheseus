@@ -296,19 +296,20 @@ public class WorldController implements Screen, ContactListener {
 
     /**
      * Add a new bullet to the world and send it in the right direction.
+     * TODO: Bullets is now visible and fully functional. However, it has the remaining problem:
+     *       - Bullets will be activated until the next update loop
+     *       - Bullets are supposed to auto target an enemy, not go to the mouse position
      */
     private void createBullet() {
-        //  TODO: Bullets is now visible and would not push the player.
-        //  - LevelModel can't activate a physics object during a box2D update loop
-        //  - We don't have a Bullet texture
-        //  - bullets are supposed to auto target an enemy, not go to the mouse position
         // Compute position and velocity
         Vector2 facing = levelModel.getPlayer().getFacing();
         Bullet bullet = new Bullet(levelModel.getPlayer().getPosition().add(facing));
+
         bullet.setTexture(bullet_texture);
         bullet.setBullet(true);
         bullet.setLinearVelocity(facing);
         levelModel.addQueuedObject(bullet);
+        levelModel.getPlayer().addHealth(Bullet.BULLET_HEALTH_COST);
     }
 
 
@@ -635,7 +636,7 @@ public class WorldController implements Screen, ContactListener {
      * @param e enemy */
     private void ResolveCollision(Raft r, Enemy e) {
         // update player health
-        r.addHealth(-Enemy.ENEMY_DAMAGE);
+        r.addHealth(Enemy.ENEMY_DAMAGE);
         // destroy enemy
         e.setDestroyed(true);
     }
