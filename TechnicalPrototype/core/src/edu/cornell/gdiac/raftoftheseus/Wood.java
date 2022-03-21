@@ -17,7 +17,7 @@ public class Wood extends WheelObstacle {
     /** the wood health scale */
     private final static float WOOD_HEALTH_SCALE = 4f;
     /** the maximum log generated for each pile of wood */
-    private final static float MINIMUM_WOOD_GENERATION = 20f;
+    private final static int RANDOM_WOOD_GENERATION = 5;
 
     public ObjectType getType() {
         return ObjectType.WOOD;
@@ -36,6 +36,11 @@ public class Wood extends WheelObstacle {
         wood = value;
         fixture.filter.categoryBits = CATEGORY_PUSHABLE;
         fixture.filter.maskBits = MASK_WOOD;
+    }
+
+    /** generate wood at random location */
+    public Wood(Vector2 bound){
+        this(new Vector2(bound.x * (float) Math.random(), (float) Math.random() * bound.y), RANDOM_WOOD_GENERATION);
     }
 
     /** return the number of logs in this pile of wood
