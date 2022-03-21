@@ -235,7 +235,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		}
 
 		// Start music?
-		SoundController.getInstance().playMusic("menu", internal.getEntry("menu", Music.class));
+		SoundController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
 
 		// Start loading the real assets
 		assets = new AssetDirectory( file );

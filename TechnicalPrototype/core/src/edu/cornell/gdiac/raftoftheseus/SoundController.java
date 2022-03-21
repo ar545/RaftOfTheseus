@@ -250,12 +250,13 @@ public class SoundController {
 
 
     /**
-     * For playing menu music only.
+     * For looping menu music only.
      * @param name
      * @param m
      */
-    public void playMusic(String name, Music m){
+    public void loopMusic(String name, Music m){
         m.play();
+        m.setLooping(true);
         m.setVolume(musicVolume);
         music.put(name, m);
     }
@@ -320,8 +321,9 @@ public class SoundController {
             m.setVolume(nv);
             return nv;
         }
-        // Should never reach here
-        throw new RuntimeException("Music file for " + index + " not found!");
+        // Should only reach here when music stops
+//        throw new RuntimeException("Music file for " + index + " not found!");
+        return 0f;
     }
 
     /**

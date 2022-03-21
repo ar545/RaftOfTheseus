@@ -392,7 +392,6 @@ public class WorldController implements Screen, ContactListener {
 
     private boolean wasInDanger = false;
 
-    // TODO: When to switch music (not sound effects)?
     /** Update the level themed music according the game status */
     private void resolveMusic() {
         boolean nowInDanger = false;
@@ -668,17 +667,15 @@ public class WorldController implements Screen, ContactListener {
         speed = cache.dot(worldManifold.getNormal());
 
         // Play a sound if above threshold (otherwise too many sounds)
-        if (speed > bumpThresh) {
-            GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
-            GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
-            if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
-                    || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
-                SoundController.getInstance().playSFX("raft_damage", false);
-            }
-            if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
-                    || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
-                SoundController.getInstance().playSFX("wood_pickup", false);
-            }
+        GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
+        GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
+        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
+                || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
+            SoundController.getInstance().playSFX("raft_damage", false);
+        }
+        if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
+                || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
+            SoundController.getInstance().playSFX("wood_pickup", false);
         }
     }
 
