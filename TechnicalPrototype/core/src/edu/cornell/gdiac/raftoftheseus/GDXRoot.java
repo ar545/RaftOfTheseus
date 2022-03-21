@@ -129,11 +129,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			directory = loading.getAssets();
 			menu.populate(directory);
 			setScreen(menu);
-			loading.dispose();
-			loading = null;
 		} else if (screen == menu) {
 			// Stop menu sounds
-
 			SoundController.getInstance().haltSounds();
 			// Load level
 			playing.setScreenListener(this);
@@ -141,8 +138,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			// Load rest of sounds?
 			SoundController.getInstance().gatherAssets(directory);
 			playing.gatherAssets(directory);
-			playing.setLevel(menu.getSelectedLevel());
+			playing.setLevel(menu.getSelectedLevel() == 0 || menu.getSelectedLevel() == 1 ? menu.getSelectedLevel() : 0);
 			setScreen(playing);
+			loading.dispose();
+			loading = null;
 		} else {
 			// We quit the main application
 			Gdx.app.exit();

@@ -38,6 +38,10 @@ public class MenuMode implements Screen, InputProcessor {
     private static int PADDING_X = 100;
     /** Level button padding along the y-axis */
     private static int PADDING_Y = 100;
+    /** Number of levels in each row */
+    private static int NUM_COLS = 5;
+    /** Padding between columns */
+    private static int colPadding;
     /** Scaling factor. */
     private float scale;
     /** The height of the canvas window (necessary since sprite origin != screen origin) */
@@ -124,16 +128,16 @@ public class MenuMode implements Screen, InputProcessor {
      * Draw the status of this player mode.
      */
     private void draw() {
-        int numCols = 5;
-        int colPadding = ((canvas.getWidth() - 2 * PADDING_X - numCols * levels[0].getWidth()) / (numCols - 1));
+        colPadding = ((canvas.getWidth() - 2 * PADDING_X - NUM_COLS * levels[0].getWidth()) / (NUM_COLS - 1));
         canvas.begin();
         canvas.draw(background, 0, 0);
         canvas.draw(title, canvas.getWidth() / 2 - (title.getWidth() / 2),  (6 * canvas.getHeight() / 10));
         for (int i = 0; i < LEVEL_COUNT; i++) {
             Texture levelButton = levels[i];
-            int buttonX = PADDING_X + (i % numCols) * (colPadding + levelButton.getWidth()) + (levelButton.getWidth() / 2);
-            int buttonY = (4 * canvas.getHeight() / 10) - (i / numCols) * (PADDING_Y + levelButton.getHeight()) + (levelButton.getHeight() / 2);
-            canvas.draw(levels[i], Color.WHITE, levels[i].getWidth() / 2, levels[i].getHeight() / 2, buttonX,
+            Color tint = (levelPressState == 1 && selectedLevel == i ? Color.GRAY: Color.WHITE);
+            int buttonX = PADDING_X + (i % NUM_COLS) * (colPadding + levelButton.getWidth()) + (levelButton.getWidth() / 2);
+            int buttonY = (4 * canvas.getHeight() / 10) - (i / NUM_COLS) * (PADDING_Y + levelButton.getHeight()) + (levelButton.getHeight() / 2);
+            canvas.draw(levels[i], tint, levels[i].getWidth() / 2, levels[i].getHeight() / 2, buttonX,
                     buttonY, 0, BUTTON_SCALE * scale, BUTTON_SCALE * scale);
         }
         canvas.end();
@@ -195,14 +199,12 @@ public class MenuMode implements Screen, InputProcessor {
         if (levels == null || levelPressState == 2) return true;
 
         screenY = heightY - screenY;
-        for (int i = 0; i < levels.length; i++) {
+        for (int i = 0; i < LEVEL_COUNT; i++) {
             Texture levelButton = levels[i];
-            int buttonX = (i % 4 + 1) * PADDING_X + (i % 4) * levelButton.getWidth();
-            int buttonY = (int) (canvas.height / 4 )  +
-                    (i < LEVEL_COUNT ? PADDING_Y : levelButton.getHeight() + PADDING_Y);
+            int buttonX = PADDING_X + (i % NUM_COLS) * (colPadding + levelButton.getWidth());
+            int buttonY = (4 * canvas.getHeight() / 10) - (i / NUM_COLS) * (PADDING_Y + levelButton.getHeight());
             if (buttonX <= screenX && screenX <= buttonX + levelButton.getWidth() &&
-                    screenY <= buttonY && buttonY <= buttonY + levelButton.getHeight()) {
-                System.out.println("the i is: " + i);
+                    buttonY <= screenY && screenY <= buttonY + levelButton.getHeight()) {
                 levelPressState = 1;
                 selectedLevel = i;
             }
