@@ -5,12 +5,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
-
-import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.PooledList;
 
 public class LevelModel {
@@ -139,11 +136,8 @@ public class LevelModel {
 
     /**
      * Returns true if the object is in bounds.
-     *
      * This assertion is useful for debugging the physics.
-     *
      * @param obj The object to check.
-     *
      * @return true if the object is in bounds.
      */
     private boolean inBounds(GameObject obj) {
@@ -152,7 +146,7 @@ public class LevelModel {
         return horiz && vert;
     }
 
-    /** return the bounds in rectangle */
+    /** @return the bounds of this world in rectangle */
     public Rectangle bounds() {
         return bounds;
     }
@@ -164,54 +158,41 @@ public class LevelModel {
         return new Vector2(bounds.height, bounds.width);
     }
 
-
-    /**
-     *
-     * Adds a physics object in to the insertion queue.
-     *
+    /** Adds a physics object in to the insertion queue.
      * Objects on the queue are added just before collision processing.  We do this to
      * control object creation.
-     *
-     * @param obj The object to add
-     */
+     * @param obj The object to add */
     protected void addQueuedObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         addQueue.add(obj);
     }
 
-    /**
-     * Immediately adds the object to the physics world
-     *
-     * @param obj The object to add
-     */
+    /** Immediately adds the object to the physics world
+     * @param obj The object to add */
     protected void addObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
     }
 
+    /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
+     * @param obj the object to check for bounds */
     protected void checkBulletBounds(GameObject obj){
         if(obj.getType() == GameObject.ObjectType.BULLET && !inBounds(obj)){
             obj.setDestroyed(true);
         }
     }
 
-    /**
-     * Immediately adds the object to the physics world
-     *
-     * @param obj The object to add
-     */
+    /** Immediately adds the object to the physics world, adding it to the front of the list, so it gets draw the first
+     * @param obj The environmental object (usually are currents only) to add */
     protected void addCurrentObject(Current obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(0, obj);
         obj.activatePhysics(world);
     }
 
-    /**
-     * Immediately adds the object to the physics world
-     *
-     * @param obj The object to add
-     */
+    /** Immediately adds the object to the physics world and the enemy list
+     * @param obj The enemy object to add */
     protected void addEnemyObject(Enemy obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
@@ -225,9 +206,7 @@ public class LevelModel {
      * Dispose of all (non-static) resources allocated to this mode.
      */
     public void dispose() {
-        for(GameObject obj : objects) {
-            obj.deactivatePhysics(world);
-        }
+        for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
         enemies.clear();
         addQueue.clear();
@@ -245,9 +224,7 @@ public class LevelModel {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-        for(GameObject obj : objects) {
-            obj.deactivatePhysics(world);
-        }
+        for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
         enemies.clear();
         addQueue.clear();
@@ -270,22 +247,23 @@ public class LevelModel {
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
+
+            // Reset boundary of world
+            setBound();
         }
-        // Reset boundary of world
-        setBound();
+        // Add wall to the world
+        computeWall(bounds.width, bounds.height);
 
         // Populate game objects
         populateLevel();
     }
 
-    /** Set the physical boundary of the level. This boundary will be enforced when adding objects */
+    /** Calculate the world bounds base on the grid map. Set the physical boundary of the level and the world.
+     * This boundary will be enforced when adding objects and checking bullets
+     * Notice that the walls are not included in this boundary, i.e. all walls are out of bounds
+     * To include the walls in the bounds, expand the size of rectangle by DEFAULT_BOUNDARY on each side */
     private void setBound() {
-        // Calculate the world bounds base on the grid map size
-        this.bounds = new Rectangle(0,0,GRID_SIZE.x * map_size.x + 2 * DEFAULT_BOUNDARY,
-                GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY);
-
-        // Add wall to the world
-        computeWall(GRID_SIZE.x * map_size.x, GRID_SIZE.y * map_size.y);
+        this.bounds = new Rectangle(0,0,GRID_SIZE.x * map_size.x ,GRID_SIZE.y * map_size.y );
     }
 
     /**
@@ -306,7 +284,8 @@ public class LevelModel {
         polygonVertices = new float[] { x2, y2 };
     }
 
-    /** Add Wall Objects to the world, using the Json value for goal. */
+    /** Add Wall Objects to the world, using the Json value for goal.
+     * The wall is shifted to the south-west by DEFAULT_BOUNDARY to overlap with the world origin */
     private void generateRectangle(float x1, float y1, float x2, float y2) {
         x1 += -DEFAULT_BOUNDARY;
         x2 += -DEFAULT_BOUNDARY;
@@ -337,19 +316,24 @@ public class LevelModel {
                 populateEnemies(row, col, enemies.get("data").getInt(index));
                 // TODO: if we populate the raft field before instantiating enemies,
                 //  we can properly instantiate instead of putting null for target raft field
-                //  see the        Enemy this_enemy = new Enemy(compute_temp, null); on line 379
+                //  see the Enemy this_enemy = new Enemy(compute_temp, null);
+                //  on private void addEnemy(int row, int col, int enemy_type){}
                 populateEnemiesRaftField();
             }
         }
     }
 
+    /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
         for (Enemy enemy : enemies){
             enemy.setTargetRaft(raft);
         }
     }
 
-    /***/
+    /** This is the level editor JSON parser that populate the enemy layer
+     * @param row the row the enemy is in the world
+     * @param col the column the enemy is in the world
+     * @param tile_int whether this tile is an emery or the player */
     private void populateEnemies(int row, int col, int tile_int) {
         switch (tile_int){
             case TILE_ENEMY:
@@ -363,7 +347,10 @@ public class LevelModel {
         }
     }
 
-    /***/
+    /** This is the level editor JSON parser that populate the collectable layer
+     * @param row the row the collectable is in the world
+     * @param col the column the collectable is in the world
+     * @param tile_int whether this tile is a wood or treasure */
     private void populateCollect(int row, int col, int tile_int) {
         if(tile_int == TILE_TREASURE){
             addTreasure(row, col);
@@ -372,7 +359,10 @@ public class LevelModel {
         }
     }
 
-    /***/
+    /** This is the level editor JSON parser that populate the environment layer
+     * @param row the row the environment element is in the world
+     * @param col the column the environment element is in the world
+     * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateEnv(int row, int col, int tile_int) {
         if(tile_int == TILE_ROCK){
             addRock(row, col);
@@ -383,6 +373,9 @@ public class LevelModel {
         }
     }
 
+    /** Compute the direction of the current base on the level json input
+     * @param i level json input
+     * @return the direction of the current */
     private Current.Direction compute_direction(int i) {
         switch (i){
             case TILE_NORTH: return Current.Direction.NORTH;
@@ -402,7 +395,6 @@ public class LevelModel {
         this_rock.setTexture(rockTexture);
         addObject(this_rock);
     }
-
 
     /** Add Enemy Objects to the world, using the Json value for goal.
      * @param row the row gird position
@@ -453,7 +445,7 @@ public class LevelModel {
     private void addWood(int row, int col, int value) {
         computePosition(col, row);
         Wood this_wood = new Wood(compute_temp, value);
-        this_wood.setTexture(woodTexture); // TODO use correct texture
+        this_wood.setTexture(woodTexture); // TODO use correct wood texture
         if(value > 3){
             this_wood.setTexture(doubleTexture);
         }
@@ -480,6 +472,8 @@ public class LevelModel {
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE.y;
     }
 
+    /** This gather the assets required for initializing the objects
+     * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
         raftTexture = directory.getEntry("raft", Texture.class);
         oceanTexture = directory.getEntry("water_tile", Texture.class);
@@ -495,17 +489,6 @@ public class LevelModel {
                 directory.getEntry("south_current", Texture.class)
         };
         enemyTexture = directory.getEntry("enemy", Texture.class);
-        earthTile = new TextureRegion(directory.getEntry( "earth", Texture.class ));
+        earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
     }
-
-    /*
-//    private void addRocks(JsonValue rocks) {
-//        for (JsonValue rock: rocks) {
-//            computePosition(rock.getInt("x", 0), rock.getInt("y", 0));
-//            GameObject this_rock = new Rock(compute_temp);
-//            addObject(this_rock);
-//        }
-//    }
-    */
-
 }
