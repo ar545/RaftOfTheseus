@@ -330,7 +330,7 @@ public class WorldController implements Screen, ContactListener {
         if(ic.Moved()){
             player.subtractHealth();
         }
-        if(player.isDead()){
+        if(player.isDead() && !complete){
             setFailure(true);
         }
     }
