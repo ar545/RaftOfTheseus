@@ -140,6 +140,7 @@ public class Raft extends WheelObstacle {
      */
     public Raft(Vector2 position, float force) {
         super();
+        setRadius(1.4f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         this.force = force;

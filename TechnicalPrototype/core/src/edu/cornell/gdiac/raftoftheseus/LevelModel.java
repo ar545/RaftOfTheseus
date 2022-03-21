@@ -103,6 +103,8 @@ public class LevelModel {
     private Texture doubleTexture;
     /** Texture for all target, as they look the same */
     private Texture targetTexture;
+    /** Texture for all treasures */
+    private Texture treasureTexture;
     /** Texture for all rock, as they look the same */
     private Texture rockTexture;
     /** Texture for current placeholder: texture alas in future */
@@ -410,7 +412,7 @@ public class LevelModel {
     private void addTreasure(int row, int col) {
         computePosition(col, row);
         Treasure this_treasure = new Treasure(compute_temp);
-        this_treasure.setTexture(targetTexture); // TODO use correct texture
+        this_treasure.setTexture(treasureTexture);
         addObject(this_treasure);
     }
 
@@ -480,7 +482,8 @@ public class LevelModel {
         doubleTexture = directory.getEntry("double", Texture.class);
         targetTexture = directory.getEntry("target", Texture.class);
         rockTexture = directory.getEntry("rock", Texture.class);
-        currentTextures = new Texture[]{
+        treasureTexture = directory.getEntry("treasure", Texture.class);
+        currentTextures = new Texture[] {
                 directory.getEntry("east_current", Texture.class),
                 directory.getEntry("west_current", Texture.class),
                 directory.getEntry("north_current", Texture.class),
