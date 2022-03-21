@@ -18,6 +18,7 @@
       "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
       "green_bar":     "images/green_bar.png",
+      "white_bar":     "images/white_bar.png",
       "grey_bar":     "images/grey_bar.png",
       "progress": {
         "file":      "images/progressbar.png",
