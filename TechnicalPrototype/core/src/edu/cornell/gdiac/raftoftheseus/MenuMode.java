@@ -129,7 +129,7 @@ public class MenuMode implements Screen, InputProcessor {
     private void draw() {
         colPadding = ((canvas.getWidth() - 2 * PADDING_X - NUM_COLS * levels[0].getWidth()) / (NUM_COLS - 1));
         canvas.begin();
-        canvas.draw(background, 0, 0);
+        canvas.drawBackground(background, true);
         canvas.draw(title, canvas.getWidth() / 2 - (title.getWidth() / 2),  (6 * canvas.getHeight() / 10));
         for (int i = 0; i < LEVEL_COUNT; i++) {
             Texture levelButton = levels[i];

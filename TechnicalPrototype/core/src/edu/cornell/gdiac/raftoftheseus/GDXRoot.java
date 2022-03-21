@@ -44,6 +44,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private MenuMode menu;
 	/** Player mode for the the game proper (CONTROLLER CLASS) */
 	private WorldController playing;
+	/** Which level is currently loaded */
+	private int currentLevel = 0;
+	/** How many levels there are */
+	private int numLevels = 3;
 	
 	/**
 	 * Creates a new game from the configuration settings.
@@ -115,10 +119,12 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if(exitCode == WorldController.EXIT_PREV){
-			playing.setLevel(0);
+			currentLevel = Math.max(0, currentLevel-1);
+			playing.setLevel(currentLevel);
 			setScreen(playing);
 		}else if(exitCode == WorldController.EXIT_NEXT){
-			playing.setLevel(1);
+			currentLevel = Math.min(numLevels-1, currentLevel+1);
+			playing.setLevel(currentLevel);
 			setScreen(playing);
 		} else if (exitCode != WorldController.EXIT_QUIT) {
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
@@ -144,7 +150,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			// Load rest of sounds?
 			SoundController.getInstance().gatherAssets(directory);
 			playing.gatherAssets(directory);
-			playing.setLevel(menu.getSelectedLevel() < 3 ? menu.getSelectedLevel() : 0);
+			playing.setLevel(menu.getSelectedLevel() < numLevels ? menu.getSelectedLevel() : 0);
 			setScreen(playing);
 		} else {
 			// We quit the main application

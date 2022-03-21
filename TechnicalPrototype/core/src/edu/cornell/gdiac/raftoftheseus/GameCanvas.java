@@ -33,7 +33,21 @@ import com.badlogic.gdx.physics.box2d.*;
  */
 public class GameCanvas {
 
-    /** Enumeration to track which pass we are in */
+	public void drawBackground(Texture background, boolean stretch) {
+		float sx, sy;
+		if (stretch) { // scale non-uniformly to fill
+			sx = (float)getWidth()/background.getWidth();
+			sy = (float)getHeight()/background.getHeight();
+		} else { // scale uniformly to fill (may crop some parts)
+			sx = (float)getWidth()/background.getWidth();
+			sy = (float)getHeight()/background.getHeight();
+			float t = Math.max(sx, sy);
+			sx = sy = t;
+		}
+		draw(background, Color.WHITE, background.getWidth()*0.5f, background.getHeight()*0.5f, getWidth()*0.5f, getHeight()*0.5f, 0.0f, sx, sy);
+	}
+
+	/** Enumeration to track which pass we are in */
 	private enum DrawPass {
 		/** We are not drawing */
 		INACTIVE,

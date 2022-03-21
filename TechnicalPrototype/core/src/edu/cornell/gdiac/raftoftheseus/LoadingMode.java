@@ -83,9 +83,9 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** Default budget for asset loader (do nothing but load 60 fps) */
 	private static int DEFAULT_BUDGET = 15;
 	/** Standard window size (for scaling) */
-	private static int STANDARD_WIDTH  = 800;
+	private static int STANDARD_WIDTH  = 1000;
 	/** Standard window height (for scaling) */
-	private static int STANDARD_HEIGHT = 700;
+	private static int STANDARD_HEIGHT = 900;
 	/** Ratio of the bar width to the screen */
 	private static float BAR_WIDTH_RATIO  = 0.66f;
 	/** Ration of the bar height to the screen */
@@ -280,7 +280,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 */
 	private void draw() {
 		canvas.begin();
-		canvas.draw(background, 0, -100);
+		canvas.drawBackground(background, true);
 		if (playButton == null) {
 			drawProgress(canvas);
 		} else {

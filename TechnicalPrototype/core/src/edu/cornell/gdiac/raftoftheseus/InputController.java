@@ -168,8 +168,8 @@ public class InputController {
 	 */
 	private void readKeyboard() {
 		// Read special action keys
-		nextPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_1);
-		prevPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
+		nextPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
+		prevPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_1);
 		mapPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
 		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
 		firePressed  = Gdx.input.isKeyPressed(Input.Keys.F);

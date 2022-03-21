@@ -30,6 +30,7 @@ public class Wood extends WheelObstacle {
     public Wood(Vector2 position, int value) {
         super();
         setRadius(1.25f);
+        setDensity(0.2f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         wood = value;
