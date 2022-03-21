@@ -47,6 +47,8 @@ public class WorldController implements Screen, ContactListener {
     protected Texture colorBar;
     /** The texture for the health bar background */
     protected TextureRegion greyBar;
+    /** The texture for the star */
+    protected TextureRegion star;
     /** The texture for the exit condition */
     protected Texture bullet_texture;
     /** The font for giving messages to the player */
@@ -151,6 +153,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.end();
 
         drawHealthBar(levelModel.getPlayer().getHealthRatio());
+        drawStar(levelModel.getPlayer().getStar());
 
         if (map) {
             canvas.begin();
@@ -197,6 +200,20 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
+    private void drawStar(int star) {
+        canvas.begin();
+        if(star > 0){
+            canvas.draw(this.star, 0, canvas.getHeight() - this.star.getRegionHeight());
+        }
+        if(star > 1){
+            canvas.draw(this.star, this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
+        }
+        if(star > 2){
+            canvas.draw(this.star, 2 * this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
+        }
+        canvas.end();
+    }
+
     /** This function calculate the correct health bar color
      * @param median for red color the median should be 1/3 and 2/3 for green color
      * @param health the health percentage for the player
@@ -230,6 +247,7 @@ public class WorldController implements Screen, ContactListener {
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
+        star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
