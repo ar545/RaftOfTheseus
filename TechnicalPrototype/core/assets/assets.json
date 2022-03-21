@@ -7,6 +7,7 @@
       },
       "background": "images/background.png",
       "menu_background": "images/menu.png",
+      "menu_title": "images/menu_title.png",
       "raft":     "images/raft_2.png",
       "wood":     "images/one_wood_v2.png",
       "rock":     "images/rock_2.png",
