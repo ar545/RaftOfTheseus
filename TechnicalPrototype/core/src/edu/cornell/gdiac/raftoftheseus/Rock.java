@@ -14,7 +14,7 @@ public class Rock extends BoxObstacle {
 
     /** Constructor for rock */
     public Rock(Vector2 position) {
-        super(2.98f, 2.98f);
+        super(3f, 3f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         fixture.filter.categoryBits = CATEGORY_TERRAIN;

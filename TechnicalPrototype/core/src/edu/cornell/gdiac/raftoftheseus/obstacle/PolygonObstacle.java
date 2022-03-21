@@ -374,6 +374,13 @@ public abstract class PolygonObstacle extends GameObject {
 		}
 	}
 
+	public void drawMap(GameCanvas canvas) {
+		if (region != null) {
+				canvas.draw(region, Color.WHITE, 0, 0, getX() * drawScale.x * 0.5f + canvas.getWidth() / 4,
+						getY() * drawScale.y * 0.5f + canvas.getHeight() / 4, getAngle(), 0.5f, 0.5f);
+		}
+	}
+
 	/**
 	 * Draws the outline of the physics body.
 	 *

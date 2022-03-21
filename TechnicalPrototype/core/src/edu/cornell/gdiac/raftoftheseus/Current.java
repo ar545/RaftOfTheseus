@@ -40,7 +40,7 @@ public class Current extends BoxObstacle {
 
     /** constructor with known direction */
     public Current(Vector2 position, Direction direction, float speed){
-        super(2.98f, 2.98f);
+        super(3f, 3f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         setSensor(true);

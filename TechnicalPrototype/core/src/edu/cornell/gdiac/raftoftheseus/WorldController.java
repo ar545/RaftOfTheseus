@@ -302,11 +302,11 @@ public class WorldController implements Screen, ContactListener {
      */
     private void createBullet(Enemy nearestEnemy) {
         // Compute position and velocity
-        Vector2 facing = nearestEnemy.getPosition().sub(levelModel.getPlayer().getPosition()).nor().scl(3);
-        Bullet bullet = new Bullet(levelModel.getPlayer().getPosition().add(facing));
+        Vector2 facing = nearestEnemy.getPosition().sub(levelModel.getPlayer().getPosition()).nor();
+        Bullet bullet = new Bullet(levelModel.getPlayer().getPosition().add(facing.scl(0.5f)));
         bullet.setTexture(bullet_texture);
 //        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
-        bullet.setLinearVelocity(facing);
+        bullet.setLinearVelocity(facing.scl(8));
         levelModel.addQueuedObject(bullet);
         levelModel.getPlayer().addHealth(Bullet.BULLET_HEALTH_COST);
     }

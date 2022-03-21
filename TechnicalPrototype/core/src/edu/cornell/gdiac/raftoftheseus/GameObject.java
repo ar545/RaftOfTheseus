@@ -85,7 +85,7 @@ public abstract class GameObject extends SimpleObstacle {
     /**
      * magnitude of force applied by current
      */
-    private final float currentsMagnitude = 20.0f;
+    private final float currentsMagnitude = 35.0f;
 
     public void enterCurrent(Vector2 f) {
         currentsCache.add(f);
@@ -157,7 +157,7 @@ public abstract class GameObject extends SimpleObstacle {
 
     public void drawMap(GameCanvas canvas) {
         if (texture != null) {
-            if (getType() != ObjectType.OBSTACLE &&  getType() != ObjectType.TREASURE && getType() != ObjectType.ENEMY
+            if (getType() != ObjectType.TREASURE && getType() != ObjectType.ENEMY
                     && getType() != ObjectType.WOOD) {
                 canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x * 0.5f + canvas.getWidth() / 4,
                         getY() * drawScale.y * 0.5f + canvas.getHeight() / 4, getAngle(), textureScale.x * 0.5f, textureScale.y * 0.5f);
