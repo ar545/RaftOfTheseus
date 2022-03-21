@@ -138,4 +138,7 @@ public abstract class WheelObstacle extends GameObject {
 		}
 	}
 
+	public float getCrossSectionalArea() {
+		return ((float)Math.PI)*getRadius()*getRadius()*0.5f;
+	}
 }

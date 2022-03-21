@@ -80,9 +80,7 @@ public class InputController {
 	 * @return the amount of vertical and horizontal movement
 	 */
 	public Vector2 getMovement() {
-		mov_offset.set(x_offset, y_offset);
-		mov_offset.nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
-		return mov_offset;
+		return mov_offset.set(x_offset, y_offset).nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
 	}
 
 	/** Find whether the player moved and should reduce health corrspondingly */

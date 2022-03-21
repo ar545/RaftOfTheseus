@@ -214,4 +214,8 @@ public abstract class BoxObstacle extends GameObject {
 		textureScale = new Vector2(getWidth()*drawScale.x / texture.getWidth(),
 				getHeight()*drawScale.x / texture.getHeight());
 	}
+
+	public float getCrossSectionalArea() {
+		return getWidth()*getHeight()*0.5f;
+	}
 }

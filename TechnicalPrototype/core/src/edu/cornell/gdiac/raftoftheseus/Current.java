@@ -30,8 +30,6 @@ public class Current extends BoxObstacle {
     // ATTRIBUTES
     /** Direction of the current */
     private Direction direction;
-    /** Current speed */
-    private float speed;
 
     // METHODS
     public ObjectType getType() {
@@ -39,14 +37,13 @@ public class Current extends BoxObstacle {
     }
 
     /** constructor with known direction */
-    public Current(Vector2 position, Direction direction, float speed){
+    public Current(Vector2 position, Direction direction){
         super(3f, 3f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         setSensor(true);
         this.direction = direction;
         setRotationFromDirection();
-        this.speed = speed;
         fixture.filter.categoryBits = CATEGORY_CURRENT;
         fixture.filter.maskBits = MASK_CURRENT;
     }
@@ -79,13 +76,13 @@ public class Current extends BoxObstacle {
     public Vector2 getDirectionVector() {
         switch (this.direction){
             case EAST:
-                return new Vector2(speed, 0);
+                return new Vector2(1, 0);
             case WEST:
-                return new Vector2(-speed, 0);
+                return new Vector2(-1, 0);
             case NORTH:
-                return new Vector2(0, speed);
+                return new Vector2(0, 1);
             case SOUTH:
-                return new Vector2(0, -speed);
+                return new Vector2(0, -1);
             default:
                 return new Vector2(0, 0);
         }
