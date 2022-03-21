@@ -157,7 +157,7 @@ public class LevelModel {
      * Objects on the queue are added just before collision processing.  We do this to
      * control object creation.
      *
-     * param obj The object to add
+     * @param obj The object to add
      */
     protected void addQueuedObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
@@ -167,7 +167,7 @@ public class LevelModel {
     /**
      * Immediately adds the object to the physics world
      *
-     * param obj The object to add
+     * @param obj The object to add
      */
     protected void addObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
@@ -178,9 +178,20 @@ public class LevelModel {
     /**
      * Immediately adds the object to the physics world
      *
-     * param obj The object to add
+     * @param obj The object to add
      */
-    protected void addObject(Enemy obj, int enemy_type) {
+    protected void addCurrentObject(Current obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(0, obj);
+        obj.activatePhysics(world);
+    }
+
+    /**
+     * Immediately adds the object to the physics world
+     *
+     * @param obj The object to add
+     */
+    protected void addEnemyObject(Enemy obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -379,7 +390,7 @@ public class LevelModel {
         computePosition(col, row);
         Enemy this_enemy = new Enemy(compute_temp, null);
         this_enemy.setTexture(enemyTexture);
-        addObject(this_enemy, enemy_type);
+        addEnemyObject(this_enemy);
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -422,6 +433,9 @@ public class LevelModel {
         computePosition(col, row);
         Wood this_wood = new Wood(compute_temp, value);
         this_wood.setTexture(woodTexture); // TODO use correct texture
+        if(value > 3){
+            this_wood.setTexture(doubleTexture);
+        }
         addObject(this_wood);
     }
 
@@ -434,7 +448,7 @@ public class LevelModel {
         computePosition(col, row);
         Current this_current = new Current(compute_temp, direction, speed);
         this_current.setTexture(currentTextures[0]); // TODO set correct current texture
-        addObject(this_current);
+        addCurrentObject(this_current);
     }
 
     /** Compute the position of the object in the world given the grid location.

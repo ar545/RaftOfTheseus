@@ -30,6 +30,7 @@
       "level_7": "images/level_7.png",
       "level_8": "images/level_8.png",
       "green_bar":     "images/green_bar.png",
+      "white_bar":     "images/white_bar.png",
       "grey_bar":     "images/grey_bar.png",
       "progress": {
         "file":      "images/progressbar.png",
@@ -75,6 +76,7 @@
   "jsons" : {
     "sound_settings" : "sound_settings.json",
     "level:0" : "levels/level0.json",
-    "level:1" : "levels/level1.json"
+    "level:1" : "levels/level1.json",
+    "level:2" : "levels/level2.json"
   }
 }
