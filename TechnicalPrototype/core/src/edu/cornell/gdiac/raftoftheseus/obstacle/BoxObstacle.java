@@ -12,6 +12,8 @@
 package edu.cornell.gdiac.raftoftheseus.obstacle;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
@@ -22,7 +24,7 @@ import edu.cornell.gdiac.raftoftheseus.*;
  *
  * Unless otherwise specified, the center of mass is as the center.
  */
-public class BoxObstacle extends SimpleObstacle {
+public abstract class BoxObstacle extends GameObject {
 	/** Shape information for this box */
 	protected PolygonShape shape;
 	/** The width and height of the box */
@@ -143,7 +145,8 @@ public class BoxObstacle extends SimpleObstacle {
 		geometry = null;
 		
 		// Initialize
-		resize(width, height);	
+		resize(width, height);
+		setDrawScale(100.0f/3.0f, 100.0f/3.0f);
 	}
 	
 	/**
@@ -205,4 +208,10 @@ public class BoxObstacle extends SimpleObstacle {
 	}
 
 
+	// ACCESSORS
+	public void setTexture(Texture texture) {
+		super.setTexture(new TextureRegion(texture));
+		textureScale = new Vector2(getWidth()*drawScale.x / texture.getWidth(),
+				getHeight()*drawScale.x / texture.getHeight());
+	}
 }

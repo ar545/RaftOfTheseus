@@ -3,11 +3,13 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 import java.util.Random;
 
-public class Current extends WheelObstacle {
+public class Current extends BoxObstacle {
 
     /**
      * Enum specifying the type of this game object.
@@ -38,7 +40,7 @@ public class Current extends WheelObstacle {
 
     /** constructor with known direction */
     public Current(Vector2 position, Direction direction, float speed){
-        super();
+        super(2.98f, 2.98f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
         setSensor(true);

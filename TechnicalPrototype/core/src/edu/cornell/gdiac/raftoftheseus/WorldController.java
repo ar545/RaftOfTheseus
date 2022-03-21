@@ -335,10 +335,12 @@ public class WorldController implements Screen, ContactListener {
             Enemy nearestEnemy = null;
             float nearestD2 = -1;
             for (Enemy e : levelModel.getEnemies()) {
-                float d2 = e.getPosition().dst2(player.getPosition());
-                if (nearestD2 == -1 || d2 < nearestD2) {
-                    nearestD2 = d2;
-                    nearestEnemy = e;
+                if (!e.isDestroyed()) {
+                    float d2 = e.getPosition().dst2(player.getPosition());
+                    if (nearestD2 == -1 || d2 < nearestD2) {
+                        nearestD2 = d2;
+                        nearestEnemy = e;
+                    }
                 }
             }
             if (nearestEnemy != null) {

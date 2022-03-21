@@ -155,7 +155,7 @@ public class InputController {
 
 		// Read new input
 		readKeyboard();
-		readMouse();
+//		readMouse();
 	}
 
 	/**
@@ -167,7 +167,8 @@ public class InputController {
 		prevPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
 		mapPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
 		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
-		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.F);
+		firePressed  = Gdx.input.isKeyPressed(Input.Keys.F);
+		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.G);
 		exitPressed  = Gdx.input.isKeyPressed(Input.Keys.ESCAPE);
 
 		x_offset = 0;
@@ -188,13 +189,13 @@ public class InputController {
 		}
 	}
 
-	/**
-	 * Reads input from the mouse for firing and direction.
-	 */
-	private void readMouse() {
-		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
-		if (firePressed) {
-			fire_location.set(Gdx.input.getX(), Gdx.input.getY());
-		}
-	}
+//	/**
+//	 * Reads input from the mouse for firing and direction.
+//	 */
+//	private void readMouse() {
+//		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
+//		if (firePressed) {
+//			fire_location.set(Gdx.input.getX(), Gdx.input.getY());
+//		}
+//	}
 }
