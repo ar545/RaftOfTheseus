@@ -123,6 +123,13 @@ public class InputController {
 	}
 
 	/**
+	 * @return true if the debug button was pressed.
+	 */
+	public boolean didDebug() {
+		return debugPressed && !debugPrevious;
+	}
+
+	/**
 	 * @return true if the reset button was pressed.
 	 */
 	public boolean didReset() {return resetPressed && !resetPrevious;}
