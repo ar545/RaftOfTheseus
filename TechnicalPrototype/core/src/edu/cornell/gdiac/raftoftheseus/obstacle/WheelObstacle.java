@@ -64,7 +64,6 @@ public abstract class WheelObstacle extends GameObject {
 
 	public WheelObstacle(){
 		super(0, 0);
-		setDrawScale(100.0f/3.0f, 100.0f/3.0f);
 		shape = new CircleShape();
 		shape.setRadius(1.49f);
 	}
@@ -82,7 +81,6 @@ public abstract class WheelObstacle extends GameObject {
 	 */
 	public WheelObstacle(float x, float y, float radius) {
 		super(x,y);
-		setDrawScale(100.0f/3.0f, 100.0f/3.0f);
 		shape = new CircleShape();
 		shape.setRadius(radius);
 	}

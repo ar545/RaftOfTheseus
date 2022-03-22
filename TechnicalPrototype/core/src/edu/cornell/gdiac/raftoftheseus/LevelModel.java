@@ -108,7 +108,7 @@ public class LevelModel {
     /** Texture for all rock, as they look the same */
     private Texture rockTexture;
     /** Texture for current placeholder: texture alas in future */
-    private Texture currentTextures[];
+    private Texture currentTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture enemyTexture;
     /** Texture for wall */
@@ -459,7 +459,7 @@ public class LevelModel {
     private void addCurrent(int row, int col, Current.Direction direction) {
         computePosition(col, row);
         Current this_current = new Current(compute_temp, direction);
-        this_current.setTexture(currentTextures[0]); // TODO set correct current texture
+        this_current.setTexture(currentTexture);
         addCurrentObject(this_current);
     }
 
@@ -482,12 +482,7 @@ public class LevelModel {
         targetTexture = directory.getEntry("target", Texture.class);
         rockTexture = directory.getEntry("rock", Texture.class);
         treasureTexture = directory.getEntry("treasure", Texture.class);
-        currentTextures = new Texture[] {
-                directory.getEntry("east_current", Texture.class),
-                directory.getEntry("west_current", Texture.class),
-                directory.getEntry("north_current", Texture.class),
-                directory.getEntry("south_current", Texture.class)
-        };
+        currentTexture = directory.getEntry("current", Texture.class);
         enemyTexture = directory.getEntry("enemy", Texture.class);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
     }

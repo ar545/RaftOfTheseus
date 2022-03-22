@@ -1,14 +1,18 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 
 /**
  * Model class for the player raft.
  */
-public class Raft extends WheelObstacle {
+public class Raft extends CapsuleObstacle {
 
     // CONSTANTS
     /** Movement cost for a unit distance **/
@@ -69,7 +73,7 @@ public class Raft extends WheelObstacle {
      *
      * This method should be called after the force attribute is set.
      */
-    public void applyForce() {
+    public void applyInputForce() {
         if (super.isDestroyed()) {
             return;
         }
@@ -109,8 +113,8 @@ public class Raft extends WheelObstacle {
      * @param position: position of raft
      */
     public Raft(Vector2 position) {
-        super();
-        setRadius(1.4f);
+        super(2.8f, 1.3f);
+//        setRadius(1.4f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         this.health = INITIAL_PLAYER_HEALTH;
@@ -126,7 +130,13 @@ public class Raft extends WheelObstacle {
     protected int getStar() { return star; }
 
     /** Reduce player health based on distance traveled and movement cost. */
-    public void applyMoveCost(float dt) { health -= MOVE_COST  * getLinearVelocity().len() * dt; }
+    public void applyMoveCost(float dt) {
+        if (!movementInput.isZero()) {
+            float L = getLinearVelocity().len();
+            if (L > 0.15)
+                health -= MOVE_COST * L *dt;
+        }
+    }
 
     /** @return whether the player health is below zero */
     public boolean isDead() { return health < 0f; }
@@ -134,5 +144,18 @@ public class Raft extends WheelObstacle {
     /** How far the raft could travel with its current health, in game units, assuming they don't use currents or drift */
     public float getPotentialDistance() {
         return health / MOVE_COST;
+    }
+
+    @Override
+    public void setTexture(Texture texture) {
+        super.setTexture(texture);
+        float w = getWidth()*drawScale.x / texture.getWidth();
+        textureScale.set(w, w);
+        origin.set(texture.getWidth()/2.0f, texture.getWidth()/2.0f * getHeight()/getWidth());
+    }
+
+    @Override
+    public float getCrossSectionalArea() {
+        return 1.5f*super.getCrossSectionalArea();
     }
 }

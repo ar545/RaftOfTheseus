@@ -133,10 +133,11 @@ public abstract class GameObject extends SimpleObstacle {
         super(x, y);
 
         setDensity(1.0f);
-        setFriction(0.1f);
-        setRestitution(0.1f);
-        setLinearDamping(0.1f);
+        setFriction(0.0f);
+        setRestitution(0.0f);
+        setLinearDamping(0.0f);
         setFixedRotation(true);
+        super.setDrawScale(100.0f/3.0f, 100.0f/3.0f);
     }
 
 
@@ -152,15 +153,6 @@ public abstract class GameObject extends SimpleObstacle {
         }
     }
 
-    public void drawMap(GameCanvas canvas) {
-        if (texture != null) {
-            if (getType() != ObjectType.TREASURE && getType() != ObjectType.ENEMY
-                    && getType() != ObjectType.WOOD) {
-                canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x * 0.5f + canvas.getWidth() / 4,
-                        getY() * drawScale.y * 0.5f + canvas.getHeight() / 4, getAngle(), textureScale.x * 0.5f, textureScale.y * 0.5f);
-            }
-        }
-    }
 
     /**
      * @return the most recent aka cached position
@@ -169,10 +161,7 @@ public abstract class GameObject extends SimpleObstacle {
         return positionCache;
     }
 
-    @Override
-    public void update(float delta) {
-        super.update(delta);
-//        body.applyForce(currentsForce, getPosition(), true);
+    public void applyDrag() {
         dragCache.set(waterVelocity).sub(getLinearVelocity());
         dragCache.scl(dragCache.len() * dragCoefficient * getCrossSectionalArea());
         body.applyForce(dragCache, getPosition(), true);

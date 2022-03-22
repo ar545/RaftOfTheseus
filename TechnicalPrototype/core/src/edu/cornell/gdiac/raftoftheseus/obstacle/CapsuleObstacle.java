@@ -13,6 +13,8 @@
 package edu.cornell.gdiac.raftoftheseus.obstacle;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.CircleShape;
@@ -25,7 +27,7 @@ import edu.cornell.gdiac.raftoftheseus.*;
  *
  * Unless otherwise specified, the center of mass is as the center.
  */
-public class CapsuleObstacle extends SimpleObstacle {
+public abstract class CapsuleObstacle extends GameObject {
 	/** Epsilon factor to prevent issues with the fixture seams */
 	private static final float DEFAULT_EPSILON = 0.01f;
 	
@@ -517,4 +519,16 @@ public class CapsuleObstacle extends SimpleObstacle {
 		}
 	}
 
+
+	// ACCESSORS
+	public void setTexture(Texture texture) {
+		super.setTexture(new TextureRegion(texture));
+		textureScale = new Vector2(getWidth()*drawScale.x / texture.getWidth(),
+				getHeight()*drawScale.x / texture.getHeight());
+	}
+
+	/** The cross-sectional area of this object which is underwater. Used for drag calculation. */
+	public float getCrossSectionalArea() {
+		return dimension.x*dimension.y*0.5f;
+	}
 }

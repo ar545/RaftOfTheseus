@@ -146,7 +146,6 @@ public abstract class BoxObstacle extends GameObject {
 		
 		// Initialize
 		resize(width, height);
-		setDrawScale(100.0f/3.0f, 100.0f/3.0f);
 	}
 	
 	/**

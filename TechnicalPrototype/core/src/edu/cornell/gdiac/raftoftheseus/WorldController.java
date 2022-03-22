@@ -139,10 +139,10 @@ public class WorldController implements Screen, ContactListener {
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
 
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
-        Vector2 offset2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
-        offset2.sub(levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
+                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
         Affine2 cameraTransform = new Affine2();
-        cameraTransform.setToTranslation(offset2);
+        cameraTransform.setToTranslation(translation);
 
         canvas.clear();
         canvas.begin(cameraTransform);
@@ -156,15 +156,31 @@ public class WorldController implements Screen, ContactListener {
         drawStar(levelModel.getPlayer().getStar());
 
         if (map) {
-            canvas.begin();
-            float[] polygonVertices = levelModel.getWallVertices();
-            Vector2 wallDrawscale = levelModel.getWallDrawscale();
-            float x2 = polygonVertices[0], y2 = polygonVertices[1];
+            // translate center point of level to (0,0):
+            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-pixelsPerUnit);
+
+            // scale down so that the whole level fits on the screen, with a margin:
+            int pixelMargin = 150;
+            float wr = (canvas.getWidth()-2*pixelMargin) / (levelModel.bounds().width);
+            float hr = (canvas.getHeight()-2*pixelMargin) / (levelModel.bounds().height);
+            float scale = Math.min(wr, hr)/pixelsPerUnit;
+
+            // translate center point of level to center of screen:
+            Vector2 translation_2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
+
+            Affine2 mapTransform = new Affine2();
+            mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
+
+            canvas.begin(mapTransform);
             canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
-                    (x2 / 4) * 0.5f * wallDrawscale.x + canvas.getWidth() / 4,
-                    (y2 / 4) * 0.5f * wallDrawscale.y + canvas.getHeight() / 4 - y2, x2 * wallDrawscale.x * 0.5f, y2 * wallDrawscale.y * 0.5f - y2);
+                    levelModel.bounds().width/2*pixelsPerUnit, levelModel.bounds().height/2*pixelsPerUnit, 0.0f,
+                    levelModel.bounds().width*pixelsPerUnit/mapBackground.getWidth(), levelModel.bounds().height*pixelsPerUnit/mapBackground.getHeight());
             for(GameObject obj : levelModel.getObjects()) {
-                obj.drawMap(canvas);
+                GameObject.ObjectType type = obj.getType();
+                if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.ENEMY
+                        && type != GameObject.ObjectType.WOOD) {
+                    obj.draw(canvas);
+                }
             }
             canvas.end();
         }
@@ -276,9 +292,9 @@ public class WorldController implements Screen, ContactListener {
             reset();
         }
 
-        if (listener == null) {
-            return true;
-        }
+//        if (listener == null) {
+//            return true;
+//        }
 
         // Now it is time to maybe switch screens.
         if (input.didExit()) {
@@ -359,21 +375,16 @@ public class WorldController implements Screen, ContactListener {
             }
         }
 
-        // update enemy, forces, music, player health
+        // update forces for enemies, players, objects
         resolveEnemies();
-        if(ic.Moved()){
-            player.applyMoveCost(dt);
-        }
-        player.applyForce();
-        if(player.isDead() && !complete){
-            setFailure(true);
-        }
+        player.applyInputForce();
+        for (GameObject o : levelModel.getObjects())
+            o.applyDrag();
     }
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies() {
         PooledList<Enemy> el = levelModel.getEnemies();
-//        System.out.println("hi");
 
         for (int i = 0; i< el.size(); i++) {
             Enemy enemy = el.get(i);
@@ -398,6 +409,12 @@ public class WorldController implements Screen, ContactListener {
 
         // Turn the physics engine crank.
         levelModel.world.step(WORLD_STEP, WORLD_VELOCITY,WORLD_POSIT);
+        // update player health based on movement and distance, then check if dead
+        Raft player = levelModel.getPlayer();
+        player.applyMoveCost(dt);
+        if(player.isDead() && !complete){
+            setFailure(true);
+        }
 
         // Garbage collect the deleted objects.
         // Note how we use the linked list nodes to delete O(1) in place.
@@ -424,7 +441,7 @@ public class WorldController implements Screen, ContactListener {
     private void resolveMusic() {
         boolean nowInDanger = false;
         for(AIController ai : controls){
-            if(ai.getState() == Enemy.enemyState.CHASE){
+            if(ai.getState() == Enemy.enemyState.CHASE){ // TODO: there is a bug here. "danger" music continues playing when enemies are dead, because AIController stays in CHASE after the AI dies.
                 nowInDanger = true;
                 break;
             }
@@ -623,7 +640,16 @@ public class WorldController implements Screen, ContactListener {
      * Push o according to c
      */
     private void enterCurrent(Current c, GameObject o) {
-        o.enterCurrent(c.getDirectionVector());
+        // check for "ghost collisions"
+        if(o.getType() == GameObject.ObjectType.RAFT) { // TODO I don't know how to solve this problem
+            float dx = 2*Math.abs(c.getPosition().x - o.getPosition().x);
+            float dy = 2*Math.abs(c.getPosition().y - o.getPosition().y);
+            if (!(dx < c.getWidth() + ((Raft)o).getWidth() && dy < c.getHeight() + ((Raft)o).getHeight()))
+                System.out.println("enterCurrent was called, but the raft wasn't in the current :( ");
+            o.enterCurrent(c.getDirectionVector());
+        } else {
+            o.enterCurrent(c.getDirectionVector());
+        }
     }
 
     /**

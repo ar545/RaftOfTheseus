@@ -164,7 +164,6 @@ public abstract class PolygonObstacle extends GameObject {
 		// Compute the bounds.
 		initShapes(points);
 		initBounds();
-		setDrawScale(100.0f/3.0f, 100.0f/3.0f);
 	}
 
 	/**
@@ -371,13 +370,6 @@ public abstract class PolygonObstacle extends GameObject {
 	public void draw(GameCanvas canvas) {
 		if (region != null) {
 			canvas.draw(region,Color.WHITE,0,0,getX()*drawScale.x,getY()*drawScale.y,getAngle(),1,1);
-		}
-	}
-
-	public void drawMap(GameCanvas canvas) {
-		if (region != null) {
-				canvas.draw(region, Color.WHITE, 0, 0, getX() * drawScale.x * 0.5f + canvas.getWidth() / 4,
-						getY() * drawScale.y * 0.5f + canvas.getHeight() / 4, getAngle(), 0.5f, 0.5f);
 		}
 	}
 
