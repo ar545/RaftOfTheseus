@@ -34,7 +34,7 @@
       "green_bar":     "images/green_bar.png",
       "white_bar":     "images/white_bar.png",
       "grey_bar":     "images/grey_bar.png",
-      "star":     "images/star_bigger.png",
+      "star":     "images/star.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",

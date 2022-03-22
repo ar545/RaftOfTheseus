@@ -170,7 +170,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         if (debug) {
-            canvas.beginDebug();
+            canvas.beginDebug(cameraTransform);
             for(GameObject obj : levelModel.getObjects()) {
                 obj.drawDebug(canvas);
             }
@@ -268,7 +268,7 @@ public class WorldController implements Screen, ContactListener {
         InputController input = InputController.getInstance();
         input.readInput();
 
-//      if (input.didDebug()) { debug = !debug; } // Toggle debug
+        if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
 
         // Handle resets
