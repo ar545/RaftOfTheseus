@@ -55,6 +55,8 @@ public class WorldController implements Screen, ContactListener {
     protected BitmapFont displayFont;
     /** Texture for map background */
     protected Texture mapBackground;
+    /** Texture for GAME background */
+    protected Texture gameBackground;
 
     // WORLD
     protected LevelModel levelModel;
@@ -146,6 +148,7 @@ public class WorldController implements Screen, ContactListener {
 
         canvas.clear();
         canvas.begin(cameraTransform);
+        drawMovingBackground(pixelsPerUnit);
         for(GameObject obj : levelModel.getObjects()) {
             obj.draw(canvas);
         }
@@ -210,6 +213,16 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
+    /** draw a background for the sea
+     * Precondition & post-condition: the game canvas is open */
+    private void drawMovingBackground(float pixel) {
+        float x_scale = levelModel.boundsVector2().x * pixel;
+        float y_scale = levelModel.boundsVector2().y * pixel;
+        canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+    }
+
+    /** Draw star at the up left corner
+     * Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
     private void drawStar(int star) {
         canvas.begin();
         if(star > 0){
@@ -261,6 +274,7 @@ public class WorldController implements Screen, ContactListener {
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
+        gameBackground = directory.getEntry("background", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
