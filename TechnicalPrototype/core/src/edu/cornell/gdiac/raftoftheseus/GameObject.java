@@ -79,7 +79,7 @@ public abstract class GameObject extends SimpleObstacle {
     /** The speed at which a current flows, in units per second */
     private final float waterSpeed = 15.0f;
     /** The average velocity of water flowing near this object */
-    private Vector2 waterVelocity = new Vector2();
+    protected Vector2 waterVelocity = new Vector2();
     /** Modifier on force applied by current */
     private final float dragCoefficient = 0.5f;
     /** cache vector for calculation */

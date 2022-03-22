@@ -155,7 +155,7 @@ public class LevelModel {
      * width: GRID_SIZE.x * map_size.x + 2 * DEFAULT_BOUNDARY,
      * height: GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY */
     public Vector2 boundsVector2(){
-        return new Vector2(bounds.height, bounds.width);
+        return new Vector2(bounds.width, bounds.height);
     }
 
     /** Adds a physics object in to the insertion queue.

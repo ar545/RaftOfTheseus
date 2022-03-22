@@ -78,6 +78,9 @@ public class AIController {
                 state = WANDER;
                 break;
         }
+    }
 
+    public boolean isAlive() {
+        return (enemy != null && !enemy.isDestroyed());
     }
 }

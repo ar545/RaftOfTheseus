@@ -147,7 +147,6 @@ public class WorldController implements Screen, ContactListener {
         canvas.clear();
         canvas.begin(cameraTransform);
         for(GameObject obj : levelModel.getObjects()) {
-//            obj.drawAffine(canvas, offset2, pixelsPerUnit);
             obj.draw(canvas);
         }
         canvas.end();
@@ -412,7 +411,7 @@ public class WorldController implements Screen, ContactListener {
         // update player health based on movement and distance, then check if dead
         Raft player = levelModel.getPlayer();
         player.applyMoveCost(dt);
-        if(player.isDead() && !complete){
+        if(player.isDead() && !complete && !failed){
             setFailure(true);
         }
 
@@ -441,7 +440,7 @@ public class WorldController implements Screen, ContactListener {
     private void resolveMusic() {
         boolean nowInDanger = false;
         for(AIController ai : controls){
-            if(ai.getState() == Enemy.enemyState.CHASE){ // TODO: there is a bug here. "danger" music continues playing when enemies are dead, because AIController stays in CHASE after the AI dies.
+            if(ai.isAlive() && ai.getState() == Enemy.enemyState.CHASE){
                 nowInDanger = true;
                 break;
             }
@@ -603,7 +602,8 @@ public class WorldController implements Screen, ContactListener {
             // Check for win condition
             else if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
                     (bd1 == levelModel.getGoal() && bd2 == levelModel.getPlayer())) {
-                setComplete(true);
+                if (!complete && !failed)
+                    setComplete(true);
             }
         } catch (Exception e) {
             e.printStackTrace();

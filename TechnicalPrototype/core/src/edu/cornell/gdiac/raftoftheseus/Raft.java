@@ -17,6 +17,10 @@ public class Raft extends CapsuleObstacle {
     // CONSTANTS
     /** Movement cost for a unit distance **/
     private static final float MOVE_COST = 1.5f;
+    /** Movement cost multiplier for moving with the current */
+    private static final float WITH_CURRENT = 0.45f;
+    /** Movement cost increase for moving with the current */
+    private static final float AGAINST_CURRENT = 1.75f;
 
     // ATTRIBUTES
     /** The player's movement input */
@@ -133,8 +137,15 @@ public class Raft extends CapsuleObstacle {
     public void applyMoveCost(float dt) {
         if (!movementInput.isZero()) {
             float L = getLinearVelocity().len();
-            if (L > 0.15)
-                health -= MOVE_COST * L *dt;
+            if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
+                float cost = MOVE_COST * L * dt; // base movement cost (no current)
+                if (!waterVelocity.isZero()) { // reduced cost if moving with the current, increased if moving against the current
+                    float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
+                    float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
+                    cost *= b;
+                }
+                health -= cost;
+            }
         }
     }
 
