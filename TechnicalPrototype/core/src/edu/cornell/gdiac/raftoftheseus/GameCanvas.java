@@ -141,8 +141,6 @@ public class GameCanvas {
 		vertexShader = Gdx.files.internal("core/assets/shaders/custom_vertex_shader.glsl").readString();
 		fragmentShader = Gdx.files.internal("core/assets/shaders/custom_fragment_shader.glsl").readString();
 		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
-
-		spriteBatch.setShader(shaderProgram);
 	}
 
 	/**
@@ -363,11 +361,13 @@ public class GameCanvas {
 	public void begin(Affine2 affine) {
 		global.setAsAffine(affine);
 		global.mulLeft(camera.combined);
-		spriteBatch.setProjectionMatrix(global);
+		spriteBatch.setProjectionMatrix(global);// custom shader must be set before this (or maybe not?)
 
 		setBlendState(BlendState.NO_PREMULT);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		spriteBatch.setShader(null);
 	}
 
 	/**
@@ -386,6 +386,8 @@ public class GameCanvas {
 
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		spriteBatch.setShader(null);
 	}
 
 	/**
@@ -397,6 +399,17 @@ public class GameCanvas {
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		spriteBatch.setShader(null);
+	}
+
+	/**
+	 * Must be called AFTER begin(...) and BEFORE end() for the shader to work.
+	 */
+	public void useShader() {
+		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
+		// if customShader.bind() is not called first, then the following line will SILENTLY fail, and the uniform will keep its initial value (0 for floats).
+		shaderProgram.setUniformf("f_test", 0.75f);// this is how we can transfer custom data to the shader
 	}
 
 	/**

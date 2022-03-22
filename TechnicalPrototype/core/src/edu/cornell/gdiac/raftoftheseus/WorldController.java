@@ -174,6 +174,7 @@ public class WorldController implements Screen, ContactListener {
             mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
 
             canvas.begin(mapTransform);
+            canvas.useShader();
             canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
                     levelModel.bounds().width/2*pixelsPerUnit, levelModel.bounds().height/2*pixelsPerUnit, 0.0f,
                     levelModel.bounds().width*pixelsPerUnit/mapBackground.getWidth(), levelModel.bounds().height*pixelsPerUnit/mapBackground.getHeight());
