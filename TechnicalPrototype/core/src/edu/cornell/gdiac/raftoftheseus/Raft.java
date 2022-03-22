@@ -135,18 +135,19 @@ public class Raft extends CapsuleObstacle {
 
     /** Reduce player health based on distance traveled and movement cost. */
     public void applyMoveCost(float dt) {
-        if (!movementInput.isZero()) {
-            float L = getLinearVelocity().len();
-            if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
-                float cost = MOVE_COST * L * dt; // base movement cost (no current)
-                if (!waterVelocity.isZero()) { // reduced cost if moving with the current, increased if moving against the current
-                    float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
-                    float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
-                    cost *= b;
-                }
-                health -= cost;
-            }
-        }
+        return;
+//        if (!movementInput.isZero()) {
+//            float L = getLinearVelocity().len();
+//            if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
+//                float cost = MOVE_COST * L * dt; // base movement cost (no current)
+//                if (!waterVelocity.isZero()) { // reduced cost if moving with the current, increased if moving against the current
+//                    float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
+//                    float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
+//                    cost *= b;
+//                }
+//                health -= cost;
+//            }
+//        }
     }
 
     /** @return whether the player health is below zero */

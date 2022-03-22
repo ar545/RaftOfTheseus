@@ -108,6 +108,10 @@ public class GameCanvas {
 	/** Cache object to handle raw textures */
 	private TextureRegion holder;
 
+	String vertexShader;
+	String fragmentShader;
+	ShaderProgram shaderProgram;
+
 	/**
 	 * Creates a new GameCanvas determined by the application configuration.
 	 *
@@ -132,6 +136,11 @@ public class GameCanvas {
 		local  = new Affine2();
 		global = new Matrix4();
 		vertex = new Vector2();
+
+
+		vertexShader = Gdx.files.internal("core/assets/shaders/custom_vertex_shader.glsl").readString();
+		fragmentShader = Gdx.files.internal("core/assets/shaders/custom_fragment_shader.glsl").readString();
+		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
 	}
 
 	/**
@@ -383,9 +392,14 @@ public class GameCanvas {
 	 * Nothing is flushed to the graphics card until the method end() is called.
 	 */
 	public void begin() {
+		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		spriteBatch.setShader(shaderProgram);
 	}
 
 	/**
