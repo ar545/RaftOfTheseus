@@ -141,6 +141,8 @@ public class GameCanvas {
 		vertexShader = Gdx.files.internal("core/assets/shaders/custom_vertex_shader.glsl").readString();
 		fragmentShader = Gdx.files.internal("core/assets/shaders/custom_fragment_shader.glsl").readString();
 		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
+
+		spriteBatch.setShader(shaderProgram);
 	}
 
 	/**
@@ -392,14 +394,9 @@ public class GameCanvas {
 	 * Nothing is flushed to the graphics card until the method end() is called.
 	 */
 	public void begin() {
-		Gdx.gl.glClearColor(1, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
-
-		spriteBatch.setShader(shaderProgram);
 	}
 
 	/**
