@@ -33,27 +33,43 @@ import edu.cornell.gdiac.util.XBoxController;
  */
 public class InputController {
 	// Fields to manage game state
-	/** Whether the reset button was pressed. */
-	private boolean resetPressed;
-	private boolean resetPrevious;
+
+	/*=*=*=*=*=*=*=*=*=* GAME NAVIGATION CONTROLS *=*=*=*=*=*=*=*=*=*/
+
 	/** Whether the button to advanced worlds was pressed. */
 	private boolean nextPressed;
 	private boolean nextPrevious;
 	/** Whether the button to step back worlds was pressed. */
 	private boolean prevPressed;
 	private boolean prevPrevious;
-	/** Whether the map button was pressed. */
-	private boolean mapPressed;
-	private boolean mapPrevious;
-	/** Whether the fire button was pressed. */
-	private boolean firePressed;
-	private boolean firePrevious;
+	/** Whether the reset button was pressed. */
+	private boolean resetPressed;
+	private boolean resetPrevious;
 	/** Whether the debug toggle was pressed. */
 	private boolean debugPressed;
 	private boolean debugPrevious;
 	/** Whether the exit button was pressed. */
 	private boolean exitPressed;
 	private boolean exitPrevious;
+
+	/*=*=*=*=*=*=*=*=*=* PLAYER ACTIONS *=*=*=*=*=*=*=*=*=*/
+
+	/** Whether the map button was pressed. */
+	private boolean mapPressed;
+	private boolean mapPrevious;
+	/** Whether the fire button was pressed. */
+	private boolean firePressed;
+	private boolean firePrevious;
+	/** Whether the tab button was pressed for selection. */
+	private boolean tabPressed;
+	private boolean tabPrevious;
+	/** Whether the right arrow button/D was pressed for adjusting settings. */
+	private boolean rightPressed;
+	/** Whether the left arrow button/A was pressed for adjusting settings. */
+	private boolean leftPressed;
+	/** Whether the left mouse button was pressed. */
+	private boolean mousePressed;
+	private boolean mousePrevious;
 	/** How much did we move (left/right)? */
 	private float x_offset;
 	/** How much did we move (up/down)? */
@@ -62,8 +78,19 @@ public class InputController {
 	private Vector2 mov_offset;
 	/** Where did we fire? */
 	private Vector2 fire_location;
+
 	/** The singleton instance of the input controller */
 	private static InputController theController = null;
+
+	/*=*=*=*=*=*=*=*=*=* GETTERS *=*=*=*=*=*=*=*=*=*/
+
+	/**
+	 * Creates a new input controller for mouse and keyboard.
+	 */
+	public InputController() {
+		mov_offset = new Vector2();
+		fire_location = new Vector2();
+	}
 
 	/**
 	 * @return the singleton instance of the input controller
@@ -76,25 +103,6 @@ public class InputController {
 	}
 
 	/**
-	 * -1 = down/left, 1 = up/right, 0 = still
-	 * @return the amount of vertical and horizontal movement
-	 */
-	public Vector2 getMovement() {
-		return mov_offset.set(x_offset, y_offset).nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
-	}
-
-	/** Find whether the player moved and should reduce health corrspondingly */
-	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
-
-	/**
-	 * @return where the mouse was clicked in screen coordinates
-	 */
-	public Vector2 getFireLocation() {
-		fire_location.set(x_offset, y_offset);
-		return fire_location;
-	}
-
-	/**
 	 * @return true if the map button was pressed.
 	 */
 	public boolean didNext() { return nextPressed && !nextPrevious; }
@@ -104,20 +112,6 @@ public class InputController {
 	 */
 	public boolean didPrevious() {
 		return prevPressed && !prevPrevious;
-	}
-
-	/**
-	 * @return true if the map button was pressed.
-	 */
-	public boolean didMap() {
-		return mapPressed && !mapPrevious;
-	}
-
-	/**
-	 * @return true if the fire button was pressed.
-	 */
-	public boolean didFire() {
-		return firePressed && !firePrevious;
 	}
 
 	/**
@@ -136,14 +130,61 @@ public class InputController {
 	 * @return true if the exit button was pressed.
 	 */
 	public boolean didExit() { return exitPressed && !exitPrevious; }
-	
+
 	/**
-	 * Creates a new input controller for mouse and keyboard.
+	 * @return true if the map button was pressed.
 	 */
-	public InputController() {
-		mov_offset = new Vector2();
-		fire_location = new Vector2();
+	public boolean didMap() {
+		return mapPressed && !mapPrevious;
 	}
+
+	/**
+	 * @return true if the fire button was pressed.
+	 */
+	public boolean didFire() { return firePressed && !firePrevious; }
+
+	/**
+	 * @return true if the tab button was pressed for changing what is selected on a screen.
+	 */
+	public boolean didTab() { return tabPressed && !tabPrevious; }
+
+	/**
+	 * @return true if the "right" direction button was pressed for keyboard control of settings.
+	 */
+	public boolean didRight() { return rightPressed; }
+
+	/**
+	 * @return true if the "left" direction button was pressed for keyboard control of settings.
+	 */
+	public boolean didLeft() { return leftPressed; }
+
+	/**
+	 * -1 = down/left, 1 = up/right, 0 = still
+	 * @return the amount of vertical and horizontal movement
+	 */
+	public Vector2 getMovement() {
+		return mov_offset.set(x_offset, y_offset).nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
+	}
+
+	/** Find whether the player moved and should reduce health . */
+	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
+
+	/**
+	 * @return where the mouse was clicked in screen coordinates
+	 */
+	public Vector2 getFireLocation() {
+		fire_location.set(x_offset, y_offset);
+		return fire_location;
+	}
+
+//	/**
+//	 * @return true if the fire button was pressed.
+//	 */
+//	public boolean didLeftClick() {
+//		return mousePressed && !mousePrevious;
+//	}
+
+	/*=*=*=*=*=*=*=*=*=* READ INPUT *=*=*=*=*=*=*=*=*=*/
 
 	/**
 	 * Reads the input for the player and converts the result into game logic.
@@ -157,33 +198,41 @@ public class InputController {
 		firePrevious = firePressed;
 		debugPrevious  = debugPressed;
 		exitPrevious = exitPressed;
+		mousePrevious = mousePressed;
+		tabPrevious = tabPressed;
 
 		// Read new input
 		readKeyboard();
-//		readMouse();
+		readMouse();
 	}
 
 	/**
 	 * Reads input from the keyboard for movement.
 	 */
 	private void readKeyboard() {
-		// Read special action keys
+		// Navigation keys
 		nextPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
 		prevPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_1);
-		mapPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
-		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
-		firePressed  = Gdx.input.isKeyPressed(Input.Keys.F);
 		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.G);
+		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
 		exitPressed  = Gdx.input.isKeyPressed(Input.Keys.ESCAPE);
 
+		// Player action keys
+		mapPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
+		firePressed  = Gdx.input.isKeyPressed(Input.Keys.F);
+		tabPressed = Gdx.input.isKeyPressed(Input.Keys.TAB);
+
+		// Reset offsets
 		x_offset = 0;
 		y_offset = 0;
 
 		// Read direction key inputs
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+		rightPressed = Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D);
+		leftPressed = Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A);
+		if (rightPressed) {
 			x_offset += 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+		if (leftPressed) {
 			x_offset -= 1.0f;
 		}
 		if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) {
@@ -194,13 +243,13 @@ public class InputController {
 		}
 	}
 
-//	/**
-//	 * Reads input from the mouse for firing and direction.
-//	 */
-//	private void readMouse() {
-//		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
-//		if (firePressed) {
-//			fire_location.set(Gdx.input.getX(), Gdx.input.getY());
-//		}
-//	}
+	/**
+	 * Reads input from the mouse for firing and direction.
+	 */
+	private void readMouse() {
+		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
+		if (firePressed) {
+			fire_location.set(Gdx.input.getX(), Gdx.input.getY());
+		}
+	}
 }
