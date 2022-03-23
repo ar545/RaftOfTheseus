@@ -25,11 +25,8 @@ import edu.cornell.gdiac.util.Controllers;
 import edu.cornell.gdiac.util.XBoxController;
 
 /**
- * Class for reading player input. 
- *
- * This supports both a keyboard and X-Box controller. In previous solutions, we only 
- * detected the X-Box controller on start-up.  This class allows us to hot-swap in
- * a controller via the new XBox360Controller class.
+ * Singleton class for reading player input.
+ * This only supports keyboard.
  */
 public class InputController {
 	// Fields to manage game state
@@ -63,9 +60,9 @@ public class InputController {
 	/** Whether the tab button was pressed for selection. */
 	private boolean tabPressed;
 	private boolean tabPrevious;
-	/** Whether the right arrow button/D was pressed for adjusting settings. */
+	/** Whether the right arrow button/D was pressed for adjusting settings. CAN BE HELD.*/
 	private boolean rightPressed;
-	/** Whether the left arrow button/A was pressed for adjusting settings. */
+	/** Whether the left arrow button/A was pressed for adjusting settings. CAN BE HELD.*/
 	private boolean leftPressed;
 	/** Whether the left mouse button was pressed. */
 	private boolean mousePressed;
@@ -84,17 +81,13 @@ public class InputController {
 
 	/*=*=*=*=*=*=*=*=*=* GETTERS *=*=*=*=*=*=*=*=*=*/
 
-	/**
-	 * Creates a new input controller for mouse and keyboard.
-	 */
+	/** Creates a new input controller for mouse and keyboard. */
 	public InputController() {
 		mov_offset = new Vector2();
 		fire_location = new Vector2();
 	}
 
-	/**
-	 * @return the singleton instance of the input controller
-	 */
+	/** @return the singleton instance of the input controller */
 	public static InputController getInstance() {
 		if (theController == null) {
 			theController = new InputController();
@@ -102,61 +95,34 @@ public class InputController {
 		return theController;
 	}
 
-	/**
-	 * @return true if the map button was pressed.
-	 */
+	/** @return true if the map button was pressed. */
 	public boolean didNext() { return nextPressed && !nextPrevious; }
-
-	/**
-	 * @return true if the map button was pressed.
-	 */
+	/** @return true if the map button was pressed. */
 	public boolean didPrevious() {
 		return prevPressed && !prevPrevious;
 	}
-
-	/**
-	 * @return true if the debug button was pressed.
-	 */
+	/** @return true if the debug button was pressed. */
 	public boolean didDebug() {
 		return debugPressed && !debugPrevious;
 	}
-
-	/**
-	 * @return true if the reset button was pressed.
-	 */
+	/** @return true if the reset button was pressed. */
 	public boolean didReset() {return resetPressed && !resetPrevious;}
-
-	/**
-	 * @return true if the exit button was pressed.
-	 */
+	/** @return true if the exit button was pressed. */
 	public boolean didExit() { return exitPressed && !exitPrevious; }
-
-	/**
-	 * @return true if the map button was pressed.
-	 */
+	/** @return true if the map button was pressed. */
 	public boolean didMap() {
 		return mapPressed && !mapPrevious;
 	}
-
-	/**
-	 * @return true if the fire button was pressed.
-	 */
+	/** @return true if the fire button was pressed. */
 	public boolean didFire() { return firePressed && !firePrevious; }
-
-	/**
-	 * @return true if the tab button was pressed for changing what is selected on a screen.
-	 */
+	/** @return true if the tab button was pressed for changing what is selected on a screen. */
 	public boolean didTab() { return tabPressed && !tabPrevious; }
-
-	/**
-	 * @return true if the "right" direction button was pressed for keyboard control of settings.
-	 */
+	/** @return true if the "right" direction button was pressed for keyboard control of settings. */
 	public boolean didRight() { return rightPressed; }
-
-	/**
-	 * @return true if the "left" direction button was pressed for keyboard control of settings.
-	 */
+	/** @return true if the "left" direction button was pressed for keyboard control of settings. */
 	public boolean didLeft() { return leftPressed; }
+	/** Find whether the player moved and should reduce health . */
+	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
 
 	/**
 	 * -1 = down/left, 1 = up/right, 0 = still
@@ -166,29 +132,15 @@ public class InputController {
 		return mov_offset.set(x_offset, y_offset).nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
 	}
 
-	/** Find whether the player moved and should reduce health . */
-	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
-
-	/**
-	 * @return where the mouse was clicked in screen coordinates
-	 */
+	/** @return where the mouse was clicked in screen coordinates */
 	public Vector2 getFireLocation() {
 		fire_location.set(x_offset, y_offset);
 		return fire_location;
 	}
 
-//	/**
-//	 * @return true if the fire button was pressed.
-//	 */
-//	public boolean didLeftClick() {
-//		return mousePressed && !mousePrevious;
-//	}
-
 	/*=*=*=*=*=*=*=*=*=* READ INPUT *=*=*=*=*=*=*=*=*=*/
 
-	/**
-	 * Reads the input for the player and converts the result into game logic.
-	 */
+	/** Reads the input for the player and converts the result into game logic. */
 	public void readInput() {
 		// Store previous values
 		resetPrevious  = resetPressed;
@@ -206,9 +158,7 @@ public class InputController {
 		readMouse();
 	}
 
-	/**
-	 * Reads input from the keyboard for movement.
-	 */
+	/** Reads input from the keyboard for movement. */
 	private void readKeyboard() {
 		// Navigation keys
 		nextPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
@@ -243,9 +193,7 @@ public class InputController {
 		}
 	}
 
-	/**
-	 * Reads input from the mouse for firing and direction.
-	 */
+	/** Reads input from the mouse for firing and direction. */
 	private void readMouse() {
 		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
 		if (firePressed) {

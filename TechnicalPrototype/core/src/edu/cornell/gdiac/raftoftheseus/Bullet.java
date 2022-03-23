@@ -6,13 +6,15 @@ import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Bullet extends WheelObstacle {
-    /** Health cost for creating a bullet */
-    public static final float BULLET_HEALTH_COST = -5f;
+    /** Scaling factor the speed of a bullet. */
+    public static float BULLET_SPEED;
+    /** Health cost for creating a bullet. */
+    public static float BULLET_DAMAGE;
 
-    // TODO: don't believe bullet class is necessary - PhysicsLab creates a bullet using Box2d in WorldController
-    public ObjectType getType() {
-        return ObjectType.BULLET;
-    }
+    /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
+    public ObjectType getType() { return ObjectType.BULLET; }
+    public void setSpeed(float sp){ BULLET_SPEED = sp; }
+    public void setDamage(float dm) { BULLET_DAMAGE = dm; }
 
     public Bullet(Vector2 position) {
         super();

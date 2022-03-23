@@ -75,6 +75,7 @@
   },
   "jsons" : {
     "sound_settings" : "sound_settings.json",
+    "object_parameters" : "object_parameters.json",
     "level:0" : "levels/level0.json",
     "level:1" : "levels/level1.json",
     "level:2" : "levels/level2.json"
