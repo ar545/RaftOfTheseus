@@ -151,6 +151,7 @@ public class GameCanvas {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
 		flowMap.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+		waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 		waterTexture.bind();
 
 		// return active texture to 0
@@ -428,7 +429,7 @@ public class GameCanvas {
 		// if customShader.bind() is not called first, then the following line will SILENTLY fail, and the uniform will keep its initial value (0 for floats).
 //		shaderProgram.setUniformf("f_test", 0.75f);// this is how we can transfer custom data to the shader
 		Affine2 transform = new Affine2();
-		transform.setToScaling(1/3.0f, 1/3.0f);
+		transform.setToScaling(1/100.0f, 1/100.0f);// TODO: this is sloppy, shouldn't be hardcoded, also I don't know why 100 is the right number here
 		Matrix4 objToWorldMat = new Matrix4();
 		objToWorldMat.setAsAffine(transform);
 		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);

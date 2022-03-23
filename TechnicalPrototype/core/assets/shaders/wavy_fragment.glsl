@@ -26,7 +26,7 @@ uniform sampler2D u_waveTexture;
 // Tiling of the wave pattern texture.
 float waveDensity = 0.5f;
 // Scrolling speed for the wave flow.
-float waveSpeed  = 5.0f;
+float waveSpeed  = 0.5f;
 
 uniform float u_time;
 
@@ -39,14 +39,15 @@ vec2 WaveAmount(vec2 uv, vec2 sampleSite) {
     // Convert to a vector in the -1...1 range.
 //    vec2 flowVector = tex2Dgrad(_Flow, sampleSite * inverseFlowmapSize, 0, 0).xy
 //    * 2.0f - 1.0f;
-
-    vec2 flowVector = texture2D(u_flowMap, sampleSite * inverseFlowmapSize).xy * 2.0f - 1.0f;
+    vec2 sampleShifted = sampleSite * inverseFlowmapSize;
+    sampleShifted.y = 1.0 - sampleShifted.y;// flip y because textures have their origin in the etc etc corner
+    vec2 flowVector = texture2D(u_flowMap, sampleShifted).xy * 2.0f - 1.0f;
 
 
     // Optionally, you can skip this step, and actually encode
     // a flow speed into the flow map texture too.
     // I just enforce a 1.0 length for consistency without getting fussy.
-    flowVector = normalize(flowVector);
+//    flowVector = normalize(flowVector);
 
     // I displace the UVs a little for each sample, so that adjacent
     // tiles flowing the same direction don't repeat exactly.
@@ -85,18 +86,10 @@ void main() {
         return;
     }
 
-    vec2 flowUV = v_flowPos;
+    vec2 flowUV = v_flowPos + vec2(0.5, 0.5);
     // Clamp to the bottom-left flowmap pixel
     // that influences this location.
     vec2 bottomLeft = floor(flowUV);
-
-
-
-    if(true) {
-        //        gl_FragColor = vec4(1,0,0,1);
-        gl_FragColor = vec4(flowUV.x/100,flowUV.y/100,0.0f,c.a);
-        return;
-    }
 
     // Sum up the wave contributions from the four
     // closest flow map pixels.
