@@ -150,10 +150,10 @@ public class WorldController implements Screen, ContactListener {
 
         canvas.clear();
         canvas.begin(cameraTransform);
-        canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
-//        drawMovingBackground(pixelsPerUnit);
+        drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            obj.draw(canvas);
+            if (obj.getType() != GameObject.ObjectType.CURRENT)
+                obj.draw(canvas);
         }
         canvas.end();
 
@@ -216,12 +216,14 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
-    /** draw a background for the sea
-     * Precondition & post-condition: the game canvas is open */
-    private void drawMovingBackground(float pixel) {
+    /** draws background water and moving currents (using shader) */
+    private void drawWater() {
+        canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+        float pixel = 100/3.0f;
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
         canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        canvas.stopUsingShader();
     }
 
     /** Draw star at the up left corner

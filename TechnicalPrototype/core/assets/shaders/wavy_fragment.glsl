@@ -51,7 +51,7 @@ vec2 WaveAmount(vec2 uv, vec2 sampleSite) {
 
     // I displace the UVs a little for each sample, so that adjacent
     // tiles flowing the same direction don't repeat exactly.
-    vec2 waveUV = uv * waveDensity + sin((3.3f * sampleSite.xy + sampleSite.yx) * 1.0f);
+    vec2 waveUV = uv * waveDensity + sin((3.3f * sampleSite.xy + sampleSite.yx) * 1.0f + u_time*0.10);
 
     // Subtract the flow direction scaled by time
     // to make the wave pattern scroll this way.
@@ -78,7 +78,8 @@ void main() {
     // In my case, I just select the water areas based on
     // how blue they are. A more robust method would be
     // to encode this into an alpha mask or similar.
-    float waveBlend = clamp(3.0f * (c.b - 0.4f), 0, 1);
+//    float waveBlend = clamp(3.0f * ((2*c.b-0.1)/(c.r+c.g+0.1)), 0, 1);
+    float waveBlend = 1;
 
     // Skip the water effect if we're not in water.
     if(waveBlend == 0.0f) {
@@ -103,10 +104,10 @@ void main() {
     wave.x /= wave.y;
 
     // Here I tint the "low" parts a darker blue.
-    c = mix(c, c*c + vec4(0, 0, 0.05, 0), waveBlend * 0.5f * clamp(1.2f - 4.0f * wave.x, 0, 1));
+    c = mix(c, c*c + vec4(0, 0, 0.05, 0), waveBlend * 0.75f * clamp(1.2f - 4.0f * wave.x, 0, 1));
 
     // Then brighten the peaks.
-    c += waveBlend * clamp((wave.x - 0.4f) * 20.0f, 0, 1) * 0.1f;
+    c += waveBlend * clamp((wave.x - 0.4f) * 10.0f, 0, 1) * 0.3f;
 
     // And finally return the tinted colour.
     gl_FragColor = c*v_color;//return c * v_color;

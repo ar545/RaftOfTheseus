@@ -5,7 +5,7 @@
         "wrapU": "repeated",
         "wrapV": "repeated"
       },
-      "background": "images/background.png",
+      "background": "images/blue_pixel.png",
       "bullet": "images/bullet.png",
       "menu_background": "images/menu.png",
       "menu_title": "images/menu_title.png",

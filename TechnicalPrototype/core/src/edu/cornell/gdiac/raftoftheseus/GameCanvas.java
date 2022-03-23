@@ -440,6 +440,10 @@ public class GameCanvas {
 		shaderProgram.setUniformf("u_time", time);
 	}
 
+	public void stopUsingShader() {
+		spriteBatch.setShader(null);
+	}
+
 	/**
 	 * Ends a drawing sequence, flushing textures to the graphics card.
 	 */
