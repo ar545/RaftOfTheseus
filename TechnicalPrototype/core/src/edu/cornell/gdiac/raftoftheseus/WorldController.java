@@ -25,6 +25,9 @@ public class WorldController implements Screen, ContactListener {
     /** How many frames after winning/losing do we continue? */
     public static final int EXIT_COUNT = 120;
 
+    /** Whether to use shaders or not */
+    private static final boolean USE_SHADER_FOR_WATER = true;
+
     /** The amount of time for a physics engine step. */
     public static final float WORLD_STEP = 1/60.0f;
     /** Number of velocity iterations for the constraint solvers */
@@ -57,6 +60,8 @@ public class WorldController implements Screen, ContactListener {
     protected Texture mapBackground;
     /** Texture for GAME background */
     protected Texture gameBackground;
+    /** Texture for game background when using shader */
+    protected Texture blueTexture;
 
     // WORLD
     protected LevelModel levelModel;
@@ -152,7 +157,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.begin(cameraTransform);
         drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            if (obj.getType() != GameObject.ObjectType.CURRENT)
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
                 obj.draw(canvas);
         }
         canvas.end();
@@ -218,12 +223,17 @@ public class WorldController implements Screen, ContactListener {
 
     /** draws background water and moving currents (using shader) */
     private void drawWater() {
-        canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+        if (USE_SHADER_FOR_WATER)
+            canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
         float pixel = 100/3.0f;
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
-        canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
-        canvas.stopUsingShader();
+        if (!USE_SHADER_FOR_WATER)
+            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        else
+            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);
+        if (USE_SHADER_FOR_WATER)
+            canvas.stopUsingShader();
     }
 
     /** Draw star at the up left corner
@@ -280,6 +290,7 @@ public class WorldController implements Screen, ContactListener {
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
+        blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
