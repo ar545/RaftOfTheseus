@@ -77,6 +77,7 @@ public class WorldController implements Screen, ContactListener {
     /** array of controls for each enemy**/
     private AIController[] controls;
 
+    private final long startTime;
 
     /**
      * Creates a new game world
@@ -94,6 +95,7 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+        startTime = System.currentTimeMillis();
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -148,7 +150,8 @@ public class WorldController implements Screen, ContactListener {
 
         canvas.clear();
         canvas.begin(cameraTransform);
-        drawMovingBackground(pixelsPerUnit);
+        canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+//        drawMovingBackground(pixelsPerUnit);
         for(GameObject obj : levelModel.getObjects()) {
             obj.draw(canvas);
         }
@@ -174,7 +177,6 @@ public class WorldController implements Screen, ContactListener {
             mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
 
             canvas.begin(mapTransform);
-            canvas.useShader();
             canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
                     levelModel.bounds().width/2*pixelsPerUnit, levelModel.bounds().height/2*pixelsPerUnit, 0.0f,
                     levelModel.bounds().width*pixelsPerUnit/mapBackground.getWidth(), levelModel.bounds().height*pixelsPerUnit/mapBackground.getHeight());

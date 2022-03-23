@@ -18,6 +18,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g3d.particles.influencers.ColorInfluencer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -138,9 +139,22 @@ public class GameCanvas {
 		vertex = new Vector2();
 
 
-		vertexShader = Gdx.files.internal("core/assets/shaders/custom_vertex_shader.glsl").readString();
-		fragmentShader = Gdx.files.internal("core/assets/shaders/custom_fragment_shader.glsl").readString();
+		vertexShader = Gdx.files.internal("core/assets/shaders/wavy_vertex.glsl").readString();
+		fragmentShader = Gdx.files.internal("core/assets/shaders/wavy_fragment.glsl").readString();
 		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
+
+		// load the special textures we need for shader
+		Texture flowMap = new Texture(Gdx.files.internal("core/assets/images/flowmap.png"));// TODO use asset system
+		Texture waterTexture = new Texture(Gdx.files.internal("core/assets/images/water_texture.png"));// TODO use asset system
+
+		// bind special textures to GL state machine
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
+		flowMap.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+		waterTexture.bind();
+
+		// return active texture to 0
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 	}
 
 	/**
@@ -276,12 +290,12 @@ public class GameCanvas {
 	 * @param fullscreen Whether this canvas should change to fullscreen.
 	 * @param desktop 	 Whether to use the current desktop resolution
 	 */
-	public void setFullscreen(boolean value, boolean desktop) {
+	public void setFullscreen(boolean fullscreen, boolean desktop) {
 		if (active != DrawPass.INACTIVE) {
 			Gdx.app.error("GameCanvas", "Cannot alter property while drawing active", new IllegalStateException());
 			return;
 		}
-		if (value) {
+		if (fullscreen) {
 			Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 		} else {
 			Gdx.graphics.setWindowedMode(width, height);
@@ -367,7 +381,8 @@ public class GameCanvas {
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
 
-		spriteBatch.setShader(null);
+		if(spriteBatch.getShader() == shaderProgram)
+			spriteBatch.setShader(null);
 	}
 
 	/**
@@ -387,7 +402,8 @@ public class GameCanvas {
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
 
-		spriteBatch.setShader(null);
+		if(spriteBatch.getShader() == shaderProgram)
+			spriteBatch.setShader(null);
 	}
 
 	/**
@@ -400,16 +416,27 @@ public class GameCanvas {
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
 
-		spriteBatch.setShader(null);
+		if(spriteBatch.getShader() == shaderProgram)
+			spriteBatch.setShader(null);
 	}
 
 	/**
 	 * Must be called AFTER begin(...) and BEFORE end() for the shader to work.
 	 */
-	public void useShader() {
+	public void useShader(float time) {
 		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
 		// if customShader.bind() is not called first, then the following line will SILENTLY fail, and the uniform will keep its initial value (0 for floats).
-		shaderProgram.setUniformf("f_test", 0.75f);// this is how we can transfer custom data to the shader
+//		shaderProgram.setUniformf("f_test", 0.75f);// this is how we can transfer custom data to the shader
+		Affine2 transform = new Affine2();
+		transform.setToScaling(1/3.0f, 1/3.0f);
+		Matrix4 objToWorldMat = new Matrix4();
+		objToWorldMat.setAsAffine(transform);
+		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
+		// pass textures (as indices)
+		shaderProgram.setUniformi("u_flowMap", 1);
+		shaderProgram.setUniformi("u_waveTexture", 2);
+		// pass time
+		shaderProgram.setUniformf("u_time", time);
 	}
 
 	/**
@@ -431,7 +458,6 @@ public class GameCanvas {
 	 * at the given coordinates.
 	 *
 	 * @param image The texture to draw
-	 * @param tint  The color tint
 	 * @param x 	The x-coordinate of the bottom left corner
 	 * @param y 	The y-coordinate of the bottom left corner
 	 */
@@ -584,7 +610,6 @@ public class GameCanvas {
 	 * at the given coordinates.
 	 *
 	 * @param region The texture to draw
-	 * @param tint  The color tint
 	 * @param x 	The x-coordinate of the bottom left corner
 	 * @param y 	The y-coordinate of the bottom left corner
 	 */
