@@ -3,6 +3,7 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -10,6 +11,9 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import java.util.Random;
 
 public class Current extends BoxObstacle {
+
+    private static void setConstants(JsonValue objParams){
+    }
 
     /**
      * Enum specifying the type of this game object.

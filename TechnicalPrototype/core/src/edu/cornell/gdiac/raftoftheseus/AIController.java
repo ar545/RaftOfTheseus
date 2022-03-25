@@ -1,13 +1,16 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 
+import com.badlogic.gdx.utils.JsonValue;
+import edu.cornell.gdiac.assets.AssetDirectory;
+
 import static edu.cornell.gdiac.raftoftheseus.Enemy.enemyState.*;
 
 public class AIController {
     /**
      * How close a target must be for us to chase it
      */
-    private static final int CHASE_DIST = 12;
+    private static int CHASE_DIST = 12;
 
     private int id;
 
@@ -20,6 +23,11 @@ public class AIController {
      * The number of ticks since we started this controller
      */
     private long ticks;
+
+    // Set class constants
+    public static void setConstants(JsonValue objParams){
+        CHASE_DIST = objParams.getChild("shark ai").getInt("chase distance", 12);
+    }
 
     public AIController(int id, Enemy enemy, Raft raft) {
         this.id = id;

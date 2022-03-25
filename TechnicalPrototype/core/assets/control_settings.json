@@ -1,0 +1,32 @@
+{
+  "mouse keyboard": {
+    "next": "1",
+    "previous": "2",
+    "reset": "R",
+    "debug": "G",
+    "exit": "Escape",
+    "fire": 0,
+    "map": 1,
+    "sprint": "Shift",
+    "up" : "W",
+    "down" : "S",
+    "left" : "A",
+    "right" : "D",
+    "tab" : "Tab"
+  },
+  "keyboard only" : {
+    "next": "A",
+    "previous": "S",
+    "reset": "R",
+    "debug": "D",
+    "exit": "Escape",
+    "fire": "Space",
+    "map": "Z",
+    "sprint": "Shift",
+    "up" : "Up",
+    "down" : "Down",
+    "left" : "Left",
+    "right" : "Right",
+    "tab" : "Tab"
+  }
+}

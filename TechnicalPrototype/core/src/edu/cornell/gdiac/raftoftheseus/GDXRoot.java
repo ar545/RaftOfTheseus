@@ -22,6 +22,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.freetype.*;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
 
 /**
@@ -68,6 +69,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		loading = new LoadingMode("assets.json",canvas,1);
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
+		constantsLoaded = false;
 		setScreen(loading);
 		loading.setScreenListener(this);
 	}
@@ -108,7 +110,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		canvas.resize();
 		super.resize(width,height);
 	}
-	
+
+	private boolean constantsLoaded;
+
 	/**
 	 * The given screen has made a request to exit its player mode.
 	 *
@@ -130,9 +134,18 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else if (screen == loading) {
+			directory = loading.getAssets();
+			// Stop load sounds and CONSTANTS
+			SoundController.getInstance().gatherAssets(directory);
+			if(!constantsLoaded) {
+				constantsLoaded = true;
+				JsonValue objParams = directory.getEntry("object_parameters.json", JsonValue.class);
+//				WorldController.setConstants(objParams);
+//				MenuMode.setConstants(objParams);
+			}
+			// Create menu
 			menu.setScreenListener(this);
 			Gdx.input.setInputProcessor(menu);
-			directory = loading.getAssets();
 			menu.populate(directory);
 			setScreen(menu);
 			loading.dispose();
@@ -142,13 +155,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			Gdx.input.setInputProcessor(menu);
 			setScreen(menu);
 		} else if (screen == menu) {
-			// Stop menu sounds
 			SoundController.getInstance().haltSounds();
 			menu.resetPressedState();
 			// Load level
 			playing.setScreenListener(this);
-			// Load rest of sounds?
-			SoundController.getInstance().gatherAssets(directory);
 			playing.gatherAssets(directory);
 			currentLevel = menu.getSelectedLevel() < numLevels ? menu.getSelectedLevel() : 0;
 			playing.setLevel(currentLevel);

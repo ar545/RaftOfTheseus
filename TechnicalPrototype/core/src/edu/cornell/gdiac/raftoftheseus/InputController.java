@@ -21,6 +21,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.util.Controllers;
 import edu.cornell.gdiac.util.XBoxController;
 
@@ -30,6 +32,25 @@ import edu.cornell.gdiac.util.XBoxController;
  */
 public class InputController {
 	// Fields to manage game state
+	/*=*=*=*=*=*=*=*=*=* SETTINGS *=*=*=*=*=*=*=*=*=*/
+
+	public static void setConstants(JsonValue keyParams){
+		controlSettings = keyParams;
+	}
+
+	private static JsonValue controlSettings;
+
+	private enum ControlScheme{
+		KeyboardOnly,
+		KeyboardMouse
+	}
+	private ControlScheme controlScheme;
+
+	private ArrayMap<String, Integer> mappings;
+
+	private int exitButton = Input.Keys.valueOf("Escape");
+
+
 
 	/*=*=*=*=*=*=*=*=*=* GAME NAVIGATION CONTROLS *=*=*=*=*=*=*=*=*=*/
 
@@ -85,6 +106,8 @@ public class InputController {
 	public InputController() {
 		mov_offset = new Vector2();
 		fire_location = new Vector2();
+		mappings = new ArrayMap<>();
+		controlScheme = ControlScheme.KeyboardOnly;
 	}
 
 	/** @return the singleton instance of the input controller */

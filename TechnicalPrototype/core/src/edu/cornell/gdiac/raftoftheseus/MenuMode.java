@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 import org.w3c.dom.Text;
@@ -27,6 +28,18 @@ public class MenuMode implements Screen, InputProcessor {
     private GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+
+    // Load constants
+    public static void setConstants(JsonValue objParams){
+        JsonValue menuParams = objParams.getChild("menu");
+        STANDARD_WIDTH = menuParams.getInt("width", 800);
+        STANDARD_HEIGHT = menuParams.getInt("height", 700);
+        BUTTON_SCALE = menuParams.getFloat("button scale", 1.25f);
+        PADDING_X = menuParams.getInt("padding x", 100);
+        PADDING_Y = menuParams.getInt("padding y", 100);
+        NUM_COLS = menuParams.getInt("level columns", 5);
+        LEVEL_COUNT = menuParams.getInt("level count", 9);
+    }
 
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH  = 800;
@@ -54,7 +67,7 @@ public class MenuMode implements Screen, InputProcessor {
     /** Whether this player mode is still active */
     private boolean active;
     /** Level count **/
-    private static final int LEVEL_COUNT = 9;
+    private static int LEVEL_COUNT = 9;
 
     /**
      * Creates a MenuMode with the default size and position.
