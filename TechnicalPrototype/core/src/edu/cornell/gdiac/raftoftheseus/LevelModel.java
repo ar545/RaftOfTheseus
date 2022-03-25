@@ -152,10 +152,19 @@ public class LevelModel {
     }
 
     /** @return the height and width of bounds only
-     * width: GRID_SIZE.x * map_size.x + 2 * DEFAULT_BOUNDARY,
-     * height: GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY */
+     * width: GRID_SIZE.x * map_size.x
+     * height: GRID_SIZE.y * map_size.y */
     public Vector2 boundsVector2(){
         return new Vector2(bounds.width, bounds.height);
+    }
+
+    /** @return the height and width of bounds only
+     * x = y = - DEFAULT_BOUNDARY;
+     * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
+     * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
+    public Rectangle wallBounds(){
+        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - DEFAULT_BOUNDARY,
+                bounds.width + DEFAULT_BOUNDARY, bounds.height + DEFAULT_BOUNDARY);
     }
 
     /** Adds a physics object in to the insertion queue.
