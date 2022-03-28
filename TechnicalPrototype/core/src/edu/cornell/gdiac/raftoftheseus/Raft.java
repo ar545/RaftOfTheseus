@@ -35,7 +35,7 @@ public class Raft extends CapsuleObstacle {
     /** The star of the level. This must be >=0. */
     private int star;
     /** Initial player health */
-    private static final int INITIAL_PLAYER_STAR = 0;
+    private static final int INITIAL_PLAYER_STAR = 0; //TODO: potential bugs on stars upon level restart
 
     /** Whether the raft is actively firing */
     private boolean fire;
