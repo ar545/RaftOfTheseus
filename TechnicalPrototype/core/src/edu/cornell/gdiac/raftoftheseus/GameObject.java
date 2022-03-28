@@ -76,8 +76,8 @@ public abstract class GameObject extends SimpleObstacle {
 
     /** Combined force vectors of all currents affecting this object */
     private Vector2 currentsCache = new Vector2();
-    /** The speed at which a current flows, in units per second */
-    private final float waterSpeed = 15.0f;
+//    /** The speed at which a current flows, in units per second */
+//    private final float waterSpeed = 15.0f;
     /** The average velocity of water flowing near this object */
     protected Vector2 waterVelocity = new Vector2();
     /** Modifier on force applied by current */
@@ -87,16 +87,16 @@ public abstract class GameObject extends SimpleObstacle {
 
     public void enterCurrent(Vector2 f) {
         currentsCache.add(f);
-        waterVelocity.set(currentsCache).nor().scl(waterSpeed);
+        waterVelocity.set(currentsCache); // cancelled normalization (.nor().scl(waterSpeed)) due to speed variant
     }
 
     public void exitCurrent(Vector2 f) {
         currentsCache.sub(f);
-        if (currentsCache.isZero(0.01f)) {
+        if (currentsCache.isZero(0.1f)) {
             currentsCache.setZero();
             waterVelocity.setZero();
         } else
-            waterVelocity.set(currentsCache).nor().scl(waterSpeed);
+            waterVelocity.set(currentsCache); // cancelled normalization (.nor().scl(waterSpeed)) due to speed variant
     }
 
     // ABSTRACT METHODS
