@@ -112,6 +112,7 @@ public class GameCanvas {
 	String vertexShader;
 	String fragmentShader;
 	ShaderProgram shaderProgram;
+	Vector2 levelSize = new Vector2(0,0);
 
 	/**
 	 * Creates a new GameCanvas determined by the application configuration.
@@ -143,13 +144,8 @@ public class GameCanvas {
 		fragmentShader = Gdx.files.internal("core/assets/shaders/wavy_fragment.glsl").readString();
 		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
 
-		// load the special textures we need for shader
-		Texture flowMap = new Texture(Gdx.files.internal("core/assets/images/flowmap.png"));// TODO use asset system
+		// load and bind water texture for shader
 		Texture waterTexture = new Texture(Gdx.files.internal("core/assets/images/water_texture.png"));// TODO use asset system
-
-		// bind special textures to GL state machine
-		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
-		flowMap.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
 		waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
 		waterTexture.bind();
@@ -435,9 +431,17 @@ public class GameCanvas {
 		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
 		// pass textures (as indices)
 		shaderProgram.setUniformi("u_flowMap", 1);
+		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
 		shaderProgram.setUniformi("u_waveTexture", 2);
 		// pass time
 		shaderProgram.setUniformf("u_time", time);
+	}
+
+	public void setFlowMap(Texture flowMap) {
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
+		flowMap.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
+		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
 	}
 
 	public void stopUsingShader() {

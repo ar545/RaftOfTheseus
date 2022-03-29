@@ -844,6 +844,11 @@ public class WorldController implements Screen, ContactListener {
         prepareEnemy();
 
         SoundController.getInstance().startLevelMusic();
+
+        // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
+        // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
+        if (USE_SHADER_FOR_WATER)
+            canvas.setFlowMap(levelModel.recalculateFlowMap());
     }
 
     /**
