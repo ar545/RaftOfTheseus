@@ -294,6 +294,12 @@ public class WorldController implements Screen, ContactListener {
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
+
+        if (USE_SHADER_FOR_WATER) {
+            Texture waterTexture = directory.getEntry("water_texture", Texture.class);
+            waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+            canvas.setWaterTexture(waterTexture);
+        }
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/

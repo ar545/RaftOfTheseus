@@ -143,15 +143,6 @@ public class GameCanvas {
 		vertexShader = Gdx.files.internal("core/assets/shaders/wavy_vertex.glsl").readString();
 		fragmentShader = Gdx.files.internal("core/assets/shaders/wavy_fragment.glsl").readString();
 		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
-
-		// load and bind water texture for shader
-		Texture waterTexture = new Texture(Gdx.files.internal("core/assets/images/water_texture.png"));// TODO use asset system
-		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
-		waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-		waterTexture.bind();
-
-		// return active texture to 0
-		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 	}
 
 	/**
@@ -422,8 +413,7 @@ public class GameCanvas {
 	 */
 	public void useShader(float time) {
 		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
-		// if customShader.bind() is not called first, then the following line will SILENTLY fail, and the uniform will keep its initial value (0 for floats).
-//		shaderProgram.setUniformf("f_test", 0.75f);// this is how we can transfer custom data to the shader
+		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
 		Affine2 transform = new Affine2();
 		transform.setToScaling(1/100.0f, 1/100.0f);// TODO: this is sloppy, shouldn't be hardcoded, also I don't know why 100 is the right number here
 		Matrix4 objToWorldMat = new Matrix4();
@@ -442,6 +432,12 @@ public class GameCanvas {
 		flowMap.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
+	}
+
+	public void setWaterTexture(Texture waterTexture) {
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+		waterTexture.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 	}
 
 	public void stopUsingShader() {

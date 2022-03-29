@@ -20,6 +20,7 @@
       "current": "images/current_square.png",
       "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
+      "water_texture":     "images/water_texture.png",
       "level_0": "images/level_0.png",
       "level_1": "images/level_1.png",
       "level_2": "images/level_2.png",
@@ -45,8 +46,7 @@
           "foreleft"   : [0,   40,  16, 70],
           "foreright"  : [384, 40, 400, 70]
         }
-      },
-      "water_texture": "images/water_texture.png"
+      }
     },
     "fonts": {
         "grande": {
