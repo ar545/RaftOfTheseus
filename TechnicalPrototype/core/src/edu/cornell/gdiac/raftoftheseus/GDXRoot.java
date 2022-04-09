@@ -139,9 +139,12 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			SoundController.getInstance().gatherAssets(directory);
 			if(!constantsLoaded) {
 				constantsLoaded = true;
-				JsonValue objParams = directory.getEntry("object_parameters.json", JsonValue.class);
+				JsonValue objParams = directory.getEntry("object_parameters", JsonValue.class);
 //				WorldController.setConstants(objParams);
 //				MenuMode.setConstants(objParams);
+				JsonValue keys = directory.getEntry("control_settings", JsonValue.class);
+				InputController.setConstants(keys);
+				InputController.getInstance();
 			}
 			// Create menu
 			menu.setScreenListener(this);
@@ -151,6 +154,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			loading.dispose();
 			loading = null;
 		} else if (screen == playing){
+			SoundController.getInstance().haltSounds();
 			menu.setScreenListener(this);
 			Gdx.input.setInputProcessor(menu);
 			setScreen(menu);

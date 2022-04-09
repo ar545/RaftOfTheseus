@@ -12,13 +12,14 @@
     "down" : "S",
     "left" : "A",
     "right" : "D",
-    "tab" : "Tab"
+    "tab" : "Tab",
+    "change controls" : "C"
   },
   "keyboard only" : {
-    "next": "A",
-    "previous": "S",
+    "next": "1",
+    "previous": "2",
     "reset": "R",
-    "debug": "D",
+    "debug": "G",
     "exit": "Escape",
     "fire": "Space",
     "map": "Z",
@@ -27,6 +28,7 @@
     "down" : "Down",
     "left" : "Left",
     "right" : "Right",
-    "tab" : "Tab"
+    "tab" : "Tab",
+    "change controls" : "C"
   }
 }

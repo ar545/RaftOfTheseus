@@ -7,9 +7,9 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Bullet extends WheelObstacle {
     /** Scaling factor the speed of a bullet. */
-    public static float BULLET_SPEED;
+    public static float BULLET_SPEED=8;
     /** Health cost for creating a bullet. */
-    public static float BULLET_DAMAGE;
+    public static float BULLET_DAMAGE=-5;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
     public ObjectType getType() { return ObjectType.BULLET; }
