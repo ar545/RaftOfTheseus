@@ -85,7 +85,7 @@ public class WorldController implements Screen, ContactListener {
     /** Countdown active for winning or losing */
     private int countdown;
     /** array of controls for each enemy**/
-    private AIController[] controls;
+    private SharkController[] controls;
 
 
     /**
@@ -346,14 +346,9 @@ public class WorldController implements Screen, ContactListener {
         return true;
     }
 
-    /**
-     * Add a new bullet to the world and send it in the right direction.
-     */
-    private void createBullet(Enemy nearestEnemy) {
-        Raft player = levelModel.getPlayer();
-        // Compute position and velocity
-        Vector2 facing = nearestEnemy.getPosition().sub(player.getPosition()).nor();
-        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f));
+
+    private void createBullet(Vector2 facing, Raft player){
+        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f), true);
         bullet.setTexture(bullet_texture);
 //        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
         bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
@@ -361,6 +356,22 @@ public class WorldController implements Screen, ContactListener {
         player.addHealth(Bullet.BULLET_DAMAGE);
     }
 
+    /**
+     * Add a new bullet to the world and send it in the right direction.
+     */
+    private void createBullet(Shark nearestShark) {
+        Raft player = levelModel.getPlayer();
+        // Compute position and velocity
+        Vector2 facing = nearestShark.getPosition().sub(player.getPosition()).nor();
+        createBullet(facing, player);
+    }
+
+    private void createBullet(Vector2 firelocation) {
+        Raft player = levelModel.getPlayer();
+        // Compute position and velocity
+        Vector2 facing = firelocation.sub(player.getPosition()).nor();
+        createBullet(facing, player);
+    }
 
     /**
      * The core gameplay loop of this world.
@@ -382,19 +393,24 @@ public class WorldController implements Screen, ContactListener {
         // Add a bullet if we fire
         if (player.isFire()) {
             // find nearest enemy to player
-            Enemy nearestEnemy = null;
-            float nearestD2 = -1;
-            for (Enemy e : levelModel.getEnemies()) {
-                if (!e.isDestroyed()) {
-                    float d2 = e.getPosition().dst2(player.getPosition());
-                    if (nearestD2 == -1 || d2 < nearestD2) {
-                        nearestD2 = d2;
-                        nearestEnemy = e;
+            if(ic.mouseActive()){
+                createBullet(ic.getFireDirection());
+            }
+            else {
+                Shark nearestShark = null;
+                float nearestD2 = -1;
+                for (Shark e : levelModel.getEnemies()) {
+                    if (!e.isDestroyed()) {
+                        float d2 = e.getPosition().dst2(player.getPosition());
+                        if (nearestD2 == -1 || d2 < nearestD2) {
+                            nearestD2 = d2;
+                            nearestShark = e;
+                        }
                     }
                 }
-            }
-            if (nearestEnemy != null) {
-                createBullet(nearestEnemy);
+                if (nearestShark != null) {
+                    createBullet(nearestShark);
+                }
             }
         }
 
@@ -407,11 +423,11 @@ public class WorldController implements Screen, ContactListener {
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies() {
-        PooledList<Enemy> el = levelModel.getEnemies();
+        PooledList<Shark> el = levelModel.getEnemies();
 
         for (int i = 0; i< el.size(); i++) {
-            Enemy enemy = el.get(i);
-            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            Shark shark = el.get(i);
+            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
     }
 
@@ -463,8 +479,8 @@ public class WorldController implements Screen, ContactListener {
     /** Update the level themed music according the game status */
     private void resolveMusic() {
         boolean nowInDanger = false;
-        for(AIController ai : controls){
-            if(ai.isAlive() && ai.getState() == Enemy.enemyState.CHASE){
+        for(SharkController ai : controls){
+            if(ai.isAlive() && ai.getState() == Shark.enemyState.CHASE){
                 nowInDanger = true;
                 break;
             }
@@ -613,9 +629,9 @@ public class WorldController implements Screen, ContactListener {
             }
             // Check for player kill enemies (health-)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.ENEMY)){
-                ResolveCollision((Raft)bd1, (Enemy) bd2);
+                ResolveCollision((Raft)bd1, (Shark) bd2);
             }else if(bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Enemy) bd1);
+                ResolveCollision((Raft)bd2, (Shark) bd1);
             }
             // Check for player collision with treasure (star+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
@@ -702,9 +718,9 @@ public class WorldController implements Screen, ContactListener {
     /** Resolve collision between two objects of specific types
      * @param r raft
      * @param e enemy */
-    private void ResolveCollision(Raft r, Enemy e) {
+    private void ResolveCollision(Raft r, Shark e) {
         // update player health
-        r.addHealth(Enemy.ENEMY_DAMAGE);
+        r.addHealth(Shark.ENEMY_DAMAGE);
         // destroy enemy
         e.setDestroyed(true);
     }
@@ -819,10 +835,10 @@ public class WorldController implements Screen, ContactListener {
 
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
-        PooledList<Enemy> enemies = levelModel.getEnemies();
-        controls = new AIController[enemies.size()];
+        PooledList<Shark> enemies = levelModel.getEnemies();
+        controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
         }
 //        System.out.println(Arrays.toString(controls));
     }
@@ -836,7 +852,6 @@ public class WorldController implements Screen, ContactListener {
         emptyLevel();
         levelModel.loadLevel(level_int);
         prepareEnemy();
-
         SoundController.getInstance().startLevelMusic();
     }
 

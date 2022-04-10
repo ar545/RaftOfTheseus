@@ -123,10 +123,12 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if(exitCode == WorldController.EXIT_PREV){
+			SoundController.getInstance().haltSounds();
 			currentLevel = Math.max(0, currentLevel-1);
 			playing.setLevel(currentLevel);
 			setScreen(playing);
 		}else if(exitCode == WorldController.EXIT_NEXT){
+			SoundController.getInstance().haltSounds();
 			currentLevel = Math.min(numLevels-1, currentLevel+1);
 			playing.setLevel(currentLevel);
 			setScreen(playing);

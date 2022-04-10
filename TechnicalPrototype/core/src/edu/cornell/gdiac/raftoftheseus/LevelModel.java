@@ -90,7 +90,7 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<Enemy> enemies = new PooledList<>();
+    private PooledList<Shark> enemies = new PooledList<>();
 
     // Graphics assets for the entities
     /** Texture for all ships, as they look the same */
@@ -122,7 +122,7 @@ public class LevelModel {
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
-    public PooledList<Enemy> getEnemies() { return enemies; }
+    public PooledList<Shark> getEnemies() { return enemies; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -193,7 +193,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addEnemyObject(Enemy obj) {
+    protected void addEnemyObject(Shark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -325,8 +325,8 @@ public class LevelModel {
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
-        for (Enemy enemy : enemies){
-            enemy.setTargetRaft(raft);
+        for (Shark shark : enemies){
+            shark.setTargetRaft(raft);
         }
     }
 
@@ -401,9 +401,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-        Enemy this_enemy = new Enemy(compute_temp, null);
-        this_enemy.setTexture(enemyTexture);
-        addEnemyObject(this_enemy);
+        Shark this_shark = new Shark(compute_temp, null);
+        this_shark.setTexture(enemyTexture);
+        addEnemyObject(this_shark);
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.

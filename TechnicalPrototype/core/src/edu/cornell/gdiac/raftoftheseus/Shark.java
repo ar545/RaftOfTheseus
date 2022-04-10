@@ -2,13 +2,12 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 import java.util.Random;
 
-public class Enemy extends WheelObstacle {
+public class Shark extends WheelObstacle {
 
     private Random rand = new Random();
 
@@ -59,7 +58,7 @@ public class Enemy extends WheelObstacle {
      */
     private Raft targetRaft;
 
-    public Enemy() {
+    public Shark() {
         super();
     }
 
@@ -67,7 +66,7 @@ public class Enemy extends WheelObstacle {
         this.targetRaft = targetRaft;
     }
 
-    public Enemy(Vector2 position, Raft targetRaft) {
+    public Shark(Vector2 position, Raft targetRaft) {
         super();
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);

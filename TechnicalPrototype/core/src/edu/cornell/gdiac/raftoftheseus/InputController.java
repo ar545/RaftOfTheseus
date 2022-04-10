@@ -183,23 +183,19 @@ public class InputController {
 	public boolean didLeft() { return leftPressed; }
 	/** @return true if the sprint button was pressed. */
 	public boolean didSprint() { return sprintPressed; }
+	/** @return true if the mouse is being used. */
+	public boolean mouseActive() { return controlScheme == ControlScheme.KeyboardMouse; }
 	/** Find whether the player moved and should reduce health . */
 	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
-
 
 	/**
 	 * -1 = down/left, 1 = up/right, 0 = still
 	 * @return the amount of vertical and horizontal movement
+	 * normalize vector so diagonal movement isn't 41.4% faster than normal movement
 	 */
-	public Vector2 getMovement() {
-		return mov_offset.set(x_offset, y_offset).nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
-	}
-
+	public Vector2 getMovement() { return mov_offset.set(x_offset, y_offset).nor(); }
 	/** @return where the mouse was clicked in screen coordinates */
-	public Vector2 getFireLocation() {
-		fire_location.set(x_offset, y_offset);
-		return fire_location;
-	}
+	public Vector2 getFireDirection() { return fire_location; }
 
 	/*=*=*=*=*=*=*=*=*=* READ INPUT *=*=*=*=*=*=*=*=*=*/
 

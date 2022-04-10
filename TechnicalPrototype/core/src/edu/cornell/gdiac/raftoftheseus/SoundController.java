@@ -76,15 +76,6 @@ public class SoundController {
         musicVolume = set.getFloat("music_volume", 1.0f);
         tradeRate = set.getFloat("trade_rate", 0.01f);
         tradeThreshold = set.getFloat("trade_threshold", 0.05f);
-        // Load presets
-//        for(JsonValue s : soundEffects){
-//            String n = s.getString("preset_number", null);
-//            sfx.put(n, directory.getEntry(n, Sound.class));
-//        }
-//        for(JsonValue m : directory.getEntry("assets", JsonValue.class).get("music_presets")){
-//            musicPresets.put(m.getInt("preset_number", 0), m);
-//        }
-
         Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw", "wood_pickup", "raft_damage"});
         Array<String> tempmsc = new Array<>(new String[]{"background", "explore", "danger"});
 
@@ -248,7 +239,6 @@ public class SoundController {
         playMusic("background");
     }
 
-
     /**
      * For looping menu music only.
      * @param name
@@ -342,7 +332,6 @@ public class SoundController {
      * Method to call every update loop to transition the music.
      */
     public void updateMusic(){
-        float v;
         if(STATE == MusicState.ENTER_DANGER){
             if(music.get("explore").getVolume() < tradeThreshold){
                 setMusicVolume("danger", musicVolume);
