@@ -104,12 +104,12 @@ void main() {
 
     // Here I tint the "low" parts a darker blue.
 //    c = mix(c, c*c + vec4(0, 0, 0.05, 0), waveBlend * 0.75 * clamp(1.2 - 4.0 * wave.x, 0, 1));
-    c = mix(c, c*c + vec4(0, 0, 0.05, 0), 0.75 * clamp(1.2 - 4.0 * waveTex, 0, 1));
+    c = mix(c, c*c + vec4(0, 0, 0.05, 0), 0.75 * clamp(1.2 - 4.0 * waveTex, 0.0, 1.0));
 
     // Then brighten the peaks. (more brightness for higher flow speed)
 //    c += waveBlend * clamp((wave.x - 0.4) * 2.0, 0, 1) * (0.2 + wave.y*0.5);
 //    c += waveBlend * clamp((wave - 0.4) * 2.0, 0, 1) * 0.3;
-    c += clamp((waveTex - 0.4) * 2.0, 0, 1) * (0.2 + waterSpeed*0.5);
+    c += clamp((waveTex - 0.4) * 2.0, 0.0, 1.0) * (0.2 + waterSpeed*0.5);
 
     gl_FragColor = c * v_color;
 }
