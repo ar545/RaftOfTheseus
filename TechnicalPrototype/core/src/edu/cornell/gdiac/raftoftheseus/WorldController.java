@@ -24,6 +24,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
+        Bullet.setConstants(objParams.get("bullet"));
     }
 
     // CONSTANTS
@@ -872,7 +873,8 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-       setLevel(level_id);
+        SoundController.getInstance().haltSounds();
+        setLevel(level_id);
     }
 
 }

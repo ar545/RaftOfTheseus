@@ -78,9 +78,9 @@ public class SoundController {
         tradeThreshold = set.getFloat("trade_threshold", 0.05f);
 
         // Get sfx
-        JsonValue sfxnames = set.getChild("sound_names");
+        JsonValue sfxnames = set.get("sound_names");
         for(JsonValue s : sfxnames){
-            sfx.put(s.name(), directory.getEntry(s.asString(), Sound.class));
+            sfx.put(s.name(), directory.getEntry(s.name(), Sound.class));
         }
         // Get music presets
         JsonValue mscpresets = directory.getEntry("music_presets", JsonValue.class);
@@ -229,8 +229,6 @@ public class SoundController {
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
     public void startLevelMusic(){
-        System.out.println(music.get("explore"));
-        System.out.println(music.get("background"));
         playMusic("explore");
         playMusic("background");
     }
