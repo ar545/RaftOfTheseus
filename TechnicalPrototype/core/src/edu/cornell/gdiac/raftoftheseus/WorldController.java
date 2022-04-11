@@ -41,6 +41,9 @@ public class WorldController implements Screen, ContactListener {
     /** How many frames after winning/losing do we continue? */
     public static int EXIT_COUNT = 120;
 
+    /** Whether to use shaders or not */
+    private static boolean USE_SHADER_FOR_WATER = true;
+
     /** The amount of time for a physics engine step. */
     public static float WORLD_STEP = 1/60.0f;
     /** Number of velocity iterations for the constraint solvers */
@@ -76,6 +79,8 @@ public class WorldController implements Screen, ContactListener {
     protected Texture mapBackground;
     /** Texture for GAME background */
     protected Texture gameBackground;
+    /** Texture for game background when using shader */
+    protected Texture blueTexture;
 
     // WORLD
     protected LevelModel levelModel;
@@ -102,6 +107,7 @@ public class WorldController implements Screen, ContactListener {
     /** Find whether a hydra can see the player. */
     private HydraRayCast hydraSight;
 
+    private final long startTime;
 
     /**
      * Creates a new game world
@@ -120,6 +126,7 @@ public class WorldController implements Screen, ContactListener {
         this.active = false;
         this.countdown = -1;
         hydraSight = new HydraRayCast();
+        startTime = System.currentTimeMillis();
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -160,9 +167,10 @@ public class WorldController implements Screen, ContactListener {
      */
     public void draw(float dt) {
         // return if no canvas pointer
-        if(canvas == null){
+        if(canvas == null)
             return;
-        }
+        if (!canvas.shaderCanBeUsed)
+            USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
 
@@ -174,9 +182,10 @@ public class WorldController implements Screen, ContactListener {
 
         canvas.clear();
         canvas.begin(cameraTransform);
-        drawMovingBackground(pixelsPerUnit);
+        drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            obj.draw(canvas);
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
+                obj.draw(canvas);
         }
         canvas.end();
 
@@ -239,12 +248,19 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
-    /** draw a background for the sea
-     * Precondition & post-condition: the game canvas is open */
-    private void drawMovingBackground(float pixel) {
+    /** draws background water and moving currents (using shader) */
+    private void drawWater() {
+        if (USE_SHADER_FOR_WATER)
+            canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+        float pixel = 100/3.0f;
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
-        canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        if (!USE_SHADER_FOR_WATER)
+            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        else
+            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
+        if (USE_SHADER_FOR_WATER)
+            canvas.stopUsingShader();
     }
 
     /** Draw star at the up left corner
@@ -301,10 +317,16 @@ public class WorldController implements Screen, ContactListener {
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
+        blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
         this.directory = directory;
+        if (USE_SHADER_FOR_WATER) {
+            Texture waterTexture = directory.getEntry("water_texture", Texture.class);
+            waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+            canvas.setWaterTexture(waterTexture);
+        }
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -914,6 +936,11 @@ public class WorldController implements Screen, ContactListener {
         prepareEnemy();
         SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
+
+        // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
+        // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
+        if (USE_SHADER_FOR_WATER)
+            canvas.setFlowMap(levelModel.recalculateFlowMap());
     }
 
     /**

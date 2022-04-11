@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
@@ -526,5 +527,25 @@ public class LevelModel {
         Wood this_wood = new Wood(boundsVector2());
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
+    }
+
+    public Texture recalculateFlowMap() {
+        Pixmap pix = new Pixmap(map_size.x, map_size.y,  Pixmap.Format.RGBA8888);
+        pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
+        pix.fill();
+        for (GameObject o : getObjects()) {
+            if (o.getType() == GameObject.ObjectType.CURRENT) {
+                Current c = (Current)o;
+                Vector2 p = c.getPosition(); // in box2d units (3 per tile)
+                p.scl(1.0f/GRID_SIZE.x, 1.0f/GRID_SIZE.y); // in tiles
+                Vector2 d = c.getDirectionVector(); // length 1
+                d.add(1,1).scl(0.5f); // between 0 and 1
+                pix.setColor(d.x, d.y, 0, 1);
+                pix.drawPixel((int)p.x, (int)p.y);
+            }
+        }
+        Texture t = new Texture(pix);
+        t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
+        return t;
     }
 }

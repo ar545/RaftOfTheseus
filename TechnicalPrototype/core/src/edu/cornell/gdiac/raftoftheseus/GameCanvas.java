@@ -18,11 +18,13 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g3d.particles.influencers.ColorInfluencer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.*;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
  * Primary view class for the game, abstracting the basic graphics calls.
@@ -108,6 +110,10 @@ public class GameCanvas {
 	/** Cache object to handle raw textures */
 	private TextureRegion holder;
 
+	private ShaderProgram shaderProgram;
+	private Vector2 levelSize = new Vector2(0,0);
+	public final boolean shaderCanBeUsed;
+
 	/**
 	 * Creates a new GameCanvas determined by the application configuration.
 	 *
@@ -132,6 +138,16 @@ public class GameCanvas {
 		local  = new Affine2();
 		global = new Matrix4();
 		vertex = new Vector2();
+
+		try {
+			String vertexShader = Gdx.files.local("shaders/wavy_vertex.glsl").readString();
+			String fragmentShader = Gdx.files.local("shaders/wavy_fragment.glsl").readString();
+			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
+		} catch (GdxRuntimeException e) {
+			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
+			shaderProgram = null;
+		}
+		shaderCanBeUsed = (shaderProgram != null);
 	}
 
 	/**
@@ -267,12 +283,12 @@ public class GameCanvas {
 	 * @param fullscreen Whether this canvas should change to fullscreen.
 	 * @param desktop 	 Whether to use the current desktop resolution
 	 */
-	public void setFullscreen(boolean value, boolean desktop) {
+	public void setFullscreen(boolean fullscreen, boolean desktop) {
 		if (active != DrawPass.INACTIVE) {
 			Gdx.app.error("GameCanvas", "Cannot alter property while drawing active", new IllegalStateException());
 			return;
 		}
-		if (value) {
+		if (fullscreen) {
 			Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 		} else {
 			Gdx.graphics.setWindowedMode(width, height);
@@ -352,11 +368,14 @@ public class GameCanvas {
 	public void begin(Affine2 affine) {
 		global.setAsAffine(affine);
 		global.mulLeft(camera.combined);
-		spriteBatch.setProjectionMatrix(global);
+		spriteBatch.setProjectionMatrix(global);// custom shader must be set before this (or maybe not?)
 
 		setBlendState(BlendState.NO_PREMULT);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		if(spriteBatch.getShader() == shaderProgram)
+			spriteBatch.setShader(null);
 	}
 
 	/**
@@ -375,6 +394,9 @@ public class GameCanvas {
 
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		if(spriteBatch.getShader() == shaderProgram)
+			spriteBatch.setShader(null);
 	}
 
 	/**
@@ -386,6 +408,45 @@ public class GameCanvas {
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
+
+		if(spriteBatch.getShader() == shaderProgram)
+			spriteBatch.setShader(null);
+	}
+
+	/**
+	 * Must be called AFTER begin(...) and BEFORE end() for the shader to work.
+	 */
+	public void useShader(float time) {
+		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
+		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
+		Affine2 transform = new Affine2();
+		transform.setToScaling(1/100.0f, 1/100.0f);// TODO: this is sloppy, shouldn't be hardcoded, also I don't know why 100 is the right number here
+		Matrix4 objToWorldMat = new Matrix4();
+		objToWorldMat.setAsAffine(transform);
+		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
+		// pass textures (as indices)
+		shaderProgram.setUniformi("u_flowMap", 1);
+		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
+		shaderProgram.setUniformi("u_waveTexture", 2);
+		// pass time
+		shaderProgram.setUniformf("u_time", time);
+	}
+
+	public void setFlowMap(Texture flowMap) {
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
+		flowMap.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
+		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
+	}
+
+	public void setWaterTexture(Texture waterTexture) {
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+		waterTexture.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
+	}
+
+	public void stopUsingShader() {
+		spriteBatch.setShader(null);
 	}
 
 	/**
@@ -407,7 +468,6 @@ public class GameCanvas {
 	 * at the given coordinates.
 	 *
 	 * @param image The texture to draw
-	 * @param tint  The color tint
 	 * @param x 	The x-coordinate of the bottom left corner
 	 * @param y 	The y-coordinate of the bottom left corner
 	 */
@@ -560,7 +620,6 @@ public class GameCanvas {
 	 * at the given coordinates.
 	 *
 	 * @param region The texture to draw
-	 * @param tint  The color tint
 	 * @param x 	The x-coordinate of the bottom left corner
 	 * @param y 	The y-coordinate of the bottom left corner
 	 */
