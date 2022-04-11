@@ -6,9 +6,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Bullet extends WheelObstacle {
+public class Bullet extends BoxObstacle {
     /** Scaling factor the speed of a bullet. */
     public static float BULLET_SPEED;
     /** Health cost for creating a bullet. */
@@ -23,7 +24,7 @@ public class Bullet extends WheelObstacle {
     /** Whether it was created by the player or not. */
     private boolean player;
 
-    private static Texture texture;
+    private static Texture text;
 
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
@@ -36,19 +37,17 @@ public class Bullet extends WheelObstacle {
         BULLET_RANGE_FALL = objParams.getFloat(4);
     }
     public static void setText(Texture t){
-        texture = t;
+        text = t;
     }
 
 
     public Bullet(Vector2 position, boolean player) {
-        super();
-        setRadius(BULLET_SIZE);
+        super(1, 1);
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         setFriction(0);
         setRestitution(0);
         setLinearDamping(0);
-        setAngle();
         this.player = player;
         originalPos = new Vector2(position);
         if(player) {
@@ -58,12 +57,7 @@ public class Bullet extends WheelObstacle {
             fixture.filter.categoryBits = CATEGORY_ENEMY_BULLET;
             fixture.filter.maskBits = MASK_ENEMY_BULLET;
         }
-        setTexture(texture);
-    }
-
-    @Override
-    public void setTexture(Texture texture) {
-        super.setTexture(texture);
+        super.setTexture(text);
     }
 
     @Override
@@ -79,11 +73,4 @@ public class Bullet extends WheelObstacle {
         }
     }
 
-    @Override
-    public void draw(GameCanvas canvas) {
-        if (texture != null) {
-            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
-                    getAngle(), textureScale.x, textureScale.y);
-        }
-    }
 }

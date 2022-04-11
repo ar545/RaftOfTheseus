@@ -131,13 +131,6 @@ public abstract class WheelObstacle extends GameObject {
 		super.setTexture(new TextureRegion(texture));
 		textureScale = new Vector2(2.0f*getRadius()*drawScale.x / texture.getWidth(),
 				2.0f*getRadius()*drawScale.x / texture.getHeight());
-		if(this.getType() == ObjectType.BULLET){
-			textureScale = new Vector2(0.1f, 0.1f);
-		}
-//		if(this.getType() == ObjectType.BULLET){
-//			textureScale = new Vector2(2, 2);
-//		}
-
 	}
 
 	public float getCrossSectionalArea() {

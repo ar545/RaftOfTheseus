@@ -416,6 +416,7 @@ public class WorldController implements Screen, ContactListener {
         bullet.setTexture(bullet_texture);
 //        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
         bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        bullet.setAngle(facing.angleDeg()+90f);
         levelModel.addQueuedObject(bullet);
         player.addHealth(Bullet.BULLET_DAMAGE);
     }
