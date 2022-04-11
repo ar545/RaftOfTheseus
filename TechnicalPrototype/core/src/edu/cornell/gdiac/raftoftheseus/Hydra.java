@@ -27,9 +27,9 @@ public class Hydra extends WheelObstacle {
     private Vector2 targetDirection = new Vector2();
     private long time1;
     private boolean timeSet = false;
-    private boolean canFire = true;
     private boolean isHit = false;
     private boolean canSee = false;
+    private boolean justFired = true;
 
     public static enum EnemyState {
         /* The enemy just spawned */
@@ -42,6 +42,7 @@ public class Hydra extends WheelObstacle {
         SPLASHING,
         STUNNED
     }
+    private EnemyState state;
 
     /**
      * This is the player, if this enemy is targeting the player.
@@ -61,22 +62,31 @@ public class Hydra extends WheelObstacle {
         super.update(dt);
     }
 
-    public boolean canFire(){ return canFire; }
+    public void setTargetRaft(Raft targetRaft) {
+        this.targetRaft = targetRaft;
+    }
+    public boolean canFire(){ return canSee && inRange() && cooldownElapsed(); }
     public boolean isHit(){ return isHit; }
-    public void setHit(boolean h){ isHit = h; }
+    public void setHit(boolean h){ isHit = h; timeSet = false;}
     public boolean canSee(){ return canSee; }
     public void setSee(boolean h){ canSee = h; }
-    public float dist(){
-        return getPosition().dst(targetRaft.getPosition());
+    public boolean inRange(){
+        return getPosition().dst(targetRaft.getPosition()) <= RANGE;
     }
+    public boolean cooldownElapsed(){
+        return TimeUtils.timeSinceMillis(time1) > COOLDOWN;
+    }
+    public boolean stunElapsed(){
+        return TimeUtils.timeSinceMillis(time1) > STUNTIME;
+    }
+    public boolean isSplashing(){ return state == EnemyState.SPLASHING; }
 
-    /**
-     * call for AI controller
-     */
-    public void resolveAction(Hydra.EnemyState controlSignal, Raft player, long ticks) {
+    /** Call from AI controller */
+    public void resolveAction(Hydra.EnemyState controlSignal, long ticks) {
         if (isDestroyed())
             return;
 
+        state = controlSignal;
         switch (controlSignal) {
             case SPAWN:
                 // Intermittent state
@@ -88,37 +98,22 @@ public class Hydra extends WheelObstacle {
                 if(!timeSet) {
                     time1 = TimeUtils.millis();
                     timeSet = true;
-                } else if(TimeUtils.timeSinceMillis(time1) > COOLDOWN) {
-                    canFire;
                 }
                 // find a normal vector pointing to the target player and start timer
-                targetDirection.set(player.getPosition()).sub(getPosition()).nor();
-
+                targetDirection.set(targetRaft.getPosition()).sub(getPosition()).nor();
                 break;
             case SPLASHING:
-
+                timeSet = false;
+                break;
+            case STUNNED:
+                if(!timeSet) {
+                    time1 = TimeUtils.millis();
+                    timeSet = true;
+                }
             default:
                 // illegal state
                 assert (false);
                 break;
         }
-    }
-
-    /**
-     * Sets moveVector so that applying it as a linear impulse brings this object's velocity closer to
-     * moveVector*topSpeed.
-     * Precondition: moveVector.len() == 1.
-     * @param topSpeed Won't apply an impulse that takes us above this speed
-     * @param smoothing Impulse is scaled by (1-smoothing). Higher smoothing means wider turns, slower responses.
-     */
-    private void calculateImpulse(float topSpeed, float smoothing) {
-        float currentSpeed = getLinearVelocity().dot(moveVector); // current speed in that direction
-        float impulseMagnitude = (topSpeed - currentSpeed)*body.getMass()*(1-smoothing);
-        moveVector.scl(impulseMagnitude);
-    }
-
-    @Override
-    public float getCrossSectionalArea() {
-        return super.getCrossSectionalArea()*0.2f; // sharks are less affected by drag
     }
 }

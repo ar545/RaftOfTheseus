@@ -21,7 +21,7 @@ public class SirenController {
         RANGE = objParams.getInt("range", 12);
     }
 
-    public SirenController(int id, Siren siren, Raft raft) {
+    public SirenController(int id, Siren siren) {
         this.id = id;
         this.siren = siren;
         this.raft = raft;

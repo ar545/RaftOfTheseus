@@ -204,6 +204,23 @@ public class LevelModel {
         enemies.add(obj);
     }
 
+    // TODO Create enemy super class to reduce redundant code.
+    protected void addHydraObject(Hydra obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        hydras.add(obj);
+    }
+
+    protected void addSirenObject(Siren obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        sirens.add(obj);
+    }
+
+
+
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
     /**
@@ -404,9 +421,20 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-        Shark this_shark = new Shark(compute_temp, null);
-        this_shark.setTexture(enemyTexture);
-        addEnemyObject(this_shark);
+        switch(enemy_type) {
+            case 0: // Sharks
+                Shark this_shark = new Shark(compute_temp, null);
+                this_shark.setTexture(enemyTexture);
+                addEnemyObject(this_shark);
+            case 1: // Hydras
+                Hydra th = new Hydra(compute_temp, null);
+                th.setTexture(enemyTexture);
+                addHydraObject(th);
+            case 2: // Sirens
+                Siren ts = new Siren(compute_temp, null);
+                ts.setTexture(enemyTexture);
+                addSirenObject(ts);
+        }
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.

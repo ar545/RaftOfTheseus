@@ -15,10 +15,9 @@ public class HydraController {
      */
     private long ticks;
 
-    public HydraController(int id, Hydra hydra, Raft raft) {
+    public HydraController(int id, Hydra hydra) {
         this.id = id;
         this.hydra = hydra;
-        this.raft = raft;
         state = SPAWN;
         ticks = 0;
     }
@@ -51,21 +50,30 @@ public class HydraController {
                 state = IDLE;
                 break;
             case IDLE:
-                if (hydra.dist() <= RANGE && hydra.canSee())
+                if (hydra.inRange() && hydra.canSee())
                     state = ACTIVE;
+                if (hydra.isHit()){
+                    hydra.setHit(false);
+                    state = STUNNED;
+                }
                 break;
             case ACTIVE:
                 if (hydra.isHit()){
                     hydra.setHit(false);
                     state = STUNNED;
                 }
-                if (hydra.dist() > RANGE || !hydra.canSee())
+                else if (!hydra.inRange() || !hydra.canSee())
                     state = IDLE;
                 else if(hydra.canFire()){
                     state = SPLASHING;
                 }
                 break;
+            case SPLASHING:
+                state = ACTIVE;
             case STUNNED:
+                if(hydra.stunElapsed()){
+                    state = ACTIVE;
+                }
             default:
                 // illegal state
                 assert (false);

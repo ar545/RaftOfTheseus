@@ -446,6 +446,17 @@ public class WorldController implements Screen, ContactListener {
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
 
+        PooledList<Hydra> hy = levelModel.getHydras();
+        for (int i = 0; i<  hy.size(); i++) {
+            Hydra hydra = hy.get(i);
+            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
+            hydra.setSee(hydraSight.getCanSee());
+            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
+            if(hydra.isSplashing()){
+                createBullet(hydra.getPosition(), levelModel.getPlayer());
+            }
+        }
+
     }
 
     /**
@@ -664,8 +675,9 @@ public class WorldController implements Screen, ContactListener {
             }
             // Check for hydra collision with bullet
             else if(bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.HYDRA)){
-                // TODO
+                ResolveCollision((Hydra) bd2, (Bullet) bd1);
             } else if(bd1.getType().equals(GameObject.ObjectType.HYDRA) && bd2.getType().equals(GameObject.ObjectType.BULLET)){
+                ResolveCollision((Hydra) bd1, (Bullet) bd2);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -769,6 +781,12 @@ public class WorldController implements Screen, ContactListener {
         levelModel.addRandomWood();
     }
 
+    private void ResolveCollision(Hydra h, Bullet b){
+        // Hydra gets stunned
+        h.setHit(true);
+        b.setDestroyed(true);
+    }
+
     /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
@@ -868,12 +886,12 @@ public class WorldController implements Screen, ContactListener {
         PooledList<Hydra> hydras = levelModel.getHydras();
         hydraControllers = new HydraController[hydras.size()];
         for (int i = 0; i < hydras.size(); i++) {
-            hydraControllers[i] = new HydraController(i, hydras.get(i), levelModel.getPlayer());
+            hydraControllers[i] = new HydraController(i, hydras.get(i));
         }
         PooledList<Siren> sirens = levelModel.getSirens();
         sirenControllers = new SirenController[sirens.size()];
         for (int i = 0; i < sirens.size(); i++) {
-            sirenControllers[i] = new SirenController(i, sirens.get(i), levelModel.getPlayer());
+            sirenControllers[i] = new SirenController(i, sirens.get(i));
         }
 //        System.out.println(Arrays.toString(controls));
     }
