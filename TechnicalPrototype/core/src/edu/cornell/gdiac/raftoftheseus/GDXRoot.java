@@ -139,14 +139,12 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			settings.setScreenListener(this);
 			settings.setPreviousMode(DISPLAY_WORLD);
 			settings.resetPressedState();
-			Gdx.input.setInputProcessor(settings);
 			settings.populate(directory);
 			setScreen(settings);
 		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
 			settings.setScreenListener(this);
 			settings.setPreviousMode(DISPLAY_MENU);
 			settings.resetPressedState();
-			Gdx.input.setInputProcessor(settings);
 			settings.populate(directory);
 			setScreen(settings);
 		} else if (screen == settings) {

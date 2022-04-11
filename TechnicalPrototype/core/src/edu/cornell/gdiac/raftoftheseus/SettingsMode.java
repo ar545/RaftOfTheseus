@@ -1,14 +1,23 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.*;
+import com.badlogic.gdx.scenes.scene2d.ui.Slider.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Slider;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 
@@ -20,12 +29,18 @@ public class SettingsMode implements Screen {
 
     /** Background texture */
     private Texture background;
+    /** Title texture */
+    private Texture title;
     /** Texture for the exit button */
     private Texture exitButton;
     /** Font for drawing text */
     private BitmapFont displayFont;
+    /** Texture for slider knob */
+    private Texture sliderKnob;
+    /** Texture for slider bar */
+    private Texture sliderBar;
     /** Slider for volume */
-    private Slider volumeSlider;
+    private Slider musicSlider;
     /** Slider for sound effects */
     private Slider soundEffectsSlider;
     /** Texture for the WASD icon */
@@ -46,20 +61,16 @@ public class SettingsMode implements Screen {
     private static int STANDARD_HEIGHT = 700;
     /** Scaling factor. */
     private float scale;
-    /** Scheme scale */
-    private float SCHEME_SCALE = 0.9f;
-    /** Keys scale */
-    private float KEYS_SCALE = 0.6f;
     /** The height of the canvas window (necessary since sprite origin != screen origin) */
     private int heightY;
-    /** Exit button x-position */
-    private float exitButtonX;
-    /** Exit button y-position */
-    private float exitButtonY;
     /** Exit button clicked */
     private boolean exitPressed;
     /** Previous screen (4 - start, 5 - menu, 6 - world) */
     private int previousMode;
+    /** Music volume */
+    private int musicVolume;
+    /** Sound effects volume */
+    private int soundEffectsVolume;
 
     /** Whether this player mode is still active */
     private boolean active;
@@ -75,6 +86,7 @@ public class SettingsMode implements Screen {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
+        SoundController.getInstance().startLevelMusic();
     }
 
     /**
@@ -84,11 +96,14 @@ public class SettingsMode implements Screen {
      */
     public void populate(AssetDirectory directory) {
         background = directory.getEntry("sea_background", Texture.class);
+        title = directory.getEntry("settings_title", Texture.class);
         exitButton = directory.getEntry("exit_button", Texture.class);
         wasdIcon = directory.getEntry("settings_wasd", Texture.class);
         arrrowsIcon = directory.getEntry("settings_arrows", Texture.class);
         keysIcon = directory.getEntry("settings_keys", Texture.class);
         displayFont = directory.getEntry( "diogenes", BitmapFont.class);
+        sliderKnob = directory.getEntry("slider_knob", Texture.class);
+        sliderBar = directory.getEntry("slider_bar", Texture.class);
     }
 
     /**
@@ -111,6 +126,118 @@ public class SettingsMode implements Screen {
      */
     public void show() {
         active = true;
+        stage = new Stage();
+        skin = new Skin();
+        table = new Table(skin);
+        buildSettings();
+    }
+
+    /**
+     * Constructs the view
+     */
+    private void buildSettings() {
+        Gdx.input.setInputProcessor(stage);
+
+        stage.addActor(table);
+        table.align(Align.top);
+        table.setFillParent(true);
+
+        skin.add("background", background);
+        skin.add("title", title);
+        skin.add("font", displayFont);
+
+        table.setBackground(skin.getDrawable("background"));
+
+        TextButtonStyle buttonStyle = new TextButtonStyle();
+        buttonStyle.font = skin.getFont("font");
+        buttonStyle.fontColor = Color.GOLD;
+        TextButton exitButton = new TextButton("EXIT", buttonStyle);
+        exitButton.getLabel().setFontScale(0.5f);
+        exitButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                exitPressed = true;
+            }
+        });
+        table.add(exitButton).padLeft(100).padTop(10).expandX().align(Align.left);
+        table.row();
+
+        LabelStyle textStyle = new LabelStyle();
+        textStyle.font = skin.getFont("font");
+        textStyle.fontColor = Color.WHITE;
+
+        Label titleLabel = new Label("SETTINGS", textStyle);
+        titleLabel.setFontScale(0.75f);
+        table.add(titleLabel);
+        table.row();
+
+        Label volumeLabel = new Label("VOLUME", textStyle);
+        volumeLabel.setFontScale(0.45f);
+        table.add(volumeLabel).padLeft(100).expandX().align(Align.left);
+        table.row();
+
+        Label musicLabel = new Label("MUSIC", textStyle);
+        musicLabel.setFontScale(0.35f);
+        table.add(musicLabel).padLeft(120).expandX().align(Align.left);
+
+        Drawable sliderKnobDrawable = new TextureRegionDrawable(new TextureRegion(sliderKnob));
+        Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
+        sliderBarDrawable.setMinWidth(0);
+        sliderBarDrawable.setMinHeight(10);
+        SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
+
+        Label musicValueLabel = new Label(String.valueOf(musicVolume), textStyle);
+        musicValueLabel.setFontScale(0.35f);
+
+        musicSlider = new Slider(0, 100, 1, false, sliderStyle);
+        musicSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                musicVolume = (int) musicSlider.getValue();
+                musicValueLabel.setText(String.valueOf(musicVolume));
+            }
+        });
+        stage.addActor(musicSlider);
+        table.add(musicSlider).expandX().align(Align.left).width(370);
+        table.add(musicValueLabel).expandX().align(Align.left).width(100).padLeft(30);
+        table.row();
+
+        Label soundEffectsLabel = new Label("SOUND EFFECTS", textStyle);
+        soundEffectsLabel.setFontScale(0.35f);
+        table.add(soundEffectsLabel).padLeft(120).align(Align.left);
+        Label soundEffectsValueLabel = new Label(String.valueOf(soundEffectsVolume), textStyle);
+        soundEffectsValueLabel.setFontScale(0.35f);
+        soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
+        soundEffectsSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                soundEffectsVolume = (int) soundEffectsSlider.getValue();
+                soundEffectsValueLabel.setText(String.valueOf(soundEffectsVolume));
+            }
+        });
+        stage.addActor(soundEffectsSlider);
+        table.add(soundEffectsSlider).expandX().align(Align.left).width(370);
+        table.add(soundEffectsValueLabel).align(Align.left).width(100).padLeft(30);
+        table.row();
+
+        Label keyboardScehmeLabel = new Label("KEYBOARD SCHEME", textStyle);
+        keyboardScehmeLabel.setFontScale(0.45f);
+        table.add(keyboardScehmeLabel).padLeft(100).expandX().align(Align.left);
+        table.row();
+
+        Image wasdImage = new Image(wasdIcon);
+        Image arrowsImage = new Image(arrrowsIcon);
+        table.add(wasdImage).expandX().padLeft(120).align(Align.left);
+        table.add(arrowsImage).align(Align.left).padLeft(-180);
+        table.row();
+
+        Label keyboardShortcutLabel = new Label("KEYBOARD SHORTCUTS", textStyle);
+        keyboardShortcutLabel.setFontScale(0.45f);
+        table.add(keyboardShortcutLabel).padLeft(100);
+        table.row();
+
+        Image keysImage = new Image(keysIcon);
+        table.add(keysImage).padLeft(120).align(Align.left);
     }
 
     /**
@@ -124,44 +251,14 @@ public class SettingsMode implements Screen {
      * Draw the status of this player mode.
      */
     private void draw() {
-        canvas.begin();
-//        canvas.drawBackground(background, true);
-//        exitButtonX = 0.025f * canvas.getWidth();
-//        exitButtonY = 0.9f * canvas.getHeight();
-//        canvas.draw(exitButton, exitButtonX,  exitButtonY);
-//        displayFont.getData().setScale(0.95f);
-//        float textY = 3.5f * canvas.getHeight() / 10;
-//        canvas.drawTextCentered("SETTINGS", displayFont, textY);
-//        displayFont.getData().setScale(0.5f);
-//        int paddingX = 100;
-//        int paddingY = 65;
-//        textY = 5f * canvas.getHeight() / 10 + textY - paddingY * 1.5f;
-//        canvas.drawText("VOLUME", displayFont, paddingX, textY);
-//        displayFont.getData().setScale(0.4f);
-//        textY = textY - paddingY;
-//        canvas.drawText("MUSIC", displayFont, 1.5f * paddingX, textY);
-//        textY = textY - paddingY;
-//        canvas.drawText("SOUND EFFECTS", displayFont, 1.5f * paddingX, textY);
-//        displayFont.getData().setScale(0.5f);
-//        textY = textY - paddingY;
-//        canvas.drawText("KEYBOARD SCHEME", displayFont, paddingX, textY);
-//        textY = textY - paddingY;
-//        canvas.draw(wasdIcon, Color.WHITE, 0, wasdIcon.getHeight(), 1.5f * paddingX,
-//                textY, 0, scale * SCHEME_SCALE, scale * SCHEME_SCALE);
-//        canvas.draw(arrrowsIcon, Color.WHITE, 0, arrrowsIcon.getHeight(), 2.5f * paddingX + wasdIcon.getWidth(),
-//                textY, 0, scale * SCHEME_SCALE, scale * SCHEME_SCALE);
-//        textY = textY - paddingY - wasdIcon.getHeight() * SCHEME_SCALE;
-//        canvas.drawText("KEYBOARD SHORTCUTS", displayFont, paddingX, textY);
-//        textY = textY - paddingY;
-//        canvas.draw(keysIcon, Color.WHITE, 0, keysIcon.getHeight(), 1.5f * paddingX, textY, 0, scale * KEYS_SCALE, scale * KEYS_SCALE);
-        canvas.end();
+        stage.act();
+        stage.draw();
     }
 
     /**
      * Called when the Screen should render itself.
      */
     public void render(float delta) {
-
         if (active) {
             draw();
             if (exitPressed || InputController.getInstance().didExit()) {
@@ -200,111 +297,6 @@ public class SettingsMode implements Screen {
     public void resume() {
         // auto-generated
     }
-
-    /**
-     * Called when the screen was touched or a mouse button was pressed.
-     *
-     * @param screenX The x coordinate, origin is in the upper left corner
-     * @param screenY The y coordinate, origin is in the upper left corner
-     * @param pointer the pointer for the event
-     * @param button the button
-     * @return whether the input was processed
-     */
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        // detect exit button press
-        screenY = heightY - screenY;
-        if (inBounds(exitButtonX, exitButtonY, exitButton.getWidth(), exitButton.getHeight(), screenX, screenY)) {
-            exitPressed = true;
-            return false;
-        }
-
-        // detect sliders
-
-        return true;
-    }
-
-    /**
-     * Checks if a point is within a bound
-     *
-     * @param x The x-position of the drawn bound
-     * @param y The y-position of the drawn bound
-     * @param width The width of the drawn bound
-     * @param height The height of the drawn bound
-     * @param screenX The x-position to be checked
-     * @param screenY The y-position to be checked
-     * @return true if screenX and screenY are within the bounds, false otherwise
-     */
-    private boolean inBounds(float x, float y, int width, int height, int screenX, int screenY) {
-        return (x <= screenX && screenX <= x + width && y <= screenY && screenY <= y + height);
-    }
-
-    /**
-     * Called when a finger was lifted or a mouse button was released
-     *
-     * @param screenX The x coordinate, origin is in the upper left corner
-     * @param screenY The y coordinate, origin is in the upper left corner
-     * @param pointer the pointer for the event
-     * @param button the button
-     * @return whether the input was processed
-     */
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return true;
-    }
-
-    /**
-     * Called when a key is typed (UNSUPPORTED)
-     *
-     * @param character the key typed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyTyped(char character) { return true; }
-
-    /**
-     * Called when a key is pressed (UNSUPPORTED)
-     *
-     * @param keycode the key pressed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyDown(int keycode) { return true; }
-
-    /**
-     * Called when a key is released (UNSUPPORTED)
-     *
-     * @param keycode the key released
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyUp(int keycode) { return true; }
-
-    /**
-     * Called when the mouse or finger was dragged. (UNSUPPORTED)
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @param pointer the button or touch finger number
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean touchDragged(int screenX, int screenY, int pointer) { return true; }
-
-    /**
-     * Called when the mouse was moved without any buttons being pressed. (UNSUPPORTED)
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean mouseMoved(int screenX, int screenY) {
-        return true;
-    }
-
-    /**
-     * Called when the mouse wheel was scrolled. (UNSUPPORTED)
-     *
-     * @param dx the amount of horizontal scroll
-     * @param dy the amount of vertical scroll
-     *
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean scrolled(float dx, float dy) { return true; }
 
     /** Reset the settings exit pressed state */
     public void resetPressedState() { exitPressed = false; }
