@@ -26,7 +26,7 @@ public class WorldController implements Screen, ContactListener {
     public static final int EXIT_COUNT = 120;
 
     /** Whether to use shaders or not */
-    private static final boolean USE_SHADER_FOR_WATER = false;
+    private static boolean USE_SHADER_FOR_WATER = true;
 
     /** The amount of time for a physics engine step. */
     public static final float WORLD_STEP = 1/60.0f;
@@ -141,9 +141,10 @@ public class WorldController implements Screen, ContactListener {
      */
     public void draw(float dt) {
         // return if no canvas pointer
-        if(canvas == null){
+        if(canvas == null)
             return;
-        }
+        if (!canvas.shaderCanBeUsed)
+            USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
 
@@ -231,7 +232,7 @@ public class WorldController implements Screen, ContactListener {
         if (!USE_SHADER_FOR_WATER)
             canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
         else
-            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);
+            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
         if (USE_SHADER_FOR_WATER)
             canvas.stopUsingShader();
     }

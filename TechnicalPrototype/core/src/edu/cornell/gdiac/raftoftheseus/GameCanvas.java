@@ -24,6 +24,7 @@ import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.*;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.GdxRuntimeException;
 
 /**
  * Primary view class for the game, abstracting the basic graphics calls.
@@ -109,10 +110,9 @@ public class GameCanvas {
 	/** Cache object to handle raw textures */
 	private TextureRegion holder;
 
-	String vertexShader;
-	String fragmentShader;
-	ShaderProgram shaderProgram;
-	Vector2 levelSize = new Vector2(0,0);
+	private ShaderProgram shaderProgram;
+	private Vector2 levelSize = new Vector2(0,0);
+	public final boolean shaderCanBeUsed;
 
 	/**
 	 * Creates a new GameCanvas determined by the application configuration.
@@ -139,10 +139,15 @@ public class GameCanvas {
 		global = new Matrix4();
 		vertex = new Vector2();
 
-
-//		vertexShader = Gdx.files.internal("core/assets/shaders/wavy_vertex.glsl").readString();
-//		fragmentShader = Gdx.files.internal("core/assets/shaders/wavy_fragment.glsl").readString();
-//		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
+		try {
+			String vertexShader = Gdx.files.local("shaders/wavy_vertex.glsl").readString();
+			String fragmentShader = Gdx.files.local("shaders/wavy_fragment.glsl").readString();
+			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
+		} catch (GdxRuntimeException e) {
+			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
+			shaderProgram = null;
+		}
+		shaderCanBeUsed = (shaderProgram != null);
 	}
 
 	/**

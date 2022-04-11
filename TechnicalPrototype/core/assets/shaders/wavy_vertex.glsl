@@ -1,6 +1,6 @@
-attribute vec4 a_position;//vertex //Projected position of tile vertex.
-attribute vec4 a_color;//color //Tint colour (not used in this effect, but handy to have.
-attribute vec2 a_texCoord0;//texcoord //UV coordinates of the tile in the tile atlas.
+attribute vec4 a_position; // projected position of a vertex of the mesh
+attribute vec4 a_color; // tint color
+attribute vec2 a_texCoord0; // UV coordinates of the tile in the tile atlas.
 varying vec2 v_flowPos;//flowPos //Worldspace coordinates, used to look up into the flow map.
 
 uniform sampler2D u_texture;

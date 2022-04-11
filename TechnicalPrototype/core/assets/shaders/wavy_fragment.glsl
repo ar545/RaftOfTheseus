@@ -73,18 +73,6 @@ void main() {
     vec4 c = texture2D(u_texture, v_texCoords).rgba;//vec4 c = tex2D(_MainTex, IN.texcoord);// Sample the tilemap texture.
 //    vec4 c = v_color;
 
-    // In my case, I just select the water areas based on
-    // how blue they are. A more robust method would be
-    // to encode this into an alpha mask or similar.
-//    float waveBlend = clamp(3.0f * ((2*c.b-0.1)/(c.r+c.g+0.1)), 0, 1);
-//    float waveBlend = 1;
-
-    // Skip the water effect if we're not in water.
-//    if(waveBlend == 0.0f) {
-//        gl_FragColor = c * v_color;
-//        return;
-//    }
-
     vec2 flowUV = v_flowPos;// + vec2(0.5, 0.5);
     // Clamp to the bottom-left flowmap pixel
     // that influences this location.
@@ -123,6 +111,5 @@ void main() {
 //    c += waveBlend * clamp((wave - 0.4f) * 2.0f, 0, 1) * 0.3f;
     c += clamp((waveTex - 0.4f) * 2.0f, 0, 1) * (0.2 + waterSpeed*0.5);
 
-    // And finally return the tinted colour.
-    gl_FragColor = c*v_color;
+    gl_FragColor = c * v_color;
 }
