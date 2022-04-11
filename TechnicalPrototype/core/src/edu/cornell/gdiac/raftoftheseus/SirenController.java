@@ -2,7 +2,6 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
-import com.sun.xml.internal.bind.v2.model.core.ID;
 
 public enum SirenController implements State<Siren> {
 
