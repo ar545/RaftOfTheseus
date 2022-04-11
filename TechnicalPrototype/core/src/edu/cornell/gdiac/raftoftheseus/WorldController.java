@@ -890,11 +890,11 @@ public class WorldController implements Screen, ContactListener {
         for (int i = 0; i < hydras.size(); i++) {
             hydraControllers[i] = new HydraController(i, hydras.get(i));
         }
-        PooledList<Siren> sirens = levelModel.getSirens();
-        sirenControllers = new SirenController[sirens.size()];
-        for (int i = 0; i < sirens.size(); i++) {
-            sirenControllers[i] = new SirenController(i, sirens.get(i));
-        }
+//        PooledList<Siren> sirens = levelModel.getSirens();
+//        sirenControllers = new SirenController[sirens.size()];
+//        for (int i = 0; i < sirens.size(); i++) {
+//            sirenControllers[i] = new SirenController(i, sirens.get(i));
+//        }
 //        System.out.println(Arrays.toString(controls));
     }
 
