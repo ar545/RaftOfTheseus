@@ -1,0 +1,18 @@
+{
+  "preset 0": {
+    "background": "m"
+  },
+  "preset1": {
+    "background": "b1",
+    "explore": "e1",
+    "danger": "d1"
+  },
+  "preset2": {
+    "background": "b1",
+    "explore": "e1",
+    "danger": "d1"},
+  "preset3": {
+    "background": "b1",
+    "explore": "e1",
+    "danger": "d1"}
+}

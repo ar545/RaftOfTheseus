@@ -239,11 +239,10 @@ public class LevelModel {
      * Precondition: gameObject list has been cleared.
      *
      * @param level_int an integer representing the level selection, i.e. which json file to read from. */
-    public void loadLevel(int level_int){
-        if(level_int != LEVEL_RESTART_CODE){
+    public void loadLevel(int level_int, JsonValue level_data){
+        if(level_int != LEVEL_RESTART_CODE && level_data != null){
             // Load in new level
-            level_data = directory.getEntry("level:"+level_int, JsonValue.class);
-
+            this.level_data = level_data;
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);

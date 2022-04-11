@@ -26,12 +26,8 @@ public class SoundController {
     private float tradeRate = 0.01f;
     /** When transition is finished. */
     private float tradeThreshold = 0.05f;
-    /** Current preset being used for sfx. */
-    private int sfxPreset;
     /** Current preset being used for music. */
     private  int musicPreset;
-    /** Structure to hold all sfx presets for future reference. */
-    private ArrayMap<Integer, JsonValue> sfxPresets;
     /** Structure to hold all music presets for future reference. */
     private ArrayMap<Integer, JsonValue> musicPresets;
     /** ArrayMap to link sfx names to Sound instances. */
@@ -47,6 +43,8 @@ public class SoundController {
     private MusicState STATE;
     /** The singleton instance of the input controller */
     private static SoundController theController = null;
+    /** The asset directory for getting new music. */
+    private AssetDirectory directory;
 
     /**
      * @return the singleton instance of the input controller
@@ -69,21 +67,27 @@ public class SoundController {
      * @param directory	Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
-        if (!assertObjects(sfxPresets, musicPresets)) throw new NullPointerException("Constructor not called.");
+        if (musicPresets == null) throw new NullPointerException("Constructor not called.");
+        this.directory = directory;
+
+        // Set sound settings values
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
-        // Set values
         sfxVolume = set.getFloat("sfx_volume", 1.0f);
         musicVolume = set.getFloat("music_volume", 1.0f);
         tradeRate = set.getFloat("trade_rate", 0.01f);
         tradeThreshold = set.getFloat("trade_threshold", 0.05f);
-        Array<String> tempsfx = new Array<>(new String[]{"current_flow", "raft_breaking", "raft_throw", "wood_pickup", "raft_damage"});
-        Array<String> tempmsc = new Array<>(new String[]{"background", "explore", "danger"});
 
-        for(String s : tempsfx){
-            sfx.put(s, directory.getEntry(s, Sound.class));
+        // Get sfx
+        JsonValue sfxnames = set.getChild("sound_names");
+        for(JsonValue s : sfxnames){
+            sfx.put(s.name(), directory.getEntry(s.asString(), Sound.class));
         }
-        for(String m : tempmsc){
-            music.put(m, directory.getEntry(m, Music.class));
+        // Get music presets
+        JsonValue mscpresets = directory.getEntry("music_presets", JsonValue.class);
+        int i = 0;
+        for(JsonValue m : mscpresets){
+            musicPresets.put(i, m);
+            i++;
         }
     }
 
@@ -100,7 +104,6 @@ public class SoundController {
      * Constructor that initializes sfx and music variables.
      */
     public SoundController(){
-        sfxPresets = new ArrayMap<>();
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
@@ -108,30 +111,23 @@ public class SoundController {
     }
 
     /**
-     * TODO Loads sfx with the appropriate sound instances.
-     */
-    private void setSFXs(){
-        sfx.clear();
-    }
-
-    /**
      * TODO Loads music with the appropriate music instances.
      */
     private void setMusic(){
         music.clear();
+        JsonValue mscpreset = musicPresets.get(musicPreset);
+        for(JsonValue m : mscpreset){
+            music.put(m.name(), directory.getEntry(m.asString(), Music.class));
+        }
     }
 
     /**
      * Sets the values in sfx and music based on provided ids.
      * Must be called every Controller change due to memory constraints on sounds.
-     * @param sfxPreset is the JsonValue that contains text references to all sounds
+     * @param musicPreset is the JsonValue that contains text references to all sounds
      */
-    public void setPresets(int sfxPreset, int musicPreset){
+    public void setMusicPreset(int musicPreset){
         STATE = MusicState.STEADY;
-        if (this.sfxPreset != sfxPreset){
-            this.sfxPreset = sfxPreset;
-            setSFXs();
-        }
         if (this.musicPreset != musicPreset){
             this.musicPreset = musicPreset;
             setMusic();

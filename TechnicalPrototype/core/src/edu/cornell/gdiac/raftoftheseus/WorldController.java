@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -51,6 +53,8 @@ public class WorldController implements Screen, ContactListener {
     protected GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+    /** Reference to the game assets directory */
+    private AssetDirectory directory;
 
     //TEXTURE
     /** The texture for the colored health bar */
@@ -288,6 +292,7 @@ public class WorldController implements Screen, ContactListener {
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
+        this.directory = directory;
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -843,15 +848,21 @@ public class WorldController implements Screen, ContactListener {
 //        System.out.println(Arrays.toString(controls));
     }
 
+    /** The current level id. */
+    private int level_id = 0;
+
     /**
      * Populate the level according to the new level selection.
      * <p>
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
+        level_id = level_int;
+        JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
         emptyLevel();
-        levelModel.loadLevel(level_int);
+        levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
+        SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
     }
 
@@ -861,7 +872,7 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-       setLevel(LevelModel.LEVEL_RESTART_CODE);
+       setLevel(level_id);
     }
 
 }

@@ -4,5 +4,11 @@
   "decay_distance": 400.0,
   "trade_rate": 0.001,
   "trade_threshold": 0.002,
-  "preset1": {}
+  "sound_names" : {
+    "current_flow": "sounds/Sfx_Current_Flow1.ogg",
+    "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
+    "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
+    "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
+    "raft_damage": "sounds/Sfx_Raft_Damage.mp3"
+  }
 }

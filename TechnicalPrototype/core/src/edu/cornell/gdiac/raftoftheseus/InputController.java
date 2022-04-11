@@ -114,11 +114,10 @@ public class InputController {
 	}
 
 	private void setControlScheme(){
-		if (controlScheme == ControlScheme.KeyboardMouse){
-			populateMap("mouse keyboard");
-		}
-		else if (controlScheme == ControlScheme.KeyboardOnly){
-			populateMap("keyboard only");
+		switch (controlScheme) {
+			case KeyboardMouse: populateMap("mouse keyboard"); return;
+			case KeyboardOnly: populateMap("keyboard only"); return;
+			case Custom: return;
 		}
 	}
 
