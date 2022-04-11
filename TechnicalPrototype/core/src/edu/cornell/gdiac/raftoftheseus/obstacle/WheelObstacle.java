@@ -134,6 +134,10 @@ public abstract class WheelObstacle extends GameObject {
 		if(this.getType() == ObjectType.BULLET){
 			textureScale = new Vector2(0.1f, 0.1f);
 		}
+//		if(this.getType() == ObjectType.BULLET){
+//			textureScale = new Vector2(2, 2);
+//		}
+
 	}
 
 	public float getCrossSectionalArea() {

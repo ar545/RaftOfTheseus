@@ -93,7 +93,6 @@ public class InputController {
 	private Vector2 mov_offset;
 	/** Where did we fire? */
 	private Vector2 fire_location;
-	private float SCALE = 100f/3f;
 
 
 	/** The singleton instance of the input controller */
@@ -285,7 +284,7 @@ public class InputController {
 			mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map"));
 			firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire"));
 			if (firePressed) {
-				fire_location.set(Gdx.input.getX()*SCALE, Gdx.input.getY()*SCALE);
+				fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 			}
 		} else if (controlScheme == ControlScheme.KeyboardOnly) {
 			mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
