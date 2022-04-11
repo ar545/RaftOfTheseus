@@ -43,7 +43,8 @@ public abstract class GameObject extends SimpleObstacle {
         /**
          * A bullet shot by the player
          */
-        BULLET
+        BULLET,
+        HYDRA
     }
 
     /** Collision filtering categories */
@@ -81,9 +82,9 @@ public abstract class GameObject extends SimpleObstacle {
     /** The average velocity of water flowing near this object */
     protected Vector2 waterVelocity = new Vector2();
     /** Modifier on force applied by current */
-    private final float dragCoefficient = 0.5f;
+    protected final float dragCoefficient = 0.5f;
     /** cache vector for calculation */
-    private Vector2 dragCache = new Vector2(0,0);
+    protected Vector2 dragCache = new Vector2(0,0);
 
     public void enterCurrent(Vector2 f) {
         currentsCache.add(f);

@@ -1,29 +1,35 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 
-import static edu.cornell.gdiac.raftoftheseus.Enemy.enemyState.*;
+import com.badlogic.gdx.utils.JsonValue;
+import static edu.cornell.gdiac.raftoftheseus.Shark.enemyState.*;
 
-public class AIController {
+public class SharkController {
     /**
      * How close a target must be for us to chase it
      */
-    private static final int CHASE_DIST = 12;
+    private static int CHASE_DIST = 12;
 
     private int id;
 
-    private Enemy enemy;
+    private Shark shark;
 
     private Raft raft;
 
-    private Enemy.enemyState state;
+    private Shark.enemyState state;
     /**
      * The number of ticks since we started this controller
      */
     private long ticks;
 
-    public AIController(int id, Enemy enemy, Raft raft) {
+    // Set class constants
+    public static void setConstants(JsonValue objParams){
+        CHASE_DIST = objParams.getInt("chase distance", 12);
+    }
+
+    public SharkController(int id, Shark shark, Raft raft) {
         this.id = id;
-        this.enemy = enemy;
+        this.shark = shark;
         this.raft = raft;
         state = SPAWN;
         ticks = 0;
@@ -33,7 +39,7 @@ public class AIController {
         return ticks;
     }
 
-    public Enemy.enemyState getAction() {
+    public Shark.enemyState getAction() {
         // Increment the number of ticks.
         ticks++;
 
@@ -49,12 +55,12 @@ public class AIController {
         return state;
     }
 
-    public Enemy.enemyState getState(){
+    public Shark.enemyState getState(){
         return state;
     }
 
     private float dist(){
-        return enemy.getPosition().dst(raft.getPosition());
+        return shark.getPosition().dst(raft.getPosition());
     }
 
 
@@ -81,6 +87,6 @@ public class AIController {
     }
 
     public boolean isAlive() {
-        return (enemy != null && !enemy.isDestroyed());
+        return (shark != null && !shark.isDestroyed());
     }
 }

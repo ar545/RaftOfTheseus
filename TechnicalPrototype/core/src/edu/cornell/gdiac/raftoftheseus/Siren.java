@@ -2,17 +2,19 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 import java.util.Random;
 
-public class Enemy extends WheelObstacle {
-
+public class Siren extends WheelObstacle {
     private Random rand = new Random();
 
-    public ObjectType getType() {
-        return ObjectType.ENEMY;
+    public GameObject.ObjectType getType() {
+        return GameObject.ObjectType.ENEMY;
+    }
+
+    private static void setConstants(JsonValue objParams){
     }
 
     /**
@@ -55,7 +57,7 @@ public class Enemy extends WheelObstacle {
      */
     private Raft targetRaft;
 
-    public Enemy() {
+    public Siren() {
         super();
     }
 
@@ -63,7 +65,7 @@ public class Enemy extends WheelObstacle {
         this.targetRaft = targetRaft;
     }
 
-    public Enemy(Vector2 position, Raft targetRaft) {
+    public Siren(Vector2 position, Raft targetRaft) {
         super();
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
@@ -72,7 +74,7 @@ public class Enemy extends WheelObstacle {
         fixture.filter.maskBits = MASK_ENEMY;
     }
 
-//    // TODO: this will change depending on implementation of AIController
+    //    // TODO: this will change depending on implementation of AIController
     public void update(float dt) {
         super.update(dt);
         if (moveVector != null && targetRaft != null) {
@@ -83,7 +85,7 @@ public class Enemy extends WheelObstacle {
     /**
      * call for AI controller
      */
-    public void resolveAction(enemyState controlSignal, Raft player, long ticks) {
+    public void resolveAction(Shark.enemyState controlSignal, Raft player, long ticks) {
         if (isDestroyed())
             return;
 

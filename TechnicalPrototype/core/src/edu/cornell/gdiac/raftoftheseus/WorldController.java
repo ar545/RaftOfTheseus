@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -9,32 +10,51 @@ import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 import java.util.Iterator;
 
+import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
+
 public class WorldController implements Screen, ContactListener {
+
+    /**
+     * Method to call after loading to set all constants in World Controller,
+     * @param objParams JsonValue of object_parameters instance.
+     */
+    public static void setConstants(JsonValue objParams){
+//        EXIT_QUIT = objParams.getInt("exit quit", 0);
+        Bullet.setConstants(objParams.get("bullet"));
+        Shark.setConstants(objParams.get("shark"));
+        Hydra.setConstants(objParams.get("hydra"));
+    }
 
     // CONSTANTS
     /** Exit code for quitting the game */
-    public static final int EXIT_QUIT = 0;
+    public static int EXIT_QUIT = 0;
     /** Exit code for advancing to next level */
-    public static final int EXIT_NEXT = 1;
+    public static int EXIT_NEXT = 1;
     /** Exit code for jumping back to previous level */
-    public static final int EXIT_PREV = 2;
+    public static int EXIT_PREV = 2;
     /** How many frames after winning/losing do we continue? */
-    public static final int EXIT_COUNT = 120;
+    public static int EXIT_COUNT = 120;
+
+    /** Whether to use shaders or not */
+    private static boolean USE_SHADER_FOR_WATER = true;
 
     /** The amount of time for a physics engine step. */
-    public static final float WORLD_STEP = 1/60.0f;
+    public static float WORLD_STEP = 1/60.0f;
     /** Number of velocity iterations for the constraint solvers */
-    public static final int WORLD_VELOCITY = 6;
+    public static int WORLD_VELOCITY = 6;
     /** Number of position iterations for the constraint solvers */
-    public static final int WORLD_POSIT = 2;
+    public static int WORLD_POSIT = 2;
 
     /** Scale for the health bar */
-    private static final float HEALTH_BAR_SCALE = 0.6f;
+    private static float HEALTH_BAR_SCALE = 0.6f;
+
 
     // FIELDS
     // CANVAS AND OBJECT LIST
@@ -42,6 +62,8 @@ public class WorldController implements Screen, ContactListener {
     protected GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+    /** Reference to the game assets directory */
+    private AssetDirectory directory;
 
     //TEXTURE
     /** The texture for the colored health bar */
@@ -58,6 +80,8 @@ public class WorldController implements Screen, ContactListener {
     protected Texture mapBackground;
     /** Texture for GAME background */
     protected Texture gameBackground;
+    /** Texture for game background when using shader */
+    protected Texture blueTexture;
 
     // WORLD
     protected LevelModel levelModel;
@@ -76,8 +100,15 @@ public class WorldController implements Screen, ContactListener {
     /** Countdown active for winning or losing */
     private int countdown;
     /** array of controls for each enemy**/
-    private AIController[] controls;
+    private SharkController[] controls;
+    /** Array of controls for each hydra. */
+    private HydraController[] hydraControllers;
+    /** Array of controls for each siren. */
+    private SirenController[] sirenControllers;
+    /** Find whether a hydra can see the player. */
+    private HydraRayCast hydraSight;
 
+    private final long startTime;
 
     /**
      * Creates a new game world
@@ -95,6 +126,8 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+        hydraSight = new HydraRayCast();
+        startTime = System.currentTimeMillis();
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -134,15 +167,25 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-        if(canvas == null){ return; } // return if no canvas pointer
+//<<<<<<< HEAD
+//        if(canvas == null){ return; } // return if no canvas pointer
+//=======
+        // return if no canvas pointer
+        if(canvas == null)
+            return;
+        if (!canvas.shaderCanBeUsed)
+            USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
+
+//>>>>>>> main
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         canvas.clear();
         canvas.begin(cameraTransform);
-        drawMovingBackground(pixelsPerUnit);
+        drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            obj.draw(canvas);
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
+                obj.draw(canvas);
         }
         drawHealthBar(levelModel.getPlayer().getHealthRatio(), levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
         canvas.end();
@@ -205,6 +248,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
+//<<<<<<< HEAD
     /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
      * boundary of the world with walls, the player position, and the pixel per unit scale.
      * @param pixelsPerUnit scalar pixel per unit
@@ -241,12 +285,24 @@ public class WorldController implements Screen, ContactListener {
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
 
-    /** draw a background for the sea
-     * Precondition & post-condition: the game canvas is open */
-    private void drawMovingBackground(float pixel) {
+//    /** draw a background for the sea
+//     * Precondition & post-condition: the game canvas is open */
+//    private void drawMovingBackground(float pixel) {
+//=======
+    /** draws background water and moving currents (using shader) */
+    private void drawWater() {
+        if (USE_SHADER_FOR_WATER)
+            canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+        float pixel = 100/3.0f;
+//>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
-        canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        if (!USE_SHADER_FOR_WATER)
+            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        else
+            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
+        if (USE_SHADER_FOR_WATER)
+            canvas.stopUsingShader();
     }
 
     /** Draw star at the up left corner
@@ -283,9 +339,16 @@ public class WorldController implements Screen, ContactListener {
         displayFont = directory.getEntry( "end" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
+        blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
+        this.directory = directory;
+        if (USE_SHADER_FOR_WATER) {
+            Texture waterTexture = directory.getEntry("water_texture", Texture.class);
+            waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+            canvas.setWaterTexture(waterTexture);
+        }
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -344,21 +407,32 @@ public class WorldController implements Screen, ContactListener {
         return true;
     }
 
+
+    private void createBullet(Vector2 facing, Raft player){
+        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f), true);
+        bullet.setTexture(bullet_texture);
+//        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
+        bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        levelModel.addQueuedObject(bullet);
+        player.addHealth(Bullet.BULLET_DAMAGE);
+    }
+
     /**
      * Add a new bullet to the world and send it in the right direction.
      */
-    private void createBullet(Enemy nearestEnemy) {
+    private void createBullet(Shark nearestShark) {
         Raft player = levelModel.getPlayer();
         // Compute position and velocity
-        Vector2 facing = nearestEnemy.getPosition().sub(player.getPosition()).nor();
-        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f));
-        bullet.setTexture(bullet_texture);
-//        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
-        bullet.setLinearVelocity(facing.scl(4).mulAdd(player.getLinearVelocity(), 0.5f));
-        levelModel.addQueuedObject(bullet);
-        player.addHealth(Bullet.BULLET_HEALTH_COST);
+        Vector2 facing = nearestShark.getPosition().sub(player.getPosition()).nor();
+        createBullet(facing, player);
     }
 
+    private void createBullet(Vector2 firelocation) {
+        Raft player = levelModel.getPlayer();
+        // Compute position and velocity
+        Vector2 facing = firelocation.sub(player.getPosition()).nor();
+        createBullet(facing, player);
+    }
 
     /**
      * The core gameplay loop of this world.
@@ -380,19 +454,24 @@ public class WorldController implements Screen, ContactListener {
         // Add a bullet if we fire
         if (player.isFire()) {
             // find nearest enemy to player
-            Enemy nearestEnemy = null;
-            float nearestD2 = -1;
-            for (Enemy e : levelModel.getEnemies()) {
-                if (!e.isDestroyed()) {
-                    float d2 = e.getPosition().dst2(player.getPosition());
-                    if (nearestD2 == -1 || d2 < nearestD2) {
-                        nearestD2 = d2;
-                        nearestEnemy = e;
+            if(ic.mouseActive()){
+                createBullet(ic.getFireDirection());
+            }
+            else {
+                Shark nearestShark = null;
+                float nearestD2 = -1;
+                for (Shark e : levelModel.getEnemies()) {
+                    if (!e.isDestroyed()) {
+                        float d2 = e.getPosition().dst2(player.getPosition());
+                        if (nearestD2 == -1 || d2 < nearestD2) {
+                            nearestD2 = d2;
+                            nearestShark = e;
+                        }
                     }
                 }
-            }
-            if (nearestEnemy != null) {
-                createBullet(nearestEnemy);
+                if (nearestShark != null) {
+                    createBullet(nearestShark);
+                }
             }
         }
 
@@ -405,12 +484,25 @@ public class WorldController implements Screen, ContactListener {
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies() {
-        PooledList<Enemy> el = levelModel.getEnemies();
+        PooledList<Shark> el = levelModel.getEnemies();
 
         for (int i = 0; i< el.size(); i++) {
-            Enemy enemy = el.get(i);
-            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            Shark shark = el.get(i);
+            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
+
+        PooledList<Hydra> hy = levelModel.getHydras();
+        System.out.println(hy.size());
+        for (int i = 0; i < hy.size(); i++) {
+            Hydra hydra = hy.get(i);
+            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
+            hydra.setSee(hydraSight.getCanSee());
+            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
+            if(hydra.isSplashing()){
+                createBullet(hydra.getPosition(), levelModel.getPlayer());
+            }
+        }
+
     }
 
     /**
@@ -461,8 +553,8 @@ public class WorldController implements Screen, ContactListener {
     /** Update the level themed music according the game status */
     private void resolveMusic() {
         boolean nowInDanger = false;
-        for(AIController ai : controls){
-            if(ai.isAlive() && ai.getState() == Enemy.enemyState.CHASE){
+        for(SharkController ai : controls){
+            if(ai.isAlive() && ai.getState() == Shark.enemyState.CHASE){
                 nowInDanger = true;
                 break;
             }
@@ -611,9 +703,9 @@ public class WorldController implements Screen, ContactListener {
             }
             // Check for player kill enemies (health-)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.ENEMY)){
-                ResolveCollision((Raft)bd1, (Enemy) bd2);
+                ResolveCollision((Raft)bd1, (Shark) bd2);
             }else if(bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Enemy) bd1);
+                ResolveCollision((Raft)bd2, (Shark) bd1);
             }
             // Check for player collision with treasure (star+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
@@ -626,6 +718,12 @@ public class WorldController implements Screen, ContactListener {
                     (bd1 == levelModel.getGoal() && bd2 == levelModel.getPlayer())) {
                 if (!complete && !failed)
                     setComplete(true);
+            }
+            // Check for hydra collision with bullet
+            else if(bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.HYDRA)){
+                ResolveCollision((Hydra) bd2, (Bullet) bd1);
+            } else if(bd1.getType().equals(GameObject.ObjectType.HYDRA) && bd2.getType().equals(GameObject.ObjectType.BULLET)){
+                ResolveCollision((Hydra) bd1, (Bullet) bd2);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -700,9 +798,9 @@ public class WorldController implements Screen, ContactListener {
     /** Resolve collision between two objects of specific types
      * @param r raft
      * @param e enemy */
-    private void ResolveCollision(Raft r, Enemy e) {
+    private void ResolveCollision(Raft r, Shark e) {
         // update player health
-        r.addHealth(Enemy.ENEMY_DAMAGE);
+        r.addHealth(Shark.ENEMY_DAMAGE);
         // destroy enemy
         e.setDestroyed(true);
     }
@@ -729,10 +827,15 @@ public class WorldController implements Screen, ContactListener {
         levelModel.addRandomWood();
     }
 
+    private void ResolveCollision(Hydra h, Bullet b){
+        // Hydra gets stunned
+        h.setHit(true);
+        b.setDestroyed(true);
+    }
+
     /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        //TODO: below are imported from Lab 4. Question: What sound effects do we want?
         float speed = 0;
         Vector2 cache = new Vector2();
         float bumpThresh = 5f;
@@ -759,7 +862,6 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    // TODO: What sound effect are needed and when do we want them?
     /** Play sound effect according to the situation */
     private void playSoundEffect() {
 
@@ -815,15 +917,33 @@ public class WorldController implements Screen, ContactListener {
         setFailure(false);
     }
 
+    private void populateControllers(PooledList<?> e){
+
+    }
+
+
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
-        PooledList<Enemy> enemies = levelModel.getEnemies();
-        controls = new AIController[enemies.size()];
+        PooledList<Shark> enemies = levelModel.getEnemies();
+        controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
+        }
+        PooledList<Hydra> hydras = levelModel.getHydras();
+        hydraControllers = new HydraController[hydras.size()];
+        for (int i = 0; i < hydras.size(); i++) {
+            hydraControllers[i] = new HydraController(i, hydras.get(i));
+        }
+        PooledList<Siren> sirens = levelModel.getSirens();
+        sirenControllers = new SirenController[sirens.size()];
+        for (int i = 0; i < sirens.size(); i++) {
+            sirenControllers[i] = new SirenController(i, sirens.get(i));
         }
 //        System.out.println(Arrays.toString(controls));
     }
+
+    /** The current level id. */
+    private int level_id = 0;
 
     /**
      * Populate the level according to the new level selection.
@@ -831,11 +951,18 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
+        level_id = level_int;
+        JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
         emptyLevel();
-        levelModel.loadLevel(level_int);
+        levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
-
+        SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
+
+        // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
+        // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
+        if (USE_SHADER_FOR_WATER)
+            canvas.setFlowMap(levelModel.recalculateFlowMap());
     }
 
     /**
@@ -844,7 +971,8 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-       setLevel(LevelModel.LEVEL_RESTART_CODE);
+        SoundController.getInstance().haltSounds();
+        setLevel(level_id);
     }
 
 }

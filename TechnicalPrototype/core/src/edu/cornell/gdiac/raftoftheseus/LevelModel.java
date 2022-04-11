@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
@@ -106,7 +107,9 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<Enemy> enemies = new PooledList<>();
+    private PooledList<Shark> enemies = new PooledList<>();
+    private PooledList<Hydra> hydras = new PooledList<>();
+    private PooledList<Siren> sirens = new PooledList<>();
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -138,7 +141,9 @@ public class LevelModel {
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
-    public PooledList<Enemy> getEnemies() { return enemies; }
+    public PooledList<Shark> getEnemies() { return enemies; }
+    public PooledList<Hydra> getHydras() { return hydras; }
+    public PooledList<Siren> getSirens() { return sirens; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -218,12 +223,29 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addEnemyObject(Enemy obj) {
+    protected void addEnemyObject(Shark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
         enemies.add(obj);
     }
+
+    // TODO Create enemy super class to reduce redundant code.
+    protected void addHydraObject(Hydra obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        hydras.add(obj);
+    }
+
+    protected void addSirenObject(Siren obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        sirens.add(obj);
+    }
+
+
 
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
@@ -264,11 +286,10 @@ public class LevelModel {
      * Precondition: gameObject list has been cleared.
      *
      * @param level_int an integer representing the level selection, i.e. which json file to read from. */
-    public void loadLevel(int level_int){
-        if(level_int != LEVEL_RESTART_CODE){
+    public void loadLevel(int level_int, JsonValue level_data){
+        if(level_int != LEVEL_RESTART_CODE && level_data != null){
             // Load in new level
-            level_data = directory.getEntry("level:"+level_int, JsonValue.class);
-
+            this.level_data = level_data;
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
@@ -350,8 +371,8 @@ public class LevelModel {
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
-        for (Enemy enemy : enemies){
-            enemy.setTargetRaft(raft);
+        for (Shark shark : enemies){
+            shark.setTargetRaft(raft);
         }
     }
 
@@ -444,9 +465,23 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-        Enemy this_enemy = new Enemy(compute_temp, null);
-        this_enemy.setTexture(enemyTexture);
-        addEnemyObject(this_enemy);
+        switch(enemy_type) {
+            case 0: // Sharks
+                Shark this_shark = new Shark(compute_temp, null);
+                this_shark.setTexture(enemyTexture);
+                addEnemyObject(this_shark);
+                break;
+            case 1: // Hydras
+                Hydra th = new Hydra(compute_temp, null);
+                th.setTexture(enemyTexture);
+                addHydraObject(th);
+                break;
+            case 2: // Sirens
+                Siren ts = new Siren(compute_temp, null);
+                ts.setTexture(enemyTexture);
+                addSirenObject(ts);
+                break;
+        }
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -535,5 +570,25 @@ public class LevelModel {
         Wood this_wood = new Wood(boundsVector2());
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
+    }
+
+    public Texture recalculateFlowMap() {
+        Pixmap pix = new Pixmap(map_size.x, map_size.y,  Pixmap.Format.RGBA8888);
+        pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
+        pix.fill();
+        for (GameObject o : getObjects()) {
+            if (o.getType() == GameObject.ObjectType.CURRENT) {
+                Current c = (Current)o;
+                Vector2 p = c.getPosition(); // in box2d units (3 per tile)
+                p.scl(1.0f/GRID_SIZE.x, 1.0f/GRID_SIZE.y); // in tiles
+                Vector2 d = c.getDirectionVector(); // length 1
+                d.add(1,1).scl(0.5f); // between 0 and 1
+                pix.setColor(d.x, d.y, 0, 1);
+                pix.drawPixel((int)p.x, (int)p.y);
+            }
+        }
+        Texture t = new Texture(pix);
+        t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
+        return t;
     }
 }
