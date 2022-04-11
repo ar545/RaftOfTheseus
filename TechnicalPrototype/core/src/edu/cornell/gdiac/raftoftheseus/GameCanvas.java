@@ -140,9 +140,9 @@ public class GameCanvas {
 		vertex = new Vector2();
 
 
-		vertexShader = Gdx.files.internal("core/assets/shaders/wavy_vertex.glsl").readString();
-		fragmentShader = Gdx.files.internal("core/assets/shaders/wavy_fragment.glsl").readString();
-		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
+//		vertexShader = Gdx.files.internal("core/assets/shaders/wavy_vertex.glsl").readString();
+//		fragmentShader = Gdx.files.internal("core/assets/shaders/wavy_fragment.glsl").readString();
+//		shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
 	}
 
 	/**

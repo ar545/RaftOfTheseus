@@ -26,7 +26,7 @@ public class WorldController implements Screen, ContactListener {
     public static final int EXIT_COUNT = 120;
 
     /** Whether to use shaders or not */
-    private static final boolean USE_SHADER_FOR_WATER = true;
+    private static final boolean USE_SHADER_FOR_WATER = false;
 
     /** The amount of time for a physics engine step. */
     public static final float WORLD_STEP = 1/60.0f;
