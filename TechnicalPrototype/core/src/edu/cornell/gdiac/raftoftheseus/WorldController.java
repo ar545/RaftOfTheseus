@@ -185,7 +185,12 @@ public class WorldController implements Screen, ContactListener {
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
                 obj.draw(canvas);
         }
-        drawHealthBar(levelModel.getPlayer().getHealthRatio(), levelModel.getPlayer().getPosition());
+        canvas.end();
+        // reset camera transform (because health bar isn't in game units)
+        canvas.begin();
+        Vector2 playerPosOnScreen = levelModel.getPlayer().getPosition();
+        cameraTransform.applyTo(playerPosOnScreen);
+        drawHealthBar(levelModel.getPlayer().getHealthRatio(), playerPosOnScreen);
         canvas.end();
 
         drawStar(levelModel.getPlayer().getStar());
@@ -242,10 +247,8 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // draw a circle showing how far the player can move before they die
-        float r = levelModel.getPlayer().getPotentialDistance() * 33;
-        Vector2 pos = levelModel.getPlayer().getPosition();
-        cameraTransform.applyTo(pos);
-        canvas.drawHealthCircle((int)pos.x, (int)pos.y, r);
+        float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
+        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
     }
 
 //<<<<<<< HEAD
@@ -281,7 +284,7 @@ public class WorldController implements Screen, ContactListener {
     private void drawHealthBar(float health, Vector2 player_position) {
         Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
-        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f)  ;
+        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
         float y_origin = (player_position.y);
         canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
