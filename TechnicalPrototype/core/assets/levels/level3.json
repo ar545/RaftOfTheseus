@@ -9,7 +9,7 @@
          "name":"Environment",
          "opacity":1,
          "type":"tilelayer",
-         "visible":true,
+         "visible":false,
          "width":30,
          "x":0,
          "y":0
@@ -57,7 +57,7 @@
  "tilesets":[
         {
          "firstgid":1,
-         "source":"..\/..\/..\/..\/..\/newTiled\/RoT.tsx"
+         "source":"RoT.tsx"
         }],
  "tilewidth":50,
  "type":"map",
