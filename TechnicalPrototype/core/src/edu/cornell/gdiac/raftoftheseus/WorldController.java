@@ -489,16 +489,6 @@ public class WorldController implements Screen, ContactListener {
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
 
-//<<<<<<< HEAD
-        PooledList<Hydra> hy = levelModel.getHydras();
-        for (int i = 0; i < hy.size(); i++) {
-            Hydra hydra = hy.get(i);
-            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
-            hydra.setSee(hydraSight.getCanSee());
-            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
-            if(hydra.isSplashing()){
-                createBullet(hydra.getPosition(), levelModel.getPlayer());
-//=======
         for (Hydra h : levelModel.getHydras()) {
             levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
             h.setSee(hydraSight.getCanSee());
@@ -512,9 +502,7 @@ public class WorldController implements Screen, ContactListener {
             s.update(dt);
             if(s.willAttack()){
                 levelModel.getPlayer().addHealth(s.getAttackDamage());
-//>>>>>>> howard
             }
-        }
         }
     }
 
