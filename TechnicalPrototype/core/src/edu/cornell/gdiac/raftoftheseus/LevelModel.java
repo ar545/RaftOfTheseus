@@ -581,7 +581,8 @@ public class LevelModel {
                 Current c = (Current)o;
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE.x, 1.0f/GRID_SIZE.y); // in tiles
-                Vector2 d = c.getDirectionVector(); // length 1
+                // TODO figure out a *good* way to represent current magnitude in the shader.
+                Vector2 d = c.getDirectionVector().nor(); // length independent of magnitude
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
