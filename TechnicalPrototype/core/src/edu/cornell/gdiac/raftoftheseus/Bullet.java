@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
@@ -50,6 +51,14 @@ public class Bullet extends WheelObstacle {
             fixture.filter.categoryBits = CATEGORY_ENEMY_BULLET;
             fixture.filter.maskBits = MASK_ENEMY_BULLET;
         }
+    }
+
+    @Override
+    public void setTexture(Texture texture) {
+        super.setTexture(texture);
+        float w = getRadius()*drawScale.x / texture.getWidth();
+        textureScale.set(w, w);
+        origin.set(texture.getWidth()/2.0f, texture.getWidth()/2.0f * getRadius()/getRadius());
     }
 
     @Override

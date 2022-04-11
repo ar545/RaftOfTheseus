@@ -130,6 +130,8 @@ public class LevelModel {
     private Texture currentTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture enemyTexture;
+    /** Texture for current placeholder: texture alas in future */
+    private Texture bulletTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
 
@@ -563,6 +565,7 @@ public class LevelModel {
         currentTexture = directory.getEntry("current", Texture.class);
         enemyTexture = directory.getEntry("enemy", Texture.class);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
+        bulletTexture = directory.getEntry("earth", Texture.class);
     }
 
     /** Add wood Objects to random location in the world */

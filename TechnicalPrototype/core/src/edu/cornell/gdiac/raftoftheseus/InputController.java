@@ -103,7 +103,6 @@ public class InputController {
 
 	private void populateMap(String mapping){
 		JsonValue m = controlSettings.get(mapping);
-		System.out.println(m.name());
 		for( JsonValue i : m ){
 			if(i.isString()){
 				mappings.put(i.name(), Input.Keys.valueOf(i.asString()));
@@ -132,7 +131,6 @@ public class InputController {
 	}
 
 	private void changeControlScheme(){
-		System.out.println(1);
 		switch (controlScheme){
 			case KeyboardMouse: setKeyboardOnly(); return;
 			case KeyboardOnly: setKeyboardMouse(); return;
