@@ -11,7 +11,7 @@ uniform sampler2D u_flowMap;
 uniform mat4 u_projTrans;
 uniform mat4 u_objToWorldMat;// transforms box2d coordinates to tile coordinates (i.e., 0,0 is the bottom left tile, 1,0 is to the right of that one, etc)
 
-uniform vec2 u_inverseFlowmapSize;// = vec2(1.0f/10.0f, 1.0f/8.0f);
+uniform vec2 u_inverseFlowmapSize;// = vec2(1.0/10.0, 1.0/8.0);
 
 //// Colour texture / atlas for my tileset.
 //sampler2D _Tile;
@@ -22,9 +22,9 @@ uniform vec2 u_inverseFlowmapSize;// = vec2(1.0f/10.0f, 1.0f/8.0f);
 uniform sampler2D u_waveTexture;
 
 // Tiling of the wave pattern texture.
-float waveDensity = 0.5f;
+float waveDensity = 0.5;
 // Scrolling speed for the wave flow.
-float waveSpeed  = 0.5f;
+float waveSpeed  = 0.5;
 
 uniform float u_time;
 
@@ -36,15 +36,15 @@ vec2 WaveAmount(vec2 uv, vec2 sampleSite) {
     // Sample from the flow map texture without any mipmapping/filtering.
     // Convert to a vector in the -1...1 range.
 //    vec2 flowVector = tex2Dgrad(_Flow, sampleSite * inverseFlowmapSize, 0, 0).xy
-//    * 2.0f - 1.0f;
+//    * 2.0 - 1.0;
     vec2 sampleShifted = (sampleSite + vec2(0.5, 0.5)) * u_inverseFlowmapSize;// add 0.5 to move to center of a pixel to avoid interpolation
 //    sampleShifted.y = 1.0 - sampleShifted.y;// flip y because textures have their origin in the etc etc corner
-    vec2 flowVector = texture2D(u_flowMap, sampleShifted).xy * 2.0f - 1.0f;
+    vec2 flowVector = texture2D(u_flowMap, sampleShifted).xy * 2.0 - 1.0;
     float flowSpeed = dot(flowVector, flowVector);
 
     // I displace the UVs a little for each sample, so that adjacent
     // tiles flowing the same direction don't repeat exactly.
-    vec2 waveUV = uv * waveDensity + 0.1*sin((3.3f * sampleSite.xy + sampleSite.yx) * 1.0f + u_time*0.50);
+    vec2 waveUV = uv * waveDensity + 0.1*sin((3.3 * sampleSite.xy + sampleSite.yx) * 1.0 + u_time*0.50);
 
     // Subtract the flow direction scaled by time
     // to make the wave pattern scroll this way.
@@ -103,13 +103,13 @@ void main() {
     float waveTex = wave.x;
 
     // Here I tint the "low" parts a darker blue.
-//    c = mix(c, c*c + vec4(0, 0, 0.05, 0), waveBlend * 0.75f * clamp(1.2f - 4.0f * wave.x, 0, 1));
-    c = mix(c, c*c + vec4(0, 0, 0.05, 0), 0.75f * clamp(1.2f - 4.0f * waveTex, 0, 1));
+//    c = mix(c, c*c + vec4(0, 0, 0.05, 0), waveBlend * 0.75 * clamp(1.2 - 4.0 * wave.x, 0, 1));
+    c = mix(c, c*c + vec4(0, 0, 0.05, 0), 0.75 * clamp(1.2 - 4.0 * waveTex, 0, 1));
 
     // Then brighten the peaks. (more brightness for higher flow speed)
-//    c += waveBlend * clamp((wave.x - 0.4f) * 2.0f, 0, 1) * (0.2 + wave.y*0.5);
-//    c += waveBlend * clamp((wave - 0.4f) * 2.0f, 0, 1) * 0.3f;
-    c += clamp((waveTex - 0.4f) * 2.0f, 0, 1) * (0.2 + waterSpeed*0.5);
+//    c += waveBlend * clamp((wave.x - 0.4) * 2.0, 0, 1) * (0.2 + wave.y*0.5);
+//    c += waveBlend * clamp((wave - 0.4) * 2.0, 0, 1) * 0.3;
+    c += clamp((waveTex - 0.4) * 2.0, 0, 1) * (0.2 + waterSpeed*0.5);
 
     gl_FragColor = c * v_color;
 }
