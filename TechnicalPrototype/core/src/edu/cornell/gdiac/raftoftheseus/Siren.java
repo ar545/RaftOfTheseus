@@ -15,6 +15,7 @@ public class Siren extends WheelObstacle {
     public static void setConstants(JsonValue objParams){
         IDLE_TIME = objParams.getLong("idle time", 500L);
         SINGING_TIME = objParams.getLong("singing time", 3000L);
+        SINGING_RANGE = objParams.getFloat("attack range", 1000f);
         ATTACK_RANGE = objParams.getFloat("attack range", 200f);
         ATTACK_DAMAGE = objParams.getFloat("attack damage", 40f);
         PROXIMITY = objParams.getFloat("proximity", 1f);
@@ -39,6 +40,8 @@ public class Siren extends WheelObstacle {
     private static float PROXIMITY = 1f;
     private static long IDLE_TIME;
     private static long SINGING_TIME;
+    private static float SINGING_RANGE;
+    private static Vector2 SINGING_FORCE;
     private static float ATTACK_RANGE;
     private static float ATTACK_DAMAGE;
     private static float FLY_SPEED;
@@ -115,4 +118,6 @@ public class Siren extends WheelObstacle {
     public boolean hasAttacked(){ return hasAttacked; }
     public void resetHasAttacked(){ hasAttacked = false; }
     public static float getAttackDamage(){ return ATTACK_DAMAGE; }
+
+    //
 }
