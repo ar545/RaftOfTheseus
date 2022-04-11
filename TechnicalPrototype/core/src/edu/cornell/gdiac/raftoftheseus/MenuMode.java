@@ -152,7 +152,7 @@ public class MenuMode implements Screen {
         active = true;
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
-        skin = new Skin(Gdx.files.internal("core/assets/skins/default/uiskin.json"));
+        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         buildMenu();
     }
 

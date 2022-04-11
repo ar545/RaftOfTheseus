@@ -140,8 +140,8 @@ public class GameCanvas {
 		vertex = new Vector2();
 
 		try {
-			String vertexShader = Gdx.files.local("shaders/wavy_vertex.glsl").readString();
-			String fragmentShader = Gdx.files.local("shaders/wavy_fragment.glsl").readString();
+			String vertexShader = Gdx.files.internal("shaders/wavy_vertex.glsl").readString();
+			String fragmentShader = Gdx.files.internal("shaders/wavy_fragment.glsl").readString();
 			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
 		} catch (GdxRuntimeException e) {
 			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
