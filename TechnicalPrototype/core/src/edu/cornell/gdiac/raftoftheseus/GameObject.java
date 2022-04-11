@@ -44,7 +44,8 @@ public abstract class GameObject extends SimpleObstacle {
          * A bullet shot by the player
          */
         BULLET,
-        HYDRA
+        HYDRA,
+        SIREN
     }
 
     /** Collision filtering categories */
@@ -69,6 +70,7 @@ public abstract class GameObject extends SimpleObstacle {
     protected final static short MASK_WOOD = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN;
     protected final static short MASK_TREASURE = CATEGORY_PLAYER;// treasure isn't pushed around by anything
     protected final static short MASK_GOAL = CATEGORY_PLAYER;
+    protected final static short MASK_SIREN = 0; // Siren does not interact with anything, flying over player
 
     /**
      * How much to scale the texture before displaying (screen pixels / texture pixels)
