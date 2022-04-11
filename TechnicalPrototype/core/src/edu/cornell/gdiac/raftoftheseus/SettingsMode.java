@@ -5,11 +5,18 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 
-public class SettingsMode implements Screen, InputProcessor {
+public class SettingsMode implements Screen {
+
+    private Stage stage;
+    private Table table;
+    private Skin skin;
 
     /** Background texture */
     private Texture background;
@@ -118,35 +125,35 @@ public class SettingsMode implements Screen, InputProcessor {
      */
     private void draw() {
         canvas.begin();
-        canvas.drawBackground(background, true);
-        exitButtonX = 0.025f * canvas.getWidth();
-        exitButtonY = 0.9f * canvas.getHeight();
-        canvas.draw(exitButton, exitButtonX,  exitButtonY);
-        displayFont.getData().setScale(0.95f);
-        float textY = 3.5f * canvas.getHeight() / 10;
-        canvas.drawTextCentered("SETTINGS", displayFont, textY);
-        displayFont.getData().setScale(0.5f);
-        int paddingX = 100;
-        int paddingY = 65;
-        textY = 5f * canvas.getHeight() / 10 + textY - paddingY * 1.5f;
-        canvas.drawText("VOLUME", displayFont, paddingX, textY);
-        displayFont.getData().setScale(0.4f);
-        textY = textY - paddingY;
-        canvas.drawText("MUSIC", displayFont, 1.5f * paddingX, textY);
-        textY = textY - paddingY;
-        canvas.drawText("SOUND EFFECTS", displayFont, 1.5f * paddingX, textY);
-        displayFont.getData().setScale(0.5f);
-        textY = textY - paddingY;
-        canvas.drawText("KEYBOARD SCHEME", displayFont, paddingX, textY);
-        textY = textY - paddingY;
-        canvas.draw(wasdIcon, Color.WHITE, 0, wasdIcon.getHeight(), 1.5f * paddingX,
-                textY, 0, scale * SCHEME_SCALE, scale * SCHEME_SCALE);
-        canvas.draw(arrrowsIcon, Color.WHITE, 0, arrrowsIcon.getHeight(), 2.5f * paddingX + wasdIcon.getWidth(),
-                textY, 0, scale * SCHEME_SCALE, scale * SCHEME_SCALE);
-        textY = textY - paddingY - wasdIcon.getHeight() * SCHEME_SCALE;
-        canvas.drawText("KEYBOARD SHORTCUTS", displayFont, paddingX, textY);
-        textY = textY - paddingY;
-        canvas.draw(keysIcon, Color.WHITE, 0, keysIcon.getHeight(), 1.5f * paddingX, textY, 0, scale * KEYS_SCALE, scale * KEYS_SCALE);
+//        canvas.drawBackground(background, true);
+//        exitButtonX = 0.025f * canvas.getWidth();
+//        exitButtonY = 0.9f * canvas.getHeight();
+//        canvas.draw(exitButton, exitButtonX,  exitButtonY);
+//        displayFont.getData().setScale(0.95f);
+//        float textY = 3.5f * canvas.getHeight() / 10;
+//        canvas.drawTextCentered("SETTINGS", displayFont, textY);
+//        displayFont.getData().setScale(0.5f);
+//        int paddingX = 100;
+//        int paddingY = 65;
+//        textY = 5f * canvas.getHeight() / 10 + textY - paddingY * 1.5f;
+//        canvas.drawText("VOLUME", displayFont, paddingX, textY);
+//        displayFont.getData().setScale(0.4f);
+//        textY = textY - paddingY;
+//        canvas.drawText("MUSIC", displayFont, 1.5f * paddingX, textY);
+//        textY = textY - paddingY;
+//        canvas.drawText("SOUND EFFECTS", displayFont, 1.5f * paddingX, textY);
+//        displayFont.getData().setScale(0.5f);
+//        textY = textY - paddingY;
+//        canvas.drawText("KEYBOARD SCHEME", displayFont, paddingX, textY);
+//        textY = textY - paddingY;
+//        canvas.draw(wasdIcon, Color.WHITE, 0, wasdIcon.getHeight(), 1.5f * paddingX,
+//                textY, 0, scale * SCHEME_SCALE, scale * SCHEME_SCALE);
+//        canvas.draw(arrrowsIcon, Color.WHITE, 0, arrrowsIcon.getHeight(), 2.5f * paddingX + wasdIcon.getWidth(),
+//                textY, 0, scale * SCHEME_SCALE, scale * SCHEME_SCALE);
+//        textY = textY - paddingY - wasdIcon.getHeight() * SCHEME_SCALE;
+//        canvas.drawText("KEYBOARD SHORTCUTS", displayFont, paddingX, textY);
+//        textY = textY - paddingY;
+//        canvas.draw(keysIcon, Color.WHITE, 0, keysIcon.getHeight(), 1.5f * paddingX, textY, 0, scale * KEYS_SCALE, scale * KEYS_SCALE);
         canvas.end();
     }
 
