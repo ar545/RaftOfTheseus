@@ -15,7 +15,7 @@
     "bullet damage" : 30,
     "stun time" : 500,
     "cool down" : 1500,
-    "size" : 10,
+    "size" : 10
   },
   "shark" : {
     "damage per frame" : 0,
