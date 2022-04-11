@@ -253,7 +253,7 @@ public class InputController {
 			mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map"));
 			firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire"));
 			if (firePressed) {
-				fire_location.set(Gdx.input.getX(), Gdx.input.getY());
+				fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 			}
 		} else if (controlScheme == ControlScheme.KeyboardOnly) {
 			mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));

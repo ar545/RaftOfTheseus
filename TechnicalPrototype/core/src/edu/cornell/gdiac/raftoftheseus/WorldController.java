@@ -177,7 +177,7 @@ public class WorldController implements Screen, ContactListener {
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
 //>>>>>>> main
-        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
+        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         canvas.clear();
@@ -187,20 +187,20 @@ public class WorldController implements Screen, ContactListener {
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
                 obj.draw(canvas);
         }
-        drawHealthBar(levelModel.getPlayer().getHealthRatio(), levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
+        drawHealthBar(levelModel.getPlayer().getHealthRatio(), levelModel.getPlayer().getPosition());
         canvas.end();
 
         drawStar(levelModel.getPlayer().getStar());
 
         if (map) {
             // translate center point of level to (0,0):
-            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-pixelsPerUnit);
+            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-1);
 
             // scale down so that the whole level fits on the screen, with a margin:
             int pixelMargin = 150;
             float wr = (canvas.getWidth()-2*pixelMargin) / (levelModel.bounds().width);
             float hr = (canvas.getHeight()-2*pixelMargin) / (levelModel.bounds().height);
-            float scale = Math.min(wr, hr)/pixelsPerUnit;
+            float scale = Math.min(wr, hr);
 
             // translate center point of level to center of screen:
             Vector2 translation_2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
@@ -210,8 +210,8 @@ public class WorldController implements Screen, ContactListener {
 
             canvas.begin(mapTransform);
             canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
-                    levelModel.bounds().width/2*pixelsPerUnit, levelModel.bounds().height/2*pixelsPerUnit, 0.0f,
-                    levelModel.bounds().width*pixelsPerUnit/mapBackground.getWidth(), levelModel.bounds().height*pixelsPerUnit/mapBackground.getHeight());
+                    levelModel.bounds().width/2, levelModel.bounds().height/2, 0.0f,
+                    levelModel.bounds().width/mapBackground.getWidth(), levelModel.bounds().height/mapBackground.getHeight());
             for(GameObject obj : levelModel.getObjects()) {
                 GameObject.ObjectType type = obj.getType();
                 if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.ENEMY
@@ -243,9 +243,11 @@ public class WorldController implements Screen, ContactListener {
             canvas.end();
         }
 
-        // force player remain with their current health
-        float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
-        canvas.drawHealthCircle(r);
+        // draw a circle showing how far the player can move before they die
+        float r = levelModel.getPlayer().getPotentialDistance() * 33;
+        Vector2 pos = levelModel.getPlayer().getPosition();
+        cameraTransform.applyTo(pos);
+        canvas.drawHealthCircle((int)pos.x, (int)pos.y, r);
     }
 
 //<<<<<<< HEAD
@@ -254,7 +256,9 @@ public class WorldController implements Screen, ContactListener {
      * @param pixelsPerUnit scalar pixel per unit
      * @return an affine2 representing the affine transformation that texture will go through */
     private Affine2 calculateMovingCamera(float pixelsPerUnit) {
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
+        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
                 .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
 
@@ -264,7 +268,7 @@ public class WorldController implements Screen, ContactListener {
         translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
         translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
         translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
-        return new Affine2().setToTranslation(translation);
+        return a.preTranslate(translation);
     }
 
     /** This function calculate the correct health bar color
@@ -293,7 +297,8 @@ public class WorldController implements Screen, ContactListener {
     private void drawWater() {
         if (USE_SHADER_FOR_WATER)
             canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
-        float pixel = 100/3.0f;
+//        float pixel = 100/3.0f;
+        float pixel = 1;
 //>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
@@ -455,7 +460,10 @@ public class WorldController implements Screen, ContactListener {
         if (player.isFire()) {
             // find nearest enemy to player
             if(ic.mouseActive()){
-                createBullet(ic.getFireDirection());
+                Vector2 firePixel = ic.getFireDirection();
+                Affine2 camera = calculateMovingCamera(100/3.0f);
+                camera.inv().applyTo(firePixel);
+                createBullet(firePixel);
             }
             else {
                 Shark nearestShark = null;
@@ -492,7 +500,6 @@ public class WorldController implements Screen, ContactListener {
         }
 
         PooledList<Hydra> hy = levelModel.getHydras();
-        System.out.println(hy.size());
         for (int i = 0; i < hy.size(); i++) {
             Hydra hydra = hy.get(i);
             levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());

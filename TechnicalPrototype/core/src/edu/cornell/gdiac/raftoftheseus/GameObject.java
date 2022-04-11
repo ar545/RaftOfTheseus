@@ -138,7 +138,7 @@ public abstract class GameObject extends SimpleObstacle {
         setRestitution(0.0f);
         setLinearDamping(0.0f);
         setFixedRotation(true);
-        super.setDrawScale(100.0f/3.0f, 100.0f/3.0f);
+        super.setDrawScale(1,1);
     }
 
 
