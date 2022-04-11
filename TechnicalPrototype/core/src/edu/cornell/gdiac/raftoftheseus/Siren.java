@@ -7,16 +7,30 @@ import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
-
-import java.util.Random;
 
 public class Siren extends WheelObstacle implements Telegraph {
     /** Parameters */
     private Raft targetRaft;
+    private Vector2 location1 = new Vector2();
+    private Vector2 location2 = new Vector2();
+    private Vector2 direction1 = new Vector2();
+    private Vector2 direction2 = new Vector2();
     private Vector2 moveVector = new Vector2();
+    private boolean fromLocation1 = true;
+    private static float PROXIMITY = 1f;
+
     private StateMachine<Siren, SirenController> stateMachine;
+
+    private long timeStamp = 0L;
+    private boolean timeStamped = false;
+    private static long IDLE_TIME;
+    private static long SINGING_TIME;
+    private static float ATTACK_RANGE;
+    private boolean hasAttacked;
     private static void setConstants(JsonValue objParams){
+
     }
 
 
@@ -37,35 +51,58 @@ public class Siren extends WheelObstacle implements Telegraph {
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         this.targetRaft = targetRaft;
-        fixture.filter.categoryBits = CATEGORY_ENEMY;
-        fixture.filter.maskBits = MASK_ENEMY;
+        fixture.filter.maskBits = MASK_SIREN;
         stateMachine = new DefaultStateMachine<Siren, SirenController>(this, SirenController.SPAWN);
     }
 
-    //    // TODO: this will change depending on implementation of AIController
     public void update(float dt) {
-        super.update(dt);
-        if (moveVector != null && targetRaft != null) {
-            body.applyLinearImpulse(moveVector, getPosition(), true);
+        body.setLinearVelocity(moveVector);
+        stateMachine.update();
+    }
+
+    public StateMachine<Siren, SirenController> getStateMachine(){ return this.stateMachine; }
+    public Vector2 getDirection1(){ return direction1; }
+    public Vector2 getDirection2(){ return direction2; }
+    public void setMoveVector(boolean direction1) {
+        if(direction1) this.moveVector = this.direction1;
+        else this.moveVector = this.direction2;
+    }
+    public void stopMove(){ this.moveVector.setZero(); }
+    public void setTimeStamp(){
+        if(!timeStamped) {
+            timeStamp = TimeUtils.millis();
+            timeStamped = true;
         }
     }
 
+    // Time
+    public void resetTimeStamp(){ timeStamped = false; }
+    public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
+    public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
 
-    /**
-     * Sets moveVector so that applying it as a linear impulse brings this object's velocity closer to
-     * moveVector*topSpeed.
-     * Precondition: moveVector.len() == 1.
-     * @param topSpeed Won't apply an impulse that takes us above this speed
-     * @param smoothing Impulse is scaled by (1-smoothing). Higher smoothing means wider turns, slower responses.
-     */
-    private void calculateImpulse(float topSpeed, float smoothing) {
-        float currentSpeed = getLinearVelocity().dot(moveVector); // current speed in that direction
-        float impulseMagnitude = (topSpeed - currentSpeed)*body.getMass()*(1-smoothing);
-        moveVector.scl(impulseMagnitude);
+    // Changing location
+    public boolean fromFirstLocation(){ return fromLocation1; }
+    public boolean fromSecondLocation(){ return !fromLocation1; }
+    public void setFromFirstLocation(){ fromLocation1 = true; }
+    public void setFromSecondLocation(){ fromLocation1 = false; }
+    public boolean nearLanding(){
+        float dist;
+        if(fromLocation1){
+            dist = getPosition().sub(location2).len();
+        } else {
+            dist = getPosition().sub(location1).len();
+        }
+        return dist < PROXIMITY;
     }
 
-    @Override
-    public float getCrossSectionalArea() {
-        return super.getCrossSectionalArea()*0.2f; // sharks are less affected by drag
+    // Attacking player
+    public boolean inAttackRange(){
+        return targetRaft.getPosition().sub(getPosition()).len() < ATTACK_RANGE;
     }
+    public boolean canAttack(){
+        hasAttacked = stateMachine.isInState(SirenController.ATTACKING) && inAttackRange();
+        return hasAttacked;
+    }
+    public boolean hasAttacked(){ return hasAttacked; }
+    public void resetHasAttacked(){ hasAttacked = false; }
 }
