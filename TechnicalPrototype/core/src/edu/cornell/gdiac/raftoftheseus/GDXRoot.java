@@ -48,7 +48,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	/** Which level is currently loaded */
 	private int currentLevel = 0;
 	/** How many levels there are */
-	private int numLevels = 3;
+	private int numLevels = 9;
 	
 	/**
 	 * Creates a new game from the configuration settings.

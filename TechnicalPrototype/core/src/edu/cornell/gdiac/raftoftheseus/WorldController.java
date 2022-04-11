@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Json;
@@ -166,19 +167,18 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
+//<<<<<<< HEAD
+//        if(canvas == null){ return; } // return if no canvas pointer
+//=======
         // return if no canvas pointer
         if(canvas == null)
             return;
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
+//>>>>>>> main
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
-
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
-        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
-        Affine2 cameraTransform = new Affine2();
-        cameraTransform.setToTranslation(translation);
+        Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         canvas.clear();
         canvas.begin(cameraTransform);
@@ -187,9 +187,9 @@ public class WorldController implements Screen, ContactListener {
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
                 obj.draw(canvas);
         }
+        drawHealthBar(levelModel.getPlayer().getHealthRatio(), levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
         canvas.end();
 
-        drawHealthBar(levelModel.getPlayer().getHealthRatio());
         drawStar(levelModel.getPlayer().getStar());
 
         if (map) {
@@ -248,11 +248,53 @@ public class WorldController implements Screen, ContactListener {
         canvas.drawHealthCircle(r);
     }
 
+//<<<<<<< HEAD
+    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
+     * boundary of the world with walls, the player position, and the pixel per unit scale.
+     * @param pixelsPerUnit scalar pixel per unit
+     * @return an affine2 representing the affine transformation that texture will go through */
+    private Affine2 calculateMovingCamera(float pixelsPerUnit) {
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
+                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
+
+        // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = levelModel.wallBounds();
+        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
+        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
+        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
+        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
+        return new Affine2().setToTranslation(translation);
+    }
+
+    /** This function calculate the correct health bar color
+     * @param median for red color the median should be 1/3 and 2/3 for green color
+     * @param health the health percentage for the player
+     * @return the rgb code representing the red or green color
+     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
+    private float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
+
+    /** Precondition & post-condition: the game canvas is open
+     * @param health the health percentage for the player */
+    private void drawHealthBar(float health, Vector2 player_position) {
+        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
+        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
+        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f)  ;
+        float y_origin = (player_position.y);
+        canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
+        if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
+    }
+
+//    /** draw a background for the sea
+//     * Precondition & post-condition: the game canvas is open */
+//    private void drawMovingBackground(float pixel) {
+//=======
     /** draws background water and moving currents (using shader) */
     private void drawWater() {
         if (USE_SHADER_FOR_WATER)
             canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
         float pixel = 100/3.0f;
+//>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
         if (!USE_SHADER_FOR_WATER)
@@ -279,27 +321,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.end();
     }
 
-    /** This function calculate the correct health bar color
-     * @param median for red color the median should be 1/3 and 2/3 for green color
-     * @param health the health percentage for the player
-     * @return the rgb code representing the red or green color
-     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
-    private float makeColor(float median, float health){
-        return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1));
-    }
 
-    /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function
-     * @param health the health percentage for the player */
-    private void drawHealthBar(float health) {
-        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0, 1);
-        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
-        float x_origin = (canvas.getWidth() - greyBar.getRegionWidth()*HEALTH_BAR_SCALE)  / (2f*HEALTH_BAR_SCALE);
-        float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
-        canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
-        canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        if(health >= 0){canvas.draw(RatioBar,c,x_origin, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
-        canvas.end();
-    }
 
     /**
      * Gather the assets for this controller.

@@ -27,13 +27,27 @@ public class Current extends BoxObstacle {
         EAST,
         /** A current that push the player leftward */
         WEST,
+        /** A current that push the player up-right, from downtown to cornell */
+        NORTH_EAST,
+        /** A current that push the player down-left */
+        SOUTH_WEST,
+        /** A current that push the player down-right */
+        EAST_SOUTH,
+        /** A current that push the player up-left */
+        WEST_NORTH,
         /** A current that has no effect on player, for testing purposes only */
         NONE
     }
 
+    /** The speed at which a current flows = factor * magnitude, in units per second
+     * Current Magnitude Ratio Constant, used in current constructor calls */
+    private static final int CURRENT_SPEED_FACTOR = 1;
+
     // ATTRIBUTES
     /** Direction of the current */
-    private Direction direction;
+    private final Direction direction;
+    /** Magnitude of the current */
+    private final float magnitude;
 
     // METHODS
     public ObjectType getType() {
@@ -41,7 +55,7 @@ public class Current extends BoxObstacle {
     }
 
     /** constructor with known direction */
-    public Current(Vector2 position, Direction direction){
+    public Current(Vector2 position, Direction direction, int magnitude_input){
         super(3f, 3f);
         setPosition(position);
         setBodyType(BodyDef.BodyType.StaticBody);
@@ -50,6 +64,7 @@ public class Current extends BoxObstacle {
         setRotationFromDirection();
         fixture.filter.categoryBits = CATEGORY_CURRENT;
         fixture.filter.maskBits = MASK_CURRENT;
+        magnitude = (float) magnitude_input * CURRENT_SPEED_FACTOR;
     }
 
     private void setRotationFromDirection() {
@@ -66,6 +81,18 @@ public class Current extends BoxObstacle {
             case SOUTH:
                 setAngle(-90.0f);
                 break;
+            case NORTH_EAST:
+                setAngle(45.0f);
+                break;
+            case WEST_NORTH:
+                setAngle(135.0f);
+                break;
+            case SOUTH_WEST:
+                setAngle(-135.0f);
+                break;
+            case EAST_SOUTH:
+                setAngle(-45.0f);
+                break;
             default:
                 break;
         }
@@ -76,17 +103,26 @@ public class Current extends BoxObstacle {
         return direction;
     }
 
-    /** get the direction vector of the current */
+    /** get the direction vector of the current
+     * @return currents should be normalized to their magnitude. */
     public Vector2 getDirectionVector() {
         switch (this.direction){
             case EAST:
-                return new Vector2(1, 0);
+                return new Vector2(magnitude, 0);
             case WEST:
-                return new Vector2(-1, 0);
+                return new Vector2(-magnitude, 0);
             case NORTH:
-                return new Vector2(0, 1);
+                return new Vector2(0, magnitude);
             case SOUTH:
-                return new Vector2(0, -1);
+                return new Vector2(0, -magnitude);
+            case NORTH_EAST:
+                return new Vector2(1, 1).nor().scl(magnitude);
+            case EAST_SOUTH:
+                return new Vector2(1, -1).nor().scl(magnitude);
+            case SOUTH_WEST:
+                return new Vector2(-1, -1).nor().scl(magnitude);
+            case WEST_NORTH:
+                return new Vector2(-1, 1).nor().scl(magnitude);
             default:
                 return new Vector2(0, 0);
         }
