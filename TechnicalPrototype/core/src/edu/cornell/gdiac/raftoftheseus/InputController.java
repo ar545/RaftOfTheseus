@@ -20,11 +20,9 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.util.Controllers;
-import edu.cornell.gdiac.util.XBoxController;
 
 /**
  * Singleton class for reading player input.
