@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -22,6 +23,8 @@ public class Bullet extends WheelObstacle {
     /** Whether it was created by the player or not. */
     private boolean player;
 
+    private static Texture texture;
+
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
     public ObjectType getType() { return ObjectType.BULLET; }
@@ -31,6 +34,9 @@ public class Bullet extends WheelObstacle {
         BULLET_SIZE = objParams.getFloat(2);
         BULLET_RANGE_FLY = objParams.getFloat(3);
         BULLET_RANGE_FALL = objParams.getFloat(4);
+    }
+    public static void setText(Texture t){
+        texture = t;
     }
 
 
@@ -42,6 +48,7 @@ public class Bullet extends WheelObstacle {
         setFriction(0);
         setRestitution(0);
         setLinearDamping(0);
+        setAngle();
         this.player = player;
         originalPos = new Vector2(position);
         if(player) {
@@ -51,14 +58,12 @@ public class Bullet extends WheelObstacle {
             fixture.filter.categoryBits = CATEGORY_ENEMY_BULLET;
             fixture.filter.maskBits = MASK_ENEMY_BULLET;
         }
+        setTexture(texture);
     }
 
     @Override
     public void setTexture(Texture texture) {
         super.setTexture(texture);
-        float w = getRadius()*drawScale.x / texture.getWidth();
-        textureScale.set(w, w);
-        origin.set(texture.getWidth()/2.0f, texture.getWidth()/2.0f * getRadius()/getRadius());
     }
 
     @Override
@@ -71,6 +76,14 @@ public class Bullet extends WheelObstacle {
             super.applyDrag();
         } else {
             this.setDestroyed(true);
+        }
+    }
+
+    @Override
+    public void draw(GameCanvas canvas) {
+        if (texture != null) {
+            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+                    getAngle(), textureScale.x, textureScale.y);
         }
     }
 }

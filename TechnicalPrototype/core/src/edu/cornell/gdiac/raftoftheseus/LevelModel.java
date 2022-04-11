@@ -566,6 +566,7 @@ public class LevelModel {
         enemyTexture = directory.getEntry("enemy", Texture.class);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         bulletTexture = directory.getEntry("earth", Texture.class);
+        Bullet.setText(bulletTexture);
     }
 
     /** Add wood Objects to random location in the world */

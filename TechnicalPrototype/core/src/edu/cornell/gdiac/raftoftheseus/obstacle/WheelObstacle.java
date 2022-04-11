@@ -132,7 +132,7 @@ public abstract class WheelObstacle extends GameObject {
 		textureScale = new Vector2(2.0f*getRadius()*drawScale.x / texture.getWidth(),
 				2.0f*getRadius()*drawScale.x / texture.getHeight());
 		if(this.getType() == ObjectType.BULLET){
-			textureScale = new Vector2(2, 2);
+			textureScale = new Vector2(0.1f, 0.1f);
 		}
 	}
 
