@@ -2,7 +2,6 @@ package edu.cornell.gdiac.raftoftheseus;
 
 
 import com.badlogic.gdx.utils.JsonValue;
-
 import static edu.cornell.gdiac.raftoftheseus.Shark.enemyState.*;
 
 public class SharkController {
@@ -25,7 +24,7 @@ public class SharkController {
 
     // Set class constants
     public static void setConstants(JsonValue objParams){
-        CHASE_DIST = objParams.getChild("shark ai").getInt("chase distance", 12);
+        CHASE_DIST = objParams.getInt("chase distance", 12);
     }
 
     public SharkController(int id, Shark shark, Raft raft) {

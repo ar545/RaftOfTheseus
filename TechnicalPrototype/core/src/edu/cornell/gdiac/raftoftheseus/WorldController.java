@@ -16,6 +16,8 @@ import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 import java.util.Iterator;
 
+import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
+
 public class WorldController implements Screen, ContactListener {
 
     /**
@@ -25,6 +27,8 @@ public class WorldController implements Screen, ContactListener {
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
         Bullet.setConstants(objParams.get("bullet"));
+        Shark.setConstants(objParams.get("shark"));
+        Hydra.setConstants(objParams.get("hydra"));
     }
 
     // CONSTANTS
@@ -91,6 +95,12 @@ public class WorldController implements Screen, ContactListener {
     private int countdown;
     /** array of controls for each enemy**/
     private SharkController[] controls;
+    /** Array of controls for each hydra. */
+    private HydraController[] hydraControllers;
+    /** Array of controls for each siren. */
+    private SirenController[] sirenControllers;
+    /** Find whether a hydra can see the player. */
+    private HydraRayCast hydraSight;
 
 
     /**
@@ -435,6 +445,7 @@ public class WorldController implements Screen, ContactListener {
             Shark shark = el.get(i);
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
+
     }
 
     /**
@@ -651,6 +662,11 @@ public class WorldController implements Screen, ContactListener {
                 if (!complete && !failed)
                     setComplete(true);
             }
+            // Check for hydra collision with bullet
+            else if(bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.HYDRA)){
+                // TODO
+            } else if(bd1.getType().equals(GameObject.ObjectType.HYDRA) && bd2.getType().equals(GameObject.ObjectType.BULLET)){
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -756,7 +772,6 @@ public class WorldController implements Screen, ContactListener {
     /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        //TODO: below are imported from Lab 4. Question: What sound effects do we want?
         float speed = 0;
         Vector2 cache = new Vector2();
         float bumpThresh = 5f;
@@ -783,7 +798,6 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    // TODO: What sound effect are needed and when do we want them?
     /** Play sound effect according to the situation */
     private void playSoundEffect() {
 
@@ -839,12 +853,27 @@ public class WorldController implements Screen, ContactListener {
         setFailure(false);
     }
 
+    private void populateControllers(PooledList<?> e){
+
+    }
+
+
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
         PooledList<Shark> enemies = levelModel.getEnemies();
         controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
             controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
+        }
+        PooledList<Hydra> hydras = levelModel.getHydras();
+        hydraControllers = new HydraController[hydras.size()];
+        for (int i = 0; i < hydras.size(); i++) {
+            hydraControllers[i] = new HydraController(i, hydras.get(i), levelModel.getPlayer());
+        }
+        PooledList<Siren> sirens = levelModel.getSirens();
+        sirenControllers = new SirenController[sirens.size()];
+        for (int i = 0; i < sirens.size(); i++) {
+            sirenControllers[i] = new SirenController(i, sirens.get(i), levelModel.getPlayer());
         }
 //        System.out.println(Arrays.toString(controls));
     }

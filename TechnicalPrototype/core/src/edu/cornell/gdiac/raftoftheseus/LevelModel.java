@@ -91,6 +91,8 @@ public class LevelModel {
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Shark> enemies = new PooledList<>();
+    private PooledList<Hydra> hydras = new PooledList<>();
+    private PooledList<Siren> sirens = new PooledList<>();
 
     // Graphics assets for the entities
     /** Texture for all ships, as they look the same */
@@ -123,6 +125,8 @@ public class LevelModel {
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
     public PooledList<Shark> getEnemies() { return enemies; }
+    public PooledList<Hydra> getHydras() { return hydras; }
+    public PooledList<Siren> getSirens() { return sirens; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */

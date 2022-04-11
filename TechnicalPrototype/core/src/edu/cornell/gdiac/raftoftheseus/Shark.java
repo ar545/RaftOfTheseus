@@ -15,9 +15,6 @@ public class Shark extends WheelObstacle {
         return ObjectType.ENEMY;
     }
 
-    private static void setConstants(JsonValue objParams){
-    }
-
     /**
      * How much damage an enemy deals to the player upon collision, per animation frame
      */
@@ -25,15 +22,21 @@ public class Shark extends WheelObstacle {
     /**
      * How fast enemy wanders around w/o target
      **/
-    public static final float ENEMY_WANDER_SPEED = 1.5f;
+    public static float ENEMY_WANDER_SPEED;
     /**
      * How fast the enemy moves towards its target, in units per second
      */
-    public static final float ENEMY_CHASE_SPEED = 2.0f;
+    public static float ENEMY_CHASE_SPEED;
     /**
      * How much health will enemy take from player upon collision
      */
-    protected static final float ENEMY_DAMAGE = -25.0f;
+    protected static float ENEMY_DAMAGE;
+
+    static void setConstants(JsonValue objParams){
+        ENEMY_WANDER_SPEED = objParams.getFloat("wander speed");
+        ENEMY_CHASE_SPEED = objParams.getFloat("chase speed");
+        ENEMY_DAMAGE = objParams.getFloat("damage");
+    }
 
     private Vector2 moveVector = new Vector2();
 

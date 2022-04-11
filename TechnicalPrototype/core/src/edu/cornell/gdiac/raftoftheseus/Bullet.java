@@ -18,6 +18,8 @@ public class Bullet extends WheelObstacle {
     private static float BULLET_RANGE_FALL;
     /** Original bullet position. */
     private Vector2 originalPos;
+    /** Whether it was created by the player or not. */
+    private boolean player;
 
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
@@ -30,6 +32,7 @@ public class Bullet extends WheelObstacle {
         BULLET_RANGE_FALL = objParams.getFloat(4);
     }
 
+
     public Bullet(Vector2 position, boolean player) {
         super();
         setRadius(BULLET_SIZE);
@@ -38,6 +41,7 @@ public class Bullet extends WheelObstacle {
         setFriction(0);
         setRestitution(0);
         setLinearDamping(0);
+        this.player = player;
         originalPos = new Vector2(position);
         if(player) {
             fixture.filter.categoryBits = CATEGORY_PLAYER_BULLET;
