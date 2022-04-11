@@ -22,6 +22,8 @@ public class WorldController implements Screen, ContactListener {
     public static final int EXIT_NEXT = 1;
     /** Exit code for jumping back to previous level */
     public static final int EXIT_PREV = 2;
+    /** Exit code for opening settings */
+    public static final int EXIT_SETTINGS = 3;
     /** How many frames after winning/losing do we continue? */
     public static final int EXIT_COUNT = 120;
 
@@ -322,7 +324,12 @@ public class WorldController implements Screen, ContactListener {
             pause();
             listener.exitScreen(this, EXIT_PREV);
             return false;
-        } else if (countdown > 0) {
+        } else if (input.didSettings())  {
+            pause();
+            listener.exitScreen(this, EXIT_SETTINGS);
+            return false;
+        }
+        else if (countdown > 0) {
             countdown--;
         } else if (countdown == 0) {
             if (failed) {

@@ -54,6 +54,9 @@ public class InputController {
 	/** Whether the exit button was pressed. */
 	private boolean exitPressed;
 	private boolean exitPrevious;
+	/** Whether the settings button was pressed */
+	private boolean settingsPressed;
+	private boolean settingsPrevious;
 	/** How much did we move (left/right)? */
 	private float x_offset;
 	/** How much did we move (up/down)? */
@@ -136,6 +139,11 @@ public class InputController {
 	 * @return true if the exit button was pressed.
 	 */
 	public boolean didExit() { return exitPressed && !exitPrevious; }
+
+	/**
+	 * @return true if the settings button was pressed.
+	 * */
+	public boolean didSettings() { return settingsPressed & !settingsPrevious; }
 	
 	/**
 	 * Creates a new input controller for mouse and keyboard.
@@ -157,6 +165,7 @@ public class InputController {
 		firePrevious = firePressed;
 		debugPrevious  = debugPressed;
 		exitPrevious = exitPressed;
+		settingsPrevious = settingsPressed;
 
 		// Read new input
 		readKeyboard();
@@ -175,6 +184,7 @@ public class InputController {
 		firePressed  = Gdx.input.isKeyPressed(Input.Keys.F);
 		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.G);
 		exitPressed  = Gdx.input.isKeyPressed(Input.Keys.ESCAPE);
+		settingsPressed = Gdx.input.isKeyPressed(Input.Keys.P);
 
 		x_offset = 0;
 		y_offset = 0;

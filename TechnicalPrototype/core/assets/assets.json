@@ -9,6 +9,11 @@
       "bullet": "images/bullet.png",
       "menu_background": "images/menu.png",
       "menu_title": "images/menu_title.png",
+      "sea_background": "images/sea_background.png",
+      "settings_wasd": "images/settings_wasd.png",
+      "settings_arrows": "images/settings_arrows.png",
+      "settings_keys": "images/settings_keys.png",
+      "exit_button": "images/exit_button.png",
       "map_background": "images/map_background.png",
       "raft":     "images/raft_2.png",
       "wood":     "images/one_wood_v2.png",
@@ -54,6 +59,10 @@
         "times": {
             "file": "fonts/TimesRoman.ttf",
             "size": 32
+        },
+        "diogenes": {
+          "file": "fonts/DIOGENES.ttf",
+          "size": 100
         },
       "end": {
         "file": "fonts/RetroGame.ttf",

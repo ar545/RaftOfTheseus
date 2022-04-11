@@ -42,12 +42,20 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private LoadingMode loading;
 	/** Player mode for level selecting menu (CONTROLLER CLASS) */
 	private MenuMode menu;
-	/** Player mode for the the game proper (CONTROLLER CLASS) */
+	/** Player mode for the game proper (CONTROLLER CLASS) */
 	private WorldController playing;
+	/** Player mode for the settings mode (CONTROLLER CLASS) */
+	private SettingsMode settings;
 	/** Which level is currently loaded */
 	private int currentLevel = 0;
 	/** How many levels there are */
 	private int numLevels = 3;
+	/** Exit code for displaying start screen */
+	private static final int DISPLAY_START = 4;
+	/** Exit code for displaying menu screen */
+	private static final int DISPLAY_MENU = 5;
+	/** Exit code for displaying playing screen */
+	private static final int DISPLAY_WORLD = 6;
 	
 	/**
 	 * Creates a new game from the configuration settings.
@@ -68,6 +76,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		loading = new LoadingMode("assets.json",canvas,1);
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
+		settings = new SettingsMode(canvas);
 		setScreen(loading);
 		loading.setScreenListener(this);
 	}
@@ -118,17 +127,45 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param exitCode The state of the screen upon exit
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
-		if(exitCode == WorldController.EXIT_PREV){
+		if (exitCode == WorldController.EXIT_PREV) {
 			currentLevel = Math.max(0, currentLevel-1);
 			playing.setLevel(currentLevel);
 			setScreen(playing);
-		}else if(exitCode == WorldController.EXIT_NEXT){
+		} else if (exitCode == WorldController.EXIT_NEXT) {
 			currentLevel = Math.min(numLevels-1, currentLevel+1);
 			playing.setLevel(currentLevel);
 			setScreen(playing);
-		} else if (exitCode != WorldController.EXIT_QUIT) {
-			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
-			Gdx.app.exit();
+		} else if (exitCode == WorldController.EXIT_SETTINGS) {
+			settings.setScreenListener(this);
+			settings.setPreviousMode(DISPLAY_WORLD);
+			settings.resetPressedState();
+			Gdx.input.setInputProcessor(settings);
+			settings.populate(directory);
+			setScreen(settings);
+		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
+			settings.setScreenListener(this);
+			settings.setPreviousMode(DISPLAY_MENU);
+			settings.resetPressedState();
+			Gdx.input.setInputProcessor(settings);
+			settings.populate(directory);
+			setScreen(settings);
+		} else if (screen == settings) {
+			switch (exitCode) {
+				case DISPLAY_START:
+					// TODO
+					break;
+				case DISPLAY_MENU:
+					menu.setScreenListener(this);
+					Gdx.input.setInputProcessor(menu);
+					setScreen(menu);
+					break;
+				case DISPLAY_WORLD:
+					playing.setScreenListener(this);
+					playing.setLevel(currentLevel);
+					setScreen(playing);
+					break;
+			}
+
 		} else if (screen == loading) {
 			menu.setScreenListener(this);
 			Gdx.input.setInputProcessor(menu);
@@ -153,6 +190,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			currentLevel = menu.getSelectedLevel() < numLevels ? menu.getSelectedLevel() : 0;
 			playing.setLevel(currentLevel);
 			setScreen(playing);
+		} else if (exitCode != WorldController.EXIT_QUIT) {
+			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
+			Gdx.app.exit();
 		} else {
 			// We quit the main application
 			Gdx.app.exit();
