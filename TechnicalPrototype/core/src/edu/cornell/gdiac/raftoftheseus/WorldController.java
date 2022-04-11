@@ -119,6 +119,7 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+        hydraSight = new HydraRayCast();
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -447,7 +448,8 @@ public class WorldController implements Screen, ContactListener {
         }
 
         PooledList<Hydra> hy = levelModel.getHydras();
-        for (int i = 0; i<  hy.size(); i++) {
+        System.out.println(hy.size());
+        for (int i = 0; i < hy.size(); i++) {
             Hydra hydra = hy.get(i);
             levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
             hydra.setSee(hydraSight.getCanSee());

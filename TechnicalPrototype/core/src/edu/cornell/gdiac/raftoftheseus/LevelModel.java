@@ -426,14 +426,17 @@ public class LevelModel {
                 Shark this_shark = new Shark(compute_temp, null);
                 this_shark.setTexture(enemyTexture);
                 addEnemyObject(this_shark);
+                break;
             case 1: // Hydras
                 Hydra th = new Hydra(compute_temp, null);
                 th.setTexture(enemyTexture);
                 addHydraObject(th);
+                break;
             case 2: // Sirens
                 Siren ts = new Siren(compute_temp, null);
                 ts.setTexture(enemyTexture);
                 addSirenObject(ts);
+                break;
         }
     }
 
