@@ -6,12 +6,6 @@ import com.sun.xml.internal.bind.v2.model.core.ID;
 
 public enum SirenController implements State<Siren> {
 
-    SPAWN() {
-        @Override
-        public void update (Siren entity){
-            entity.getStateMachine().changeState(IDLE);
-        }
-    },
     IDLE() {
         @Override
         public void update (Siren entity){
@@ -26,6 +20,7 @@ public enum SirenController implements State<Siren> {
         @Override
         public void update (Siren entity){
             entity.getStateMachine().changeState(IDLE);
+            entity.stopMove();
         }
     },
     TAKEOFF(){
@@ -82,11 +77,6 @@ public enum SirenController implements State<Siren> {
 
     @Override
     public void enter(Siren entity) {
-
-    }
-
-    @Override
-    public void update(Siren entity) {
 
     }
 

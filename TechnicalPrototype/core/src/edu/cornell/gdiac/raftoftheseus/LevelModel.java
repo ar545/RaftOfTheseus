@@ -433,9 +433,9 @@ public class LevelModel {
                 addHydraObject(th);
                 break;
             case 2: // Sirens
-                Siren ts = new Siren(compute_temp, null);
-                ts.setTexture(enemyTexture);
-                addSirenObject(ts);
+//                Siren ts = new Siren(compute_temp, null);
+//                ts.setTexture(enemyTexture);
+//                addSirenObject(ts);
                 break;
         }
     }

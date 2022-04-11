@@ -29,6 +29,7 @@ public class WorldController implements Screen, ContactListener {
         Bullet.setConstants(objParams.get("bullet"));
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
+        Siren.setConstants(objParams.get("siren"));
     }
 
     // CONSTANTS
@@ -95,10 +96,6 @@ public class WorldController implements Screen, ContactListener {
     private int countdown;
     /** array of controls for each enemy**/
     private SharkController[] controls;
-    /** Array of controls for each hydra. */
-    private HydraController[] hydraControllers;
-    /** Array of controls for each siren. */
-    private SirenController[] sirenControllers;
     /** Find whether a hydra can see the player. */
     private HydraRayCast hydraSight;
 
@@ -432,14 +429,14 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // update forces for enemies, players, objects
-        resolveEnemies();
+        resolveEnemies(dt);
         player.applyInputForce();
         for (GameObject o : levelModel.getObjects())
             o.applyDrag();
     }
 
     /** get enemies take actions according to their AI */
-    private void resolveEnemies() {
+    private void resolveEnemies(float dt) {
         PooledList<Shark> el = levelModel.getEnemies();
 
         for (int i = 0; i< el.size(); i++) {
@@ -447,15 +444,19 @@ public class WorldController implements Screen, ContactListener {
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
 
-        PooledList<Hydra> hy = levelModel.getHydras();
-        System.out.println(hy.size());
-        for (int i = 0; i < hy.size(); i++) {
-            Hydra hydra = hy.get(i);
-            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
-            hydra.setSee(hydraSight.getCanSee());
-            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
-            if(hydra.isSplashing()){
-                createBullet(hydra.getPosition(), levelModel.getPlayer());
+        for (Hydra h : levelModel.getHydras()) {
+            levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
+            h.setSee(hydraSight.getCanSee());
+            if(h.willAttack()){
+                createBullet(h.getPosition(), levelModel.getPlayer());
+            }
+            h.update(dt);
+        }
+
+        for(Siren s : levelModel.getSirens()){
+            s.update(dt);
+            if(s.willAttack()){
+                levelModel.getPlayer().addHealth(s.getAttackDamage());
             }
         }
 
@@ -885,17 +886,6 @@ public class WorldController implements Screen, ContactListener {
         for (int i = 0; i < enemies.size(); i++) {
             controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
         }
-        PooledList<Hydra> hydras = levelModel.getHydras();
-        hydraControllers = new HydraController[hydras.size()];
-        for (int i = 0; i < hydras.size(); i++) {
-            hydraControllers[i] = new HydraController(i, hydras.get(i));
-        }
-//        PooledList<Siren> sirens = levelModel.getSirens();
-//        sirenControllers = new SirenController[sirens.size()];
-//        for (int i = 0; i < sirens.size(); i++) {
-//            sirenControllers[i] = new SirenController(i, sirens.get(i));
-//        }
-//        System.out.println(Arrays.toString(controls));
     }
 
     /** The current level id. */

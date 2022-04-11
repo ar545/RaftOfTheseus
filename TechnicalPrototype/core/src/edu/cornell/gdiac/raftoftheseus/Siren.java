@@ -10,8 +10,18 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Siren extends WheelObstacle implements Telegraph {
-    /** Parameters */
+public class Siren extends WheelObstacle {
+
+    public static void setConstants(JsonValue objParams){
+        IDLE_TIME = objParams.getLong("idle time", 500L);
+        SINGING_TIME = objParams.getLong("singing time", 3000L);
+        ATTACK_RANGE = objParams.getFloat("attack range", 200f);
+        ATTACK_DAMAGE = objParams.getFloat("attack damage", 40f);
+        PROXIMITY = objParams.getFloat("proximity", 1f);
+        FLY_SPEED = objParams.getFloat("fly speed", 0.0001f);
+    }
+
+    // Parameters
     private Raft targetRaft;
     private Vector2 location1 = new Vector2();
     private Vector2 location2 = new Vector2();
@@ -19,40 +29,31 @@ public class Siren extends WheelObstacle implements Telegraph {
     private Vector2 direction2 = new Vector2();
     private Vector2 moveVector = new Vector2();
     private boolean fromLocation1 = true;
-    private static float PROXIMITY = 1f;
 
     private StateMachine<Siren, SirenController> stateMachine;
 
     private long timeStamp = 0L;
     private boolean timeStamped = false;
+    private boolean hasAttacked;
+
+    private static float PROXIMITY = 1f;
     private static long IDLE_TIME;
     private static long SINGING_TIME;
     private static float ATTACK_RANGE;
-    private boolean hasAttacked;
-    private static void setConstants(JsonValue objParams){
+    private static float ATTACK_DAMAGE;
+    private static float FLY_SPEED;
 
-    }
-
-
-    public GameObject.ObjectType getType() {
-        return GameObject.ObjectType.ENEMY;
-    }
-    @Override
-    public boolean handleMessage(Telegram msg) {
-        return false;
-    }
-
-    public void setTargetRaft(Raft targetRaft) {
-        this.targetRaft = targetRaft;
-    }
-
-    public Siren(Vector2 position, Raft targetRaft) {
+    public Siren(Vector2 position1, Vector2 position2, Raft targetRaft) {
         super();
-        setPosition(position);
+        setPosition(position1);
         setBodyType(BodyDef.BodyType.DynamicBody);
+        location1.set(position1);
+        location2.set(position2);
+        direction1.set(position2.sub(position1).scl(FLY_SPEED));
+        direction2.set(position1.sub(position2).scl(FLY_SPEED));
         this.targetRaft = targetRaft;
         fixture.filter.maskBits = MASK_SIREN;
-        stateMachine = new DefaultStateMachine<Siren, SirenController>(this, SirenController.SPAWN);
+        stateMachine = new DefaultStateMachine<Siren, SirenController>(this, SirenController.IDLE);
     }
 
     public void update(float dt) {
@@ -61,21 +62,29 @@ public class Siren extends WheelObstacle implements Telegraph {
     }
 
     public StateMachine<Siren, SirenController> getStateMachine(){ return this.stateMachine; }
-    public Vector2 getDirection1(){ return direction1; }
-    public Vector2 getDirection2(){ return direction2; }
+
+    public GameObject.ObjectType getType() {
+        return GameObject.ObjectType.ENEMY;
+    }
+
+    public void setTargetRaft(Raft targetRaft) {
+        this.targetRaft = targetRaft;
+    }
+
+    // Setting movement
     public void setMoveVector(boolean direction1) {
         if(direction1) this.moveVector = this.direction1;
         else this.moveVector = this.direction2;
     }
     public void stopMove(){ this.moveVector.setZero(); }
+
+    // Time
     public void setTimeStamp(){
         if(!timeStamped) {
             timeStamp = TimeUtils.millis();
             timeStamped = true;
         }
     }
-
-    // Time
     public void resetTimeStamp(){ timeStamped = false; }
     public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
     public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
@@ -99,10 +108,11 @@ public class Siren extends WheelObstacle implements Telegraph {
     public boolean inAttackRange(){
         return targetRaft.getPosition().sub(getPosition()).len() < ATTACK_RANGE;
     }
-    public boolean canAttack(){
+    public boolean willAttack(){
         hasAttacked = stateMachine.isInState(SirenController.ATTACKING) && inAttackRange();
         return hasAttacked;
     }
     public boolean hasAttacked(){ return hasAttacked; }
     public void resetHasAttacked(){ hasAttacked = false; }
+    public static float getAttackDamage(){ return ATTACK_DAMAGE; }
 }

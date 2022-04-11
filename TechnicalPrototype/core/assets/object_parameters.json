@@ -1,12 +1,24 @@
 {
   "world controller" : {},
+  "siren" : {
+    "idle time" : 500,
+    "singing time" : 3000,
+    "attack range": 200,
+    "attack damage" : 40,
+    "proximity" : 1,
+    "fly speed" : 0.0001
+  },
   "hydra" : {
-    "range" : 1500.0,
+    "hitting range" : 200,
+    "hitting damage" : 50,
+    "firing range" : 1500.0,
+    "bullet damage" : 30,
     "stun time" : 500,
-    "cooldown" : 1500
+    "cool down" : 1500,
+    "size" : 10,
   },
   "shark" : {
-    "damage per frame" : 0;
+    "damage per frame" : 0,
     "chase distance" : 12,
     "wander speed" : 1.5,
     "chase speed" : 2.0,
