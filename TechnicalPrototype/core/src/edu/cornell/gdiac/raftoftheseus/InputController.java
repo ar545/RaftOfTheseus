@@ -20,11 +20,9 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.util.Controllers;
-import edu.cornell.gdiac.util.XBoxController;
 
 /**
  * Singleton class for reading player input.
@@ -96,6 +94,7 @@ public class InputController {
 	/** Where did we fire? */
 	private Vector2 fire_location;
 
+
 	/** The singleton instance of the input controller */
 	private static InputController theController = null;
 
@@ -103,7 +102,6 @@ public class InputController {
 
 	private void populateMap(String mapping){
 		JsonValue m = controlSettings.get(mapping);
-		System.out.println(m.name());
 		for( JsonValue i : m ){
 			if(i.isString()){
 				mappings.put(i.name(), Input.Keys.valueOf(i.asString()));
@@ -132,12 +130,45 @@ public class InputController {
 	}
 
 	private void changeControlScheme(){
-		System.out.println(1);
 		switch (controlScheme){
 			case KeyboardMouse: setKeyboardOnly(); return;
 			case KeyboardOnly: setKeyboardMouse(); return;
 			case Custom: return;
 		}
+	}
+
+	public void setKey(String action, String key){
+		if( mappings.get(action) == null ){
+			throw new RuntimeException("Given action does not exist");
+		} else if (!Input.Keys.toString(mappings.get(action)).equals(key)) {
+			controlScheme = ControlScheme.Custom;
+			mappings.put(action, Input.Keys.valueOf(key));
+		}
+	}
+
+	public String getControlScheme(){
+		switch (controlScheme){
+			case KeyboardMouse: return "Keyboard and Mouse";
+			case KeyboardOnly: setKeyboardMouse(); return "Keyboard Only";
+			case Custom: return "Custom";
+			default: throw new RuntimeException("Illegal state reached in Input Controller.");
+		}
+	}
+
+	public String getKey(String action){
+		if(controlScheme == ControlScheme.KeyboardMouse) {
+			if (action.equals("fire")) {
+				return "Left Mouse Button";
+			} else if (action.equals("map")) {
+				return "Right Mouse Button";
+			}
+		}
+		String k = Input.Keys.toString(mappings.get(action));
+		if (k == null) {
+			throw new RuntimeException("Given action does not exist");
+		}
+		return k;
+
 	}
 
 	/*=*=*=*=*=*=*=*=*=* GETTERS *=*=*=*=*=*=*=*=*=*/
@@ -147,7 +178,7 @@ public class InputController {
 		mov_offset = new Vector2();
 		fire_location = new Vector2();
 		mappings = new ArrayMap<>();
-		setKeyboardMouse();
+		setKeyboardOnly();
 	}
 
 	/** @return the singleton instance of the input controller */

@@ -1,31 +1,91 @@
 package edu.cornell.gdiac.raftoftheseus;
 
-import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.ai.fsm.State;
+import com.badlogic.gdx.ai.msg.Telegram;
 
-import static edu.cornell.gdiac.raftoftheseus.Hydra.EnemyState.SPAWN;
+public enum SirenController implements State<Siren> {
 
-public class SirenController {
+    IDLE() {
+        @Override
+        public void update (Siren entity){
+            entity.setTimeStamp();
+            if(entity.isPastIdleCooldown()) {
+                entity.getStateMachine().changeState(SINGING);
+                entity.resetTimeStamp();
+            }
+        }
+    },
+    LANDING(){
+        @Override
+        public void update (Siren entity){
+            entity.getStateMachine().changeState(IDLE);
+            entity.stopMove();
+        }
+    },
+    TAKEOFF(){
+        @Override
+        public void update (Siren entity){
+            changeToFlying(entity);
+        }
+    },
+    FLYING() {
+        @Override
+        public void update (Siren entity){
+            if(entity.nearLanding()){
+                entity.getStateMachine().changeState(LANDING);
+            }
+            else if(entity.fromFirstLocation()){
+                entity.setMoveVector(true);
+            } else if(entity.fromSecondLocation()){
+                entity.setMoveVector(false);
+            }
+        }
+    },
+    SINGING() {
+        @Override
+        public void update (Siren entity){
+            if(entity.inAttackRange()){
+                entity.getStateMachine().changeState(ATTACKING);
+            } else {
+                entity.setTimeStamp();
+                if(entity.isDoneSinging()) {
+                    entity.getStateMachine().changeState(TAKEOFF);
+                }
+            }
+        }
+    },
+    ATTACKING() {
+        @Override
+        public void update (Siren entity){
+            if(entity.hasAttacked()){
+                entity.resetHasAttacked();
+                SirenController.changeToFlying(entity);
+            }
+        }
+    };
 
-    private static float RANGE;
-    private int id;
-    private Siren siren;
-    private Raft raft;
-    private Hydra.EnemyState state;
-    /**
-     * The number of ticks since we started this controller
-     */
-    private long ticks;
-
-    // Set class constants
-    public static void setConstants(JsonValue objParams){
-        RANGE = objParams.getInt("range", 12);
+    private static void changeToFlying(Siren entity){
+        if(entity.fromFirstLocation()){
+            entity.setFromSecondLocation();
+        } else {
+            entity.setFromFirstLocation();
+        }
+        entity.getStateMachine().changeState(FLYING);
+        entity.resetTimeStamp();
     }
 
-    public SirenController(int id, Siren siren) {
-        this.id = id;
-        this.siren = siren;
-        this.raft = raft;
-        state = SPAWN;
-        ticks = 0;
+    @Override
+    public void enter(Siren entity) {
+
+    }
+
+    @Override
+    public void exit(Siren entity) {
+
+    }
+
+    @Override
+    public boolean onMessage(Siren entity, Telegram telegram) {
+        return false;
     }
 }

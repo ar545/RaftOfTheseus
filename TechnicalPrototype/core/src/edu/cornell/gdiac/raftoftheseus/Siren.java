@@ -1,144 +1,123 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.ai.msg.Telegram;
+import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-import java.util.Random;
-
 public class Siren extends WheelObstacle {
-    private Random rand = new Random();
+
+    public static void setConstants(JsonValue objParams){
+        IDLE_TIME = objParams.getLong("idle time", 500L);
+        SINGING_TIME = objParams.getLong("singing time", 3000L);
+        SINGING_RANGE = objParams.getFloat("attack range", 1000f);
+        ATTACK_RANGE = objParams.getFloat("attack range", 200f);
+        ATTACK_DAMAGE = objParams.getFloat("attack damage", 40f);
+        PROXIMITY = objParams.getFloat("proximity", 1f);
+        FLY_SPEED = objParams.getFloat("fly speed", 0.0001f);
+    }
+
+    // Parameters
+    private Raft targetRaft;
+    private Vector2 location1 = new Vector2();
+    private Vector2 location2 = new Vector2();
+    private Vector2 direction1 = new Vector2();
+    private Vector2 direction2 = new Vector2();
+    private Vector2 moveVector = new Vector2();
+    private boolean fromLocation1 = true;
+
+    private StateMachine<Siren, SirenController> stateMachine;
+
+    private long timeStamp = 0L;
+    private boolean timeStamped = false;
+    private boolean hasAttacked;
+
+    private static float PROXIMITY = 1f;
+    private static long IDLE_TIME;
+    private static long SINGING_TIME;
+    private static float SINGING_RANGE;
+    private static Vector2 SINGING_FORCE;
+    private static float ATTACK_RANGE;
+    private static float ATTACK_DAMAGE;
+    private static float FLY_SPEED;
+
+    public Siren(Vector2 position1, Vector2 position2, Raft targetRaft) {
+        super();
+        setPosition(position1);
+        setBodyType(BodyDef.BodyType.DynamicBody);
+        location1.set(position1);
+        location2.set(position2);
+        direction1.set(position2.sub(position1).scl(FLY_SPEED));
+        direction2.set(position1.sub(position2).scl(FLY_SPEED));
+        this.targetRaft = targetRaft;
+        fixture.filter.maskBits = MASK_SIREN;
+        stateMachine = new DefaultStateMachine<Siren, SirenController>(this, SirenController.IDLE);
+    }
+
+    public void update(float dt) {
+        body.setLinearVelocity(moveVector);
+        stateMachine.update();
+    }
+
+    public StateMachine<Siren, SirenController> getStateMachine(){ return this.stateMachine; }
 
     public GameObject.ObjectType getType() {
         return GameObject.ObjectType.ENEMY;
-    }
-
-    private static void setConstants(JsonValue objParams){
-    }
-
-    /**
-     * How much damage an enemy deals to the player upon collision, per animation frame
-     */
-    public static final float DAMAGE_PER_FRAME = 0.5f;
-    /**
-     * How fast enemy wanders around w/o target
-     **/
-    public static final float ENEMY_WANDER_SPEED = 1.5f;
-    /**
-     * How fast the enemy moves towards its target, in units per second
-     */
-    public static final float ENEMY_CHASE_SPEED = 2.0f;
-    /**
-     * How much health will enemy take from player upon collision
-     */
-    protected static final float ENEMY_DAMAGE = -25.0f;
-
-    private Vector2 moveVector = new Vector2();
-
-    public static enum enemyState {
-        /**
-         * The enemy just spawned
-         */
-        SPAWN,
-        /**
-         * The enemy is patrolling around without a target
-         */
-        WANDER,
-        /**
-         * The enemy has a target, but must get closer
-         */
-        CHASE
-    }
-
-
-    /**
-     * This is the player, if this enemy is targeting the player.
-     */
-    private Raft targetRaft;
-
-    public Siren() {
-        super();
     }
 
     public void setTargetRaft(Raft targetRaft) {
         this.targetRaft = targetRaft;
     }
 
-    public Siren(Vector2 position, Raft targetRaft) {
-        super();
-        setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
-        this.targetRaft = targetRaft;
-        fixture.filter.categoryBits = CATEGORY_ENEMY;
-        fixture.filter.maskBits = MASK_ENEMY;
+    // Setting movement
+    public void setMoveVector(boolean direction1) {
+        if(direction1) this.moveVector = this.direction1;
+        else this.moveVector = this.direction2;
     }
+    public void stopMove(){ this.moveVector.setZero(); }
 
-    //    // TODO: this will change depending on implementation of AIController
-    public void update(float dt) {
-        super.update(dt);
-        if (moveVector != null && targetRaft != null) {
-            body.applyLinearImpulse(moveVector, getPosition(), true);
+    // Time
+    public void setTimeStamp(){
+        if(!timeStamped) {
+            timeStamp = TimeUtils.millis();
+            timeStamped = true;
         }
     }
+    public void resetTimeStamp(){ timeStamped = false; }
+    public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
+    public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
 
-    /**
-     * call for AI controller
-     */
-    public void resolveAction(Shark.enemyState controlSignal, Raft player, long ticks) {
-        if (isDestroyed())
-            return;
-
-//        System.out.println(controlSignal);
-        switch (controlSignal) {
-            case SPAWN:
-                break;
-            case WANDER:
-                // every once in a while pick a new random direction
-
-                if (ticks % 60 == 0) {
-                    int p = rand.nextInt(4);
-                    // move randomly in one of the four directions
-                    if (p == 0) {
-                        moveVector.set(0, 1);
-                    } else if (p == 1) {
-                        moveVector.set(0, -1);
-                    } else if (p == 2) {
-                        moveVector.set(-1, 0);
-                    } else {
-                        moveVector.set(1, 0);
-                    }
-                    calculateImpulse(ENEMY_WANDER_SPEED, 0.9f);
-                }
-                break;
-            case CHASE:
-                // find a normal vector pointing to the target player
-                moveVector.set(player.getPosition()).sub(getPosition()).nor();
-                // apply a linear impulse to accelerate towards the player, up to a max speed of ENEMY_CHASE_SPEED
-                calculateImpulse(ENEMY_CHASE_SPEED, 0);
-                break;
-            default:
-                // illegal state
-                assert (false);
-                break;
+    // Changing location
+    public boolean fromFirstLocation(){ return fromLocation1; }
+    public boolean fromSecondLocation(){ return !fromLocation1; }
+    public void setFromFirstLocation(){ fromLocation1 = true; }
+    public void setFromSecondLocation(){ fromLocation1 = false; }
+    public boolean nearLanding(){
+        float dist;
+        if(fromLocation1){
+            dist = getPosition().sub(location2).len();
+        } else {
+            dist = getPosition().sub(location1).len();
         }
+        return dist < PROXIMITY;
     }
 
-    /**
-     * Sets moveVector so that applying it as a linear impulse brings this object's velocity closer to
-     * moveVector*topSpeed.
-     * Precondition: moveVector.len() == 1.
-     * @param topSpeed Won't apply an impulse that takes us above this speed
-     * @param smoothing Impulse is scaled by (1-smoothing). Higher smoothing means wider turns, slower responses.
-     */
-    private void calculateImpulse(float topSpeed, float smoothing) {
-        float currentSpeed = getLinearVelocity().dot(moveVector); // current speed in that direction
-        float impulseMagnitude = (topSpeed - currentSpeed)*body.getMass()*(1-smoothing);
-        moveVector.scl(impulseMagnitude);
+    // Attacking player
+    public boolean inAttackRange(){
+        return targetRaft.getPosition().sub(getPosition()).len() < ATTACK_RANGE;
     }
+    public boolean willAttack(){
+        hasAttacked = stateMachine.isInState(SirenController.ATTACKING) && inAttackRange();
+        return hasAttacked;
+    }
+    public boolean hasAttacked(){ return hasAttacked; }
+    public void resetHasAttacked(){ hasAttacked = false; }
+    public static float getAttackDamage(){ return ATTACK_DAMAGE; }
 
-    @Override
-    public float getCrossSectionalArea() {
-        return super.getCrossSectionalArea()*0.2f; // sharks are less affected by drag
-    }
+    //
 }
