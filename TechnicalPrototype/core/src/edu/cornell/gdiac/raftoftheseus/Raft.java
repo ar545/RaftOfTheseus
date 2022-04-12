@@ -1,9 +1,14 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.ai.steer.Steerable;
+import com.badlogic.gdx.ai.steer.SteeringAcceleration;
+import com.badlogic.gdx.ai.steer.SteeringBehavior;
+import com.badlogic.gdx.ai.utils.Location;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -12,7 +17,7 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 /**
  * Model class for the player raft.
  */
-public class Raft extends CapsuleObstacle {
+public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
 
     // CONSTANTS
     /** Movement cost for a unit distance **/
@@ -169,5 +174,146 @@ public class Raft extends CapsuleObstacle {
     @Override
     public float getCrossSectionalArea() {
         return 1.5f*super.getCrossSectionalArea();
+    }
+
+    /* STEERING */
+
+    @Override
+    public float getBoundingRadius() {
+        return 0;
+    }
+
+    @Override
+    public boolean isTagged() {
+        return false;
+    }
+
+    @Override
+    public void setTagged(boolean tagged) {
+
+    }
+
+    @Override
+    public float getZeroLinearSpeedThreshold() {
+        return 0;
+    }
+
+    @Override
+    public void setZeroLinearSpeedThreshold(float value) {
+
+    }
+
+    @Override
+    public float getMaxLinearSpeed() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxLinearSpeed(float maxLinearSpeed) {
+
+    }
+
+    @Override
+    public float getMaxLinearAcceleration() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxLinearAcceleration(float maxLinearAcceleration) {
+
+    }
+
+    @Override
+    public float getMaxAngularSpeed() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxAngularSpeed(float maxAngularSpeed) {
+
+    }
+
+    @Override
+    public float getMaxAngularAcceleration() {
+        return 0;
+    }
+
+    @Override
+    public void setMaxAngularAcceleration(float maxAngularAcceleration) {
+
+    }
+
+    @Override
+    public float getOrientation() {
+        return 0;
+    }
+
+    @Override
+    public void setOrientation(float orientation) {
+
+    }
+
+    @Override
+    public float vectorToAngle(Vector2 vector) {
+        return 0;
+    }
+
+    @Override
+    public Vector2 angleToVector(Vector2 outVector, float angle) {
+        return null;
+    }
+
+    @Override
+    public Location<Vector2> newLocation() {
+        return null;
+    }
+
+    /* ACTOR **/
+
+    SteeringBehavior<Vector2> steeringBehavior;
+    public SteeringBehavior<Vector2> getSteeringBehavior () {return steeringBehavior;}
+    public void setSteeringBehavior (SteeringBehavior<Vector2> steeringBehavior) {
+        this.steeringBehavior = steeringBehavior;
+    }
+
+    private static final SteeringAcceleration<Vector2> steeringOutput = new SteeringAcceleration<Vector2>(new Vector2());
+
+    public void act (float delta) {
+        if (steeringBehavior != null) {
+            // Calculate steering acceleration
+            steeringBehavior.calculateSteering(steeringOutput);
+
+            /*
+             * Here you might want to add a motor control layer filtering steering accelerations.
+             *
+             * For instance, a car in a driving game has physical constraints on its movement: it cannot turn while stationary; the
+             * faster it moves, the slower it can turn (without going into a skid); it can brake much more quickly than it can
+             * accelerate; and it only moves in the direction it is facing (ignoring power slides).
+             */
+
+            // Apply steering acceleration
+            applySteering(steeringOutput, delta);
+//            setPosition(bodyinfo.position.x, bodyinfo.position.y);
+        }
+    }
+
+    private void applySteering (SteeringAcceleration<Vector2> steering, float time) {
+        // Update position and linear velocity. Velocity is trimmed to maximum speed
+        getPosition().mulAdd(getLinearVelocity(), time);
+        getLinearVelocity().mulAdd(steering.linear, time).limit(getMaxLinearSpeed());
+
+
+        // Update orientation and angular velocity
+//        if (independentFacing) {
+//            setRotation(getRotation() + (bodyinfo.angularVelocity * time) * MathUtils.radiansToDegrees);
+//            bodyinfo.angularVelocity += steering.angular * time;
+//        } else {
+            // If we haven't got any velocity, then we can do nothing.
+            if (!getLinearVelocity().isZero(getZeroLinearSpeedThreshold())) {
+                float newOrientation = vectorToAngle(getLinearVelocity());
+                setAngularVelocity((newOrientation - getAngle() * MathUtils.degreesToRadians) * time); // this is superfluous if independentFacing is always true
+                setAngle(newOrientation * MathUtils.radiansToDegrees);
+            }
+//        }
     }
 }

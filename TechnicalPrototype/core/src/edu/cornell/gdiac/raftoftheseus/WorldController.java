@@ -167,16 +167,11 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-//<<<<<<< HEAD
-//        if(canvas == null){ return; } // return if no canvas pointer
-//=======
-        // return if no canvas pointer
         if(canvas == null)
-            return;
+            return; // return if no canvas pointer
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
-//>>>>>>> main
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
@@ -365,6 +360,7 @@ public class WorldController implements Screen, ContactListener {
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
+        levelModel.getPlayer().act(dt);
         InputController input = InputController.getInstance();
         input.readInput();
 
@@ -492,7 +488,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         PooledList<Hydra> hy = levelModel.getHydras();
-        System.out.println(hy.size());
+//        System.out.println(hy.size());
         for (int i = 0; i < hy.size(); i++) {
             Hydra hydra = hy.get(i);
             levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
@@ -522,6 +518,7 @@ public class WorldController implements Screen, ContactListener {
 
         // Turn the physics engine crank.
         levelModel.world.step(WORLD_STEP, WORLD_VELOCITY,WORLD_POSIT);
+
         // update player health based on movement and distance, then check if dead
         Raft player = levelModel.getPlayer();
         player.applyMoveCost(dt);
