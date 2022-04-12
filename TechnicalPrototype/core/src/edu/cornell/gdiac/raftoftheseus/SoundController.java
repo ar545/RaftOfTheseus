@@ -136,9 +136,9 @@ public class SoundController {
         }
     }
 
-    private void adjustMusicVolume(){
+    private void adjustMusicVolume(float musicVolume){
         for(Music m: music.values()){
-            m.setVolume(musicVolume);
+            m.setVolume(m.getVolume()*musicVolume/this.musicVolume);
         }
     }
 
@@ -147,8 +147,12 @@ public class SoundController {
      * @param musicVolume Float between 0-1
      */
     public void setMasterMusicVolume(float musicVolume) {
-        this.musicVolume = musicVolume;
-        adjustMusicVolume();
+        if(musicVolume < tradeThreshold){
+            adjustMusicVolume(0.0000001f);
+        } else {
+            adjustMusicVolume(musicVolume);
+            this.musicVolume = musicVolume;
+        }
     }
 
     /**
@@ -180,6 +184,7 @@ public class SoundController {
      * @param loop whether this sfx will loop.
      */
     private void playSFX(float pan, float sfxvol, String name, boolean loop){
+
         Sound s = sfx.get(name);
         if (s == null) return;
         long id;

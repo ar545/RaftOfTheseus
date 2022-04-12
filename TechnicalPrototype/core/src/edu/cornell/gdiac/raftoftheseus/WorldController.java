@@ -929,7 +929,7 @@ public class WorldController implements Screen, ContactListener {
      * Push o according to c
      */
     private void enterCurrent(Current c, GameObject o) {
-        // check for "ghost collisions"
+        // check for "ghost coll
         if(o.getType() == GameObject.ObjectType.RAFT) { // TODO I don't know how to solve this problem
             float dx = 2*Math.abs(c.getPosition().x - o.getPosition().x);
             float dy = 2*Math.abs(c.getPosition().y - o.getPosition().y);
@@ -1030,6 +1030,10 @@ public class WorldController implements Screen, ContactListener {
         if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
                 || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
             SoundController.getInstance().playSFX("wood_pickup", false);
+        }
+        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.TREASURE
+                || s1 == GameObject.ObjectType.TREASURE && s2 == GameObject.ObjectType.RAFT) {
+            SoundController.getInstance().playSFX("chest_collect", false);
         }
     }
 
