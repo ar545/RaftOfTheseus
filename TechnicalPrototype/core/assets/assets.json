@@ -11,6 +11,11 @@
       "menu_background": "images/menu.png",
       "menu_title": "images/menu_title.png",
       "map_background": "images/map_background.png",
+      "failed_background": "images/failed.png",
+      "success_background_0": "images/success_0.png",
+      "success_background_1": "images/success_1.png",
+      "success_background_2": "images/success_2.png",
+      "success_background_3": "images/success_3.png",
       "raft":     "images/raft_2.png",
       "wood":     "images/one_wood_v2.png",
       "rock":     "images/rock_3.png",
@@ -57,10 +62,14 @@
             "file": "fonts/TimesRoman.ttf",
             "size": 32
         },
-      "end": {
-        "file": "fonts/RetroGame.ttf",
-        "size": 32
-      }
+        "diogenes": {
+          "file": "fonts/DIOGENES.ttf",
+          "size": 100
+        },
+        "end": {
+          "file": "fonts/RetroGame.ttf",
+          "size": 32
+        }
     },
   "sounds" : {
       "current_flow": "sounds/Sfx_Current_Flow1.ogg",
