@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.obstacle.Obstacle;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ public class WorldController implements Screen, ContactListener {
         Bullet.setConstants(objParams.get("bullet"));
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
+        Siren.setConstants(objParams.get("siren"));
     }
 
     // CONSTANTS
@@ -101,10 +103,6 @@ public class WorldController implements Screen, ContactListener {
     private int countdown;
     /** array of controls for each enemy**/
     private SharkController[] controls;
-    /** Array of controls for each hydra. */
-    private HydraController[] hydraControllers;
-    /** Array of controls for each siren. */
-    private SirenController[] sirenControllers;
     /** Find whether a hydra can see the player. */
     private HydraRayCast hydraSight;
 
@@ -172,7 +170,12 @@ public class WorldController implements Screen, ContactListener {
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
-        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
+//<<<<<<< HEAD
+//        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
+//=======
+//>>>>>>> main
+        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
+//>>>>>>> main
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         canvas.clear();
@@ -182,20 +185,25 @@ public class WorldController implements Screen, ContactListener {
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
                 obj.draw(canvas);
         }
-        drawHealthBar(levelModel.getPlayer().getHealthRatio(), levelModel.getPlayer().getPosition().scl(pixelsPerUnit));
+        canvas.end();
+        // reset camera transform (because health bar isn't in game units)
+        canvas.begin();
+        Vector2 playerPosOnScreen = levelModel.getPlayer().getPosition();
+        cameraTransform.applyTo(playerPosOnScreen);
+        drawHealthBar(levelModel.getPlayer().getHealthRatio(), playerPosOnScreen);
         canvas.end();
 
         drawStar(levelModel.getPlayer().getStar());
 
         if (map) {
             // translate center point of level to (0,0):
-            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-pixelsPerUnit);
+            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-1);
 
             // scale down so that the whole level fits on the screen, with a margin:
             int pixelMargin = 150;
             float wr = (canvas.getWidth()-2*pixelMargin) / (levelModel.bounds().width);
             float hr = (canvas.getHeight()-2*pixelMargin) / (levelModel.bounds().height);
-            float scale = Math.min(wr, hr)/pixelsPerUnit;
+            float scale = Math.min(wr, hr);
 
             // translate center point of level to center of screen:
             Vector2 translation_2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
@@ -205,8 +213,8 @@ public class WorldController implements Screen, ContactListener {
 
             canvas.begin(mapTransform);
             canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
-                    levelModel.bounds().width/2*pixelsPerUnit, levelModel.bounds().height/2*pixelsPerUnit, 0.0f,
-                    levelModel.bounds().width*pixelsPerUnit/mapBackground.getWidth(), levelModel.bounds().height*pixelsPerUnit/mapBackground.getHeight());
+                    levelModel.bounds().width/2, levelModel.bounds().height/2, 0.0f,
+                    levelModel.bounds().width/mapBackground.getWidth(), levelModel.bounds().height/mapBackground.getHeight());
             for(GameObject obj : levelModel.getObjects()) {
                 GameObject.ObjectType type = obj.getType();
                 if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.ENEMY
@@ -238,9 +246,9 @@ public class WorldController implements Screen, ContactListener {
             canvas.end();
         }
 
-        // force player remain with their current health
+        // draw a circle showing how far the player can move before they die
         float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
-        canvas.drawHealthCircle(r);
+        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
     }
 
 //<<<<<<< HEAD
@@ -249,7 +257,9 @@ public class WorldController implements Screen, ContactListener {
      * @param pixelsPerUnit scalar pixel per unit
      * @return an affine2 representing the affine transformation that texture will go through */
     private Affine2 calculateMovingCamera(float pixelsPerUnit) {
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
+        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
                 .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
 
@@ -259,7 +269,7 @@ public class WorldController implements Screen, ContactListener {
         translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
         translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
         translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
-        return new Affine2().setToTranslation(translation);
+        return a.preTranslate(translation);
     }
 
     /** This function calculate the correct health bar color
@@ -274,7 +284,7 @@ public class WorldController implements Screen, ContactListener {
     private void drawHealthBar(float health, Vector2 player_position) {
         Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
-        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f)  ;
+        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
         float y_origin = (player_position.y);
         canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
@@ -288,7 +298,8 @@ public class WorldController implements Screen, ContactListener {
     private void drawWater() {
         if (USE_SHADER_FOR_WATER)
             canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
-        float pixel = 100/3.0f;
+//        float pixel = 100/3.0f;
+        float pixel = 1;
 //>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
@@ -409,6 +420,7 @@ public class WorldController implements Screen, ContactListener {
         bullet.setTexture(bullet_texture);
 //        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
         bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        bullet.setAngle(facing.angleDeg()+90f);
         levelModel.addQueuedObject(bullet);
         player.addHealth(Bullet.BULLET_DAMAGE);
     }
@@ -451,7 +463,10 @@ public class WorldController implements Screen, ContactListener {
         if (player.isFire()) {
             // find nearest enemy to player
             if(ic.mouseActive()){
-                createBullet(ic.getFireDirection());
+                Vector2 firePixel = ic.getFireDirection();
+                Affine2 camera = calculateMovingCamera(100/3.0f);
+                camera.inv().applyTo(firePixel);
+                createBullet(firePixel);
             }
             else {
                 Shark nearestShark = null;
@@ -472,14 +487,14 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // update forces for enemies, players, objects
-        resolveEnemies();
+        resolveEnemies(dt);
         player.applyInputForce();
         for (GameObject o : levelModel.getObjects())
             o.applyDrag();
     }
 
     /** get enemies take actions according to their AI */
-    private void resolveEnemies() {
+    private void resolveEnemies(float dt) {
         PooledList<Shark> el = levelModel.getEnemies();
 
         for (int i = 0; i< el.size(); i++) {
@@ -487,18 +502,33 @@ public class WorldController implements Screen, ContactListener {
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
 
-        PooledList<Hydra> hy = levelModel.getHydras();
-//        System.out.println(hy.size());
-        for (int i = 0; i < hy.size(); i++) {
-            Hydra hydra = hy.get(i);
-            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
-            hydra.setSee(hydraSight.getCanSee());
-            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
-            if(hydra.isSplashing()){
-                createBullet(hydra.getPosition(), levelModel.getPlayer());
+//<<<<<<< HEAD
+//        PooledList<Hydra> hy = levelModel.getHydras();
+////        System.out.println(hy.size());
+//        for (int i = 0; i < hy.size(); i++) {
+//            Hydra hydra = hy.get(i);
+//            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
+//            hydra.setSee(hydraSight.getCanSee());
+//            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
+//            if(hydra.isSplashing()){
+//                createBullet(hydra.getPosition(), levelModel.getPlayer());
+//=======
+        for (Hydra h : levelModel.getHydras()) {
+            levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
+            h.setSee(hydraSight.getCanSee());
+            if(h.willAttack()){
+                createBullet(h.getPosition(), levelModel.getPlayer());
+//>>>>>>> main
             }
+            h.update(dt);
         }
 
+        for(Siren s : levelModel.getSirens()){
+            s.update(dt);
+            if(s.willAttack()){
+                levelModel.getPlayer().addHealth(s.getAttackDamage());
+            }
+        }
     }
 
     /**
@@ -926,17 +956,6 @@ public class WorldController implements Screen, ContactListener {
         for (int i = 0; i < enemies.size(); i++) {
             controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
         }
-        PooledList<Hydra> hydras = levelModel.getHydras();
-        hydraControllers = new HydraController[hydras.size()];
-        for (int i = 0; i < hydras.size(); i++) {
-            hydraControllers[i] = new HydraController(i, hydras.get(i));
-        }
-        PooledList<Siren> sirens = levelModel.getSirens();
-        sirenControllers = new SirenController[sirens.size()];
-        for (int i = 0; i < sirens.size(); i++) {
-            sirenControllers[i] = new SirenController(i, sirens.get(i));
-        }
-//        System.out.println(Arrays.toString(controls));
     }
 
     /** The current level id. */

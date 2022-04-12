@@ -420,7 +420,7 @@ public class GameCanvas {
 		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
 		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
 		Affine2 transform = new Affine2();
-		transform.setToScaling(1/100.0f, 1/100.0f);// TODO: this is sloppy, shouldn't be hardcoded, also I don't know why 100 is the right number here
+		transform.setToScaling(1/3.0f,1/3.0f);// TODO this should use LevelModel's number for how many Box2d units are in a tile, instead of hardcoding
 		Matrix4 objToWorldMat = new Matrix4();
 		objToWorldMat.setAsAffine(transform);
 		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
@@ -1215,10 +1215,10 @@ public class GameCanvas {
 	/**
 	 * Draw a circle representing player health at the center of the screen
 	 */
-	public void drawHealthCircle(float r) {
+	public void drawHealthCircle(int x, int y, float r) {
 		shapeRender.setColor(Color.RED);
 		shapeRender.begin(ShapeRenderer.ShapeType.Line);
-		shapeRender.circle(getWidth()/2, getHeight()/2, r);
+		shapeRender.circle(x, y, r);
 		shapeRender.end();
 	}
 

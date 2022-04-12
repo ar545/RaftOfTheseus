@@ -134,6 +134,8 @@ public class LevelModel {
     private Texture currentTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture enemyTexture;
+    /** Texture for current placeholder: texture alas in future */
+    private Texture bulletTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
 
@@ -487,9 +489,9 @@ public class LevelModel {
                 addHydraObject(th);
                 break;
             case 2: // Sirens
-                Siren ts = new Siren(compute_temp, null);
-                ts.setTexture(enemyTexture);
-                addSirenObject(ts);
+//                Siren ts = new Siren(compute_temp, null);
+//                ts.setTexture(enemyTexture);
+//                addSirenObject(ts);
                 break;
         }
     }
@@ -577,6 +579,8 @@ public class LevelModel {
         currentTexture = directory.getEntry("current", Texture.class);
         enemyTexture = directory.getEntry("enemy", Texture.class);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
+        bulletTexture = directory.getEntry("earth", Texture.class);
+        Bullet.setText(bulletTexture);
     }
 
     /** Add wood Objects to random location in the world */
@@ -595,7 +599,8 @@ public class LevelModel {
                 Current c = (Current)o;
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE.x, 1.0f/GRID_SIZE.y); // in tiles
-                Vector2 d = c.getDirectionVector(); // length 1
+                // TODO figure out a *good* way to represent current magnitude in the shader.
+                Vector2 d = c.getDirectionVector().nor(); // length independent of magnitude
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);

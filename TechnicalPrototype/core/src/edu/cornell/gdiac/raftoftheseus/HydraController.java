@@ -1,88 +1,104 @@
 package edu.cornell.gdiac.raftoftheseus;
 
-import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.ai.fsm.State;
+import com.badlogic.gdx.ai.msg.Telegram;
+public enum HydraController implements State<Hydra> {
 
-import static edu.cornell.gdiac.raftoftheseus.Hydra.EnemyState.*;
-
-public class HydraController {
-
-    private int id;
-    private Hydra hydra;
-    private Raft raft;
-    private Hydra.EnemyState state;
-    /**
-     * The number of ticks since we started this controller
-     */
-    private long ticks;
-
-    public HydraController(int id, Hydra hydra) {
-        this.id = id;
-        this.hydra = hydra;
-        state = SPAWN;
-        ticks = 0;
-    }
-
-    public long getTicks(){
-        return ticks;
-    }
-
-    public Hydra.EnemyState getAction() {
-        // Increment the number of ticks.
-        ticks++;
-
-        // Do not need to rework ourselves every frame. Just every 10 ticks.
-        if ((id + ticks) % 10 == 0) {
-            changeStateIfApplicable();
+    IDLE(){
+        @Override
+        public void update(Hydra entity) {
+            if (entity.inRange() && entity.canSee())
+                entity.getStateMachine().changeState(ACTIVE);
+            checkStun(entity);
         }
-
-        return state;
-    }
-
-    public Hydra.EnemyState getState(){
-        return state;
-    }
-
-
-    private void changeStateIfApplicable() {
-//        System.out.println(dist());
-        switch (state) {
-            case SPAWN:
-                state = IDLE;
-                break;
-            case IDLE:
-                if (hydra.inRange() && hydra.canSee())
-                    state = ACTIVE;
-                if (hydra.isHit()){
-                    hydra.setHit(false);
-                    state = STUNNED;
-                }
-                break;
-            case ACTIVE:
-                if (hydra.isHit()){
-                    hydra.setHit(false);
-                    state = STUNNED;
-                }
-                else if (!hydra.inRange() || !hydra.canSee())
-                    state = IDLE;
-                else if(hydra.canFire()){
-                    state = SPLASHING;
-                }
-                break;
-            case SPLASHING:
-                state = ACTIVE;
-            case STUNNED:
-                if(hydra.stunElapsed()){
-                    state = ACTIVE;
-                }
-            default:
-                // illegal state
-                assert (false);
-                state = IDLE;
-                break;
+    },
+    ACTIVE(){
+        @Override
+        public void update(Hydra entity) {
+            entity.setTimeStamp();
+            if (checkStun(entity)){
+                return;
+            }
+            else if (!entity.inRange() || !entity.canSee())
+                entity.getStateMachine().changeState(IDLE);
+            else if(entity.canFire()){
+                entity.resetTimeStamp();
+                entity.getStateMachine().changeState(PRIMING);
+            } else if(entity.canFire())
+                entity.getStateMachine().changeState(PRIMING);
+            {}
         }
+    },
+    PRIMING(){
+        @Override
+        public void update(Hydra entity) {
+            if (checkStun(entity)){
+                return;
+            }
+            if(entity.inAttackRange()){
+                entity.getStateMachine().changeState(HITTING);
+            } else if(entity.canFire()){
+                entity.getStateMachine().changeState(SPLASHING);
+            }
+        }
+    },
+    SPLASHING(){
+        @Override
+        public void update(Hydra entity) {
+            if (checkStun(entity)){
+                return;
+            } else if (entity.hasFired()){
+                entity.resetHasFired();
+                entity.resetTimeStamp();
+                entity.getStateMachine().changeState(ACTIVE);
+            }
+        }
+    },
+    HITTING(){
+        @Override
+        public void update(Hydra entity) {
+            if (checkStun(entity)){
+                return;
+            }
+            if(entity.hasAttacked()){
+                entity.resetHasAttacked();
+                entity.getStateMachine().changeState(ACTIVE);
+            }
+        }
+    },
+    STUNNED(){
+        @Override
+        public void update(Hydra entity) {
+            entity.setTimeStamp();
+            if(entity.stunElapsed()){
+                entity.resetTimeStamp();
+                entity.getStateMachine().changeState(ACTIVE);
+            }
+        }
+    };
+    
+    private static boolean checkStun(Hydra entity){
+        if (entity.isHit()){
+            entity.setHit(false);
+            entity.getStateMachine().changeState(STUNNED);
+            return true;
+        }
+        return false;
     }
 
-    public boolean isAlive() {
-        return (hydra != null && !hydra.isDestroyed());
+
+    @Override
+    public void enter(Hydra entity) {
+
+    }
+
+    @Override
+    public void exit(Hydra entity) {
+
+    }
+
+    @Override
+    public boolean onMessage(Hydra entity, Telegram telegram) {
+        return false;
     }
 }

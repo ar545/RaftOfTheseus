@@ -121,6 +121,8 @@ public class SoundController {
         }
     }
 
+    // SETTINGS
+
     /**
      * Sets the values in sfx and music based on provided ids.
      * Must be called every Controller change due to memory constraints on sounds.
@@ -134,12 +136,19 @@ public class SoundController {
         }
     }
 
+    private void adjustMusicVolume(){
+        for(Music m: music.values()){
+            m.setVolume(musicVolume);
+        }
+    }
+
     /**
      * Set master musicVolume from settings.
      * @param musicVolume Float between 0-1
      */
     public void setMasterMusicVolume(float musicVolume) {
         this.musicVolume = musicVolume;
+        adjustMusicVolume();
     }
 
     /**
@@ -150,6 +159,18 @@ public class SoundController {
         this.sfxVolume = sfxVolume;
     }
 
+    /**
+     * @return music volume being played right now.
+     */
+    public float getMasterMusicVolume(){ return musicVolume; }
+
+    /**
+     *
+     * @return sound effects volume being used right now.
+     */
+    public float getMasterSFXVolume(){ return sfxVolume; }
+
+    // PLAYERS
     /**
      * TODO Store id
      * Plays sfx with the filename name at given volume sfxvol. Returns if not found.
@@ -245,6 +266,8 @@ public class SoundController {
         music.put(name, m);
     }
 
+    // DYNAMIC MUSIC
+
     /**
      * Trades explore/danger music for soundtrack switching.
      * Returns if either name does not exist || name1 is not playing || name2 is playing
@@ -282,16 +305,6 @@ public class SoundController {
         }
     }
 
-    /**
-     * Stops a given music file.
-     * @param index file to be stopped.
-     */
-    private void stopMusic(String index){
-        Music m = music.get(index);
-        if (m != null && m.isPlaying()) {
-            m.stop();
-        }
-    }
 
     /**
      * Takes the music with key index and decreases its volume by dv.
@@ -345,6 +358,8 @@ public class SoundController {
             }
         }
     }
+
+    // STOPPERS AND DISPOSE
 
     /**
      * Stops all sound.
