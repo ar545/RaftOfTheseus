@@ -222,8 +222,14 @@ public class WorldController implements Screen, ContactListener {
         canvas.begin(cameraTransform);
         drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
-                obj.draw(canvas);
+
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) {
+                if (obj.getType() == GameObject.ObjectType.ENEMY) {
+                    obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
+                } else {
+                    obj.draw(canvas);
+                }
+            }
         }
         canvas.end();
         // reset camera transform (because health bar isn't in game units)
