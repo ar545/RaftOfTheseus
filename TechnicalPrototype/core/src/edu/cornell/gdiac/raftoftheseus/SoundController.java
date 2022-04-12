@@ -184,7 +184,6 @@ public class SoundController {
      * @param loop whether this sfx will loop.
      */
     private void playSFX(float pan, float sfxvol, String name, boolean loop){
-
         Sound s = sfx.get(name);
         if (s == null) return;
         long id;
