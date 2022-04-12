@@ -42,7 +42,7 @@ public class Bullet extends BoxObstacle {
 
 
     public Bullet(Vector2 position, boolean player) {
-        super(1, 1);
+        super(0.6f, 3);
         setPosition(position);
         setBodyType(BodyDef.BodyType.DynamicBody);
         setFriction(0);
