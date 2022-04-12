@@ -1,11 +1,13 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -15,6 +17,9 @@ import java.util.Random;
 
 public class Shark extends WheelObstacle {
     Random rand = new Random();
+
+    private FilmStrip texture;
+    public int animationFrame = 2;
 
     private class PathfindingTile implements Comparable<PathfindingTile> {
         /** x,y of this tile **/
@@ -402,5 +407,27 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
     @Override
     public float getCrossSectionalArea() {
         return super.getCrossSectionalArea()*0.2f; // sharks are less affected by drag
+    }
+
+
+    public void setTexture(FilmStrip value) {
+        texture = value;
+        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
+
+        float w = 2*getRadius()*drawScale.x / texture.getRegionWidth()*1.50f;
+        textureScale = new Vector2(w, w);
+        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f);
+    }
+
+    public void draw(GameCanvas canvas) {
+        draw(canvas, Color.WHITE);
+    }
+
+    public void draw(GameCanvas canvas, Color color) {
+        if (texture != null) {
+            texture.setFrame(animationFrame);
+            canvas.draw(texture, color, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+                    getAngle(), textureScale.x, textureScale.y);
+        }
     }
 }
