@@ -6,7 +6,8 @@
         "wrapV": "repeated"
       },
       "background": "images/background.png",
-      "bullet": "images/bullet.png",
+      "blue_texture": "images/blue_pixel.png",
+      "bullet": "images/Obj_Spear_Aerial.png",
       "menu_background": "images/menu.png",
       "menu_title": "images/menu_title.png",
       "sea_background": "images/sea_background.png",
@@ -18,6 +19,11 @@
       "settings_keys": "images/settings_keys.png",
       "exit_button": "images/exit_button.png",
       "map_background": "images/map_background.png",
+      "failed_background": "images/failed.png",
+      "success_background_0": "images/success_0.png",
+      "success_background_1": "images/success_1.png",
+      "success_background_2": "images/success_2.png",
+      "success_background_3": "images/success_3.png",
       "raft":     "images/raft_2.png",
       "wood":     "images/one_wood_v2.png",
       "rock":     "images/rock_3.png",
@@ -27,6 +33,7 @@
       "current": "images/current_square.png",
       "enemy":     "images/enemy_2.png",
       "water_tile":     "images/water_tile.png",
+      "water_texture":     "images/water_texture.png",
       "level_0": "images/level_0.png",
       "level_1": "images/level_1.png",
       "level_2": "images/level_2.png",
@@ -67,10 +74,10 @@
           "file": "fonts/DIOGENES.ttf",
           "size": 100
         },
-      "end": {
-        "file": "fonts/RetroGame.ttf",
-        "size": 32
-      }
+        "end": {
+          "file": "fonts/RetroGame.ttf",
+          "size": 32
+        }
     },
   "sounds" : {
       "current_flow": "sounds/Sfx_Current_Flow1.ogg",
@@ -80,15 +87,24 @@
     "raft_damage": "sounds/Sfx_Raft_Damage.mp3"
   },
   "music" : {
-      "menu": "sounds/Msc_Menu_RoTTheme.ogg",
-      "background": "sounds/Msc_Background_CalmOcean.ogg",
-      "explore": "sounds/Msc_Explore_Longing.ogg",
-      "danger": "sounds/Msc_Danger_Longing.ogg"
+      "m": "sounds/Msc_Menu_RoTTheme.ogg",
+      "b1": "sounds/Msc_Background_CalmOcean.ogg",
+      "e1": "sounds/Msc_Explore_Longing.ogg",
+      "d1": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
     "sound_settings" : "sound_settings.json",
+    "music_presets" : "music_presets.json",
+    "object_parameters" : "object_parameters.json",
+    "control_settings" : "control_settings.json",
     "level:0" : "levels/level0.json",
     "level:1" : "levels/level1.json",
-    "level:2" : "levels/level2.json"
+    "level:2" : "levels/level2.json",
+    "level:3" : "levels/level3.json",
+    "level:4" : "levels/level4.json",
+    "level:5" : "levels/level5.json",
+    "level:6" : "levels/level6.json",
+    "level:7" : "levels/level7.json",
+    "level:8" : "levels/level8.json"
   }
 }

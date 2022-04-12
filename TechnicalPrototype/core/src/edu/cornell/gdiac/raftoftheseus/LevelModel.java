@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
@@ -31,30 +32,46 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* TILED CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Index of the representation of default in tile set texture */
     private static final int TILE_DEFAULT = 0;
-    /** Index of the representation of background in tile set texture */
-    private static final int TILE_BACKGROUND = 1;
-    /** Index of the representation of rock in tile set texture */
-    private static final int TILE_ROCK = 2;
-    /** Index of the representation of default treasure in tile set texture */
-    private static final int TILE_TREASURE = 3;
-    /** Index of the representation of goal in tile set texture */
-    private static final int TILE_GOAL = 4;
-    /** Index of the representation of default current in tile set texture */
-    private static final int TILE_CURRENT = 5;
     /** Index of the representation of start in tile set texture */
-    private static final int TILE_START = 9;
+    private static final int TILE_START = 1;
+    /** Index of the representation of goal in tile set texture */
+    private static final int TILE_GOAL = 2;
+    /** Index of the representation of rock in tile set texture */
+    private static final int[] TILE_ROCK = {11, 12, 21, 22};
+    /** Index of the representation of rock in tile set texture */
+    private static final int TILE_ROCK_DEFAULT = TILE_ROCK[0];
     /** Index of the representation of enemy in tile set texture */
-    private static final int TILE_ENEMY = 10;
+    private static final int[] TILE_ENEMY = {31, 32, 41, 42};
+    /** Index of the representation of enemy in tile set texture */
+    private static final int TILE_ENEMY_DEFAULT = TILE_ENEMY[0];
+    /** Index of the representation of default treasure in tile set texture */
+    private static final int[] TILE_TREASURE = {51, 52};
+    /** Index of the representation of default treasure in tile set texture */
+    private static final int TILE_TREASURE_DEFAULT = TILE_TREASURE[0];
     /** Index of the representation of default wood in tile set texture */
-    private static final int TILE_WOOD = 11;
+    private static final int TILE_WOOD_OFFSET = 60;
+    /** Index of the representation of default current in tile set texture */
+    private static final int TILE_CURRENT_DIVISION = 10;
+    /** Index of the representation of default current in tile set texture */
+    private static final int TILE_CURRENT_OFFSET = -10;
+
+    /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Offset of north current in tile set index */
     private static final int TILE_NORTH = 0;
+    /** Offset of north current in tile set index */
+    private static final int TILE_NORTH_EAST = 3;
     /** Offset of east current in tile set index */
-    private static final int TILE_EAST = 1;
+    private static final int TILE_EAST = 4;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST_SOUTH = 5;
     /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH = 2;
+    private static final int TILE_SOUTH = 6;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH_WEST = 7;
     /** Offset of west current in tile set index */
-    private static final int TILE_WEST = 3;
+    private static final int TILE_WEST = 8;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST_NORTH = 9;
     /** layer of environment */
     private static final int LAYER_ENV = 0;
     /** layer of collectables */
@@ -90,9 +107,11 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<Enemy> enemies = new PooledList<>();
+    private PooledList<Shark> enemies = new PooledList<>();
+    private PooledList<Hydra> hydras = new PooledList<>();
+    private PooledList<Siren> sirens = new PooledList<>();
 
-    // Graphics assets for the entities
+    /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
     private Texture raftTexture;
     /** Texture for the ocean tiles */
@@ -111,6 +130,8 @@ public class LevelModel {
     private Texture currentTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture enemyTexture;
+    /** Texture for current placeholder: texture alas in future */
+    private Texture bulletTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
 
@@ -122,7 +143,9 @@ public class LevelModel {
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
-    public PooledList<Enemy> getEnemies() { return enemies; }
+    public PooledList<Shark> getEnemies() { return enemies; }
+    public PooledList<Hydra> getHydras() { return hydras; }
+    public PooledList<Siren> getSirens() { return sirens; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -152,10 +175,19 @@ public class LevelModel {
     }
 
     /** @return the height and width of bounds only
-     * width: GRID_SIZE.x * map_size.x + 2 * DEFAULT_BOUNDARY,
-     * height: GRID_SIZE.y * map_size.y + 2 * DEFAULT_BOUNDARY */
+     * width: GRID_SIZE.x * map_size.x
+     * height: GRID_SIZE.y * map_size.y */
     public Vector2 boundsVector2(){
         return new Vector2(bounds.width, bounds.height);
+    }
+
+    /** @return the height and width of bounds only
+     * x = y = - DEFAULT_BOUNDARY;
+     * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
+     * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
+    public Rectangle wallBounds(){
+        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - DEFAULT_BOUNDARY,
+                bounds.width + DEFAULT_BOUNDARY, bounds.height + DEFAULT_BOUNDARY);
     }
 
     /** Adds a physics object in to the insertion queue.
@@ -193,12 +225,29 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addEnemyObject(Enemy obj) {
+    protected void addEnemyObject(Shark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
         enemies.add(obj);
     }
+
+    // TODO Create enemy super class to reduce redundant code.
+    protected void addHydraObject(Hydra obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        hydras.add(obj);
+    }
+
+    protected void addSirenObject(Siren obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        sirens.add(obj);
+    }
+
+
 
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
@@ -239,11 +288,10 @@ public class LevelModel {
      * Precondition: gameObject list has been cleared.
      *
      * @param level_int an integer representing the level selection, i.e. which json file to read from. */
-    public void loadLevel(int level_int){
-        if(level_int != LEVEL_RESTART_CODE){
+    public void loadLevel(int level_int, JsonValue level_data){
+        if(level_int != LEVEL_RESTART_CODE && level_data != null){
             // Load in new level
-            level_data = directory.getEntry("level:"+level_int, JsonValue.class);
-
+            this.level_data = level_data;
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
@@ -325,8 +373,8 @@ public class LevelModel {
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
-        for (Enemy enemy : enemies){
-            enemy.setTargetRaft(raft);
+        for (Shark shark : enemies){
+            shark.setTargetRaft(raft);
         }
     }
 
@@ -335,16 +383,19 @@ public class LevelModel {
      * @param col the column the enemy is in the world
      * @param tile_int whether this tile is an emery or the player */
     private void populateEnemies(int row, int col, int tile_int) {
-        switch (tile_int){
-            case TILE_ENEMY:
-                addEnemy(row, col, 0);
-                break;
-            case TILE_START:
-                addRaft(row, col);
-                break;
-            default:
-                break;
+        if (tile_int == TILE_DEFAULT) { return; }
+        else if (tile_int == TILE_START) { addRaft(row, col); return; }
+        else {
+            for(int i = 0; i < TILE_ENEMY.length; i++){
+                if(tile_int == TILE_ENEMY[i]){
+                    addEnemy(row, col, i);
+                    return;
+                }
+            }
         }
+        // This function should never reach here.
+        System.out.println("Un-parse-able information detected in enemy layer.");
+        addEnemy(row, col, 0);
     }
 
     /** This is the level editor JSON parser that populate the collectable layer
@@ -352,11 +403,16 @@ public class LevelModel {
      * @param col the column the collectable is in the world
      * @param tile_int whether this tile is a wood or treasure */
     private void populateCollect(int row, int col, int tile_int) {
-        if(tile_int == TILE_TREASURE){
-            addTreasure(row, col);
-        } else if(tile_int >= TILE_WOOD){
-            addWood(row, col, tile_int - TILE_WOOD + 1);
+        if(tile_int == TILE_DEFAULT){ return; }
+        else if(tile_int == TILE_TREASURE[0]){ addTreasure(row, col); return; }
+        else if (tile_int == TILE_TREASURE[1]){ addTreasure(row, col); return; }
+        else if(tile_int > TILE_WOOD_OFFSET){
+            addWood(row, col, tile_int - TILE_WOOD_OFFSET);
+            return;
         }
+        // This function should never reach here.
+        System.out.println("Un-parse-able information detected in collectable layer.");
+        addWood(row, col, 1);
     }
 
     /** This is the level editor JSON parser that populate the environment layer
@@ -364,14 +420,20 @@ public class LevelModel {
      * @param col the column the environment element is in the world
      * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateEnv(int row, int col, int tile_int) {
-        if(tile_int == TILE_ROCK){
-            addRock(row, col);
-        }else if(tile_int == TILE_GOAL){
-            addGoal(row, col);
-        }else if(tile_int >= TILE_CURRENT && tile_int <= TILE_CURRENT + TILE_WEST){
-            addCurrent(row, col, compute_direction(tile_int - TILE_CURRENT));
+        if(tile_int == TILE_DEFAULT){ return; }
+        else if(tile_int == TILE_GOAL){ addGoal(row, col); return; }
+        for (int j : TILE_ROCK) {
+            if (tile_int == j) { addRock(row, col); return; }
         }
+        addCurrent(row, col, compute_direction(tile_int % TILE_CURRENT_DIVISION), compute_magnitude(tile_int));
     }
+
+    /** Compute the magnitude of the current base on the level json input
+     * @param tile_int level json input indicating object type
+     * @return the magnitude of the current */
+    private int compute_magnitude(int tile_int) {
+        if(tile_int < 1 || tile_int > 60) { return 1; }
+        return (tile_int - TILE_CURRENT_OFFSET) / TILE_CURRENT_DIVISION; }
 
     /** Compute the direction of the current base on the level json input
      * @param i level json input
@@ -382,6 +444,10 @@ public class LevelModel {
             case TILE_SOUTH: return Current.Direction.SOUTH;
             case TILE_EAST: return Current.Direction.EAST;
             case TILE_WEST: return Current.Direction.WEST;
+            case TILE_NORTH_EAST: return Current.Direction.NORTH_EAST;
+            case TILE_SOUTH_WEST: return Current.Direction.SOUTH_WEST;
+            case TILE_EAST_SOUTH: return Current.Direction.EAST_SOUTH;
+            case TILE_WEST_NORTH: return Current.Direction.WEST_NORTH;
             default: return Current.Direction.NONE;
         }
     }
@@ -401,9 +467,23 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-        Enemy this_enemy = new Enemy(compute_temp, null);
-        this_enemy.setTexture(enemyTexture);
-        addEnemyObject(this_enemy);
+        switch(enemy_type) {
+            case 0: // Sharks
+                Shark this_shark = new Shark(compute_temp, null);
+                this_shark.setTexture(enemyTexture);
+                addEnemyObject(this_shark);
+                break;
+            case 1: // Hydras
+                Hydra th = new Hydra(compute_temp, null);
+                th.setTexture(enemyTexture);
+                addHydraObject(th);
+                break;
+            case 2: // Sirens
+//                Siren ts = new Siren(compute_temp, null);
+//                ts.setTexture(enemyTexture);
+//                addSirenObject(ts);
+                break;
+        }
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -456,9 +536,9 @@ public class LevelModel {
      * @param row the row gird position
      * @param col the column grid position
      * @param direction the direction */
-    private void addCurrent(int row, int col, Current.Direction direction) {
+    private void addCurrent(int row, int col, Current.Direction direction, int magnitude) {
         computePosition(col, row);
-        Current this_current = new Current(compute_temp, direction);
+        Current this_current = new Current(compute_temp, direction, magnitude);
         this_current.setTexture(currentTexture);
         addCurrentObject(this_current);
     }
@@ -485,6 +565,8 @@ public class LevelModel {
         currentTexture = directory.getEntry("current", Texture.class);
         enemyTexture = directory.getEntry("enemy", Texture.class);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
+        bulletTexture = directory.getEntry("earth", Texture.class);
+        Bullet.setText(bulletTexture);
     }
 
     /** Add wood Objects to random location in the world */
@@ -492,5 +574,26 @@ public class LevelModel {
         Wood this_wood = new Wood(boundsVector2());
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
+    }
+
+    public Texture recalculateFlowMap() {
+        Pixmap pix = new Pixmap(map_size.x, map_size.y,  Pixmap.Format.RGBA8888);
+        pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
+        pix.fill();
+        for (GameObject o : getObjects()) {
+            if (o.getType() == GameObject.ObjectType.CURRENT) {
+                Current c = (Current)o;
+                Vector2 p = c.getPosition(); // in box2d units (3 per tile)
+                p.scl(1.0f/GRID_SIZE.x, 1.0f/GRID_SIZE.y); // in tiles
+                // TODO figure out a *good* way to represent current magnitude in the shader.
+                Vector2 d = c.getDirectionVector().nor(); // length independent of magnitude
+                d.add(1,1).scl(0.5f); // between 0 and 1
+                pix.setColor(d.x, d.y, 0, 1);
+                pix.drawPixel((int)p.x, (int)p.y);
+            }
+        }
+        Texture t = new Texture(pix);
+        t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
+        return t;
     }
 }

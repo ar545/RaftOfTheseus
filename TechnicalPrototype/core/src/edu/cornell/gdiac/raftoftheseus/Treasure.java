@@ -33,7 +33,7 @@ public class Treasure extends WheelObstacle {
 
     public void update(float dt) {
         super.update(dt);
-        if(collected) {
+        if (collected) {
             // TODO: update player score
             this.setDestroyed(true);
         }
