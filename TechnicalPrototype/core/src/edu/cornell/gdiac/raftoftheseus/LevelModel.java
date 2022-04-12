@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
 public class LevelModel {
@@ -117,7 +118,7 @@ public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
-    private Texture raftTexture;
+    private FilmStrip raftTexture;
     /** Texture for the ocean tiles */
     private Texture oceanTexture;
     /** Texture for wood pieces that represent single pile of log */
@@ -138,6 +139,7 @@ public class LevelModel {
     private Texture bulletTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
+    private GameObject[][] obstacles;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -161,6 +163,14 @@ public class LevelModel {
     /** Constructor call for this singleton class */
     public LevelModel(){}
 
+    public int cols(){
+        return map_size.x;
+    }
+
+    public int rows(){
+        return map_size.y;
+    }
+
     /**
      * Returns true if the object is in bounds.
      * This assertion is useful for debugging the physics.
@@ -173,9 +183,21 @@ public class LevelModel {
         return horiz && vert;
     }
 
+    public boolean inBounds(int col, int row) {
+        boolean vert = (0<=row && row<rows());
+        boolean horiz = (0<=col && col<cols());
+        return horiz && vert;
+    }
+
+
     /** @return the bounds of this world in rectangle */
     public Rectangle bounds() {
         return bounds;
+    }
+
+    /** @return the currents */
+    public GameObject[][] obstacles() {
+        return obstacles;
     }
 
     /** @return the height and width of bounds only
@@ -236,6 +258,40 @@ public class LevelModel {
         enemies.add(obj);
     }
 
+    /** Getter for how long each tile is **/
+    public float getTileSize() {
+        return GRID_SIZE.x;
+    }
+
+    /**
+     * Returns the board cell index for a screen position.
+     * <p>
+     * While all positions are 2-dimensional, the dimensions to
+     * the board are symmetric. This allows us to use the same
+     * method to convert an x coordinate or a y coordinate to
+     * a cell index.
+     *
+     * @param f Screen position coordinate
+     * @return the board cell index for a screen position.
+     */
+    public int screenToBoard(float f) {
+        return (int) (f / (getTileSize()));
+    }
+
+    /**
+     * Returns the screen position coordinate for a board cell index.
+     * <p>
+     * While all positions are 2-dimensional, the dimensions to
+     * the board are symmetric. This allows us to use the same
+     * method to convert an x coordinate or a y coordinate to
+     * a cell index.
+     *
+     * @param n Tile cell index
+     * @return the screen position coordinate for a board cell index.
+     */
+    public float boardToScreen(int n) {
+        return (float) (n + 0.5f) * (getTileSize());
+    }
     // TODO Create enemy super class to reduce redundant code.
     protected void addHydraObject(Hydra obj) {
         assert inBounds(obj) : "Object is not in bounds";
@@ -299,6 +355,7 @@ public class LevelModel {
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
+            obstacles = new GameObject[cols()][rows()];
 
             // Reset boundary of world
             setBound();
@@ -469,6 +526,8 @@ public class LevelModel {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp);
         this_rock.setTexture(rockTexture);
+//        System.out.println(map_size);
+        obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
 
@@ -479,7 +538,7 @@ public class LevelModel {
         computePosition(col, row);
         switch(enemy_type) {
             case 0: // Sharks
-                Shark this_shark = new Shark(compute_temp, null);
+                Shark this_shark = new Shark(compute_temp, null, this);
                 this_shark.setTexture(enemyTexture);
                 addEnemyObject(this_shark);
                 break;
@@ -503,6 +562,7 @@ public class LevelModel {
         computePosition(col, row);
         Treasure this_treasure = new Treasure(compute_temp);
         this_treasure.setTexture(treasureTexture);
+        obstacles[col][row] = this_treasure;
         addObject(this_treasure);
     }
 
@@ -547,14 +607,18 @@ public class LevelModel {
      * @param col the column grid position
      * @param direction the direction */
     private void addCurrent(int row, int col, Current.Direction direction, int magnitude) {
+        // TODO: the current object collision no longer needed, but texture is needed
         computePosition(col, row);
         Current this_current = new Current(compute_temp, direction, magnitude);
-        //TODO: the current object collision no longer needed, but texture is needed
         this_current.setTexture(currentTexture);
-        addCurrentObject(this_current); //TODO: current will no longer be in the object list once flow is implemented.
 
-        // Update the current field
+        // Initialize the current field, used for current vector field
         currentField.field[col][row] = this_current.getDirectionVector();
+
+        // Update the obstacles, used for enemy AI
+        obstacles[col][row] = this_current;
+
+        addCurrentObject(this_current);
     }
 
     /** Compute the position of the object in the world given the grid location.
@@ -569,7 +633,7 @@ public class LevelModel {
     /** This gather the assets required for initializing the objects
      * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
-        raftTexture = directory.getEntry("raft", Texture.class);
+        raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 4, 5, 19);// TODO: use data-driven design for rows/cols/size
         oceanTexture = directory.getEntry("water_tile", Texture.class);
         woodTexture = directory.getEntry("wood", Texture.class);
         doubleTexture = directory.getEntry("double", Texture.class);

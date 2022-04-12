@@ -13,7 +13,8 @@
     "left" : "A",
     "right" : "D",
     "tab" : "Tab",
-    "change controls" : "C"
+    "change controls" : "C",
+    "settings": "P"
   },
   "keyboard only" : {
     "next": "1",
@@ -29,6 +30,7 @@
     "left" : "Left",
     "right" : "Right",
     "tab" : "Tab",
-    "change controls" : "C"
+    "change controls" : "C",
+    "settings": "P"
   }
 }

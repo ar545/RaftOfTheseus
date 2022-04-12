@@ -1,21 +1,34 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.obstacle.Obstacle;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
+
 import java.util.Iterator;
 
 import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
@@ -40,9 +53,11 @@ public class WorldController implements Screen, ContactListener {
     /** Exit code for advancing to next level */
     public static int EXIT_NEXT = 1;
     /** Exit code for jumping back to previous level */
-    public static int EXIT_PREV = 2;
+    public static final int EXIT_PREV = 2;
+    /** Exit code for opening settings */
+    public static final int EXIT_SETTINGS = 3;
     /** How many frames after winning/losing do we continue? */
-    public static int EXIT_COUNT = 120;
+    public static int EXIT_COUNT = 1000;
 
     /** Whether to use shaders or not */
     private static boolean USE_SHADER_FOR_WATER = true;
@@ -67,6 +82,10 @@ public class WorldController implements Screen, ContactListener {
     /** Reference to the game assets directory */
     private AssetDirectory directory;
 
+    private Stage stage;
+    private Table table;
+    private Skin skin;
+
     //TEXTURE
     /** The texture for the colored health bar */
     protected Texture colorBar;
@@ -84,6 +103,12 @@ public class WorldController implements Screen, ContactListener {
     protected Texture gameBackground;
     /** Texture for game background when using shader */
     protected Texture blueTexture;
+    /** Texture for failed level */
+    protected Texture failedBackground;
+    /** Texture for success backgrounds where the index corresponds to the score */
+    protected Texture[] successBackgrounds;
+    /** Whether the transition screen is built  */
+    private boolean transitionBuilt;
 
     // WORLD
     protected LevelModel levelModel;
@@ -95,6 +120,12 @@ public class WorldController implements Screen, ContactListener {
     private boolean complete;
     /** Whether we have failed at this world (and need a reset) */
     private boolean failed;
+    /** Whether the next button was clicked */
+    private boolean nextPressed;
+    /** Whether the settings button was clicked on the transition screen */
+    private boolean settingsPressed;
+    /** Player score */
+    private int playerScore;
     /** Whether the map mode is active */
     private boolean map;
     /** Whether the debug draw mode is active */
@@ -105,6 +136,8 @@ public class WorldController implements Screen, ContactListener {
     private SharkController[] controls;
     /** Find whether a hydra can see the player. */
     private HydraRayCast hydraSight;
+    /** Whether the exit button was pressed */
+    private boolean exitPressed;
 
     private final long startTime;
 
@@ -124,8 +157,15 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+        this.playerScore = 0;
+        this.nextPressed = false;
+        this.exitPressed = false;
+        this.stage = new Stage();
+        this.skin = new Skin();
+        this.table = new Table();
         hydraSight = new HydraRayCast();
         startTime = System.currentTimeMillis();
+        transitionBuilt = false;
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -170,20 +210,25 @@ public class WorldController implements Screen, ContactListener {
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
-//<<<<<<< HEAD
-//        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
-//=======
-//>>>>>>> main
+        // update animations
+        float time = (System.currentTimeMillis() - startTime)/1000.0f;
+        int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
+        levelModel.getPlayer().animationFrame = frame % 19; // TODO don't hardcode number of frames in animation
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
-//>>>>>>> main
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         canvas.clear();
         canvas.begin(cameraTransform);
         drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT)
-                obj.draw(canvas);
+
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) {
+                if (obj.getType() == GameObject.ObjectType.ENEMY) {
+                    obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
+                } else {
+                    obj.draw(canvas);
+                }
+            }
         }
         canvas.end();
         // reset camera transform (because health bar isn't in game units)
@@ -235,20 +280,112 @@ public class WorldController implements Screen, ContactListener {
 
         // Final message
         if (complete && !failed) {
-            displayFont.setColor(Color.YELLOW);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-            canvas.end();
+            drawTransition();
+//            displayFont.setColor(Color.YELLOW);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+//            canvas.end();
         } else if (failed) {
-            displayFont.setColor(Color.RED);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-            canvas.end();
+            drawTransition();
+//            displayFont.setColor(Color.RED);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+//            canvas.end();
         }
 
         // draw a circle showing how far the player can move before they die
         float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+    }
+
+    private void drawTransition() {
+        if (!transitionBuilt) {
+            transitionBuilt = true;
+            if (complete && !failed) {
+                buildTransitionScreen(successBackgrounds[playerScore], false);
+            } else {
+                buildTransitionScreen(failedBackground, true);
+            }
+        }
+        if (transitionBuilt) {
+            Gdx.input.setInputProcessor(stage);
+        }
+        stage.act();
+        stage.draw();
+    }
+
+    private void buildTransitionScreen(Texture background, boolean didFail) {
+        Pixmap pixmap = new Pixmap(1,1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fillRectangle(0, 0, 1, 1);
+        Texture darkBackgroundTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        Image transparentBackgroundTexture = new Image(darkBackgroundTexture);
+        transparentBackgroundTexture.setSize(canvas.getWidth(),canvas.getHeight());
+        transparentBackgroundTexture.setColor(0, 0, 0, 0.6f);
+        stage.addActor(transparentBackgroundTexture);
+
+        table.setFillParent(true);
+        table.align(Align.center);
+        stage.addActor(table);
+        skin.add("background", background);
+        skin.add("font", displayFont);
+        table.setBackground(skin.getDrawable("background"));
+
+        TextButtonStyle buttonStyle = new TextButtonStyle();
+        buttonStyle.font = skin.getFont("font");
+        TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", buttonStyle);
+        mainButton.getLabel().setFontScale(0.6f);
+        float buttonWidth =  mainButton.getWidth();
+        mainButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (didFail) {
+                    reset();
+                } else {
+                    nextPressed = true;
+                }
+            }
+        });
+        float padding = (canvas.getWidth() - buttonWidth) / 2f;
+        table.add(mainButton).expandX().padLeft(padding - buttonWidth / 2f).padRight(-padding);
+        table.row();
+
+        if (!didFail) {
+            TextButton replayButton = new TextButton("REPLAY", buttonStyle);
+            replayButton.getLabel().setFontScale(0.4f);
+            replayButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    reset();
+                }
+            });
+
+            table.add(replayButton).expandX().padLeft(200);
+        }
+
+        TextButton settingsButton = new TextButton("SETTINGS", buttonStyle);
+        settingsButton.getLabel().setFontScale(0.4f);
+        settingsButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                settingsPressed = true;
+            }
+        });
+        table.add(settingsButton).expandX().padLeft(didFail ? 325 : 0);
+
+        TextButton exitButton = new TextButton("EXIT", buttonStyle);
+        exitButton.getLabel().setFontScale(0.4f);
+        exitButton.getLabel().setColor(Color.GOLD);
+        exitButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                exitPressed = true;
+            }
+        });
+        table.add(exitButton).expandX().padRight(didFail ? 325 : 200);
+        table.row();
     }
 
 //<<<<<<< HEAD
@@ -342,11 +479,17 @@ public class WorldController implements Screen, ContactListener {
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
-        displayFont = directory.getEntry( "end" ,BitmapFont.class);
+        displayFont = directory.getEntry( "diogenes" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
         blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
+        failedBackground = directory.getEntry("failed_background", Texture.class);
+        successBackgrounds = new Texture[4];
+        for (int i = 0; i < 4; i++) {
+            successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
+        }
+
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
         this.directory = directory;
@@ -378,25 +521,35 @@ public class WorldController implements Screen, ContactListener {
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
 
-        // Handle resets
-        if (input.didReset()) {
-            reset();
-        }
-
 //        if (listener == null) {
 //            return true;
 //        }
 
         // Now it is time to maybe switch screens.
-        if (input.didExit()) {
+        if (input.didExit() || exitPressed) {
             pause();
             listener.exitScreen(this, EXIT_QUIT);
             return false;
-        } else if (input.didNext()) {
+        } else if (input.didNext() || nextPressed) {
             pause();
+            nextPressed = false;
             listener.exitScreen(this, EXIT_NEXT);
             return false;
-        } else if (input.didPrevious()) {
+        } else if (input.didSettings() || settingsPressed)  {
+            pause();
+            settingsPressed = false;
+            listener.exitScreen(this, EXIT_SETTINGS);
+            return false;
+        }
+
+        if ((complete && !failed) || failed) { return false; }
+
+        // Handle resets
+        if (input.didReset()) {
+            reset();
+        }
+
+        if (input.didPrevious()) {
             pause();
             listener.exitScreen(this, EXIT_PREV);
             return false;
@@ -411,6 +564,7 @@ public class WorldController implements Screen, ContactListener {
                 return false;
             }
         }
+
         return true;
     }
 
@@ -454,6 +608,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
+
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
@@ -708,8 +863,8 @@ public class WorldController implements Screen, ContactListener {
         Body body2 = fix2.getBody();
 
         try {
-            GameObject bd1 = (GameObject)body1.getUserData();
-            GameObject bd2 = (GameObject)body2.getUserData();
+            GameObject bd1 = (GameObject) body1.getUserData();
+            GameObject bd2 = (GameObject) body2.getUserData();
             // Check for object interaction with current
             if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
                 enterCurrent((Current) bd1, bd2);
@@ -787,7 +942,7 @@ public class WorldController implements Screen, ContactListener {
      * Push o according to c
      */
     private void enterCurrent(Current c, GameObject o) {
-        // check for "ghost collisions"
+        // check for "ghost coll
         if(o.getType() == GameObject.ObjectType.RAFT) { // TODO I don't know how to solve this problem
             float dx = 2*Math.abs(c.getPosition().x - o.getPosition().x);
             float dy = 2*Math.abs(c.getPosition().y - o.getPosition().y);
@@ -852,6 +1007,8 @@ public class WorldController implements Screen, ContactListener {
         t.setDestroyed(true);
         // add random wood
         levelModel.addRandomWood();
+        // update player score
+        playerScore++;
     }
 
     private void ResolveCollision(Hydra h, Bullet b){
@@ -886,6 +1043,10 @@ public class WorldController implements Screen, ContactListener {
         if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
                 || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
             SoundController.getInstance().playSFX("wood_pickup", false);
+        }
+        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.TREASURE
+                || s1 == GameObject.ObjectType.TREASURE && s2 == GameObject.ObjectType.RAFT) {
+            SoundController.getInstance().playSFX("chest_collect", false);
         }
     }
 
@@ -972,6 +1133,12 @@ public class WorldController implements Screen, ContactListener {
         emptyLevel();
         levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
+        stage.clear();
+        table = new Table();
+        playerScore = 0;
+        skin = new Skin();
+        transitionBuilt = false;
+        settingsPressed = false;
         SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
 
