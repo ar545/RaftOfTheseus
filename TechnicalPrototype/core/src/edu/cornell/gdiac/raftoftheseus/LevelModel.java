@@ -674,4 +674,8 @@ public class LevelModel {
         t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         return t;
     }
+
+    public void updateCurrentEffects(GameObject o){
+        currentField.updateCurrentEffects(o);
+    }
 }

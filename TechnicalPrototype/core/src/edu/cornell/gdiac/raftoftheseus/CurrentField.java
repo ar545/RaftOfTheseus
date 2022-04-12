@@ -51,4 +51,28 @@ public class CurrentField implements FlowField<Vector2> {
         int row = (int)MathUtils.clamp(position.y / resolution, 0, rows - 1);
         return field[column][row];
     }
+
+    Vector2 temp_cpy;
+    Vector2 temp_sum = new Vector2(0, 0);
+
+    public void updateCurrentEffects (GameObject o) {
+        Vector2 position = o.getPosition();
+        int column = (int)MathUtils.clamp((position.x - 0.5f*resolution) / resolution, 0, columns - 1);
+        int row = (int)MathUtils.clamp((position.y - 0.5f*resolution) / resolution, 0, rows - 1);
+        float lx = column * resolution;
+        float ly = row * resolution;
+        float rx = (column + 1) * resolution;
+        float ry = (row + 1) * resolution;
+        temp_cpy = field[column][row].cpy();
+        temp_sum.add(temp_cpy.scl(rx - position.x).scl(ry - position.y));
+        temp_cpy = field[column + 1][row].cpy();
+        temp_sum.add(temp_cpy.scl(position.x - lx).scl(ry - position.y));
+        temp_cpy = field[column][row + 1].cpy();
+        temp_sum.add(temp_cpy.scl(rx - position.x).scl(position.y - ly));
+        temp_cpy = field[column + 1][row + 1].cpy();
+        temp_sum.add(temp_cpy.scl(position.x - lx).scl(position.y - ly));
+        temp_sum.scl(rx - lx).scl(ry - ly);
+        o.getPosition().add(temp_sum);
+        temp_sum.setZero();
+    }
 }

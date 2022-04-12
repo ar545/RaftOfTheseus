@@ -514,7 +514,12 @@ public class WorldController implements Screen, ContactListener {
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
-        levelModel.getPlayer().act(dt);
+        // TODO: there are two ways of applying vector field:
+        // TODO: one is act(), but require the gameObject to extend class Actor.
+//        levelModel.getPlayer().act(dt);
+        // TODO: the other is linear combinations, which might have error in corner cases
+        levelModel.updateCurrentEffects(levelModel.getPlayer());
+
         InputController input = InputController.getInstance();
         input.readInput();
 
