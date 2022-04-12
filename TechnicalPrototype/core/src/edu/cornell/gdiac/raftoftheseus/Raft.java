@@ -35,7 +35,7 @@ public class Raft extends CapsuleObstacle {
     /** The star of the level. This must be >=0. */
     private int star;
     /** Initial player health */
-    private static final int INITIAL_PLAYER_STAR = 0;
+    private static final int INITIAL_PLAYER_STAR = 0; //TODO: potential bugs on stars upon level restart
 
     /** Whether the raft is actively firing */
     private boolean fire;
@@ -140,6 +140,7 @@ public class Raft extends CapsuleObstacle {
             if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
                 float cost = MOVE_COST * L * dt; // base movement cost (no current)
                 if (!waterVelocity.isZero()) { // reduced cost if moving with the current, increased if moving against the current
+                    // TODO: Demian: I wrote this code, but looking at it again, I should probably rewrite it so it doesn't use all this math.
                     float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
                     float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
                     cost *= b;

@@ -43,7 +43,9 @@ public abstract class GameObject extends SimpleObstacle {
         /**
          * A bullet shot by the player
          */
-        BULLET
+        BULLET,
+        HYDRA,
+        SIREN
     }
 
     /** Collision filtering categories */
@@ -68,6 +70,7 @@ public abstract class GameObject extends SimpleObstacle {
     protected final static short MASK_WOOD = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN;
     protected final static short MASK_TREASURE = CATEGORY_PLAYER;// treasure isn't pushed around by anything
     protected final static short MASK_GOAL = CATEGORY_PLAYER;
+    protected final static short MASK_SIREN = 0; // Siren does not interact with anything, flying over player
 
     /**
      * How much to scale the texture before displaying (screen pixels / texture pixels)
@@ -76,27 +79,27 @@ public abstract class GameObject extends SimpleObstacle {
 
     /** Combined force vectors of all currents affecting this object */
     private Vector2 currentsCache = new Vector2();
-    /** The speed at which a current flows, in units per second */
-    private final float waterSpeed = 15.0f;
+//    /** The speed at which a current flows, in units per second */
+//    private final float waterSpeed = 15.0f;
     /** The average velocity of water flowing near this object */
     protected Vector2 waterVelocity = new Vector2();
     /** Modifier on force applied by current */
-    private final float dragCoefficient = 0.5f;
+    protected final float dragCoefficient = 0.5f;
     /** cache vector for calculation */
-    private Vector2 dragCache = new Vector2(0,0);
+    protected Vector2 dragCache = new Vector2(0,0);
 
     public void enterCurrent(Vector2 f) {
         currentsCache.add(f);
-        waterVelocity.set(currentsCache).nor().scl(waterSpeed);
+        waterVelocity.set(currentsCache); // cancelled normalization (.nor().scl(waterSpeed)) due to speed variant
     }
 
     public void exitCurrent(Vector2 f) {
         currentsCache.sub(f);
-        if (currentsCache.isZero(0.01f)) {
+        if (currentsCache.isZero(0.1f)) {
             currentsCache.setZero();
             waterVelocity.setZero();
         } else
-            waterVelocity.set(currentsCache).nor().scl(waterSpeed);
+            waterVelocity.set(currentsCache); // cancelled normalization (.nor().scl(waterSpeed)) due to speed variant
     }
 
     // ABSTRACT METHODS
@@ -137,7 +140,7 @@ public abstract class GameObject extends SimpleObstacle {
         setRestitution(0.0f);
         setLinearDamping(0.0f);
         setFixedRotation(true);
-        super.setDrawScale(100.0f/3.0f, 100.0f/3.0f);
+        super.setDrawScale(1,1);
     }
 
 

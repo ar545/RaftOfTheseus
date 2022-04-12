@@ -3,10 +3,20 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 import org.w3c.dom.Text;
@@ -14,7 +24,21 @@ import org.w3c.dom.Text;
 /**
  * Class that provides the menu screen for the state of the game.
  * */
-public class MenuMode implements Screen, InputProcessor {
+public class MenuMode implements Screen {
+
+    /** An enum representing which screen is currently active within the menu system */
+    private static enum MenuScreen {
+        TITLE, // title screen, with buttons leading to the other screens
+        LEVEL_SELECT, // level select screen, with buttons that lead to levels
+        SETTINGS, // settings screen, where the player can change game settings
+        CREDITS // credits screen
+    }
+    /** Which screen is active */
+    private MenuScreen currentScreen;
+
+    // https://stackoverflow.com/questions/31794636/clickable-buttons-using-libgdx
+    private Stage stage;
+    private Skin skin;
 
     /** Background texture */
     private Texture background;
@@ -27,6 +51,18 @@ public class MenuMode implements Screen, InputProcessor {
     private GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+
+    // Load constants
+    public static void setConstants(JsonValue objParams){
+        JsonValue menuParams = objParams.getChild("menu");
+        STANDARD_WIDTH = menuParams.getInt("width", 800);
+        STANDARD_HEIGHT = menuParams.getInt("height", 700);
+        BUTTON_SCALE = menuParams.getFloat("button scale", 1.25f);
+        PADDING_X = menuParams.getInt("padding x", 100);
+        PADDING_Y = menuParams.getInt("padding y", 100);
+        NUM_COLS = menuParams.getInt("level columns", 5);
+        LEVEL_COUNT = menuParams.getInt("level count", 9);
+    }
 
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH  = 800;
@@ -41,20 +77,24 @@ public class MenuMode implements Screen, InputProcessor {
     /** Number of levels in each row */
     private static int NUM_COLS = 5;
     /** Padding between columns */
-    private static int colPadding;
+    private static int colPadding = 25;
     /** Scaling factor. */
     private float scale;
     /** The height of the canvas window (necessary since sprite origin != screen origin) */
     private int heightY;
 
-    /** Current state of a given level's button */
-    private int levelPressState;
+    /** Whether the player has pressed a level select button */
+    private boolean isLevelPressed;
     /** Level selected */
     private int selectedLevel;
     /** Whether this player mode is still active */
     private boolean active;
     /** Level count **/
-    private static final int LEVEL_COUNT = 9;
+    private static int LEVEL_COUNT = 9;
+    /** Exit code for displaying settings */
+    public static int EXIT_SETTINGS = 8;
+    /** Whether the settings button was pressed on the main menu */
+    private boolean settingsPressed;
 
     /**
      * Creates a MenuMode with the default size and position.
@@ -66,8 +106,11 @@ public class MenuMode implements Screen, InputProcessor {
         // resize with canvas dimensions
         resize(canvas.getWidth(),canvas.getHeight());
         active = true;
-        levelPressState = 0;
+        isLevelPressed = false;
         selectedLevel = -1;
+        settingsPressed = false;
+
+        currentScreen = MenuScreen.TITLE;
     }
 
     /**
@@ -106,7 +149,7 @@ public class MenuMode implements Screen, InputProcessor {
      * @return true if the player has selected a level
      */
     public boolean isReady() {
-        return levelPressState == 2;
+        return isLevelPressed;
     }
 
     /**
@@ -114,6 +157,10 @@ public class MenuMode implements Screen, InputProcessor {
      */
     public void show() {
         active = true;
+        stage = new Stage();
+        Gdx.input.setInputProcessor(stage);
+        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        buildMenu();
     }
 
     /**
@@ -121,6 +168,8 @@ public class MenuMode implements Screen, InputProcessor {
      */
     public void hide() {
         active = false;
+        stage = null;
+        skin = null;
     }
 
     /**
@@ -128,30 +177,168 @@ public class MenuMode implements Screen, InputProcessor {
      */
     private void draw() {
         colPadding = ((canvas.getWidth() - 2 * PADDING_X - NUM_COLS * levels[0].getWidth()) / (NUM_COLS - 1));
+
         canvas.begin();
+        canvas.clear();
         canvas.drawBackground(background, true);
         canvas.draw(title, canvas.getWidth() / 2 - (title.getWidth() / 2),  (6 * canvas.getHeight() / 10));
-        for (int i = 0; i < LEVEL_COUNT; i++) {
-            Texture levelButton = levels[i];
-            Color tint = (levelPressState == 1 && selectedLevel == i ? Color.GRAY: Color.WHITE);
-            int buttonX = PADDING_X + (i % NUM_COLS) * (colPadding + levelButton.getWidth()) + (levelButton.getWidth() / 2);
-            int buttonY = (4 * canvas.getHeight() / 10) - (i / NUM_COLS) * (PADDING_Y + levelButton.getHeight()) + (levelButton.getHeight() / 2);
-            canvas.draw(levels[i], tint, levels[i].getWidth() / 2, levels[i].getHeight() / 2, buttonX,
-                    buttonY, 0, BUTTON_SCALE * scale, BUTTON_SCALE * scale);
-        }
         canvas.end();
+
+        stage.act();
+        stage.draw();
     }
 
     /**
      * Called when the Screen should render itself.
      */
     public void render(float delta) {
+        InputController input = InputController.getInstance();
+        input.readInput();
         if (active) {
             draw();
-            if (isReady() && listener != null) {
+            if (input.didSettings() || settingsPressed) {
+                listener.exitScreen(this, EXIT_SETTINGS);
+            } else if (isReady() && listener != null) {
                 listener.exitScreen(this, 0);
             }
         }
+    }
+
+    private void buildMenu(){
+        Table menuTable = new Table(skin);
+        menuTable.setPosition(0, 0);
+//        menuTable.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        menuTable.setFillParent(true);
+        menuTable.align(Align.center);
+
+        // instantiate the "back" button, which is used in multiple menus
+        TextButton backButton = new TextButton("Back", skin);
+        backButton.addListener(new ClickListener(){
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                changeScreenTo(MenuScreen.TITLE);
+            }
+        });
+
+        switch(currentScreen) {
+            case TITLE:
+                //Create buttons
+                TextButton playButton = new TextButton("Play", skin);
+                TextButton optionsButton = new TextButton("Options", skin);
+                TextButton creditsButton = new TextButton("Credits", skin);
+                TextButton exitButton = new TextButton("Exit", skin);
+
+                //Add listeners to buttons
+                playButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        changeScreenTo(MenuScreen.LEVEL_SELECT);
+                    }
+                });
+                optionsButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        settingsPressed = true;
+                    }
+                });
+                creditsButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        changeScreenTo(MenuScreen.CREDITS);
+                    }
+                });
+                exitButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        Gdx.app.exit();
+                    }
+                });
+
+                //Add buttons to table
+                menuTable.add(playButton);
+                menuTable.row();
+                menuTable.add(optionsButton);
+                menuTable.row();
+                menuTable.add(creditsButton);
+                menuTable.row();
+                menuTable.add(exitButton);
+                break;
+            case LEVEL_SELECT:
+                //Create buttons
+                for (int i = 0; i < LEVEL_COUNT; i ++) {
+                    ImageButton levelButton = new ImageButton(new TextureRegionDrawable(levels[i]));
+                    int finalI = i;
+                    levelButton.addListener(new ClickListener(){
+                        @Override
+                        public void clicked(InputEvent event, float x, float y) {
+                            selectlevel(finalI);
+                        }
+                    });
+                    //Add button to table
+                    if (i > 0 && i % NUM_COLS == 0)
+                        menuTable.row().padTop(colPadding);
+                    menuTable.add(levelButton).padLeft(i % NUM_COLS > 0 ? colPadding : 0);
+                }
+                menuTable.row();
+                menuTable.add(backButton);
+                break;
+            case SETTINGS:
+                //Create buttons
+                TextButton fooButton = new TextButton("Foo", skin);
+                fooButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        System.out.println("pressed foo");
+                        // TODO change some settings here
+                    }
+                });
+                //Add buttons to table
+                menuTable.add(fooButton);
+                menuTable.row();
+                menuTable.add(backButton);
+                break;
+            case CREDITS:
+                // TODO change font & structure
+                // BitmapFont font = new BitmapFont(Gdx.files.internal("Calibri.fnt"),Gdx.files.internal("Calibri.png"),false);
+                menuTable.add("CREDITS");
+                menuTable.row();
+                menuTable.add("Programmers");
+                menuTable.add("Designers");
+                menuTable.row();
+                menuTable.add("Amy Huang");
+                menuTable.add("Gloria Shi");
+                menuTable.row();
+                menuTable.add("Demian Yutin");
+                menuTable.add("Noah Braun");
+                menuTable.row();
+                menuTable.add("Howard Fu");
+                menuTable.add("Spencer Pettee");
+                menuTable.row();
+                menuTable.add("Jaden O'Brien");
+                menuTable.row();
+                menuTable.add("Jason Tung");
+                menuTable.row();
+                menuTable.add("Leo Zhao");
+                menuTable.row();
+                // System.out.println("Got to credits screen");
+                menuTable.add(backButton);
+                break;
+        }
+
+        stage.addActor(menuTable);
+    }
+
+    private void selectlevel(int id) {
+        if (levels != null && !isLevelPressed) {
+            isLevelPressed = true;
+            selectedLevel = id;
+        }
+    }
+
+    private void changeScreenTo(MenuScreen targetScreen) {
+        stage.clear();
+        currentScreen = targetScreen;
+        buildMenu();
     }
 
     /**
@@ -171,6 +358,12 @@ public class MenuMode implements Screen, InputProcessor {
         heightY = height;
     }
 
+    /** Reset the level pressed state */
+    public void resetPressedState(){ isLevelPressed = false; }
+
+    /** Reset the settings pressed state */
+    public void resetSettingsState() { settingsPressed = false; }
+
     /**
      * Called when the Screen is paused.
      */
@@ -184,106 +377,4 @@ public class MenuMode implements Screen, InputProcessor {
     public void resume() {
         // auto-generated
     }
-
-    /**
-     * Called when the screen was touched or a mouse button was pressed.
-     *
-     * @param screenX The x coordinate, origin is in the upper left corner
-     * @param screenY The y coordinate, origin is in the upper left corner
-     * @param pointer the pointer for the event
-     * @param button the button
-     * @return whether the input was processed
-     */
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if (levels == null || levelPressState == 2) return true;
-
-        screenY = heightY - screenY;
-        for (int i = 0; i < LEVEL_COUNT; i++) {
-            Texture levelButton = levels[i];
-            int buttonX = PADDING_X + (i % NUM_COLS) * (colPadding + levelButton.getWidth());
-            int buttonY = (4 * canvas.getHeight() / 10) - (i / NUM_COLS) * (PADDING_Y + levelButton.getHeight());
-            if (buttonX <= screenX && screenX <= buttonX + levelButton.getWidth() &&
-                    buttonY <= screenY && screenY <= buttonY + levelButton.getHeight()) {
-                levelPressState = 1;
-                selectedLevel = i;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Called when a finger was lifted or a mouse button was released
-     *
-     * @param screenX The x coordinate, origin is in the upper left corner
-     * @param screenY The y coordinate, origin is in the upper left corner
-     * @param pointer the pointer for the event
-     * @param button the button
-     * @return whether the input was processed
-     */
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (levelPressState == 1) {
-            levelPressState = 2;
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Called when a key is typed (UNSUPPORTED)
-     *
-     * @param character the key typed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyTyped(char character) { return true; }
-
-    /**
-     * Called when a key is pressed (UNSUPPORTED)
-     *
-     * @param keycode the key pressed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyDown(int keycode) { return true; }
-
-    /**
-     * Called when a key is released (UNSUPPORTED)
-     *
-     * @param keycode the key released
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyUp(int keycode) { return true; }
-
-    /**
-     * Called when the mouse or finger was dragged. (UNSUPPORTED)
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @param pointer the button or touch finger number
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean touchDragged(int screenX, int screenY, int pointer) { return true; }
-
-    /**
-     * Called when the mouse was moved without any buttons being pressed. (UNSUPPORTED)
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean mouseMoved(int screenX, int screenY) {
-        return true;
-    }
-
-    /**
-     * Called when the mouse wheel was scrolled. (UNSUPPORTED)
-     *
-     * @param dx the amount of horizontal scroll
-     * @param dy the amount of vertical scroll
-     *
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean scrolled(float dx, float dy) { return true; }
-
-    /** Reset the level pressed state */
-    public void resetPressedState(){ levelPressState = 0; }
 }

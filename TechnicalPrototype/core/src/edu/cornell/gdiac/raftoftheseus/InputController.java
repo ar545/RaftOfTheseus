@@ -20,40 +20,74 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.util.Controllers;
-import edu.cornell.gdiac.util.XBoxController;
 
 /**
- * Class for reading player input. 
- *
- * This supports both a keyboard and X-Box controller. In previous solutions, we only 
- * detected the X-Box controller on start-up.  This class allows us to hot-swap in
- * a controller via the new XBox360Controller class.
+ * Singleton class for reading player input.
+ * This only supports keyboard.
  */
 public class InputController {
 	// Fields to manage game state
-	/** Whether the reset button was pressed. */
-	private boolean resetPressed;
-	private boolean resetPrevious;
+	/*=*=*=*=*=*=*=*=*=* SETTINGS *=*=*=*=*=*=*=*=*=*/
+
+	public static void setConstants(JsonValue keyParams){
+		controlSettings = keyParams;
+	}
+
+	private static JsonValue controlSettings;
+
+	private enum ControlScheme{
+		KeyboardOnly,
+		KeyboardMouse,
+		Custom
+	}
+	private ControlScheme controlScheme;
+
+	private ArrayMap<String, Integer> mappings;
+
+	/*=*=*=*=*=*=*=*=*=* GAME NAVIGATION CONTROLS *=*=*=*=*=*=*=*=*=*/
+
 	/** Whether the button to advanced worlds was pressed. */
 	private boolean nextPressed;
 	private boolean nextPrevious;
 	/** Whether the button to step back worlds was pressed. */
 	private boolean prevPressed;
 	private boolean prevPrevious;
-	/** Whether the map button was pressed. */
-	private boolean mapPressed;
-	private boolean mapPrevious;
-	/** Whether the fire button was pressed. */
-	private boolean firePressed;
-	private boolean firePrevious;
+	/** Whether the reset button was pressed. */
+	private boolean resetPressed;
+	private boolean resetPrevious;
 	/** Whether the debug toggle was pressed. */
 	private boolean debugPressed;
 	private boolean debugPrevious;
 	/** Whether the exit button was pressed. */
 	private boolean exitPressed;
 	private boolean exitPrevious;
+	/** Whether the settings button was pressed */
+	private boolean settingsPressed;
+	private boolean settingsPrevious;
+
+	/*=*=*=*=*=*=*=*=*=* PLAYER ACTIONS *=*=*=*=*=*=*=*=*=*/
+
+	/** Whether the map button was pressed. */
+	private boolean mapPressed;
+	private boolean mapPrevious;
+	/** Whether the fire button was pressed. */
+	private boolean firePressed;
+	private boolean firePrevious;
+	/** Whether the tab button was pressed for selection. */
+	private boolean tabPressed;
+	private boolean tabPrevious;
+	/** Whether the right arrow button/D was pressed for adjusting settings. CAN BE HELD.*/
+	private boolean rightPressed;
+	/** Whether the left arrow button/A was pressed for adjusting settings. CAN BE HELD.*/
+	private boolean leftPressed;
+	/** Whether the player is sprinting. CAN BE HELD.*/
+	private boolean sprintPressed;
+	/** Whether the change control scheme button was pressed. */
+	private boolean changePrevious;
+	private boolean changePressed;
 	/** How much did we move (left/right)? */
 	private float x_offset;
 	/** How much did we move (up/down)? */
@@ -62,12 +96,95 @@ public class InputController {
 	private Vector2 mov_offset;
 	/** Where did we fire? */
 	private Vector2 fire_location;
+
+
 	/** The singleton instance of the input controller */
 	private static InputController theController = null;
 
-	/**
-	 * @return the singleton instance of the input controller
-	 */
+	/*=*=*=*=*=*=*=*=*=* SETTERS *=*=*=*=*=*=*=*=*=*/
+
+	private void populateMap(String mapping){
+		JsonValue m = controlSettings.get(mapping);
+		for( JsonValue i : m ){
+			if(i.isString()){
+				mappings.put(i.name(), Input.Keys.valueOf(i.asString()));
+			} else if (i.isNumber()){
+				mappings.put(i.name(), i.asInt());
+			}
+		}
+	}
+
+	private void setControlScheme(){
+		switch (controlScheme) {
+			case KeyboardMouse: populateMap("mouse keyboard"); return;
+			case KeyboardOnly: populateMap("keyboard only"); return;
+			case Custom: return;
+		}
+	}
+
+	public void setKeyboardMouse(){
+		controlScheme = ControlScheme.KeyboardMouse;
+		setControlScheme();
+	}
+
+	public void setKeyboardOnly(){
+		controlScheme = ControlScheme.KeyboardOnly;
+		setControlScheme();
+	}
+
+	private void changeControlScheme(){
+		switch (controlScheme){
+			case KeyboardMouse: setKeyboardOnly(); return;
+			case KeyboardOnly: setKeyboardMouse(); return;
+			case Custom: return;
+		}
+	}
+
+	public void setKey(String action, String key){
+		if( mappings.get(action) == null ){
+			throw new RuntimeException("Given action does not exist");
+		} else if (!Input.Keys.toString(mappings.get(action)).equals(key)) {
+			controlScheme = ControlScheme.Custom;
+			mappings.put(action, Input.Keys.valueOf(key));
+		}
+	}
+
+	public String getControlScheme(){
+		switch (controlScheme){
+			case KeyboardMouse: return "Keyboard and Mouse";
+			case KeyboardOnly: setKeyboardMouse(); return "Keyboard Only";
+			case Custom: return "Custom";
+			default: throw new RuntimeException("Illegal state reached in Input Controller.");
+		}
+	}
+
+	public String getKey(String action){
+		if(controlScheme == ControlScheme.KeyboardMouse) {
+			if (action.equals("fire")) {
+				return "Left Mouse Button";
+			} else if (action.equals("map")) {
+				return "Right Mouse Button";
+			}
+		}
+		String k = Input.Keys.toString(mappings.get(action));
+		if (k == null) {
+			throw new RuntimeException("Given action does not exist");
+		}
+		return k;
+
+	}
+
+	/*=*=*=*=*=*=*=*=*=* GETTERS *=*=*=*=*=*=*=*=*=*/
+
+	/** Creates a new input controller for mouse and keyboard. */
+	public InputController() {
+		mov_offset = new Vector2();
+		fire_location = new Vector2();
+		mappings = new ArrayMap<>();
+		setKeyboardOnly();
+	}
+
+	/** @return the singleton instance of the input controller */
 	public static InputController getInstance() {
 		if (theController == null) {
 			theController = new InputController();
@@ -75,79 +192,49 @@ public class InputController {
 		return theController;
 	}
 
-	/**
-	 * -1 = down/left, 1 = up/right, 0 = still
-	 * @return the amount of vertical and horizontal movement
-	 */
-	public Vector2 getMovement() {
-		return mov_offset.set(x_offset, y_offset).nor(); // normalize vector so diagonal movement isn't 41.4% faster than normal movement
-	}
-
-	/** Find whether the player moved and should reduce health corrspondingly */
+	/** @return true if the map button was pressed. */
+	public boolean didNext() { return nextPressed && !nextPrevious; }
+	/** @return true if the map button was pressed. */
+	public boolean didPrevious() { return prevPressed && !prevPrevious; }
+	/** @return true if the debug button was pressed. */
+	public boolean didDebug() { return debugPressed && !debugPrevious; }
+	/** @return true if the reset button was pressed. */
+	public boolean didReset() {return resetPressed && !resetPrevious;}
+	/** @return true if the exit button was pressed. */
+	public boolean didExit() { return exitPressed && !exitPrevious; }
+	/** @return true if the map button was pressed. */
+	public boolean didMap() { return mapPressed && !mapPrevious; }
+	/** @return true if the fire button was pressed. */
+	public boolean didFire() { return firePressed && !firePrevious; }
+	/** @return true if the tab button was pressed for changing what is selected on a screen. */
+	public boolean didTab() { return tabPressed && !tabPrevious; }
+	/** @return true if the change control scheme button was pressed. */
+	private boolean didChange() { return changePressed && !changePrevious; }
+	/** @return true if the "right" direction button was pressed for keyboard control of settings. */
+	public boolean didRight() { return rightPressed; }
+	/** @return true if the "left" direction button was pressed for keyboard control of settings. */
+	public boolean didLeft() { return leftPressed; }
+	/** @return true if the sprint button was pressed. */
+	public boolean didSprint() { return sprintPressed; }
+	/** @return true if the settings button was pressed. */
+	public boolean didSettings() { return settingsPressed & !settingsPrevious; }
+	/** @return true if the mouse is being used. */
+	public boolean mouseActive() { return controlScheme == ControlScheme.KeyboardMouse; }
+	/** Find whether the player moved and should reduce health . */
 	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
 
 	/**
-	 * @return where the mouse was clicked in screen coordinates
+	 * -1 = down/left, 1 = up/right, 0 = still
+	 * @return the amount of vertical and horizontal movement
+	 * normalize vector so diagonal movement isn't 41.4% faster than normal movement
 	 */
-	public Vector2 getFireLocation() {
-		fire_location.set(x_offset, y_offset);
-		return fire_location;
-	}
+	public Vector2 getMovement() { return mov_offset.set(x_offset, y_offset).nor(); }
+	/** @return where the mouse was clicked in screen coordinates */
+	public Vector2 getFireDirection() { return fire_location; }
 
-	/**
-	 * @return true if the map button was pressed.
-	 */
-	public boolean didNext() { return nextPressed && !nextPrevious; }
+	/*=*=*=*=*=*=*=*=*=* READ INPUT *=*=*=*=*=*=*=*=*=*/
 
-	/**
-	 * @return true if the map button was pressed.
-	 */
-	public boolean didPrevious() {
-		return prevPressed && !prevPrevious;
-	}
-
-	/**
-	 * @return true if the map button was pressed.
-	 */
-	public boolean didMap() {
-		return mapPressed && !mapPrevious;
-	}
-
-	/**
-	 * @return true if the fire button was pressed.
-	 */
-	public boolean didFire() {
-		return firePressed && !firePrevious;
-	}
-
-	/**
-	 * @return true if the debug button was pressed.
-	 */
-	public boolean didDebug() {
-		return debugPressed && !debugPrevious;
-	}
-
-	/**
-	 * @return true if the reset button was pressed.
-	 */
-	public boolean didReset() {return resetPressed && !resetPrevious;}
-
-	/**
-	 * @return true if the exit button was pressed.
-	 */
-	public boolean didExit() { return exitPressed && !exitPrevious; }
-	
-	/**
-	 * Creates a new input controller for mouse and keyboard.
-	 */
-	public InputController() {
-		mov_offset = new Vector2();
-		fire_location = new Vector2();
-	}
-
-	/**
-	 * Reads the input for the player and converts the result into game logic.
-	 */
+	/** Reads the input for the player and converts the result into game logic. */
 	public void readInput() {
 		// Store previous values
 		resetPrevious  = resetPressed;
@@ -157,50 +244,60 @@ public class InputController {
 		firePrevious = firePressed;
 		debugPrevious  = debugPressed;
 		exitPrevious = exitPressed;
+		settingsPrevious = settingsPressed;
+		tabPrevious = tabPressed;
+		changePrevious = changePressed;
 
 		// Read new input
-		readKeyboard();
-//		readMouse();
+		readKeys();
 	}
 
-	/**
-	 * Reads input from the keyboard for movement.
-	 */
-	private void readKeyboard() {
-		// Read special action keys
-		nextPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_2);
-		prevPressed = Gdx.input.isKeyPressed(Input.Keys.NUM_1);
-		mapPressed = Gdx.input.isKeyPressed(Input.Keys.SPACE);
-		resetPressed = Gdx.input.isKeyPressed(Input.Keys.R);
-		firePressed  = Gdx.input.isKeyPressed(Input.Keys.F);
-		debugPressed  = Gdx.input.isKeyPressed(Input.Keys.G);
-		exitPressed  = Gdx.input.isKeyPressed(Input.Keys.ESCAPE);
+	/** Reads input from the keyboard for movement. */
+	private void readKeys() {
+		// Navigation keys
+		nextPressed = Gdx.input.isKeyPressed(mappings.get("next"));
+		prevPressed = Gdx.input.isKeyPressed(mappings.get("previous"));
+		debugPressed  = Gdx.input.isKeyPressed(mappings.get("debug"));
+		resetPressed = Gdx.input.isKeyPressed(mappings.get("reset"));
+		exitPressed  = Gdx.input.isKeyPressed(mappings.get("exit"));
+		settingsPressed = Gdx.input.isKeyPressed(mappings.get("settings"));
 
+		// Player action keys
+		changePressed = Gdx.input.isKeyPressed(mappings.get("change controls"));
+		tabPressed = Gdx.input.isKeyPressed(mappings.get("tab"));
+		sprintPressed = Gdx.input.isKeyPressed(mappings.get("sprint"));
+
+		// Reset offsets
 		x_offset = 0;
 		y_offset = 0;
 
 		// Read direction key inputs
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
+		rightPressed = Gdx.input.isKeyPressed(mappings.get("right"));
+		leftPressed = Gdx.input.isKeyPressed(mappings.get("left"));
+		if (rightPressed) {
 			x_offset += 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
+		if (leftPressed) {
 			x_offset -= 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)) {
+		if (Gdx.input.isKeyPressed(mappings.get("up"))) {
 			y_offset += 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)) {
+		if (Gdx.input.isKeyPressed(mappings.get("down"))) {
 			y_offset -= 1.0f;
 		}
-	}
+		// Map dependent
+		if(controlScheme == ControlScheme.KeyboardMouse) {
+			mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map"));
+			firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire"));
+			if (firePressed) {
+				fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
+			}
+		} else if (controlScheme == ControlScheme.KeyboardOnly) {
+			mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
+			firePressed = Gdx.input.isKeyPressed(mappings.get("fire"));
+		}
 
-//	/**
-//	 * Reads input from the mouse for firing and direction.
-//	 */
-//	private void readMouse() {
-//		firePressed = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
-//		if (firePressed) {
-//			fire_location.set(Gdx.input.getX(), Gdx.input.getY());
-//		}
-//	}
+		if(didChange()){changeControlScheme();}
+	}
 }

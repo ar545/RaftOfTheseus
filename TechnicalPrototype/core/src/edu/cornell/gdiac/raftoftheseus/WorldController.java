@@ -1,39 +1,77 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.obstacle.Obstacle;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
+
 import java.util.Iterator;
+
+import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
 
 public class WorldController implements Screen, ContactListener {
 
+    /**
+     * Method to call after loading to set all constants in World Controller,
+     * @param objParams JsonValue of object_parameters instance.
+     */
+    public static void setConstants(JsonValue objParams){
+//        EXIT_QUIT = objParams.getInt("exit quit", 0);
+        Bullet.setConstants(objParams.get("bullet"));
+        Shark.setConstants(objParams.get("shark"));
+        Hydra.setConstants(objParams.get("hydra"));
+        Siren.setConstants(objParams.get("siren"));
+    }
+
     // CONSTANTS
     /** Exit code for quitting the game */
-    public static final int EXIT_QUIT = 0;
+    public static int EXIT_QUIT = 0;
     /** Exit code for advancing to next level */
-    public static final int EXIT_NEXT = 1;
+    public static int EXIT_NEXT = 1;
     /** Exit code for jumping back to previous level */
     public static final int EXIT_PREV = 2;
+    /** Exit code for opening settings */
+    public static final int EXIT_SETTINGS = 3;
     /** How many frames after winning/losing do we continue? */
-    public static final int EXIT_COUNT = 120;
+    public static int EXIT_COUNT = 1000;
+
+    /** Whether to use shaders or not */
+    private static boolean USE_SHADER_FOR_WATER = true;
 
     /** The amount of time for a physics engine step. */
-    public static final float WORLD_STEP = 1/60.0f;
+    public static float WORLD_STEP = 1/60.0f;
     /** Number of velocity iterations for the constraint solvers */
-    public static final int WORLD_VELOCITY = 6;
+    public static int WORLD_VELOCITY = 6;
     /** Number of position iterations for the constraint solvers */
-    public static final int WORLD_POSIT = 2;
+    public static int WORLD_POSIT = 2;
 
     /** Scale for the health bar */
-    private static final float HEALTH_BAR_SCALE = 0.6f;
+    private static float HEALTH_BAR_SCALE = 0.6f;
+
 
     // FIELDS
     // CANVAS AND OBJECT LIST
@@ -41,6 +79,12 @@ public class WorldController implements Screen, ContactListener {
     protected GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+    /** Reference to the game assets directory */
+    private AssetDirectory directory;
+
+    private Stage stage;
+    private Table table;
+    private Skin skin;
 
     //TEXTURE
     /** The texture for the colored health bar */
@@ -57,6 +101,14 @@ public class WorldController implements Screen, ContactListener {
     protected Texture mapBackground;
     /** Texture for GAME background */
     protected Texture gameBackground;
+    /** Texture for game background when using shader */
+    protected Texture blueTexture;
+    /** Texture for failed level */
+    protected Texture failedBackground;
+    /** Texture for success backgrounds where the index corresponds to the score */
+    protected Texture[] successBackgrounds;
+    /** Whether the transition screen is built  */
+    private boolean transitionBuilt;
 
     // WORLD
     protected LevelModel levelModel;
@@ -68,6 +120,12 @@ public class WorldController implements Screen, ContactListener {
     private boolean complete;
     /** Whether we have failed at this world (and need a reset) */
     private boolean failed;
+    /** Whether the next button was clicked */
+    private boolean nextPressed;
+    /** Whether the settings button was clicked on the transition screen */
+    private boolean settingsPressed;
+    /** Player score */
+    private int playerScore;
     /** Whether the map mode is active */
     private boolean map;
     /** Whether the debug draw mode is active */
@@ -75,8 +133,13 @@ public class WorldController implements Screen, ContactListener {
     /** Countdown active for winning or losing */
     private int countdown;
     /** array of controls for each enemy**/
-    private AIController[] controls;
+    private SharkController[] controls;
+    /** Find whether a hydra can see the player. */
+    private HydraRayCast hydraSight;
+    /** Whether the exit button was pressed */
+    private boolean exitPressed;
 
+    private final long startTime;
 
     /**
      * Creates a new game world
@@ -94,6 +157,15 @@ public class WorldController implements Screen, ContactListener {
         this.debug = false;
         this.active = false;
         this.countdown = -1;
+        this.playerScore = 0;
+        this.nextPressed = false;
+        this.exitPressed = false;
+        this.stage = new Stage();
+        this.skin = new Skin();
+        this.table = new Table();
+        hydraSight = new HydraRayCast();
+        startTime = System.currentTimeMillis();
+        transitionBuilt = false;
     }
 
     /*=*=*=*=*=*=*=*=*=* Draw and Canvas *=*=*=*=*=*=*=*=*=*/
@@ -133,44 +205,51 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
+//<<<<<<< HEAD
+//        if(canvas == null){ return; } // return if no canvas pointer
+//=======
         // return if no canvas pointer
-        if(canvas == null){
+        if(canvas == null)
             return;
-        }
+        if (!canvas.shaderCanBeUsed)
+            USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
-        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide
-
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2)
-        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
-        Affine2 cameraTransform = new Affine2();
-        cameraTransform.setToTranslation(translation);
+//>>>>>>> main
+        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
+        Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         canvas.clear();
         canvas.begin(cameraTransform);
-        drawMovingBackground(pixelsPerUnit);
+        drawWater();
         for(GameObject obj : levelModel.getObjects()) {
-            if (obj.getType() == GameObject.ObjectType.ENEMY) {
-                obj.draw(canvas, ((Enemy)obj).isEnraged() ? Color.RED : Color.WHITE);
-            }
-            else {
-                obj.draw(canvas);
+
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) {
+                if (obj.getType() == GameObject.ObjectType.ENEMY) {
+                    obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
+                } else {
+                    obj.draw(canvas);
+                }
             }
         }
         canvas.end();
+        // reset camera transform (because health bar isn't in game units)
+        canvas.begin();
+        Vector2 playerPosOnScreen = levelModel.getPlayer().getPosition();
+        cameraTransform.applyTo(playerPosOnScreen);
+        drawHealthBar(levelModel.getPlayer().getHealthRatio(), playerPosOnScreen);
+        canvas.end();
 
-        drawHealthBar(levelModel.getPlayer().getHealthRatio());
         drawStar(levelModel.getPlayer().getStar());
 
         if (map) {
             // translate center point of level to (0,0):
-            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-pixelsPerUnit);
+            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-1);
 
             // scale down so that the whole level fits on the screen, with a margin:
             int pixelMargin = 150;
             float wr = (canvas.getWidth()-2*pixelMargin) / (levelModel.bounds().width);
             float hr = (canvas.getHeight()-2*pixelMargin) / (levelModel.bounds().height);
-            float scale = Math.min(wr, hr)/pixelsPerUnit;
+            float scale = Math.min(wr, hr);
 
             // translate center point of level to center of screen:
             Vector2 translation_2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
@@ -180,8 +259,8 @@ public class WorldController implements Screen, ContactListener {
 
             canvas.begin(mapTransform);
             canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
-                    levelModel.bounds().width/2*pixelsPerUnit, levelModel.bounds().height/2*pixelsPerUnit, 0.0f,
-                    levelModel.bounds().width*pixelsPerUnit/mapBackground.getWidth(), levelModel.bounds().height*pixelsPerUnit/mapBackground.getHeight());
+                    levelModel.bounds().width/2, levelModel.bounds().height/2, 0.0f,
+                    levelModel.bounds().width/mapBackground.getWidth(), levelModel.bounds().height/mapBackground.getHeight());
             for(GameObject obj : levelModel.getObjects()) {
                 GameObject.ObjectType type = obj.getType();
                 if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.ENEMY
@@ -202,28 +281,172 @@ public class WorldController implements Screen, ContactListener {
 
         // Final message
         if (complete && !failed) {
-            displayFont.setColor(Color.YELLOW);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-            canvas.end();
+            drawTransition();
+//            displayFont.setColor(Color.YELLOW);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+//            canvas.end();
         } else if (failed) {
-            displayFont.setColor(Color.RED);
-            canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-            canvas.end();
+            drawTransition();
+//            displayFont.setColor(Color.RED);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+//            canvas.end();
         }
 
-        // force player remain with their current health
+        // draw a circle showing how far the player can move before they die
         float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
-        canvas.drawHealthCircle(r);
+        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
     }
 
-    /** draw a background for the sea
-     * Precondition & post-condition: the game canvas is open */
-    private void drawMovingBackground(float pixel) {
+    private void drawTransition() {
+        if (!transitionBuilt) {
+            transitionBuilt = true;
+            if (complete && !failed) {
+                buildTransitionScreen(successBackgrounds[playerScore], false);
+            } else {
+                buildTransitionScreen(failedBackground, true);
+            }
+        }
+        if (transitionBuilt) {
+            Gdx.input.setInputProcessor(stage);
+        }
+        stage.act();
+        stage.draw();
+    }
+
+    private void buildTransitionScreen(Texture background, boolean didFail) {
+        Pixmap pixmap = new Pixmap(1,1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fillRectangle(0, 0, 1, 1);
+        Texture darkBackgroundTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        Image transparentBackgroundTexture = new Image(darkBackgroundTexture);
+        transparentBackgroundTexture.setSize(canvas.getWidth(),canvas.getHeight());
+        transparentBackgroundTexture.setColor(0, 0, 0, 0.6f);
+        stage.addActor(transparentBackgroundTexture);
+
+        table.setFillParent(true);
+        table.align(Align.center);
+        stage.addActor(table);
+        skin.add("background", background);
+        skin.add("font", displayFont);
+        table.setBackground(skin.getDrawable("background"));
+
+        TextButtonStyle buttonStyle = new TextButtonStyle();
+        buttonStyle.font = skin.getFont("font");
+        TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", buttonStyle);
+        mainButton.getLabel().setFontScale(0.6f);
+        float buttonWidth =  mainButton.getWidth();
+        mainButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                if (didFail) {
+                    reset();
+                } else {
+                    nextPressed = true;
+                }
+            }
+        });
+        float padding = (canvas.getWidth() - buttonWidth) / 2f;
+        table.add(mainButton).expandX().padLeft(padding - buttonWidth / 2f).padRight(-padding);
+        table.row();
+
+        if (!didFail) {
+            TextButton replayButton = new TextButton("REPLAY", buttonStyle);
+            replayButton.getLabel().setFontScale(0.4f);
+            replayButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    reset();
+                }
+            });
+
+            table.add(replayButton).expandX().padLeft(200);
+        }
+
+        TextButton settingsButton = new TextButton("SETTINGS", buttonStyle);
+        settingsButton.getLabel().setFontScale(0.4f);
+        settingsButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                settingsPressed = true;
+            }
+        });
+        table.add(settingsButton).expandX().padLeft(didFail ? 325 : 0);
+
+        TextButton exitButton = new TextButton("EXIT", buttonStyle);
+        exitButton.getLabel().setFontScale(0.4f);
+        exitButton.getLabel().setColor(Color.GOLD);
+        exitButton.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                exitPressed = true;
+            }
+        });
+        table.add(exitButton).expandX().padRight(didFail ? 325 : 200);
+        table.row();
+    }
+
+//<<<<<<< HEAD
+    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
+     * boundary of the world with walls, the player position, and the pixel per unit scale.
+     * @param pixelsPerUnit scalar pixel per unit
+     * @return an affine2 representing the affine transformation that texture will go through */
+    private Affine2 calculateMovingCamera(float pixelsPerUnit) {
+        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
+                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
+
+        // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = levelModel.wallBounds();
+        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
+        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
+        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
+        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
+        return a.preTranslate(translation);
+    }
+
+    /** This function calculate the correct health bar color
+     * @param median for red color the median should be 1/3 and 2/3 for green color
+     * @param health the health percentage for the player
+     * @return the rgb code representing the red or green color
+     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
+    private float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
+
+    /** Precondition & post-condition: the game canvas is open
+     * @param health the health percentage for the player */
+    private void drawHealthBar(float health, Vector2 player_position) {
+        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
+        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
+        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
+        float y_origin = (player_position.y);
+        canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
+        if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
+    }
+
+//    /** draw a background for the sea
+//     * Precondition & post-condition: the game canvas is open */
+//    private void drawMovingBackground(float pixel) {
+//=======
+    /** draws background water and moving currents (using shader) */
+    private void drawWater() {
+        if (USE_SHADER_FOR_WATER)
+            canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+//        float pixel = 100/3.0f;
+        float pixel = 1;
+//>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
-        canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        if (!USE_SHADER_FOR_WATER)
+            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        else
+            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
+        if (USE_SHADER_FOR_WATER)
+            canvas.stopUsingShader();
     }
 
     /** Draw star at the up left corner
@@ -242,27 +465,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.end();
     }
 
-    /** This function calculate the correct health bar color
-     * @param median for red color the median should be 1/3 and 2/3 for green color
-     * @param health the health percentage for the player
-     * @return the rgb code representing the red or green color
-     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
-    private float makeColor(float median, float health){
-        return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1));
-    }
 
-    /** Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function
-     * @param health the health percentage for the player */
-    private void drawHealthBar(float health) {
-        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0, 1);
-        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
-        float x_origin = (canvas.getWidth() - greyBar.getRegionWidth()*HEALTH_BAR_SCALE)  / (2f*HEALTH_BAR_SCALE);
-        float y_origin = (canvas.getHeight() / (2f*HEALTH_BAR_SCALE));
-        canvas.begin(HEALTH_BAR_SCALE, HEALTH_BAR_SCALE);
-        canvas.draw(greyBar,Color.WHITE,x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        if(health >= 0){canvas.draw(RatioBar,c,x_origin, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
-        canvas.end();
-    }
 
     /**
      * Gather the assets for this controller.
@@ -277,12 +480,25 @@ public class WorldController implements Screen, ContactListener {
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
-        displayFont = directory.getEntry( "end" ,BitmapFont.class);
+        displayFont = directory.getEntry( "diogenes" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
+        blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
+        failedBackground = directory.getEntry("failed_background", Texture.class);
+        successBackgrounds = new Texture[4];
+        for (int i = 0; i < 4; i++) {
+            successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
+        }
+
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
+        this.directory = directory;
+        if (USE_SHADER_FOR_WATER) {
+            Texture waterTexture = directory.getEntry("water_texture", Texture.class);
+            waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+            canvas.setWaterTexture(waterTexture);
+        }
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -305,25 +521,35 @@ public class WorldController implements Screen, ContactListener {
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
 
-        // Handle resets
-        if (input.didReset()) {
-            reset();
-        }
-
 //        if (listener == null) {
 //            return true;
 //        }
 
         // Now it is time to maybe switch screens.
-        if (input.didExit()) {
+        if (input.didExit() || exitPressed) {
             pause();
             listener.exitScreen(this, EXIT_QUIT);
             return false;
-        } else if (input.didNext()) {
+        } else if (input.didNext() || nextPressed) {
             pause();
+            nextPressed = false;
             listener.exitScreen(this, EXIT_NEXT);
             return false;
-        } else if (input.didPrevious()) {
+        } else if (input.didSettings() || settingsPressed)  {
+            pause();
+            settingsPressed = false;
+            listener.exitScreen(this, EXIT_SETTINGS);
+            return false;
+        }
+
+        if ((complete && !failed) || failed) { return false; }
+
+        // Handle resets
+        if (input.didReset()) {
+            reset();
+        }
+
+        if (input.didPrevious()) {
             pause();
             listener.exitScreen(this, EXIT_PREV);
             return false;
@@ -338,24 +564,37 @@ public class WorldController implements Screen, ContactListener {
                 return false;
             }
         }
+
         return true;
+    }
+
+
+    private void createBullet(Vector2 facing, Raft player){
+        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f), true);
+        bullet.setTexture(bullet_texture);
+//        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
+        bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        bullet.setAngle(facing.angleDeg()+90f);
+        levelModel.addQueuedObject(bullet);
+        player.addHealth(Bullet.BULLET_DAMAGE);
     }
 
     /**
      * Add a new bullet to the world and send it in the right direction.
      */
-    private void createBullet(Enemy nearestEnemy) {
+    private void createBullet(Shark nearestShark) {
         Raft player = levelModel.getPlayer();
         // Compute position and velocity
-        Vector2 facing = nearestEnemy.getPosition().sub(player.getPosition()).nor();
-        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f));
-        bullet.setTexture(bullet_texture);
-//        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
-        bullet.setLinearVelocity(facing.scl(4).mulAdd(player.getLinearVelocity(), 0.5f));
-        levelModel.addQueuedObject(bullet);
-        player.addHealth(Bullet.BULLET_HEALTH_COST);
+        Vector2 facing = nearestShark.getPosition().sub(player.getPosition()).nor();
+        createBullet(facing, player);
     }
 
+    private void createBullet(Vector2 firelocation) {
+        Raft player = levelModel.getPlayer();
+        // Compute position and velocity
+        Vector2 facing = firelocation.sub(player.getPosition()).nor();
+        createBullet(facing, player);
+    }
 
     /**
      * The core gameplay loop of this world.
@@ -369,6 +608,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
+
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
@@ -377,36 +617,60 @@ public class WorldController implements Screen, ContactListener {
         // Add a bullet if we fire
         if (player.isFire()) {
             // find nearest enemy to player
-            Enemy nearestEnemy = null;
-            float nearestD2 = -1;
-            for (Enemy e : levelModel.getEnemies()) {
-                if (!e.isDestroyed()) {
-                    float d2 = e.getPosition().dst2(player.getPosition());
-                    if (nearestD2 == -1 || d2 < nearestD2) {
-                        nearestD2 = d2;
-                        nearestEnemy = e;
+            if(ic.mouseActive()){
+                Vector2 firePixel = ic.getFireDirection();
+                Affine2 camera = calculateMovingCamera(100/3.0f);
+                camera.inv().applyTo(firePixel);
+                createBullet(firePixel);
+            }
+            else {
+                Shark nearestShark = null;
+                float nearestD2 = -1;
+                for (Shark e : levelModel.getEnemies()) {
+                    if (!e.isDestroyed()) {
+                        float d2 = e.getPosition().dst2(player.getPosition());
+                        if (nearestD2 == -1 || d2 < nearestD2) {
+                            nearestD2 = d2;
+                            nearestShark = e;
+                        }
                     }
                 }
-            }
-            if (nearestEnemy != null) {
-                createBullet(nearestEnemy);
+                if (nearestShark != null) {
+                    createBullet(nearestShark);
+                }
             }
         }
 
         // update forces for enemies, players, objects
-        resolveEnemies();
+        resolveEnemies(dt);
         player.applyInputForce();
         for (GameObject o : levelModel.getObjects())
             o.applyDrag();
     }
 
     /** get enemies take actions according to their AI */
-    private void resolveEnemies() {
-        PooledList<Enemy> el = levelModel.getEnemies();
+    private void resolveEnemies(float dt) {
+        PooledList<Shark> el = levelModel.getEnemies();
 
         for (int i = 0; i< el.size(); i++) {
-            Enemy enemy = el.get(i);
-            enemy.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            Shark shark = el.get(i);
+            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+        }
+
+        for (Hydra h : levelModel.getHydras()) {
+            levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
+            h.setSee(hydraSight.getCanSee());
+            if(h.willAttack()){
+                createBullet(h.getPosition(), levelModel.getPlayer());
+            }
+            h.update(dt);
+        }
+
+        for(Siren s : levelModel.getSirens()){
+            s.update(dt);
+            if(s.willAttack()){
+                levelModel.getPlayer().addHealth(s.getAttackDamage());
+            }
         }
     }
 
@@ -458,8 +722,8 @@ public class WorldController implements Screen, ContactListener {
     /** Update the level themed music according the game status */
     private void resolveMusic() {
         boolean nowInDanger = false;
-        for(AIController ai : controls){
-            if(ai.isAlive() && ai.getState() == Enemy.enemyState.CHASE){
+        for(SharkController ai : controls){
+            if(ai.isAlive() && ai.getState() == Shark.enemyState.CHASE){
                 nowInDanger = true;
                 break;
             }
@@ -586,8 +850,8 @@ public class WorldController implements Screen, ContactListener {
         Body body2 = fix2.getBody();
 
         try {
-            GameObject bd1 = (GameObject)body1.getUserData();
-            GameObject bd2 = (GameObject)body2.getUserData();
+            GameObject bd1 = (GameObject) body1.getUserData();
+            GameObject bd2 = (GameObject) body2.getUserData();
             // Check for object interaction with current
             if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
                 enterCurrent((Current) bd1, bd2);
@@ -608,9 +872,9 @@ public class WorldController implements Screen, ContactListener {
             }
             // Check for player kill enemies (health-)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.ENEMY)){
-                ResolveCollision((Raft)bd1, (Enemy) bd2);
+                ResolveCollision((Raft)bd1, (Shark) bd2);
             }else if(bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Enemy) bd1);
+                ResolveCollision((Raft)bd2, (Shark) bd1);
             }
             // Check for player collision with treasure (star+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
@@ -623,6 +887,12 @@ public class WorldController implements Screen, ContactListener {
                     (bd1 == levelModel.getGoal() && bd2 == levelModel.getPlayer())) {
                 if (!complete && !failed)
                     setComplete(true);
+            }
+            // Check for hydra collision with bullet
+            else if(bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.HYDRA)){
+                ResolveCollision((Hydra) bd2, (Bullet) bd1);
+            } else if(bd1.getType().equals(GameObject.ObjectType.HYDRA) && bd2.getType().equals(GameObject.ObjectType.BULLET)){
+                ResolveCollision((Hydra) bd1, (Bullet) bd2);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -697,9 +967,9 @@ public class WorldController implements Screen, ContactListener {
     /** Resolve collision between two objects of specific types
      * @param r raft
      * @param e enemy */
-    private void ResolveCollision(Raft r, Enemy e) {
+    private void ResolveCollision(Raft r, Shark e) {
         // update player health
-        r.addHealth(Enemy.ENEMY_DAMAGE);
+        r.addHealth(Shark.ENEMY_DAMAGE);
         // destroy enemy
         e.setDestroyed(true);
     }
@@ -724,12 +994,19 @@ public class WorldController implements Screen, ContactListener {
         t.setDestroyed(true);
         // add random wood
         levelModel.addRandomWood();
+        // update player score
+        playerScore++;
+    }
+
+    private void ResolveCollision(Hydra h, Bullet b){
+        // Hydra gets stunned
+        h.setHit(true);
+        b.setDestroyed(true);
     }
 
     /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        //TODO: below are imported from Lab 4. Question: What sound effects do we want?
         float speed = 0;
         Vector2 cache = new Vector2();
         float bumpThresh = 5f;
@@ -756,7 +1033,6 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    // TODO: What sound effect are needed and when do we want them?
     /** Play sound effect according to the situation */
     private void playSoundEffect() {
 
@@ -812,15 +1088,22 @@ public class WorldController implements Screen, ContactListener {
         setFailure(false);
     }
 
+    private void populateControllers(PooledList<?> e){
+
+    }
+
+
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
-        PooledList<Enemy> enemies = levelModel.getEnemies();
-        controls = new AIController[enemies.size()];
+        PooledList<Shark> enemies = levelModel.getEnemies();
+        controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new AIController(i, enemies.get(i), levelModel.getPlayer());
+            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
         }
-//        System.out.println(Arrays.toString(controls));
     }
+
+    /** The current level id. */
+    private int level_id = 0;
 
     /**
      * Populate the level according to the new level selection.
@@ -828,11 +1111,24 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
+        level_id = level_int;
+        JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
         emptyLevel();
-        levelModel.loadLevel(level_int);
+        levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
-
+        stage.clear();
+        table = new Table();
+        playerScore = 0;
+        skin = new Skin();
+        transitionBuilt = false;
+        settingsPressed = false;
+        SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
+
+        // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
+        // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
+        if (USE_SHADER_FOR_WATER)
+            canvas.setFlowMap(levelModel.recalculateFlowMap());
     }
 
     /**
@@ -841,7 +1137,8 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-       setLevel(LevelModel.LEVEL_RESTART_CODE);
+        SoundController.getInstance().haltSounds();
+        setLevel(level_id);
     }
 
 }

@@ -209,9 +209,13 @@ public abstract class BoxObstacle extends GameObject {
 
 	// ACCESSORS
 	public void setTexture(Texture texture) {
-		super.setTexture(new TextureRegion(texture));
-		textureScale = new Vector2(getWidth()*drawScale.x / texture.getWidth(),
-				getHeight()*drawScale.x / texture.getHeight());
+		if(getType() != ObjectType.BULLET) {
+			super.setTexture(new TextureRegion(texture));
+		} else {
+			super.setTexture(new TextureRegion(texture, 0.4f, 0.1f, 0.6f, 0.9f ));
+		}
+		textureScale = new Vector2(getWidth() * drawScale.x / texture.getWidth(),
+				getHeight() * drawScale.x / texture.getHeight());
 	}
 
 	public float getCrossSectionalArea() {
