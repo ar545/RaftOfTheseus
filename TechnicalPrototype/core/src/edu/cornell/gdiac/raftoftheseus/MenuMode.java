@@ -40,8 +40,10 @@ public class MenuMode implements Screen {
     private Stage stage;
     private Skin skin;
 
-    /** Background texture */
-    private Texture background;
+    /** Background texture for menu */
+    private Texture menuBackground;
+    /** Background texture for menu */
+    private Texture levelSelectBackground;
     /** Title texture */
     private Texture title;
     /** Texture for the levels to select. */
@@ -119,8 +121,8 @@ public class MenuMode implements Screen {
      * @param directory Reference to the asset directory.
      */
     public void populate(AssetDirectory directory) {
-        background = directory.getEntry("menu_background", Texture.class);
-        title = directory.getEntry("menu_title", Texture.class);
+        menuBackground = directory.getEntry("menu_background", Texture.class);
+        levelSelectBackground = directory.getEntry("level_background", Texture.class);
         levels = new Texture[LEVEL_COUNT];
         for (int i = 0; i < LEVEL_COUNT; i++) {
             levels[i] = directory.getEntry("level_" + i, Texture.class);
@@ -180,8 +182,7 @@ public class MenuMode implements Screen {
 
         canvas.begin();
         canvas.clear();
-        canvas.drawBackground(background, true);
-        canvas.draw(title, canvas.getWidth() / 2 - (title.getWidth() / 2),  (6 * canvas.getHeight() / 10));
+        canvas.drawBackground(currentScreen == MenuScreen.TITLE ? menuBackground : levelSelectBackground, true);
         canvas.end();
 
         stage.act();
