@@ -238,6 +238,7 @@ public class SettingsMode implements Screen {
         Label soundEffectsValueLabel = new Label(String.valueOf(soundEffectsVolume), textStyle);
         soundEffectsValueLabel.setFontScale(0.35f);
         soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
+        soundEffectsSlider.setValue(soundEffectsVolume);
         soundEffectsSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
