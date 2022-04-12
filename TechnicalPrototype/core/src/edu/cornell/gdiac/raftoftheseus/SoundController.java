@@ -159,6 +159,17 @@ public class SoundController {
         this.sfxVolume = sfxVolume;
     }
 
+    /**
+     * @return music volume being played right now.
+     */
+    public float getMasterMusicVolume(){ return musicVolume; }
+
+    /**
+     *
+     * @return sound effects volume being used right now.
+     */
+    public float getMasterSFXVolume(){ return sfxVolume; }
+
     // PLAYERS
     /**
      * TODO Store id
