@@ -169,7 +169,7 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
         texture = value;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
 
-        float w = getWidth()*drawScale.x / texture.getRegionWidth();
+        float w = getWidth()*drawScale.x / texture.getRegionWidth() * 1.50f;
         textureScale = new Vector2(w, w);
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f * getHeight()/getWidth());
     }

@@ -422,7 +422,7 @@ public class WorldController implements Screen, ContactListener {
         Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
         float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
-        float y_origin = (player_position.y);
+        float y_origin = (player_position.y + 20);
         canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
@@ -897,8 +897,10 @@ public class WorldController implements Screen, ContactListener {
             // Check for player collision with treasure (star+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
                 ResolveCollision((Raft)bd1, (Treasure) bd2);
+                SoundController.getInstance().playSFX("chest_collect", false);
             } else if(bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
                 ResolveCollision((Raft)bd2, (Treasure) bd1);
+                SoundController.getInstance().playSFX("chest_collect", false);
             }
             // Check for win condition
             else if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
@@ -1049,10 +1051,6 @@ public class WorldController implements Screen, ContactListener {
                 || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
             SoundController.getInstance().playSFX("wood_pickup", false);
         }
-        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.TREASURE
-                || s1 == GameObject.ObjectType.TREASURE && s2 == GameObject.ObjectType.RAFT) {
-            SoundController.getInstance().playSFX("chest_collect", false);
-        }
     }
 
     /** Play sound effect according to the situation */
@@ -1135,6 +1133,7 @@ public class WorldController implements Screen, ContactListener {
     public void setLevel(int level_int){
         level_id = level_int;
         JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
+        System.out.println("Loaded level "+level_int);
         emptyLevel();
         levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
