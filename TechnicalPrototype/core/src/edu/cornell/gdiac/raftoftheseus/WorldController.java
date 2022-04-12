@@ -1119,6 +1119,7 @@ public class WorldController implements Screen, ContactListener {
     public void setLevel(int level_int){
         level_id = level_int;
         JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
+        System.out.println("Loaded level "+level_int);
         emptyLevel();
         levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
