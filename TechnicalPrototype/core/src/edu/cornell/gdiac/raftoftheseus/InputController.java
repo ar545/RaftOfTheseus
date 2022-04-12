@@ -260,6 +260,7 @@ public class InputController {
 		debugPressed  = Gdx.input.isKeyPressed(mappings.get("debug"));
 		resetPressed = Gdx.input.isKeyPressed(mappings.get("reset"));
 		exitPressed  = Gdx.input.isKeyPressed(mappings.get("exit"));
+		settingsPressed = Gdx.input.isKeyPressed(mappings.get("settings"));
 
 		// Player action keys
 		changePressed = Gdx.input.isKeyPressed(mappings.get("change controls"));

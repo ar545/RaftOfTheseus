@@ -68,9 +68,15 @@ public class SettingsMode implements Screen {
     /** Previous screen (4 - start, 5 - menu, 6 - world) */
     private int previousMode;
     /** Music volume */
-    private int musicVolume;
+    private float musicVolume;
     /** Sound effects volume */
-    private int soundEffectsVolume;
+    private float soundEffectsVolume;
+    /** Whether there is a back to menu button */
+    private boolean isBackMenu;
+    /** Exit code to display menu screen */
+    private int EXIT_MENU;
+    /** Menu pressed */
+    private boolean menuPressed;
 
     /** Whether this player mode is still active */
     private boolean active;
@@ -86,6 +92,7 @@ public class SettingsMode implements Screen {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
+        menuPressed = false;
         SoundController.getInstance().startLevelMusic();
     }
 
@@ -114,6 +121,12 @@ public class SettingsMode implements Screen {
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
     }
+
+    /** Sets is back to menu boolean */
+    public void setIsBackMenu(boolean value) { this.isBackMenu = value; }
+
+    /** Sets exit code to menu */
+    public void setExitMenu(int value) { this.EXIT_MENU = value; }
 
     /**
      * Sets the previous mode value
@@ -151,6 +164,19 @@ public class SettingsMode implements Screen {
         TextButtonStyle buttonStyle = new TextButtonStyle();
         buttonStyle.font = skin.getFont("font");
         buttonStyle.fontColor = Color.GOLD;
+
+        if (isBackMenu) {
+            TextButton menuButton = new TextButton("MENU", buttonStyle);
+            menuButton.getLabel().setFontScale(0.5f);
+            menuButton.addListener(new ChangeListener() {
+                @Override
+                public void changed(ChangeEvent event, Actor actor) {
+                    menuPressed = true;
+                }
+            });
+            table.add(menuButton).padLeft(100).padTop(10).expandX().align(Align.left);
+        }
+
         TextButton exitButton = new TextButton("EXIT", buttonStyle);
         exitButton.getLabel().setFontScale(0.5f);
         exitButton.addListener(new ChangeListener() {
@@ -159,7 +185,7 @@ public class SettingsMode implements Screen {
                 exitPressed = true;
             }
         });
-        table.add(exitButton).padLeft(100).padTop(10).expandX().align(Align.left);
+        table.add(exitButton).padLeft(isBackMenu ? 0 : 100).padRight(isBackMenu ? -50 : 0).padTop(10).expandX().align(isBackMenu ? Align.right: Align.left);
         table.row();
 
         LabelStyle textStyle = new LabelStyle();
@@ -186,14 +212,17 @@ public class SettingsMode implements Screen {
         sliderBarDrawable.setMinHeight(10);
         SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
 
+        musicVolume = SoundController.getInstance().getMasterMusicVolume() * 1000f;
         Label musicValueLabel = new Label(String.valueOf(musicVolume), textStyle);
         musicValueLabel.setFontScale(0.35f);
 
         musicSlider = new Slider(0, 100, 1, false, sliderStyle);
+        musicSlider.setValue(musicVolume);
         musicSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                musicVolume = (int) musicSlider.getValue();
+                musicVolume = musicSlider.getValue();
+                SoundController.getInstance().setMasterMusicVolume(musicVolume / 1000);
                 musicValueLabel.setText(String.valueOf(musicVolume));
             }
         });
@@ -202,6 +231,7 @@ public class SettingsMode implements Screen {
         table.add(musicValueLabel).expandX().align(Align.left).width(100).padLeft(30);
         table.row();
 
+        soundEffectsVolume = SoundController.getInstance().getMasterSFXVolume() * 100f;
         Label soundEffectsLabel = new Label("SOUND EFFECTS", textStyle);
         soundEffectsLabel.setFontScale(0.35f);
         table.add(soundEffectsLabel).padLeft(120).align(Align.left);
@@ -211,7 +241,8 @@ public class SettingsMode implements Screen {
         soundEffectsSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                soundEffectsVolume = (int) soundEffectsSlider.getValue();
+                soundEffectsVolume = soundEffectsSlider.getValue();
+                SoundController.getInstance().setMasterSfxVolume(soundEffectsVolume / 100);
                 soundEffectsValueLabel.setText(String.valueOf(soundEffectsVolume));
             }
         });
@@ -259,10 +290,13 @@ public class SettingsMode implements Screen {
      * Called when the Screen should render itself.
      */
     public void render(float delta) {
+        Gdx.input.setInputProcessor(stage);
         if (active) {
             draw();
             if (exitPressed || InputController.getInstance().didExit()) {
                 listener.exitScreen(this, previousMode);
+            } else if (menuPressed) {
+                listener.exitScreen(this, EXIT_MENU);
             }
         }
     }
@@ -298,6 +332,9 @@ public class SettingsMode implements Screen {
         // auto-generated
     }
 
-    /** Reset the settings exit pressed state */
-    public void resetPressedState() { exitPressed = false; }
+    /** Reset the settings menu and exit pressed state */
+    public void resetPressedState() {
+        menuPressed = false;
+        exitPressed = false;
+    }
 }

@@ -122,6 +122,8 @@ public class WorldController implements Screen, ContactListener {
     private boolean failed;
     /** Whether the next button was clicked */
     private boolean nextPressed;
+    /** Whether the settings button was clicked on the transition screen */
+    private boolean settingsPressed;
     /** Player score */
     private int playerScore;
     /** Whether the map mode is active */
@@ -134,6 +136,8 @@ public class WorldController implements Screen, ContactListener {
     private SharkController[] controls;
     /** Find whether a hydra can see the player. */
     private HydraRayCast hydraSight;
+    /** Whether the exit button was pressed */
+    private boolean exitPressed;
 
     private final long startTime;
 
@@ -155,6 +159,7 @@ public class WorldController implements Screen, ContactListener {
         this.countdown = -1;
         this.playerScore = 0;
         this.nextPressed = false;
+        this.exitPressed = false;
         this.stage = new Stage();
         this.skin = new Skin();
         this.table = new Table();
@@ -348,7 +353,7 @@ public class WorldController implements Screen, ContactListener {
             replayButton.addListener(new ChangeListener() {
                 @Override
                 public void changed(ChangeEvent event, Actor actor) {
-                    System.out.println("replay");
+                    reset();
                 }
             });
 
@@ -360,7 +365,7 @@ public class WorldController implements Screen, ContactListener {
         settingsButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("settings");
+                settingsPressed = true;
             }
         });
         table.add(settingsButton).expandX().padLeft(didFail ? 325 : 0);
@@ -371,7 +376,7 @@ public class WorldController implements Screen, ContactListener {
         exitButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                System.out.println("exit");
+                exitPressed = true;
             }
         });
         table.add(exitButton).expandX().padRight(didFail ? 325 : 200);
@@ -515,7 +520,7 @@ public class WorldController implements Screen, ContactListener {
 //        }
 
         // Now it is time to maybe switch screens.
-        if (input.didExit()) {
+        if (input.didExit() || exitPressed) {
             pause();
             listener.exitScreen(this, EXIT_QUIT);
             return false;
@@ -523,6 +528,11 @@ public class WorldController implements Screen, ContactListener {
             pause();
             nextPressed = false;
             listener.exitScreen(this, EXIT_NEXT);
+            return false;
+        } else if (input.didSettings() || settingsPressed)  {
+            pause();
+            settingsPressed = false;
+            listener.exitScreen(this, EXIT_SETTINGS);
             return false;
         }
 
@@ -537,12 +547,7 @@ public class WorldController implements Screen, ContactListener {
             pause();
             listener.exitScreen(this, EXIT_PREV);
             return false;
-        } else if (input.didSettings())  {
-            pause();
-            listener.exitScreen(this, EXIT_SETTINGS);
-            return false;
-        }
-        else if (countdown > 0) {
+        } else if (countdown > 0) {
             countdown--;
         } else if (countdown == 0) {
             if (failed) {
@@ -1110,6 +1115,7 @@ public class WorldController implements Screen, ContactListener {
         playerScore = 0;
         skin = new Skin();
         transitionBuilt = false;
+        settingsPressed = false;
         SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
 

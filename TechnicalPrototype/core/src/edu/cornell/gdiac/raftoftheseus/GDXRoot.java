@@ -58,7 +58,6 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	/** Exit code for displaying playing screen */
 	private static final int DISPLAY_WORLD = 6;
 
-
 	/**
 	 * Creates a new game from the configuration settings.
 	 *
@@ -79,6 +78,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
 		settings = new SettingsMode(canvas);
+		settings.setExitMenu(DISPLAY_MENU);
 		constantsLoaded = false;
 		setScreen(loading);
 		loading.setScreenListener(this);
@@ -147,21 +147,25 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			settings.setPreviousMode(DISPLAY_WORLD);
 			settings.resetPressedState();
 			settings.populate(directory);
+			settings.setIsBackMenu(true);
 			setScreen(settings);
 		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
 			settings.setScreenListener(this);
 			settings.setPreviousMode(DISPLAY_MENU);
 			settings.resetPressedState();
 			settings.populate(directory);
+			settings.setIsBackMenu(false);
 			setScreen(settings);
 		} else if (screen == settings) {
+			settings.resetPressedState();
+			menu.resetSettingsState();
 			switch (exitCode) {
 				case DISPLAY_START:
 					// TODO
 					break;
 				case DISPLAY_MENU:
+					SoundController.getInstance().haltSounds();
 					menu.setScreenListener(this);
-					menu.resetPressedState();
 					setScreen(menu);
 					break;
 				case DISPLAY_WORLD:
@@ -170,7 +174,6 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 					setScreen(playing);
 					break;
 			}
-
 		} else if (screen == loading) {
 			directory = loading.getAssets();
 			// Stop load sounds and CONSTANTS
@@ -190,13 +193,14 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			setScreen(menu);
 			loading.dispose();
 			loading = null;
-		} else if (screen == playing){
+		} else if (screen == playing) {
 			SoundController.getInstance().haltSounds();
 			menu.setScreenListener(this);
 			setScreen(menu);
 		} else if (screen == menu) {
 			SoundController.getInstance().haltSounds();
 			menu.resetPressedState();
+			menu.resetSettingsState();
 			// Load level
 			playing.setScreenListener(this);
 			playing.gatherAssets(directory);

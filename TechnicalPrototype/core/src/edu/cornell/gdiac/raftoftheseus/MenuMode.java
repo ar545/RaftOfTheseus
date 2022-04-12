@@ -91,8 +91,10 @@ public class MenuMode implements Screen {
     private boolean active;
     /** Level count **/
     private static int LEVEL_COUNT = 9;
-    /** Exit code for opening settings */
-    public static final int EXIT_SETTINGS = 8;
+    /** Exit code for displaying settings */
+    public static int EXIT_SETTINGS = 8;
+    /** Whether the settings button was pressed on the main menu */
+    private boolean settingsPressed;
 
     /**
      * Creates a MenuMode with the default size and position.
@@ -106,12 +108,13 @@ public class MenuMode implements Screen {
         active = true;
         isLevelPressed = false;
         selectedLevel = -1;
+        settingsPressed = false;
 
         currentScreen = MenuScreen.TITLE;
     }
 
     /**
-     * Populates this mode given the directory.
+     * Populates this mode from the given the directory.
      *
      * @param directory Reference to the asset directory.
      */
@@ -192,12 +195,12 @@ public class MenuMode implements Screen {
         InputController input = InputController.getInstance();
         input.readInput();
         if (active) {
-            if (InputController.getInstance().didSettings()) {
+            draw();
+            if (input.didSettings() || settingsPressed) {
                 listener.exitScreen(this, EXIT_SETTINGS);
             } else if (isReady() && listener != null) {
                 listener.exitScreen(this, 0);
             }
-            draw();
         }
     }
 
@@ -235,7 +238,7 @@ public class MenuMode implements Screen {
                 optionsButton.addListener(new ClickListener(){
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        changeScreenTo(MenuScreen.SETTINGS);
+                        settingsPressed = true;
                     }
                 });
                 creditsButton.addListener(new ClickListener(){
@@ -357,6 +360,9 @@ public class MenuMode implements Screen {
 
     /** Reset the level pressed state */
     public void resetPressedState(){ isLevelPressed = false; }
+
+    /** Reset the settings pressed state */
+    public void resetSettingsState() { settingsPressed = false; }
 
     /**
      * Called when the Screen is paused.
