@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -287,8 +289,29 @@ public class MenuMode implements Screen {
                 menuTable.add(backButton);
                 break;
             case CREDITS:
-                // TODO add credits screen
-                System.out.println("Got to credits screen");
+                // TODO change font & structure
+                // BitmapFont font = new BitmapFont(Gdx.files.internal("Calibri.fnt"),Gdx.files.internal("Calibri.png"),false);
+                menuTable.add("CREDITS");
+                menuTable.row();
+                menuTable.add("Programmers");
+                menuTable.add("Designers");
+                menuTable.row();
+                menuTable.add("Amy Huang");
+                menuTable.add("Gloria Shi");
+                menuTable.row();
+                menuTable.add("Demian Yutin");
+                menuTable.add("Noah Braun");
+                menuTable.row();
+                menuTable.add("Howard Fu");
+                menuTable.add("Spencer Pettee");
+                menuTable.row();
+                menuTable.add("Jaden O'Brien");
+                menuTable.row();
+                menuTable.add("Jason Tung");
+                menuTable.row();
+                menuTable.add("Leo Zhao");
+                menuTable.row();
+                // System.out.println("Got to credits screen");
                 menuTable.add(backButton);
                 break;
         }
