@@ -42,6 +42,8 @@ public class MenuMode implements Screen {
 
     /** Background texture for menu */
     private Texture menuBackground;
+    /** Font for drawing text */
+    private BitmapFont displayFont;
     /** Background texture for menu */
     private Texture levelSelectBackground;
     /** Title texture */
@@ -122,6 +124,7 @@ public class MenuMode implements Screen {
      */
     public void populate(AssetDirectory directory) {
         menuBackground = directory.getEntry("menu_background", Texture.class);
+        displayFont = directory.getEntry( "diogenes", BitmapFont.class);
         levelSelectBackground = directory.getEntry("level_background", Texture.class);
         levels = new Texture[LEVEL_COUNT];
         for (int i = 0; i < LEVEL_COUNT; i++) {
@@ -224,10 +227,18 @@ public class MenuMode implements Screen {
         switch(currentScreen) {
             case TITLE:
                 //Create buttons
-                TextButton playButton = new TextButton("Play", skin);
-                TextButton optionsButton = new TextButton("Options", skin);
-                TextButton creditsButton = new TextButton("Credits", skin);
-                TextButton exitButton = new TextButton("Exit", skin);
+                skin.add("font", displayFont);
+                TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+                buttonStyle.font = skin.getFont("font");
+
+                TextButton playButton = new TextButton("Play", buttonStyle);
+                playButton.getLabel().setFontScale(0.5f);
+                TextButton optionsButton = new TextButton("Options", buttonStyle);
+                optionsButton.getLabel().setFontScale(0.5f);
+                TextButton creditsButton = new TextButton("Credits", buttonStyle);
+                creditsButton.getLabel().setFontScale(0.5f);
+                TextButton exitButton = new TextButton("Exit", buttonStyle);
+                exitButton.getLabel().setFontScale(0.5f);
 
                 //Add listeners to buttons
                 playButton.addListener(new ClickListener(){
@@ -256,13 +267,13 @@ public class MenuMode implements Screen {
                 });
 
                 //Add buttons to table
-                menuTable.add(playButton);
+                menuTable.add(playButton).padTop(450).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
-                menuTable.add(optionsButton);
+                menuTable.add(optionsButton).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
-                menuTable.add(creditsButton);
+                menuTable.add(creditsButton).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
-                menuTable.add(exitButton);
+                menuTable.add(exitButton).expandX().align(Align.left).padLeft(100);
                 break;
             case LEVEL_SELECT:
                 //Create buttons
