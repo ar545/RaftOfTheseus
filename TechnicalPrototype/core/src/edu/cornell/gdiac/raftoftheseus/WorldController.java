@@ -305,7 +305,7 @@ public class WorldController implements Screen, ContactListener {
         if (!transitionBuilt) {
             transitionBuilt = true;
             if (complete && !failed) {
-                buildTransitionScreen(successBackgrounds[playerScore], false);
+                buildTransitionScreen(successBackgrounds[Math.min(playerScore, successBackgrounds.length-1)], false);
             } else {
                 buildTransitionScreen(failedBackground, true);
             }
