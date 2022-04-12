@@ -150,7 +150,12 @@ public class WorldController implements Screen, ContactListener {
         canvas.begin(cameraTransform);
         drawMovingBackground(pixelsPerUnit);
         for(GameObject obj : levelModel.getObjects()) {
-            obj.draw(canvas);
+            if (obj.getType() == GameObject.ObjectType.ENEMY) {
+                obj.draw(canvas, ((Enemy)obj).isEnraged() ? Color.RED : Color.WHITE);
+            }
+            else {
+                obj.draw(canvas);
+            }
         }
         canvas.end();
 

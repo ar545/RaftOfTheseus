@@ -153,6 +153,18 @@ public abstract class GameObject extends SimpleObstacle {
         }
     }
 
+    /**
+     * Draws the texture physics object.
+     *
+     * @param canvas Drawing context
+     */
+    public void draw(GameCanvas canvas, Color color) {
+        if (texture != null) {
+            canvas.draw(texture, color, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+                    getAngle(), textureScale.x, textureScale.y);
+        }
+    }
+
 
     /**
      * @return the most recent aka cached position

@@ -113,6 +113,7 @@ public class LevelModel {
     private Texture enemyTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
+    private GameObject[][] obstacles;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -134,6 +135,14 @@ public class LevelModel {
     /** Constructor call for this singleton class */
     public LevelModel(){}
 
+    public int cols(){
+        return map_size.x;
+    }
+
+    public int rows(){
+        return map_size.y;
+    }
+
     /**
      * Returns true if the object is in bounds.
      * This assertion is useful for debugging the physics.
@@ -146,9 +155,21 @@ public class LevelModel {
         return horiz && vert;
     }
 
+    public boolean inBounds(int col, int row) {
+        boolean vert = (0<=row && row<rows());
+        boolean horiz = (0<=col && col<cols());
+        return horiz && vert;
+    }
+
+
     /** @return the bounds of this world in rectangle */
     public Rectangle bounds() {
         return bounds;
+    }
+
+    /** @return the currents */
+    public GameObject[][] obstacles() {
+        return obstacles;
     }
 
     /** @return the height and width of bounds only
@@ -200,6 +221,41 @@ public class LevelModel {
         enemies.add(obj);
     }
 
+    /** Getter for how long each tile is **/
+    public float getTileSize() {
+        return GRID_SIZE.x;
+    }
+
+    /**
+     * Returns the board cell index for a screen position.
+     * <p>
+     * While all positions are 2-dimensional, the dimensions to
+     * the board are symmetric. This allows us to use the same
+     * method to convert an x coordinate or a y coordinate to
+     * a cell index.
+     *
+     * @param f Screen position coordinate
+     * @return the board cell index for a screen position.
+     */
+    public int screenToBoard(float f) {
+        return (int) (f / (getTileSize()));
+    }
+
+    /**
+     * Returns the screen position coordinate for a board cell index.
+     * <p>
+     * While all positions are 2-dimensional, the dimensions to
+     * the board are symmetric. This allows us to use the same
+     * method to convert an x coordinate or a y coordinate to
+     * a cell index.
+     *
+     * @param n Tile cell index
+     * @return the screen position coordinate for a board cell index.
+     */
+    public float boardToScreen(int n) {
+        return (float) (n + 0.5f) * (getTileSize());
+    }
+
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
     /**
@@ -247,6 +303,7 @@ public class LevelModel {
             // Read in the grid map size
             map_size.x = level_data.getInt("width", DEFAULT_GRID_COL);
             map_size.y = level_data.getInt("height", DEFAULT_GRID_ROW);
+            obstacles = new GameObject[cols()][rows()];
 
             // Reset boundary of world
             setBound();
@@ -393,6 +450,8 @@ public class LevelModel {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp);
         this_rock.setTexture(rockTexture);
+//        System.out.println(map_size);
+        obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
 
@@ -401,7 +460,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addEnemy(int row, int col, int enemy_type) {
         computePosition(col, row);
-        Enemy this_enemy = new Enemy(compute_temp, null);
+        Enemy this_enemy = new Enemy(compute_temp, null, this);
         this_enemy.setTexture(enemyTexture);
         addEnemyObject(this_enemy);
     }
@@ -413,6 +472,7 @@ public class LevelModel {
         computePosition(col, row);
         Treasure this_treasure = new Treasure(compute_temp);
         this_treasure.setTexture(treasureTexture);
+        obstacles[col][row] = this_treasure;
         addObject(this_treasure);
     }
 
@@ -460,6 +520,7 @@ public class LevelModel {
         computePosition(col, row);
         Current this_current = new Current(compute_temp, direction);
         this_current.setTexture(currentTexture);
+        obstacles[col][row] = this_current;
         addCurrentObject(this_current);
     }
 
