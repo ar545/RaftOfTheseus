@@ -508,11 +508,6 @@ public class WorldController implements Screen, ContactListener {
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
 
-        // Handle resets
-        if (input.didReset()) {
-            reset();
-        }
-
 //        if (listener == null) {
 //            return true;
 //        }
@@ -524,11 +519,17 @@ public class WorldController implements Screen, ContactListener {
             return false;
         } else if (input.didNext() || nextPressed) {
             pause();
+            nextPressed = false;
             listener.exitScreen(this, EXIT_NEXT);
             return false;
         }
 
         if ((complete && !failed) || failed) { return false; }
+
+        // Handle resets
+        if (input.didReset()) {
+            reset();
+        }
 
         if (input.didPrevious()) {
             pause();
@@ -1097,7 +1098,6 @@ public class WorldController implements Screen, ContactListener {
         emptyLevel();
         levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
-        System.out.println("HERE HERE HERE");
         stage.clear();
         table = new Table();
         playerScore = 0;
