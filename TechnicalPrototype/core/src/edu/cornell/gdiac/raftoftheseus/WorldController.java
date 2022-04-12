@@ -205,16 +205,18 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-//<<<<<<< HEAD
-//        if(canvas == null){ return; } // return if no canvas pointer
-//=======
+
         // return if no canvas pointer
         if(canvas == null)
             return;
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
-//>>>>>>> main
+        // update animations
+        float time = (System.currentTimeMillis() - startTime)/1000.0f;
+        int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
+        levelModel.getPlayer().animationFrame = frame % 19; // TODO don't hardcode number of frames in animation
+
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 

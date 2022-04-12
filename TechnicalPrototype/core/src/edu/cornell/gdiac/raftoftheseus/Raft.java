@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
@@ -7,6 +8,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
 
 /**
@@ -47,6 +49,9 @@ public class Raft extends CapsuleObstacle {
     private final float maxSpeed = 20f;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
+
+    private FilmStrip texture;
+    public int animationFrame = 0;
 
     // METHODS
     /**
@@ -158,12 +163,25 @@ public class Raft extends CapsuleObstacle {
         return health / MOVE_COST;
     }
 
-    @Override
-    public void setTexture(Texture texture) {
-        super.setTexture(texture);
-        float w = getWidth()*drawScale.x / texture.getWidth();
-        textureScale.set(w, w);
-        origin.set(texture.getWidth()/2.0f, texture.getWidth()/2.0f * getHeight()/getWidth());
+    public void setTexture(FilmStrip value) {
+        texture = value;
+        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
+
+        float w = getWidth()*drawScale.x / texture.getRegionWidth();
+        textureScale = new Vector2(w, w);
+        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f * getHeight()/getWidth());
+    }
+
+    public void draw(GameCanvas canvas) {
+        draw(canvas, Color.WHITE);
+    }
+
+    public void draw(GameCanvas canvas, Color color) {
+        if (texture != null) {
+            texture.setFrame(animationFrame);
+            canvas.draw(texture, color, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+                    getAngle(), textureScale.x, textureScale.y);
+        }
     }
 
     @Override

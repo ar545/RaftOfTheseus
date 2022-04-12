@@ -150,10 +150,7 @@ public abstract class GameObject extends SimpleObstacle {
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
-        if (texture != null) {
-            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
-                    getAngle(), textureScale.x, textureScale.y);
-        }
+        draw(canvas, Color.WHITE);
     }
 
     /**
