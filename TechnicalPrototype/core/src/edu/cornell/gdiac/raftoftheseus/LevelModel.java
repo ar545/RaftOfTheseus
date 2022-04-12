@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
 public class LevelModel {
@@ -113,7 +114,7 @@ public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
-    private Texture raftTexture;
+    private FilmStrip raftTexture;
     /** Texture for the ocean tiles */
     private Texture oceanTexture;
     /** Texture for wood pieces that represent single pile of log */
@@ -615,7 +616,7 @@ public class LevelModel {
     /** This gather the assets required for initializing the objects
      * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
-        raftTexture = directory.getEntry("raft", Texture.class);
+        raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 4, 5, 19);// TODO: use data-driven design for rows/cols/size
         oceanTexture = directory.getEntry("water_tile", Texture.class);
         woodTexture = directory.getEntry("wood", Texture.class);
         doubleTexture = directory.getEntry("double", Texture.class);

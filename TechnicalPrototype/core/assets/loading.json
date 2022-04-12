@@ -1,7 +1,7 @@
 {
 	"textures": {
         "background": {
-          "file":     "images/loading_2.png",
+          "file":     "images/loading_3.png",
           "minFilter": "linear",
           "magFilter": "linear"
         },

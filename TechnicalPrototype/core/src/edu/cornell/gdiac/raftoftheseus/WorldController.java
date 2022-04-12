@@ -205,16 +205,18 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-//<<<<<<< HEAD
-//        if(canvas == null){ return; } // return if no canvas pointer
-//=======
+
         // return if no canvas pointer
         if(canvas == null)
             return;
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
-//>>>>>>> main
+        // update animations
+        float time = (System.currentTimeMillis() - startTime)/1000.0f;
+        int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
+        levelModel.getPlayer().animationFrame = frame % 19; // TODO don't hardcode number of frames in animation
+
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
@@ -423,7 +425,7 @@ public class WorldController implements Screen, ContactListener {
         Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
         float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
-        float y_origin = (player_position.y);
+        float y_origin = (player_position.y + 20);
         canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
@@ -1115,6 +1117,7 @@ public class WorldController implements Screen, ContactListener {
     public void setLevel(int level_int){
         level_id = level_int;
         JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
+        System.out.println("Loaded level "+level_int);
         emptyLevel();
         levelModel.loadLevel(level_int, level_data);
         prepareEnemy();

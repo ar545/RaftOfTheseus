@@ -60,12 +60,12 @@ public abstract class GameObject extends SimpleObstacle {
     /** Collision filtering masks */
     protected final static short MASK_PLAYER = CATEGORY_ENEMY | CATEGORY_ENEMY_BULLET | CATEGORY_CURRENT
             | CATEGORY_TERRAIN | CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE;
-    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN;
+    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY ;//| CATEGORY_TERRAIN;
     protected final static short MASK_ENEMY = CATEGORY_PLAYER | CATEGORY_PLAYER_BULLET | CATEGORY_CURRENT
             | CATEGORY_TERRAIN | CATEGORY_PUSHABLE;
     protected final static short MASK_ENEMY_BULLET = CATEGORY_PLAYER | CATEGORY_TERRAIN;
     protected final static short MASK_CURRENT = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PUSHABLE;
-    protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PLAYER_BULLET
+    protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY //| CATEGORY_PLAYER_BULLET
             | CATEGORY_ENEMY_BULLET | CATEGORY_PUSHABLE;
     protected final static short MASK_WOOD = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN;
     protected final static short MASK_TREASURE = CATEGORY_PLAYER;// treasure isn't pushed around by anything
@@ -150,10 +150,7 @@ public abstract class GameObject extends SimpleObstacle {
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
-        if (texture != null) {
-            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
-                    getAngle(), textureScale.x, textureScale.y);
-        }
+        draw(canvas, Color.WHITE);
     }
 
     /**
