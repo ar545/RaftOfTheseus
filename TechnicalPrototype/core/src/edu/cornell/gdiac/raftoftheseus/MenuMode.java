@@ -46,6 +46,8 @@ public class MenuMode implements Screen {
     private BitmapFont displayFont;
     /** Background texture for menu */
     private Texture levelSelectBackground;
+    /** Background texture for credits */
+    private Texture seaBackground;
     /** Title texture */
     private Texture title;
     /** Texture for the levels to select. */
@@ -125,6 +127,7 @@ public class MenuMode implements Screen {
     public void populate(AssetDirectory directory) {
         menuBackground = directory.getEntry("menu_background", Texture.class);
         displayFont = directory.getEntry( "diogenes", BitmapFont.class);
+        seaBackground = directory.getEntry("sea_background", Texture.class);
         levelSelectBackground = directory.getEntry("level_background", Texture.class);
         levels = new Texture[LEVEL_COUNT];
         for (int i = 0; i < LEVEL_COUNT; i++) {
@@ -185,7 +188,7 @@ public class MenuMode implements Screen {
 
         canvas.begin();
         canvas.clear();
-        canvas.drawBackground(currentScreen == MenuScreen.TITLE ? menuBackground : levelSelectBackground, true);
+        canvas.drawBackground(currentScreen == MenuScreen.TITLE ? menuBackground : (currentScreen == MenuScreen.CREDITS) ? seaBackground : levelSelectBackground, true);
         canvas.end();
 
         stage.act();
@@ -311,26 +314,66 @@ public class MenuMode implements Screen {
                 break;
             case CREDITS:
                 // TODO change font & structure
+                skin.add("font", displayFont);
+                Label.LabelStyle textStyle = new Label.LabelStyle();
+                textStyle.font = skin.getFont("font");
+                textStyle.fontColor = Color.WHITE;
+
                 // BitmapFont font = new BitmapFont(Gdx.files.internal("Calibri.fnt"),Gdx.files.internal("Calibri.png"),false);
-                menuTable.add("CREDITS");
+                Label creditsLabel = new Label("CREDITS", textStyle);
+                creditsLabel.setFontScale(0.75f);
+                menuTable.add(creditsLabel);
                 menuTable.row();
-                menuTable.add("Programmers");
-                menuTable.add("Designers");
+
+                Label programmersLabel = new Label("PROGRAMMERS", textStyle);
+                programmersLabel.setFontScale(0.55f);
+                menuTable.add(programmersLabel).expandX().align(Align.left).padLeft(100);
+
+                Label designersLabel = new Label("DESIGNERS", textStyle);
+                designersLabel.setFontScale(0.55f);
+                menuTable.add(designersLabel).expandX().align(Align.right).padRight(100);
                 menuTable.row();
-                menuTable.add("Amy Huang");
-                menuTable.add("Gloria Shi");
+
+                Label amyLabel = new Label("AMY HUANG", textStyle);
+                amyLabel.setFontScale(0.35f);
+                menuTable.add(amyLabel);
+
+                Label gloriaLabel = new Label("GLORIA SHI", textStyle);
+                gloriaLabel.setFontScale(0.35f);
+                menuTable.add(gloriaLabel);
                 menuTable.row();
-                menuTable.add("Demian Yutin");
-                menuTable.add("Noah Braun");
+
+                Label demian = new Label("DEMIAN YUTIN", textStyle);
+                demian.setFontScale(0.35f);
+                menuTable.add(demian);
+
+                Label noah = new Label("NOAH BRAUN", textStyle);
+                noah.setFontScale(0.35f);
+                menuTable.add(noah);
                 menuTable.row();
-                menuTable.add("Howard Fu");
-                menuTable.add("Spencer Pettee");
+
+                Label howard = new Label("HOWARD FU", textStyle);
+                howard.setFontScale(0.35f);
+                menuTable.add(howard);
+
+                Label spencer = new Label("SPENCEER PETTEE", textStyle);
+                spencer.setFontScale(0.35f);
+                menuTable.add(spencer);
                 menuTable.row();
-                menuTable.add("Jaden O'Brien");
+
+                Label jaden = new Label("JADEN O'BRIEN", textStyle);
+                jaden.setFontScale(0.35f);
+                menuTable.add(jaden);
                 menuTable.row();
-                menuTable.add("Jason Tung");
+
+                Label jason = new Label("JASON TUNG", textStyle);
+                jason.setFontScale(0.35f);
+                menuTable.add(jason);
                 menuTable.row();
-                menuTable.add("Leo Zhao");
+
+                Label leo = new Label("LEO ZHAO", textStyle);
+                leo.setFontScale(0.35f);
+                menuTable.add(leo);
                 menuTable.row();
                 // System.out.println("Got to credits screen");
                 menuTable.add(backButton);
