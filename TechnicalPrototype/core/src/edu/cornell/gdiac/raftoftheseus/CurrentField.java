@@ -65,12 +65,18 @@ public class CurrentField implements FlowField<Vector2> {
         float ry = (row + 1) * resolution;
         temp_cpy = field[column][row].cpy();
         temp_sum.add(temp_cpy.scl(rx - position.x).scl(ry - position.y));
-        temp_cpy = field[column + 1][row].cpy();
-        temp_sum.add(temp_cpy.scl(position.x - lx).scl(ry - position.y));
-        temp_cpy = field[column][row + 1].cpy();
-        temp_sum.add(temp_cpy.scl(rx - position.x).scl(position.y - ly));
-        temp_cpy = field[column + 1][row + 1].cpy();
-        temp_sum.add(temp_cpy.scl(position.x - lx).scl(position.y - ly));
+        if(column + 1 < columns){
+            temp_cpy = field[column + 1][row].cpy();
+            temp_sum.add(temp_cpy.scl(position.x - lx).scl(ry - position.y));
+        }
+        if(row + 1 < rows){
+            temp_cpy = field[column][row + 1].cpy();
+            temp_sum.add(temp_cpy.scl(rx - position.x).scl(position.y - ly));
+        }
+        if((column + 1 < columns) && (row + 1 < rows)){
+            temp_cpy = field[column + 1][row + 1].cpy();
+            temp_sum.add(temp_cpy.scl(position.x - lx).scl(position.y - ly));
+        }
         temp_sum.scl(rx - lx).scl(ry - ly);
         o.getPosition().add(temp_sum);
         temp_sum.setZero();
