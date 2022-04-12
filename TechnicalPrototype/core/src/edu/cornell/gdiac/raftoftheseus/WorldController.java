@@ -425,7 +425,7 @@ public class WorldController implements Screen, ContactListener {
         Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
         float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
-        float y_origin = (player_position.y);
+        float y_origin = (player_position.y + 20);
         canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
