@@ -881,8 +881,10 @@ public class WorldController implements Screen, ContactListener {
             // Check for player collision with treasure (star+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
                 ResolveCollision((Raft)bd1, (Treasure) bd2);
+                SoundController.getInstance().playSFX("chest_collect", false);
             } else if(bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
                 ResolveCollision((Raft)bd2, (Treasure) bd1);
+                SoundController.getInstance().playSFX("chest_collect", false);
             }
             // Check for win condition
             else if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
@@ -1032,10 +1034,6 @@ public class WorldController implements Screen, ContactListener {
         if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
                 || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
             SoundController.getInstance().playSFX("wood_pickup", false);
-        }
-        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.TREASURE
-                || s1 == GameObject.ObjectType.TREASURE && s2 == GameObject.ObjectType.RAFT) {
-            SoundController.getInstance().playSFX("chest_collect", false);
         }
     }
 
