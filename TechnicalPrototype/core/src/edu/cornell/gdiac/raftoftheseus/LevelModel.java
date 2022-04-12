@@ -130,7 +130,7 @@ public class LevelModel {
     /** Texture for current placeholder: texture alas in future */
     private Texture currentTexture;
     /** Texture for current placeholder: texture alas in future */
-    private Texture enemyTexture;
+    private FilmStrip enemyTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture bulletTexture;
     /** Texture for wall */
@@ -624,7 +624,7 @@ public class LevelModel {
         rockTexture = directory.getEntry("rock", Texture.class);
         treasureTexture = directory.getEntry("treasure", Texture.class);
         currentTexture = directory.getEntry("current", Texture.class);
-        enemyTexture = directory.getEntry("enemy", Texture.class);
+        enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         bulletTexture = directory.getEntry("earth", Texture.class);
         Bullet.setText(bulletTexture);

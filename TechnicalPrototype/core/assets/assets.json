@@ -31,7 +31,7 @@
       "target":     "images/Obj_Island.png",
       "bullet": "images/Obj_Spear_Aerial.png",
       "current": "images/current_square.png",
-      "enemy":     "images/enemy_2.png",
+      "enemy":     "images/Obj_Shark_Combined.png",
       "water_texture":     "images/water_texture.png",
       "level_0": "images/level_0.png",
       "level_1": "images/level_1.png",
