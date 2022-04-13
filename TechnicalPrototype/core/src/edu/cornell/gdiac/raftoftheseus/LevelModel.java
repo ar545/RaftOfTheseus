@@ -1,15 +1,22 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import box2dLight.RayHandler;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.lights.LightSource;
+import edu.cornell.gdiac.raftoftheseus.lights.PointSource;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
@@ -91,8 +98,8 @@ public class LevelModel {
     private Wall this_wall;
     /** The vertices of the wall */
     private float[] polygonVertices;
-    /** Reference to the game assets directory */
-    private AssetDirectory directory;
+//    /** Reference to the game assets directory */
+//    private AssetDirectory directory;
     /** The read-in level data */
     private JsonValue level_data;
     /** The Box2D world */
@@ -115,6 +122,12 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
+    /** The light source of this level */
+    private LightSource light;
+    /** The rayhandler for storing lights, and drawing them (SIGH) */
+    protected RayHandler rayhandler;
+    /** The camera defining the RayHandler view; scale is in physics coordinates */
+    protected OrthographicCamera raycamera;
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -137,11 +150,15 @@ public class LevelModel {
     private FilmStrip enemyTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture bulletTexture;
+    /** Json information for light settings */
+    private JsonValue lightSettings;
     /** Texture for wall */
     private TextureRegion earthTile;
     private GameObject[][] obstacles;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
+    /** Constructor call for this singleton class */
+    public LevelModel(){}
     /** get the reference to the player avatar */
     public Raft getPlayer() { return raft; }
     /** get a reference to the goal */
@@ -150,26 +167,28 @@ public class LevelModel {
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
     public PooledList<Shark> getEnemies() { return enemies; }
-    public PooledList<Hydra> getHydras() { return hydras; }
-    public PooledList<Siren> getSirens() { return sirens; }
-    /***/
+    /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
-    /** set directory */
-    protected void setDirectory(AssetDirectory directory) { this.directory = directory; }
+//    /** set directory */
+//    protected void setDirectory(AssetDirectory directory) { this.directory = directory; }
+    /** @return the bounds of this world in rectangle */
+    public Rectangle bounds() {return bounds;}
+    /** @return the currents */
+    public GameObject[][] obstacles() {return obstacles;}
+    /** The number of columns in this map-grid */
+    public int cols(){return map_size.x;}
+    /** The number of rows in this map-grid */
+    public int rows(){return map_size.y;}
+    /** Getter for how long each tile is **/
+    public float getTileSize() { return DEFAULT_GRID_EDGE_LENGTH; }
+
     /** Get boundary wall vertices */
     public float[] getWallVertices() { return polygonVertices; }
     /** Get boundary wall drawscale */
     public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
-    /** Constructor call for this singleton class */
-    public LevelModel(){}
-
-    public int cols(){
-        return map_size.x;
-    }
-
-    public int rows(){
-        return map_size.y;
-    }
+    /** TODO: getter for new enemy lists */
+    public PooledList<Hydra> getHydras() { return hydras; }
+    public PooledList<Siren> getSirens() { return sirens; }
 
     /**
      * Returns true if the object is in bounds.
@@ -183,29 +202,17 @@ public class LevelModel {
         return horiz && vert;
     }
 
+    /** @return if the given coordinate on grid is in bound. */
     public boolean inBounds(int col, int row) {
         boolean vert = (0<=row && row<rows());
         boolean horiz = (0<=col && col<cols());
         return horiz && vert;
     }
 
-
-    /** @return the bounds of this world in rectangle */
-    public Rectangle bounds() {
-        return bounds;
-    }
-
-    /** @return the currents */
-    public GameObject[][] obstacles() {
-        return obstacles;
-    }
-
     /** @return the height and width of bounds only
      * width: GRID_SIZE.x * map_size.x
      * height: GRID_SIZE.y * map_size.y */
-    public Vector2 boundsVector2(){
-        return new Vector2(bounds.width, bounds.height);
-    }
+    public Vector2 boundsVector2(){ return new Vector2(bounds.width, bounds.height); }
 
     /** @return the height and width of bounds only
      * x = y = - DEFAULT_BOUNDARY;
@@ -256,11 +263,6 @@ public class LevelModel {
         objects.add(obj);
         obj.activatePhysics(world);
         enemies.add(obj);
-    }
-
-    /** Getter for how long each tile is **/
-    public float getTileSize() {
-        return GRID_SIZE.x;
     }
 
     /**
@@ -377,7 +379,7 @@ public class LevelModel {
      * Notice that the walls are not included in this boundary, i.e. all walls are out of bounds
      * To include the walls in the bounds, expand the size of rectangle by DEFAULT_BOUNDARY on each side */
     private void setBound() {
-        this.bounds = new Rectangle(0,0,GRID_SIZE.x * map_size.x ,GRID_SIZE.y * map_size.y );
+        this.bounds = new Rectangle(0,0,GRID_SIZE.x * cols() ,GRID_SIZE.y * rows() );
     }
 
     /**
@@ -421,10 +423,10 @@ public class LevelModel {
         JsonValue enemies = layers.get(LAYER_ENE);
 
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
-        for(int row_reversed = 0; row_reversed < map_size.y; row_reversed ++){
-            int row = map_size.y - row_reversed - 1;
-            for(int col = 0; col < map_size.x; col ++){
-                int index = row_reversed * map_size.x + col;
+        for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
+            int row = rows() - row_reversed - 1;
+            for(int col = 0; col < cols(); col ++){
+                int index = row_reversed * cols() + col;
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 populateEnemies(row, col, enemies.get("data").getInt(index));
@@ -519,6 +521,8 @@ public class LevelModel {
         }
     }
 
+    /*=*=*=*=*=*=*=*=*=* Level population: add objects *=*=*=*=*=*=*=*=*=*/
+
     /** Add Rock Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position */
@@ -586,7 +590,20 @@ public class LevelModel {
         this_raft.setTexture(raftTexture);
         addObject(this_raft);
         raft = this_raft;
+        prepareLights(this_raft);
     }
+
+    /** Prepare the box2d light settings once raft is ready */
+    private void prepareLights(Raft r){
+        initLighting(lightSettings.get("init")); // Box2d lights initialization
+        light = createPointLights(lightSettings.get("point")); // Box2d lights information
+        attachLights(r);
+    }
+
+    /** Render the shadow effects. This function should be called after all objects are drawn,
+     * but before any health-bar, map, or de-bug information is drawn.
+     * Precondition and Post-condition: canvas is closed */
+    public void renderLights(){ if (rayhandler != null) { rayhandler.render(); } }
 
     /** Add wood Objects to the world, using the Json value for goal
      * @param row the row gird position
@@ -630,6 +647,8 @@ public class LevelModel {
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE.y;
     }
 
+    /*=*=*=*=*=*=*=*=*=* Texture assets and box2d lighting *=*=*=*=*=*=*=*=*=*/
+
     /** This gather the assets required for initializing the objects
      * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
@@ -645,7 +664,78 @@ public class LevelModel {
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         bulletTexture = directory.getEntry("earth", Texture.class);
         Bullet.setText(bulletTexture);
+        lightSettings = directory.getEntry("lights", JsonValue.class);
     }
+
+    /**
+     * Creates the points lights for the level
+     *
+     * Point lights show light in all direction.  We treat them differently from cone
+     * lights because they have different defining attributes.  However, all lights are
+     * added to the lights array.  This allows us to cycle through both the point lights
+     * and the cone lights with activateNextLight().
+     *
+     * All lights are deactivated initially.  We only want one active light at a time.
+     *
+     * @param  lightJson	the JSON tree defining the list of point lights
+     */
+    private PointSource createPointLights(JsonValue lightJson) {
+        float[] color = lightJson.get("color").asFloatArray();
+        float[] pos = lightJson.get("pos").asFloatArray();
+        float dist  = lightJson.getFloat("distance");
+        int rays = lightJson.getInt("rays");
+
+        PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
+        point.setColor(color[0],color[1],color[2],color[3]);
+        point.setSoft(lightJson.getBoolean("soft"));
+
+        // Create a filter to exclude see through items
+        Filter f = new Filter();
+//        f.maskBits = bitStringToComplement(lightJson.getString("excludeBits"));
+        point.setContactFilter(f);
+        point.setActive(false); // TURN ON LATER
+        return point;
+    }
+
+    /**
+     * Creates the ambient lighting for the level
+     *
+     * This is the amount of lighting that the level has without any light sources.
+     * However, if activeLight is -1, this will be ignored and the level will be
+     * completely visible.
+     *
+     * @param  lightJson	the JSON tree defining the light
+     */
+    private void initLighting(JsonValue lightJson) {
+        raycamera = new OrthographicCamera(bounds.width,bounds.height);
+        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
+        raycamera.update();
+
+        RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
+        RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
+        rayhandler = new RayHandler(world, Gdx.graphics.getWidth(), Gdx.graphics.getWidth());
+        rayhandler.setCombinedMatrix(raycamera);
+
+        float[] color = lightJson.get("color").asFloatArray();
+        rayhandler.setAmbientLight(color[0], color[0], color[0], color[0]);
+        int blur = lightJson.getInt("blur");
+        rayhandler.setBlur(blur > 0);
+        rayhandler.setBlurNum(blur);
+    }
+
+    /**
+     * Attaches all lights to the avatar.
+     * Lights are offset form the center of the avatar according to the initial position.
+     * By default, a light ignores the body.  This means that putting the light inside
+     * of these bodies fixtures will not block the light.  However, if a light source is
+     * offset outside the bodies fixtures, then they will cast a shadow.
+     * The activeLight is set to be the first element of lights, assuming it is not empty.
+     */
+    public void attachLights(Raft avatar) {
+        light.attachToBody(avatar.getBody(), light.getX(), light.getY(), light.getDirection());
+    }
+
+    /*=*=*=*=*=*=*=*=*=* New-added current and wood methods *=*=*=*=*=*=*=*=*=*/
 
     /** Add wood Objects to random location in the world */
     protected void addRandomWood() {
@@ -655,7 +745,7 @@ public class LevelModel {
     }
 
     public Texture recalculateFlowMap() {
-        Pixmap pix = new Pixmap(map_size.x, map_size.y,  Pixmap.Format.RGBA8888);
+        Pixmap pix = new Pixmap(cols(), rows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
         for (GameObject o : getObjects()) {

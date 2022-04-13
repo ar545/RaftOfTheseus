@@ -231,6 +231,9 @@ public class WorldController implements Screen, ContactListener {
             }
         }
         canvas.end();
+
+        levelModel.renderLights(); // New Added: Draw the light effects!
+
         // reset camera transform (because health bar isn't in game units)
         canvas.begin();
         Vector2 playerPosOnScreen = levelModel.getPlayer().getPosition();
@@ -485,8 +488,7 @@ public class WorldController implements Screen, ContactListener {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
 
-        levelModel.setDirectory(directory);
-        levelModel.gatherAssets(directory);
+        levelModel.gatherAssets(directory); //        levelModel.setDirectory(directory);
         this.directory = directory;
         if (USE_SHADER_FOR_WATER) {
             Texture waterTexture = directory.getEntry("water_texture", Texture.class);
