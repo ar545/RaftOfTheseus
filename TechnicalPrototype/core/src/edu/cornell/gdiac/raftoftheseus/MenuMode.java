@@ -334,13 +334,13 @@ public class MenuMode implements Screen {
                 menuTable.add(designersLabel).expandX().align(Align.right).padRight(100);
                 menuTable.row();
 
-                Label amyLabel = new Label("AMY HUANG", textStyle);
-                amyLabel.setFontScale(0.35f);
-                menuTable.add(amyLabel);
+                Label amy = new Label("AMY HUANG", textStyle);
+                amy.setFontScale(0.35f);
+                menuTable.add(amy);
 
-                Label gloriaLabel = new Label("GLORIA SHI", textStyle);
-                gloriaLabel.setFontScale(0.35f);
-                menuTable.add(gloriaLabel);
+                Label gloria = new Label("GLORIA SHI", textStyle);
+                amy.setFontScale(0.35f);
+                menuTable.add(amy);
                 menuTable.row();
 
                 Label demian = new Label("DEMIAN YUTIN", textStyle);
