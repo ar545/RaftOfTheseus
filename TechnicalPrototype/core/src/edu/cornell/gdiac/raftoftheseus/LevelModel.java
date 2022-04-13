@@ -675,7 +675,19 @@ public class LevelModel {
         return t;
     }
 
-    public void updateCurrentEffects(GameObject o){
-        currentField.updateCurrentEffects(o);
+    /** Apply current effect to all applicable objects. Linear Combination Model */
+    public void updateAllCurrentEffects(){
+        for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o); } }
+    }
+
+    /** TODO: there are two ways of applying vector field:
+     * one is act(), but require combining class Actor and class Obstacles since the two has conflicting physics.
+     * the other one is process linear combinations, which does not deal with rotations and
+     * might have error in corner cases. I have tested it pretty thoroughly and debugged.
+     * I choose to implement the second one and we can switch to the first one if needed. */
+    public void updatePlayerCurrentEffects(float dt){
+        raft.act(dt);
+        /* OR */
+        currentField.updateCurrentEffects(raft);
     }
 }

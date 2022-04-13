@@ -503,32 +503,23 @@ public class WorldController implements Screen, ContactListener {
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
 
     /**
-     * Returns whether to process the update loop
-     *
+     * Returns whether to process the update loop.
      * At the start of the update loop, we check if it is time
      * to switch to a new game mode.  If not, the update proceeds
      * normally.
      *
      * @param dt	Number of seconds since last animation frame
-     *
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
-        // TODO: there are two ways of applying vector field:
-        // TODO: one is act(), but require the gameObject to extend class Actor.
-//        levelModel.getPlayer().act(dt);
-        // TODO: the other is linear combinations, which might have error in corner cases
-        levelModel.updateCurrentEffects(levelModel.getPlayer());
+        // NEW: Ask the level model to process current effects on objects
+        levelModel.updateAllCurrentEffects();
 
         InputController input = InputController.getInstance();
         input.readInput();
 
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
-
-//        if (listener == null) {
-//            return true;
-//        }
 
         // Now it is time to maybe switch screens.
         if (input.didExit() || exitPressed) {
@@ -547,7 +538,7 @@ public class WorldController implements Screen, ContactListener {
             return false;
         }
 
-        if ((complete && !failed) || failed) { return false; }
+        if (complete || failed) { return false; }
 
         // Handle resets
         if (input.didReset()) {
@@ -613,7 +604,6 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
-
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
@@ -656,30 +646,15 @@ public class WorldController implements Screen, ContactListener {
     /** get enemies take actions according to their AI */
     private void resolveEnemies(float dt) {
         PooledList<Shark> el = levelModel.getEnemies();
-
         for (int i = 0; i< el.size(); i++) {
             Shark shark = el.get(i);
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
 
-//<<<<<<< HEAD
-//        PooledList<Hydra> hy = levelModel.getHydras();
-////        System.out.println(hy.size());
-//        for (int i = 0; i < hy.size(); i++) {
-//            Hydra hydra = hy.get(i);
-//            levelModel.world.rayCast(hydraSight, hydra.getPosition(), levelModel.getPlayer().getPosition());
-//            hydra.setSee(hydraSight.getCanSee());
-//            hydra.resolveAction(hydraControllers[i].getAction(), controls[i].getTicks());
-//            if(hydra.isSplashing()){
-//                createBullet(hydra.getPosition(), levelModel.getPlayer());
-//=======
         for (Hydra h : levelModel.getHydras()) {
             levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
             h.setSee(hydraSight.getCanSee());
-            if(h.willAttack()){
-                createBullet(h.getPosition(), levelModel.getPlayer());
-//>>>>>>> main
-            }
+            if(h.willAttack()) {createBullet(h.getPosition(), levelModel.getPlayer());}
             h.update(dt);
         }
 
@@ -735,6 +710,7 @@ public class WorldController implements Screen, ContactListener {
         resolveMusic();
     }
 
+    // TODO: where should this field belong?
     private boolean wasInDanger = false;
 
     /** Update the level themed music according the game status */
@@ -842,15 +818,10 @@ public class WorldController implements Screen, ContactListener {
 
 
     /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
-    /**
-     * Remove a new bullet from the world.
-     *
+    /** Remove a new bullet from the world.
      * @param  bullet   the bullet to remove
      */
-    public void removeBullet(GameObject bullet) {
-        bullet.setDestroyed(true);
-//        plopId = playSound( plopSound, plopId );
-    }
+    public void removeBullet(GameObject bullet) {bullet.setDestroyed(true);}
 
     /**
      * Callback method for the start of a collision
@@ -870,14 +841,14 @@ public class WorldController implements Screen, ContactListener {
         try {
             GameObject bd1 = (GameObject) body1.getUserData();
             GameObject bd2 = (GameObject) body2.getUserData();
-            // Check for object interaction with current
-            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
-                enterCurrent((Current) bd1, bd2);
-            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
-                enterCurrent((Current) bd2, bd1);
-            }
+            // Check for object interaction with current. Cancelled due to new implementation
+//            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+//                enterCurrent((Current) bd1, bd2);
+//            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
+//                enterCurrent((Current) bd2, bd1);
+//            } else
             // Check for bullet collision with object (terrain or enemy)
-            else if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
+             if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
                 ResolveCollision((Bullet) bd1, bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
                 ResolveCollision((Bullet) bd2, bd1);
@@ -919,13 +890,16 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    /**
-     * Callback method for the end of a collision
-     *
+    /** Callback method for the end of a collision
      * This method is called when two objects cease to touch.
-     */
+     * This was used in the collision current model in Technical prototype, and has been commented out for now. */
     @Override
     public void endContact(Contact contact) {
+//        collisionCurrentMethod(contact);
+    }
+
+    /** The collision current model of exit current in Technical prototype */
+    public void collisionCurrentMethod(Contact contact){
         Fixture fix1 = contact.getFixtureA();
         Fixture fix2 = contact.getFixtureB();
         Body body1 = fix1.getBody();
