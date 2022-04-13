@@ -64,7 +64,8 @@ public class Current extends BoxObstacle {
         setRotationFromDirection();
         fixture.filter.categoryBits = CATEGORY_CURRENT;
         fixture.filter.maskBits = MASK_CURRENT;
-        magnitude = (float) magnitude_input * CURRENT_SPEED_FACTOR;
+//        magnitude = (float) magnitude_input * CURRENT_SPEED_FACTOR;
+        magnitude = (float) Math.pow(1.6, magnitude_input) + 0.5f * magnitude_input;
     }
 
     private void setRotationFromDirection() {

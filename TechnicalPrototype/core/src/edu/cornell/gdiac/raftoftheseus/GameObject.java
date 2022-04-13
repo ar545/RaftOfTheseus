@@ -183,4 +183,9 @@ public abstract class GameObject extends SimpleObstacle {
     public float getCrossSectionalArea() {
         return 0;
     }
+
+    /** Whether this object is affected by the current */
+    public boolean AffectedByCurrent(){
+        return getType() == ObjectType.RAFT || getType() == ObjectType.WOOD || getType() == ObjectType.ENEMY;
+    }
 }
