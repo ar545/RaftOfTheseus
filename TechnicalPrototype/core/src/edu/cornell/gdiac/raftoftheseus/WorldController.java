@@ -70,7 +70,7 @@ public class WorldController implements Screen, ContactListener {
     public static int WORLD_POSIT = 2;
 
     /** Scale for the health bar */
-    private static float HEALTH_BAR_SCALE = 0.6f;
+    private static final float HEALTH_BAR_SCALE = 0.6f;
 
 
     // FIELDS
@@ -427,17 +427,12 @@ public class WorldController implements Screen, ContactListener {
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
 
-//    /** draw a background for the sea
-//     * Precondition & post-condition: the game canvas is open */
-//    private void drawMovingBackground(float pixel) {
-//=======
-    /** draws background water and moving currents (using shader) */
+    /** draws background water (for the sea) and moving currents (using shader)
+     * Precondition & post-condition: the game canvas is open */
     private void drawWater() {
         if (USE_SHADER_FOR_WATER)
             canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
-//        float pixel = 100/3.0f;
         float pixel = 1;
-//>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
         if (!USE_SHADER_FOR_WATER)
