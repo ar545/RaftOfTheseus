@@ -22,8 +22,8 @@ public class SoundController {
     private float musicVolume = 0.3f;
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
-    /** Rate at which music is transitioned. */
-    private float tradeRate = 0.01f;
+    /** Speed taken to transition music in miliseconds. */
+    private long tradeRate = 1000L;
     /** When transition is finished. */
     private float tradeThreshold = 0.05f;
     /** Current preset being used for music. */
@@ -45,6 +45,7 @@ public class SoundController {
     private static SoundController theController = null;
     /** The asset directory for getting new music. */
     private AssetDirectory directory;
+    /** Boolean indicating whether music trading is in progress. */
 
     /**
      * @return the singleton instance of the input controller
@@ -74,7 +75,7 @@ public class SoundController {
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         sfxVolume = set.getFloat("sfx_volume", 1.0f);
         musicVolume = set.getFloat("music_volume", 1.0f);
-        tradeRate = set.getFloat("trade_rate", 0.01f);
+        tradeRate = set.getLong("trade_rate", 1000L);
         tradeThreshold = set.getFloat("trade_threshold", 0.05f);
 
         // Get sfx
@@ -251,14 +252,6 @@ public class SoundController {
     }
 
     /**
-     * Starts the music for a level, fails silently if proper preset is not loaded.
-     */
-    public void startLevelMusic(){
-        playMusic("explore");
-        playMusic("background");
-    }
-
-    /**
      * For looping menu music only.
      * @param name
      * @param m
@@ -270,6 +263,19 @@ public class SoundController {
         music.put(name, m);
     }
 
+    /**
+     * Starts the music for a level, fails silently if proper preset is not loaded.
+     */
+    public void startLevelMusic(){
+        playMusic("danger", 0);
+        playMusic("explore");
+        playMusic("background");
+    }
+
+    public void test(String... name){
+
+    }
+
     // DYNAMIC MUSIC
 
     /**
@@ -278,16 +284,17 @@ public class SoundController {
      * @param index1 either "explore" or "danger"
      * @param index2 same as index1 but reversed.
      */
-    private boolean tradeMusic(String index1, String index2){
+    private void tradeMusic(String index1, String index2){
         // Gets music and check precondition
-        Music m1 = music.get(index1);
         Music m2 = music.get(index2);
-        if (!assertObjects(m1, m2) || (!m1.isPlaying() && m2.isPlaying())) return false;
-        if( m1.isPlaying() && !m2.isPlaying()){
-            playMusic(index2, 0, m1.getPosition());
-        }
-        // Otherwise both are still playing, in state of flux
-        return true;
+        Thread trader = new Thread(() -> {
+            long timeStamp = System.currentTimeMillis() / 1_000;
+            float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+            float maxVolume = music.get(index1).getVolume();
+            while(percentage * maxVolume <= maxVolume){
+                
+            }
+        });
     }
 
     /**
@@ -296,17 +303,16 @@ public class SoundController {
      * @param reverse Whether danger is faded out for explore music
      */
     public void tradeMusic(boolean reverse){
+        return;
         // if (STATE != MusicState.STEADY) return;
-        if (reverse){
-            if (tradeMusic("danger", "explore")){
-                STATE = MusicState.LEAVE_DANGER;
-            }
-        }
-        else{
-            if (tradeMusic("explore", "danger")){
-                STATE = MusicState.ENTER_DANGER;
-            }
-        }
+//        if (reverse){
+//            tradeMusic("danger", "explore");
+//            STATE = MusicState.LEAVE_DANGER;
+//        }
+//        else{
+//            tradeMusic("explore", "danger");
+//            STATE = MusicState.ENTER_DANGER;
+//        }
     }
 
 

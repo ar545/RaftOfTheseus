@@ -84,15 +84,15 @@
       "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
       "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
       "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
-    "raft_damage": "sounds/Sfx_Raft_Damage.mp3",
+    "raft_damage": "sounds/Sfx_Raft_Damage.ogg",
     "level_complete" : "sounds/Sfx_Level_Complete.mp3",
     "chest_collect" : "sounds/Sfx_Chest_Collect.mp3"
   },
   "music" : {
       "m": "sounds/Msc_Menu_RoTTheme.ogg",
       "b1": "sounds/Msc_Background_CalmOcean.ogg",
-      "e1": "sounds/Msc_Explore_Longing.mp3",
-      "d1": "sounds/Msc_Danger_Longing.mp3"
+      "e1": "sounds/Msc_Explore_Longing.ogg",
+      "d1": "sounds/Msc_Danger_Longing.ogg"
   },
   "jsons" : {
     "sound_settings" : "sound_settings.json",
