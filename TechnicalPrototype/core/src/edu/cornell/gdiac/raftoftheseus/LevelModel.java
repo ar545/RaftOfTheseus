@@ -680,11 +680,14 @@ public class LevelModel {
         for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o); } }
     }
 
-    /** TODO: there are two ways of applying vector field:
-     * one is act(), but require combining class Actor and class Obstacles since the two has conflicting physics.
-     * the other one is process linear combinations, which does not deal with rotations and
-     * might have error in corner cases. I have tested it pretty thoroughly and debugged.
-     * I choose to implement the second one and we can switch to the first one if needed. */
+    /** TODO: There are two ways of applying vector field, through rotational physics or though movement linear
+     * combinations. Both make use of CurrentField.java
+     * Rotational physics is achieved by rotational movement of objects in current from direction and linear movement
+     * from magnitude. Represented by act(). this require combining class Actor and class Obstacles since the two has
+     * conflicting physics.
+     * Linear combinations model does not deal with rotations and simply calculate the vector linear combinations of
+     * the nearby vectors in the field. Might have error in corner cases. I have tested it pretty thoroughly and debugged.
+     * I choose to implement the second one and we can switch to the first one if needed.  */
     public void updatePlayerCurrentEffects(float dt){
         raft.act(dt);
         /* OR */
