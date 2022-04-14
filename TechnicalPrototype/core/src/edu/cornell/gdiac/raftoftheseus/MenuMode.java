@@ -1,21 +1,25 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
+import org.w3c.dom.Text;
 
 /**
  * Class that provides the menu screen for the state of the game.
@@ -38,55 +42,21 @@ public class MenuMode implements Screen {
 
     /** Background texture for menu */
     private Texture menuBackground;
+    /** Font for drawing text */
+    private BitmapFont displayFont;
+    /** Background texture for menu */
+    private Texture levelSelectBackground;
     /** Background texture for credits */
     private Texture seaBackground;
-    /** Texture for levels */
-    private Texture levelButtonImage;
+    /** Title texture */
+    private Texture title;
     /** Texture for the levels to select. */
-    private TextButton[] levelButtons;
+    private Texture[] levels;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
-
-    /** Standard window size (for scaling) */
-    private static int STANDARD_WIDTH  = 800;
-    /** Standard window height (for scaling) */
-    private static int STANDARD_HEIGHT = 700;
-    /** Standard button scale */
-    private static float BUTTON_SCALE  = 1.25f;
-    /** Level padding x-axis inset */
-    private static int PADDING_X = 100;
-    /** Level button padding along the y-axis */
-    private static int PADDING_Y = 100;
-    /** Number of levels in each row */
-    private static int NUM_COLS = 4;
-    /** Padding between columns */
-    private static int colPadding = 25;
-    /** Scaling factor. */
-    private float scale;
-    /** The height of the canvas window (necessary since sprite origin != screen origin) */
-    private int heightY;
-    /** The color for inactive buttons */
-    private Color inactiveColor = Color.WHITE;
-    /** The color for hovered buttons */
-    private Color activeColor = Color.GOLD;
-
-    /** Whether the player has pressed a level select button */
-    private boolean isLevelPressed;
-    /** Level selected */
-    private int selectedLevel;
-    /** Whether this player mode is still active */
-    private boolean active;
-    /** Level count **/
-    private static int LEVEL_COUNT = 9;
-    /** Exit code for displaying settings */
-    public static int EXIT_SETTINGS = 8;
-    /** Whether the play button was pressed on the main menu */
-    private boolean playPressed;
-    /** Whether the settings button was pressed on the main menu */
-    private boolean settingsPressed;
 
     // Load constants
     public static void setConstants(JsonValue objParams){
@@ -100,6 +70,38 @@ public class MenuMode implements Screen {
         LEVEL_COUNT = menuParams.getInt("level count", 9);
     }
 
+    /** Standard window size (for scaling) */
+    private static int STANDARD_WIDTH  = 800;
+    /** Standard window height (for scaling) */
+    private static int STANDARD_HEIGHT = 700;
+    /** Standard button scale */
+    private static float BUTTON_SCALE  = 1.25f;
+    /** Level padding x-axis inset */
+    private static int PADDING_X = 100;
+    /** Level button padding along the y-axis */
+    private static int PADDING_Y = 100;
+    /** Number of levels in each row */
+    private static int NUM_COLS = 5;
+    /** Padding between columns */
+    private static int colPadding = 25;
+    /** Scaling factor. */
+    private float scale;
+    /** The height of the canvas window (necessary since sprite origin != screen origin) */
+    private int heightY;
+
+    /** Whether the player has pressed a level select button */
+    private boolean isLevelPressed;
+    /** Level selected */
+    private int selectedLevel;
+    /** Whether this player mode is still active */
+    private boolean active;
+    /** Level count **/
+    private static int LEVEL_COUNT = 9;
+    /** Exit code for displaying settings */
+    public static int EXIT_SETTINGS = 8;
+    /** Whether the settings button was pressed on the main menu */
+    private boolean settingsPressed;
+
     /**
      * Creates a MenuMode with the default size and position.
      *
@@ -111,9 +113,8 @@ public class MenuMode implements Screen {
         resize(canvas.getWidth(),canvas.getHeight());
         active = true;
         isLevelPressed = false;
-        selectedLevel = 0;
+        selectedLevel = -1;
         settingsPressed = false;
-        playPressed = false;
 
         currentScreen = MenuScreen.TITLE;
     }
@@ -125,8 +126,13 @@ public class MenuMode implements Screen {
      */
     public void populate(AssetDirectory directory) {
         menuBackground = directory.getEntry("menu_background", Texture.class);
+        displayFont = directory.getEntry( "diogenes", BitmapFont.class);
         seaBackground = directory.getEntry("sea_background", Texture.class);
-        levelButtonImage = directory.getEntry("level", Texture.class);
+        levelSelectBackground = directory.getEntry("level_background", Texture.class);
+        levels = new Texture[LEVEL_COUNT];
+        for (int i = 0; i < LEVEL_COUNT; i++) {
+            levels[i] = directory.getEntry("level_" + i, Texture.class);
+        }
     }
 
     /**
@@ -178,20 +184,13 @@ public class MenuMode implements Screen {
      * Draw the status of this player mode.
      */
     private void draw() {
-//        colPadding = ((canvas.getWidth() - 2 * PADDING_X - NUM_COLS * levelButtons[0].getWidth()) / (NUM_COLS - 1));
+        colPadding = ((canvas.getWidth() - 2 * PADDING_X - NUM_COLS * levels[0].getWidth()) / (NUM_COLS - 1));
 
         canvas.begin();
         canvas.clear();
-
-        switch (currentScreen) {
-            case TITLE:
-                canvas.drawBackground(menuBackground, true);
-                break;
-            default:
-                canvas.drawBackground(seaBackground, true);
-                break;
-        }
+        canvas.drawBackground(currentScreen == MenuScreen.TITLE ? menuBackground : (currentScreen == MenuScreen.CREDITS) ? seaBackground : levelSelectBackground, true);
         canvas.end();
+
         stage.act();
         stage.draw();
     }
@@ -204,9 +203,9 @@ public class MenuMode implements Screen {
         input.readInput();
         if (active) {
             draw();
-            if (settingsPressed) {
+            if (input.didSettings() || settingsPressed) {
                 listener.exitScreen(this, EXIT_SETTINGS);
-            } else if ((isReady() && listener != null) || playPressed) {
+            } else if (isReady() && listener != null) {
                 listener.exitScreen(this, 0);
             }
         }
@@ -214,26 +213,14 @@ public class MenuMode implements Screen {
 
     private void buildMenu(){
         Table menuTable = new Table(skin);
+        menuTable.setPosition(0, 0);
+//        menuTable.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         menuTable.setFillParent(true);
-        menuTable.align(Align.top);
+        menuTable.align(Align.center);
 
         // instantiate the "back" button, which is used in multiple menus
-        TextButton menuButton = new TextButton("BACK", skin);
-        menuButton.getLabel().setFontScale(0.35f);
-        menuButton.getLabel().setColor(Color.GOLD);
-        menuButton.addListener(new ClickListener(){
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                super.enter(event, x, y, pointer, fromActor);
-                menuButton.getLabel().setColor(Color.GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                menuButton.getLabel().setColor(Color.GOLD);
-            }
-
+        TextButton backButton = new TextButton("Back", skin);
+        backButton.addListener(new ClickListener(){
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 changeScreenTo(MenuScreen.TITLE);
@@ -242,66 +229,28 @@ public class MenuMode implements Screen {
 
         switch(currentScreen) {
             case TITLE:
-                // Create buttons
-                TextButton startButton = new TextButton("START", skin);
-                startButton.getLabel().setFontScale(0.35f);
-                TextButton levelsButton = new TextButton("LEVELS", skin);
-                levelsButton.getLabel().setFontScale(0.35f);
-                TextButton settingsButton = new TextButton("SETTINGS", skin);
-                settingsButton.getLabel().setFontScale(0.35f);
-                TextButton creditsButton = new TextButton("CREDITS", skin);
-                creditsButton.getLabel().setFontScale(0.35f);
+                //Create buttons
+                skin.add("font", displayFont);
+                TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+                buttonStyle.font = skin.getFont("font");
+
+                TextButton playButton = new TextButton("Play", buttonStyle);
+                playButton.getLabel().setFontScale(0.5f);
+                TextButton optionsButton = new TextButton("Options", buttonStyle);
+                optionsButton.getLabel().setFontScale(0.5f);
+                TextButton creditsButton = new TextButton("Credits", buttonStyle);
+                creditsButton.getLabel().setFontScale(0.5f);
+                TextButton exitButton = new TextButton("Exit", buttonStyle);
+                exitButton.getLabel().setFontScale(0.5f);
 
                 //Add listeners to buttons
-                startButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        super.enter(event, x, y, pointer, fromActor);
-                        startButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        startButton.getLabel().setColor(inactiveColor);
-                    }
-
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        playPressed = true;
-                    }
-                });
-                levelsButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        super.enter(event, x, y, pointer, fromActor);
-                        levelsButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        levelsButton.getLabel().setColor(inactiveColor);
-                    }
-
+                playButton.addListener(new ClickListener(){
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         changeScreenTo(MenuScreen.LEVEL_SELECT);
                     }
                 });
-                settingsButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        super.enter(event, x, y, pointer, fromActor);
-                        settingsButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        settingsButton.getLabel().setColor(inactiveColor);
-                    }
-
+                optionsButton.addListener(new ClickListener(){
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         settingsPressed = true;
@@ -309,76 +258,32 @@ public class MenuMode implements Screen {
                 });
                 creditsButton.addListener(new ClickListener(){
                     @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        super.enter(event, x, y, pointer, fromActor);
-                        creditsButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        creditsButton.getLabel().setColor(inactiveColor);
-                    }
-
-                    @Override
                     public void clicked(InputEvent event, float x, float y) {
                         changeScreenTo(MenuScreen.CREDITS);
                     }
                 });
+                exitButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        Gdx.app.exit();
+                    }
+                });
 
                 //Add buttons to table
-                menuTable.add(startButton).padTop(450).expandX().align(Align.left).padLeft(100);
+                menuTable.add(playButton).padTop(450).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
-                menuTable.add(levelsButton).expandX().align(Align.left).padLeft(100);
-                menuTable.row();
-                menuTable.add(settingsButton).expandX().align(Align.left).padLeft(100);
+                menuTable.add(optionsButton).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
                 menuTable.add(creditsButton).expandX().align(Align.left).padLeft(100);
+                menuTable.row();
+                menuTable.add(exitButton).expandX().align(Align.left).padLeft(100);
                 break;
             case LEVEL_SELECT:
-                Table part1 = new Table();
-                part1.align(Align.left);
-                part1.add(menuButton).expandX().align(Align.left).padRight(830).padTop(10);
-                part1.row();
-                menuTable.add(part1);
-                menuTable.row();
-
-                Table part2 = new Table();
-                Label levelSelectLabel = new Label("SELECT A LEVEL", skin);
-                levelSelectLabel.setFontScale(0.6f);
-                part2.add(levelSelectLabel).expandX().align(Align.center);
-                part2.row();
-                menuTable.add(part2);
-                menuTable.row();
-
-                Table part3 = new Table();
-
-                // Create buttons
-                TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(new TextureRegion(levelButtonImage));
-                TextButtonStyle buttonStyle = new TextButtonStyle();
-                buttonStyle.up = buttonDrawable;
-                buttonStyle.down = buttonDrawable.tint(Color.GRAY);
-                buttonStyle.font = skin.getFont("default-font");
-                levelButtons = new TextButton[LEVEL_COUNT];
-
+                //Create buttons
                 for (int i = 0; i < LEVEL_COUNT; i ++) {
-                    levelButtons[i] = new TextButton(String.valueOf(i), buttonStyle);
-                    TextButton currentButton = levelButtons[i];
-                    currentButton.getLabel().setFontScale(0.5f);
+                    ImageButton levelButton = new ImageButton(new TextureRegionDrawable(levels[i]));
                     int finalI = i;
-                    currentButton.addListener(new ClickListener(){
-                        @Override
-                        public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                            super.enter(event, x, y, pointer, fromActor);
-                            currentButton.setColor(Color.LIGHT_GRAY);
-                        }
-
-                        @Override
-                        public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                            super.exit(event, x, y, pointer, toActor);
-                            currentButton.setColor(Color.WHITE);
-                        }
-
+                    levelButton.addListener(new ClickListener(){
                         @Override
                         public void clicked(InputEvent event, float x, float y) {
                             selectlevel(finalI);
@@ -386,83 +291,92 @@ public class MenuMode implements Screen {
                     });
                     //Add button to table
                     if (i > 0 && i % NUM_COLS == 0)
-                        part3.row().padTop(colPadding);
-                    part3.add(currentButton).size(150).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+                        menuTable.row().padTop(colPadding);
+                    menuTable.add(levelButton).padLeft(i % NUM_COLS > 0 ? colPadding : 0);
                 }
-                menuTable.add(part3);
                 menuTable.row();
+                menuTable.add(backButton);
+                break;
+            case SETTINGS:
+                //Create buttons
+                TextButton fooButton = new TextButton("Foo", skin);
+                fooButton.addListener(new ClickListener(){
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        System.out.println("pressed foo");
+                        // TODO change some settings here
+                    }
+                });
+                //Add buttons to table
+                menuTable.add(fooButton);
+                menuTable.row();
+                menuTable.add(backButton);
                 break;
             case CREDITS:
-                Table creditsPart1 = new Table();
-                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(830).padTop(10);
-                menuTable.add(creditsPart1);
+                // TODO change font & structure
+                skin.add("font", displayFont);
+                Label.LabelStyle textStyle = new Label.LabelStyle();
+                textStyle.font = skin.getFont("font");
+                textStyle.fontColor = Color.WHITE;
+
+                // BitmapFont font = new BitmapFont(Gdx.files.internal("Calibri.fnt"),Gdx.files.internal("Calibri.png"),false);
+                Label creditsLabel = new Label("CREDITS", textStyle);
+                creditsLabel.setFontScale(0.75f);
+                menuTable.add(creditsLabel);
                 menuTable.row();
 
-                Table creditsPart2 = new Table();
-                Label creditsLabel = new Label("CREDITS", skin);
-                creditsLabel.setFontScale(0.6f);
-                creditsPart2.add(creditsLabel).expandX().align(Align.center);
-                menuTable.add(creditsPart2);
+                Label programmersLabel = new Label("PROGRAMMERS", textStyle);
+                programmersLabel.setFontScale(0.55f);
+                menuTable.add(programmersLabel).expandX().align(Align.left).padLeft(100);
+
+                Label designersLabel = new Label("DESIGNERS", textStyle);
+                designersLabel.setFontScale(0.55f);
+                menuTable.add(designersLabel).expandX().align(Align.right).padRight(100);
                 menuTable.row();
 
-                Table creditsPart3 = new Table();
-                creditsPart3.align(Align.center);
+                Label amy = new Label("AMY HUANG", textStyle);
+                amy.setFontScale(0.35f);
+                menuTable.add(amy);
 
-                Table creditsPart3Left = new Table();
-                Label programmersLabel = new Label("PROGRAMMER", skin);
-                programmersLabel.setFontScale(0.38f);
-                creditsPart3Left.add(programmersLabel).expandX().align(Align.center);
-                creditsPart3Left.row();
+                Label gloria = new Label("GLORIA SHI", textStyle);
+                amy.setFontScale(0.35f);
+                menuTable.add(amy);
+                menuTable.row();
 
-                Label amy = new Label("Amy Huang", skin);
-                amy.setFontScale(0.3f);
-                Label demian = new Label("Demian Yutin", skin);
-                demian.setFontScale(0.3f);
-                Label howard = new Label("Howard Fu", skin);
-                howard.setFontScale(0.3f);
-                Label jaden = new Label("Jaden O'Brien", skin);
-                jaden.setFontScale(0.3f);
-                Label jason = new Label("Jason Tung", skin);
-                jason.setFontScale(0.3f);
-                Label leo = new Label("Leo Zhao", skin);
-                leo.setFontScale(0.3f);
-                creditsPart3Left.add(amy).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(demian).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(howard).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(jaden).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(jason).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(leo).expandX().align(Align.center);
+                Label demian = new Label("DEMIAN YUTIN", textStyle);
+                demian.setFontScale(0.35f);
+                menuTable.add(demian);
 
-                Table creditsPart3Right = new Table();
-                Label designersLabel = new Label("DESIGNER", skin);
-                designersLabel.setFontScale(0.38f);
-                creditsPart3Right.add(designersLabel).expandX().align(Align.center);
-                creditsPart3Right.row();
+                Label noah = new Label("NOAH BRAUN", textStyle);
+                noah.setFontScale(0.35f);
+                menuTable.add(noah);
+                menuTable.row();
 
-                Label gloria = new Label("Gloria Shi", skin);
-                gloria.setFontScale(0.3f);
-                Label noah = new Label("Noah Braun", skin);
-                noah.setFontScale(0.3f);
-                Label spencer = new Label("Spencer Pettee", skin);
-                spencer.setFontScale(0.3f);
+                Label howard = new Label("HOWARD FU", textStyle);
+                howard.setFontScale(0.35f);
+                menuTable.add(howard);
 
-                creditsPart3Right.add(gloria).expandX().align(Align.center);
-                creditsPart3Right.row();
-                creditsPart3Right.add(noah).expandX().align(Align.center);
-                creditsPart3Right.row();
-                creditsPart3Right.add(spencer).expandX().align(Align.center);
-                creditsPart3Right.row();
-                creditsPart3Right.add(new Label("", skin));
-                creditsPart3Right.row();
+                Label spencer = new Label("SPENCEER PETTEE", textStyle);
+                spencer.setFontScale(0.35f);
+                menuTable.add(spencer);
+                menuTable.row();
 
-                creditsPart3.add(creditsPart3Left).expandX().align(Align.center).padRight(180).padLeft(-100);
-                creditsPart3.add(creditsPart3Right).expandX().align(Align.center).padTop(20);
-                menuTable.add(creditsPart3);
+                Label jaden = new Label("JADEN O'BRIEN", textStyle);
+                jaden.setFontScale(0.35f);
+                menuTable.add(jaden);
+                menuTable.row();
+
+                Label jason = new Label("JASON TUNG", textStyle);
+                jason.setFontScale(0.35f);
+                menuTable.add(jason);
+                menuTable.row();
+
+                Label leo = new Label("LEO ZHAO", textStyle);
+                leo.setFontScale(0.35f);
+                menuTable.add(leo);
+                menuTable.row();
+                // System.out.println("Got to credits screen");
+                menuTable.add(backButton);
                 break;
         }
 
@@ -470,7 +384,7 @@ public class MenuMode implements Screen {
     }
 
     private void selectlevel(int id) {
-        if (levelButtons != null && !isLevelPressed) {
+        if (levels != null && !isLevelPressed) {
             isLevelPressed = true;
             selectedLevel = id;
         }
@@ -499,11 +413,8 @@ public class MenuMode implements Screen {
         heightY = height;
     }
 
-    /** Reset the play pressed state */
-    public void resetPlayState() { playPressed = false; }
-
     /** Reset the level pressed state */
-    public void resetPressedState() { isLevelPressed = false; }
+    public void resetPressedState(){ isLevelPressed = false; }
 
     /** Reset the settings pressed state */
     public void resetSettingsState() { settingsPressed = false; }
