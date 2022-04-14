@@ -101,8 +101,20 @@ public class InputController {
 	/** The singleton instance of the input controller */
 	private static InputController theController = null;
 
-	/*=*=*=*=*=*=*=*=*=* SETTERS *=*=*=*=*=*=*=*=*=*/
+	/** Creates a new input controller for mouse and keyboard. */
+	public InputController() {
+		mov_offset = new Vector2();
+		fire_location = new Vector2();
+		mappings = new ArrayMap<>();
+		setKeyboardOnly();
+	}
 
+	/* TODO SETTERS */
+
+	/**
+	 * Puts in the control mapping the default key value pairs
+	 * @param mapping String key for getting correct JsonValue with mappings
+	 */
 	private void populateMap(String mapping){
 		JsonValue m = controlSettings.get(mapping);
 		for( JsonValue i : m ){
@@ -114,6 +126,9 @@ public class InputController {
 		}
 	}
 
+	/**
+	 * Changes the control mappings depending on which control scheme is being used.
+	 */
 	private void setControlScheme(){
 		switch (controlScheme) {
 			case KeyboardMouse: populateMap("mouse keyboard"); return;
@@ -122,16 +137,9 @@ public class InputController {
 		}
 	}
 
-	public void setKeyboardMouse(){
-		controlScheme = ControlScheme.KeyboardMouse;
-		setControlScheme();
-	}
-
-	public void setKeyboardOnly(){
-		controlScheme = ControlScheme.KeyboardOnly;
-		setControlScheme();
-	}
-
+	/**
+	 * For internal use to update the control scheme when the user presses C
+	 */
 	private void changeControlScheme(){
 		switch (controlScheme){
 			case KeyboardMouse: setKeyboardOnly(); return;
@@ -140,15 +148,46 @@ public class InputController {
 		}
 	}
 
-	public void setKey(String action, String key){
-		if( mappings.get(action) == null ){
+	/* TODO CUSTOMIZATION INTERFACE */
+
+	/**
+	 * Changes the controls to use keyboard and mouse.
+	 */
+	public void setKeyboardMouse(){
+		controlScheme = ControlScheme.KeyboardMouse;
+		setControlScheme();
+	}
+
+	/**
+	 * Changes the controls to use keyboard only.
+	 */
+	public void setKeyboardOnly(){
+		controlScheme = ControlScheme.KeyboardOnly;
+		setControlScheme();
+	}
+
+	/**
+	 * Operation to allow customization of key binds. Should be limited
+	 * @param action The abstract activity that the user wishes the change, should a key name from the control_settings.json
+	 *               Best limited to "map" and "fire" keys.
+	 * @param key The new key binding to map action to.
+	 * @return Key binding has been succesful
+	 */
+	public boolean setKey(String action, String key){
+		if(mappings.get(action) == null ){
 			throw new RuntimeException("Given action does not exist");
 		} else if (!Input.Keys.toString(mappings.get(action)).equals(key)) {
 			controlScheme = ControlScheme.Custom;
 			mappings.put(action, Input.Keys.valueOf(key));
+			return true;
 		}
+		return false;
 	}
 
+	/**
+	 * Function to display which control scheme is being used.
+	 * @return String representing control scheme
+	 */
 	public String getControlScheme(){
 		switch (controlScheme){
 			case KeyboardMouse: return "Keyboard and Mouse";
@@ -158,6 +197,12 @@ public class InputController {
 		}
 	}
 
+	/**
+	 * Function to return which key is being used for a given action.
+	 * @param action The abstract activity that the user wishes the change, should a key name from the control_settings.json
+	 *               Best limited to "map" and "fire" keys.
+	 * @return String of key associated with action.
+	 */
 	public String getKey(String action){
 		if(controlScheme == ControlScheme.KeyboardMouse) {
 			if (action.equals("fire")) {
@@ -174,15 +219,7 @@ public class InputController {
 
 	}
 
-	/*=*=*=*=*=*=*=*=*=* GETTERS *=*=*=*=*=*=*=*=*=*/
-
-	/** Creates a new input controller for mouse and keyboard. */
-	public InputController() {
-		mov_offset = new Vector2();
-		fire_location = new Vector2();
-		mappings = new ArrayMap<>();
-		setKeyboardOnly();
-	}
+	/* TODO GETTERS */
 
 	/** @return the singleton instance of the input controller */
 	public static InputController getInstance() {
@@ -232,7 +269,7 @@ public class InputController {
 	/** @return where the mouse was clicked in screen coordinates */
 	public Vector2 getFireDirection() { return fire_location; }
 
-	/*=*=*=*=*=*=*=*=*=* READ INPUT *=*=*=*=*=*=*=*=*=*/
+	/* TODO READ INPUT */
 
 	/** Reads the input for the player and converts the result into game logic. */
 	public void readInput() {
@@ -272,18 +309,18 @@ public class InputController {
 		y_offset = 0;
 
 		// Read direction key inputs
-		rightPressed = Gdx.input.isKeyPressed(mappings.get("right"));
-		leftPressed = Gdx.input.isKeyPressed(mappings.get("left"));
+		rightPressed = Gdx.input.isKeyPressed(mappings.get("right")) || Gdx.input.isKeyPressed(mappings.get("d"));
+		leftPressed = Gdx.input.isKeyPressed(mappings.get("left")) || Gdx.input.isKeyPressed(mappings.get("a"));
 		if (rightPressed) {
 			x_offset += 1.0f;
 		}
 		if (leftPressed) {
 			x_offset -= 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(mappings.get("up"))) {
+		if (Gdx.input.isKeyPressed(mappings.get("up")) || Gdx.input.isKeyPressed(mappings.get("w"))) {
 			y_offset += 1.0f;
 		}
-		if (Gdx.input.isKeyPressed(mappings.get("down"))) {
+		if (Gdx.input.isKeyPressed(mappings.get("down")) || Gdx.input.isKeyPressed(mappings.get("s"))) {
 			y_offset -= 1.0f;
 		}
 		// Map dependent

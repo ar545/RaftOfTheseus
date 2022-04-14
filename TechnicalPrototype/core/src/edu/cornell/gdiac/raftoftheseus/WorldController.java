@@ -129,6 +129,8 @@ public class WorldController implements Screen, ContactListener {
     private boolean active;
     /** Whether we have completed this level */
     private boolean complete;
+    /** The long id for the current sfx playing to prevent duplication. */
+    private boolean wasComplete;
     /** Whether we have failed at this world (and need a reset) */
     private boolean failed;
     /** Whether the next button was clicked */
@@ -165,6 +167,7 @@ public class WorldController implements Screen, ContactListener {
         this.canvas = canvas;
         levelModel = new LevelModel();
         this.complete = false;
+        this.wasComplete = false;
         this.failed = false;
         this.map  = false;
         this.debug = false;
@@ -297,9 +300,15 @@ public class WorldController implements Screen, ContactListener {
         if (pausePressed) {
             drawPause();
         }
-        if (complete && !failed || failed){
+        if (complete && !failed || failed) {
+            if(!wasComplete && complete) {
+                SoundController.getInstance().playSFX("level_complete");
+                SoundController.getInstance().setLevelComplete();
+                wasComplete = true;
+            }
+            SoundController.getInstance().fadeMusic();
             drawTransition();
-        }
+        } 
         // draw a circle showing how far the player can move before they die
         float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
@@ -686,6 +695,7 @@ public class WorldController implements Screen, ContactListener {
 
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
+//        if (input.didTab()) { SoundController.getInstance().playSFX("level_complete");}
 
         // Now it is time to maybe switch screens.
         if (input.didExit() || exitPressed) {
@@ -733,29 +743,35 @@ public class WorldController implements Screen, ContactListener {
     }
 
 
+    /**
+     * Add a new bullet to the world and send it in the right direction.
+     * @param facing
+     * @param player
+     */
     private void createBullet(Vector2 facing, Raft player){
         Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f), true);
         bullet.setTexture(bullet_texture);
-//        bullet.setBullet(true); // this is unnecessary because our bullets travel fairly slowly
         bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
         bullet.setAngle(facing.angleDeg()+90f);
         levelModel.addQueuedObject(bullet);
         player.addHealth(Bullet.BULLET_DAMAGE);
+        SoundController.getInstance().playSFX("spear_throw");
     }
 
     /**
-     * Add a new bullet to the world and send it in the right direction.
+     * Add a new bullet to the world based on the nearest Shark.
      */
     private void createBullet(Shark nearestShark) {
         Raft player = levelModel.getPlayer();
-        // Compute position and velocity
         Vector2 facing = nearestShark.getPosition().sub(player.getPosition()).nor();
         createBullet(facing, player);
     }
 
+    /**
+     * Add a new bullet to the world based on clicked point.
+     */
     private void createBullet(Vector2 firelocation) {
         Raft player = levelModel.getPlayer();
-        // Compute position and velocity
         Vector2 facing = firelocation.sub(player.getPosition()).nor();
         createBullet(facing, player);
     }
@@ -885,7 +901,7 @@ public class WorldController implements Screen, ContactListener {
     private void resolveMusic() {
         boolean nowInDanger = false;
         for(SharkController ai : controls){
-            if(ai.isAlive() && ai.getState() == Shark.enemyState.CHASE){
+            if(ai.isAlive() && ai.getState() == Shark.enemyState.ENRAGE){
                 nowInDanger = true;
                 break;
             }
@@ -1017,7 +1033,7 @@ public class WorldController implements Screen, ContactListener {
 //                enterCurrent((Current) bd2, bd1);
 //            } else
             // Check for bullet collision with object (terrain or enemy)
-             if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
+            if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
                 ResolveCollision((Bullet) bd1, bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
                 ResolveCollision((Bullet) bd2, bd1);
@@ -1025,22 +1041,28 @@ public class WorldController implements Screen, ContactListener {
             // Check for player collision with wood (health+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.WOOD)){
                 ResolveCollision((Raft)bd1, (Wood)bd2);
-            } else if(bd1.getType().equals(GameObject.ObjectType.WOOD) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                 SoundController.getInstance().playSFX("wood_pickup");
+            } else if (bd1.getType().equals(GameObject.ObjectType.WOOD) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
                 ResolveCollision((Raft)bd2, (Wood)bd1);
+                SoundController.getInstance().playSFX("wood_pickup");
             }
             // Check for player kill enemies (health-)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.ENEMY)){
                 ResolveCollision((Raft)bd1, (Shark) bd2);
-            }else if(bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                SoundController.getInstance().playSFX("raft_damage");
+            }
+            else if (bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
                 ResolveCollision((Raft)bd2, (Shark) bd1);
+                SoundController.getInstance().playSFX("raft_damage");
             }
             // Check for player collision with treasure (star+)
             else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
                 ResolveCollision((Raft)bd1, (Treasure) bd2);
-                SoundController.getInstance().playSFX("chest_collect", false);
-            } else if(bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                SoundController.getInstance().playSFX("chest_collect");
+            }
+            else if( bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
                 ResolveCollision((Raft)bd2, (Treasure) bd1);
-                SoundController.getInstance().playSFX("chest_collect", false);
+                SoundController.getInstance().playSFX("chest_collect");
             }
             // Check for win condition
             else if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
@@ -1170,30 +1192,30 @@ public class WorldController implements Screen, ContactListener {
     /** Unused ContactListener method. May be used to play sound effects */
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-        float speed = 0;
-        Vector2 cache = new Vector2();
-        float bumpThresh = 5f;
-
-        // Use Ian Par-berry's method to compute a speed threshold
-        Body body1 = contact.getFixtureA().getBody();
-        Body body2 = contact.getFixtureB().getBody();
-        WorldManifold worldManifold = contact.getWorldManifold();
-        Vector2 wp = worldManifold.getPoints()[0];
-        cache.set(body1.getLinearVelocityFromWorldPoint(wp));
-        cache.sub(body2.getLinearVelocityFromWorldPoint(wp));
-        speed = cache.dot(worldManifold.getNormal());
+//        float speed = 0;
+//        Vector2 cache = new Vector2();
+//        float bumpThresh = 5f;
+//
+//        // Use Ian Par-berry's method to compute a speed threshold
+//        Body body1 = contact.getFixtureA().getBody();
+//        Body body2 = contact.getFixtureB().getBody();
+//        WorldManifold worldManifold = contact.getWorldManifold();
+//        Vector2 wp = worldManifold.getPoints()[0];
+//        cache.set(body1.getLinearVelocityFromWorldPoint(wp));
+//        cache.sub(body2.getLinearVelocityFromWorldPoint(wp));
+//        speed = cache.dot(worldManifold.getNormal());
 
         // Play a sound if above threshold (otherwise too many sounds)
-        GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
-        GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
-        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
-                || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
-            SoundController.getInstance().playSFX("raft_damage", false);
-        }
-        if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
-                || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
-            SoundController.getInstance().playSFX("wood_pickup", false);
-        }
+//        GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
+//        GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
+//        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
+//                || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
+//
+//        }
+//        if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
+//                || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
+//
+//        }
     }
 
     /** Play sound effect according to the situation */
@@ -1288,6 +1310,10 @@ public class WorldController implements Screen, ContactListener {
         transitionBuilt = false;
         pausePressed = false;
         pauseBuilt = false;
+        settingsPressed = false;
+        wasComplete = false;
+
+        // Reset Soundcontroller
         SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
 
