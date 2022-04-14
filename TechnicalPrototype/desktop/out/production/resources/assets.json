@@ -69,10 +69,6 @@
             "file": "fonts/TimesRoman.ttf",
             "size": 32
         },
-        "diogenes": {
-          "file": "fonts/DIOGENES.ttf",
-          "size": 100
-        },
         "end": {
           "file": "fonts/RetroGame.ttf",
           "size": 32
