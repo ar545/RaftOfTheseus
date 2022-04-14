@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -79,6 +80,7 @@ public class LevelModel {
     private static final int LAYER_COL = 1;
     /** layer of enemies */
     private static final int LAYER_ENE = 2;
+    private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -111,6 +113,8 @@ public class LevelModel {
     private PooledList<Shark> enemies = new PooledList<>();
     private PooledList<Hydra> hydras = new PooledList<>();
     private PooledList<Siren> sirens = new PooledList<>();
+    /** Reference to the current field */
+    private CurrentField currentField;
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -359,8 +363,13 @@ public class LevelModel {
         // Add wall to the world
         computeWall(bounds.width, bounds.height);
 
+        currentField = new CurrentField(bounds.width, bounds.height, 3);
+
         // Populate game objects
         populateLevel();
+
+        final FollowFlowField<Vector2> followFlowFieldSB = new FollowFlowField<Vector2>(raft, currentField);
+        raft.setSteeringBehavior(followFlowFieldSB);
     }
 
     /** Calculate the world bounds base on the grid map. Set the physical boundary of the level and the world.
@@ -477,6 +486,7 @@ public class LevelModel {
      * @param col the column the environment element is in the world
      * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateEnv(int row, int col, int tile_int) {
+        currentField.field[col][row] = ZERO_VECTOR_2;
         if(tile_int == TILE_DEFAULT){ return; }
         else if(tile_int == TILE_GOAL){ addGoal(row, col); return; }
         for (int j : TILE_ROCK) {
@@ -597,10 +607,17 @@ public class LevelModel {
      * @param col the column grid position
      * @param direction the direction */
     private void addCurrent(int row, int col, Current.Direction direction, int magnitude) {
+        // TODO: the current object collision no longer needed, but texture is needed
         computePosition(col, row);
         Current this_current = new Current(compute_temp, direction, magnitude);
         this_current.setTexture(currentTexture);
+
+        // Initialize the current field, used for current vector field
+        currentField.field[col][row] = this_current.getDirectionVector();
+
+        // Update the obstacles, used for enemy AI
         obstacles[col][row] = this_current;
+
         addCurrentObject(this_current);
     }
 
@@ -656,5 +673,24 @@ public class LevelModel {
         Texture t = new Texture(pix);
         t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         return t;
+    }
+
+    /** Apply current effect to all applicable objects. Linear Combination Model */
+    public void updateAllCurrentEffects(){
+        for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o); } }
+    }
+
+    /** TODO: There are two ways of applying vector field, through rotational physics or though movement linear
+     * combinations. Both make use of CurrentField.java
+     * Rotational physics is achieved by rotational movement of objects in current from direction and linear movement
+     * from magnitude. Represented by act(). this require combining class Actor and class Obstacles since the two has
+     * conflicting physics.
+     * Linear combinations model does not deal with rotations and simply calculate the vector linear combinations of
+     * the nearby vectors in the field. Might have error in corner cases. I have tested it pretty thoroughly and debugged.
+     * I choose to implement the second one and we can switch to the first one if needed.  */
+    public void updatePlayerCurrentEffects(float dt){
+        raft.act(dt);
+        /* OR */
+        currentField.updateCurrentEffects(raft);
     }
 }

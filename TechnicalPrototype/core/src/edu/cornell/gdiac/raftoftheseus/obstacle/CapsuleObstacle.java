@@ -155,7 +155,7 @@ public abstract class CapsuleObstacle extends GameObject {
      *
      * @return the orientation of this capsule
      */
-    public Orientation getOrientation() { 
+    public Orientation getObstacleOrientation() {
     	return orient; 
     }
     

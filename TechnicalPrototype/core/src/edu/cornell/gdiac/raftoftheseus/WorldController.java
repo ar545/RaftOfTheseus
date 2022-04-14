@@ -70,7 +70,7 @@ public class WorldController implements Screen, ContactListener {
     public static int WORLD_POSIT = 2;
 
     /** Scale for the health bar */
-    private static float HEALTH_BAR_SCALE = 0.6f;
+    private static final float HEALTH_BAR_SCALE = 0.6f;
 
 
     // FIELDS
@@ -205,10 +205,8 @@ public class WorldController implements Screen, ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-
-        // return if no canvas pointer
         if(canvas == null)
-            return;
+            return; // return if no canvas pointer
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
@@ -216,7 +214,6 @@ public class WorldController implements Screen, ContactListener {
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
         int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
         levelModel.getPlayer().animationFrame = frame % 19; // TODO don't hardcode number of frames in animation
-
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
@@ -430,17 +427,12 @@ public class WorldController implements Screen, ContactListener {
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
 
-//    /** draw a background for the sea
-//     * Precondition & post-condition: the game canvas is open */
-//    private void drawMovingBackground(float pixel) {
-//=======
-    /** draws background water and moving currents (using shader) */
+    /** draws background water (for the sea) and moving currents (using shader)
+     * Precondition & post-condition: the game canvas is open */
     private void drawWater() {
         if (USE_SHADER_FOR_WATER)
             canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
-//        float pixel = 100/3.0f;
         float pixel = 1;
-//>>>>>>> main
         float x_scale = levelModel.boundsVector2().x * pixel;
         float y_scale = levelModel.boundsVector2().y * pixel;
         if (!USE_SHADER_FOR_WATER)
@@ -506,26 +498,23 @@ public class WorldController implements Screen, ContactListener {
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
 
     /**
-     * Returns whether to process the update loop
-     *
+     * Returns whether to process the update loop.
      * At the start of the update loop, we check if it is time
      * to switch to a new game mode.  If not, the update proceeds
      * normally.
      *
      * @param dt	Number of seconds since last animation frame
-     *
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
+        // NEW: Ask the level model to process current effects on objects
+        levelModel.updateAllCurrentEffects();
+
         InputController input = InputController.getInstance();
         input.readInput();
 
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
-
-//        if (listener == null) {
-//            return true;
-//        }
 
         // Now it is time to maybe switch screens.
         if (input.didExit() || exitPressed) {
@@ -544,7 +533,7 @@ public class WorldController implements Screen, ContactListener {
             return false;
         }
 
-        if ((complete && !failed) || failed) { return false; }
+        if (complete || failed) { return false; }
 
         // Handle resets
         if (input.didReset()) {
@@ -610,7 +599,6 @@ public class WorldController implements Screen, ContactListener {
      */
     public void update(float dt){
         // Process actions in object model
-
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
@@ -653,7 +641,6 @@ public class WorldController implements Screen, ContactListener {
     /** get enemies take actions according to their AI */
     private void resolveEnemies(float dt) {
         PooledList<Shark> el = levelModel.getEnemies();
-
         for (int i = 0; i< el.size(); i++) {
             Shark shark = el.get(i);
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
@@ -662,9 +649,7 @@ public class WorldController implements Screen, ContactListener {
         for (Hydra h : levelModel.getHydras()) {
             levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
             h.setSee(hydraSight.getCanSee());
-            if(h.willAttack()){
-                createBullet(h.getPosition(), levelModel.getPlayer());
-            }
+            if(h.willAttack()) {createBullet(h.getPosition(), levelModel.getPlayer());}
             h.update(dt);
         }
 
@@ -693,6 +678,7 @@ public class WorldController implements Screen, ContactListener {
 
         // Turn the physics engine crank.
         levelModel.world.step(WORLD_STEP, WORLD_VELOCITY,WORLD_POSIT);
+
         // update player health based on movement and distance, then check if dead
         Raft player = levelModel.getPlayer();
         player.applyMoveCost(dt);
@@ -719,6 +705,7 @@ public class WorldController implements Screen, ContactListener {
         resolveMusic();
     }
 
+    // TODO: where should this field belong?
     private boolean wasInDanger = false;
 
     /** Update the level themed music according the game status */
@@ -826,15 +813,10 @@ public class WorldController implements Screen, ContactListener {
 
 
     /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
-    /**
-     * Remove a new bullet from the world.
-     *
+    /** Remove a new bullet from the world.
      * @param  bullet   the bullet to remove
      */
-    public void removeBullet(GameObject bullet) {
-        bullet.setDestroyed(true);
-//        plopId = playSound( plopSound, plopId );
-    }
+    public void removeBullet(GameObject bullet) {bullet.setDestroyed(true);}
 
     /**
      * Callback method for the start of a collision
@@ -854,14 +836,14 @@ public class WorldController implements Screen, ContactListener {
         try {
             GameObject bd1 = (GameObject) body1.getUserData();
             GameObject bd2 = (GameObject) body2.getUserData();
-            // Check for object interaction with current
-            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
-                enterCurrent((Current) bd1, bd2);
-            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
-                enterCurrent((Current) bd2, bd1);
-            }
+            // Check for object interaction with current. Cancelled due to new implementation
+//            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
+//                enterCurrent((Current) bd1, bd2);
+//            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
+//                enterCurrent((Current) bd2, bd1);
+//            } else
             // Check for bullet collision with object (terrain or enemy)
-            else if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
+             if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
                 ResolveCollision((Bullet) bd1, bd2);
             }else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
                 ResolveCollision((Bullet) bd2, bd1);
@@ -901,13 +883,16 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    /**
-     * Callback method for the end of a collision
-     *
+    /** Callback method for the end of a collision
      * This method is called when two objects cease to touch.
-     */
+     * This was used in the collision current model in Technical prototype, and has been commented out for now. */
     @Override
     public void endContact(Contact contact) {
+//        collisionCurrentMethod(contact);
+    }
+
+    /** The collision current model of exit current in Technical prototype */
+    public void collisionCurrentMethod(Contact contact){
         Fixture fix1 = contact.getFixtureA();
         Fixture fix2 = contact.getFixtureB();
         Body body1 = fix1.getBody();
