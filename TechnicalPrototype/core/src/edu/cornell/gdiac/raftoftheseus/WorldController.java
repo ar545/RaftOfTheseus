@@ -723,7 +723,6 @@ public class WorldController implements Screen, ContactListener {
 
     /** Update the level themed music according the game status */
     private void resolveMusic() {
-        SoundController.getInstance().updateState();
         boolean nowInDanger = false;
         for(SharkController ai : controls){
             if(ai.isAlive() && ai.getState() == Shark.enemyState.CHASE){
@@ -737,6 +736,7 @@ public class WorldController implements Screen, ContactListener {
         if(wasInDanger && !nowInDanger){
             SoundController.getInstance().tradeMusic(true);
         }
+        SoundController.getInstance().updateMusic();
         wasInDanger = nowInDanger;
     }
 

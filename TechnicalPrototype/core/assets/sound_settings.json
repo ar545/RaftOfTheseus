@@ -2,8 +2,9 @@
   "music_volume": 0.5,
   "sfx_volume": 0.3,
   "decay_distance": 400.0,
-  "trade_rate": 1000,
+  "trade_rate": 0.005,
   "trade_threshold": 0.001,
+  "trade_time" : 1000,
   "sound_names" : {
     "current_flow": "sounds/Sfx_Current_Flow1.ogg",
     "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",

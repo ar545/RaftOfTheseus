@@ -21,7 +21,11 @@ public class SoundController {
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
     /** Speed taken to transition music in miliseconds. */
-    private long tradeRate = 5000L;
+    private float tradeRate = 0.0001f;
+    /** Speed taken to transition music in miliseconds. */
+    private float tradeThreshold = 0.0001f;
+    /** Speed taken to transition music in miliseconds. */
+    private long tradeTime = 1000L;
     /** Whether or not fading in is complete */
     private boolean fadeInDone = false;
     /** Whether or not fading in is complete */
@@ -77,7 +81,9 @@ public class SoundController {
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         sfxVolume = set.getFloat("sfx_volume", 1.0f);
         musicVolume = set.getFloat("music_volume", 1.0f);
-        tradeRate = set.getLong("trade_rate", 1000L);
+        tradeRate = set.getFloat("trade_rate", 0.0001f);
+        tradeThreshold = set.getFloat("trade_threshold", 0.00001f);
+        tradeTime = set.getLong("trade_time", 1000L);
         // Get sfx
         JsonValue sfxnames = set.get("sound_names");
         for(JsonValue s : sfxnames){
@@ -267,6 +273,21 @@ public class SoundController {
     }
 
     /**
+     *
+     * @param index
+     * @param volume
+     * @param pos
+     */
+    private void playMusic(String index, int volume, float pos){
+        Music m = checkMusic(index);
+        if (!m.isPlaying()) {
+            m.setVolume(volume);
+            m.setPosition(pos);
+            m.play();
+        }
+    }
+
+    /**
      * For looping menu music only.
      * @param name
      * @param m
@@ -292,6 +313,92 @@ public class SoundController {
 
 
     // TODO DYNAMIC MUSIC
+
+    /**
+     * Trades explore/danger music for soundtrack switching.
+     * Returns if either name does not exist || name1 is not playing || name2 is playing
+     * @param index1 either "explore" or "danger"
+     * @param index2 same as index1 but reversed.
+     */
+    private boolean tradeMusic(String index1, String index2){
+        // Gets music and check precondition
+        Music m1 = checkMusic(index1);
+        Music m2 = checkMusic(index2);
+        if ((!m1.isPlaying() && m2.isPlaying())) return false;
+        if(m1.isPlaying() && !m2.isPlaying()){
+            playMusic(index2, 0, m1.getPosition());
+        }
+        // Otherwise both are still playing, in state of flux
+        return true;
+    }
+
+    /**
+     * Trades music with name1 out and name2 in for soundtrack switching if reverse is false.
+     * Should be called only when the player situation CHANGES from EXPLORE to DANGER (2 enemies nearby).
+     * @param reverse Whether danger is faded out for explore music
+     */
+    public void tradeMusic(boolean reverse){
+        if (STATE == MusicState.DANGER && reverse){
+            if (tradeMusic("danger", "explore")){
+                STATE = MusicState.LEAVE_DANGER;
+            }
+        }
+        else if (STATE == MusicState.SAFE && !reverse){
+            if (tradeMusic("explore", "danger")){
+                STATE = MusicState.ENTER_DANGER;
+            }
+        }
+    }
+
+
+    /**
+     * Takes the music with key index and decreases its volume by dv.
+     * @param index key of music
+     * @param dv between 0-1
+     */
+    private void changeMusicVolume(String index, float dv){
+        Music m = music.get(index);
+        if (m != null && m.isPlaying()) {
+            m.setVolume(m.getVolume()-dv);
+        }
+    }
+
+    /**
+     * Takes the music with key index and decreases its volume by dv.
+     * @param index key of music
+     * @param volume between 0-1
+     */
+    private void setMusicVolume(String index, float volume){
+        Music m = music.get(index);
+        if (m != null && m.isPlaying()) {
+            m.setVolume(volume);
+        }
+    }
+
+    /**
+     * Method to call every update loop to transition the music.
+     */
+    public void updateMusic(){
+        if(STATE == MusicState.ENTER_DANGER){
+            if(music.get("explore").getVolume() < tradeThreshold){
+                setMusicVolume("danger", musicVolume);
+                setMusicVolume("explore", 0);
+                STATE = MusicState.DANGER;
+            } else {
+                changeMusicVolume("explore", tradeRate);
+                changeMusicVolume("danger", -tradeRate);
+            }
+        }
+        else if(STATE == MusicState.LEAVE_DANGER){
+            if (music.get("danger").getVolume() < tradeThreshold){
+                setMusicVolume("explore", musicVolume);
+                STATE = MusicState.SAFE;
+            } else {
+                changeMusicVolume("danger", tradeRate);
+                changeMusicVolume("explore", -tradeRate);
+            }
+        }
+    }
 
     private void setFadeInDone(boolean f){
         fadeInDone = f;
@@ -329,12 +436,13 @@ public class SoundController {
         if (music.get(index) == null) throw new RuntimeException();
         fadeOut = new Trader("fadeOut", index, false);
     }
+
     /**
      * Trades music with name1 out and name2 in for soundtrack switching if reverse is false.
      * Should be called only when the player situation CHANGES from EXPLORE to DANGER (2 enemies nearby).
      * @param reverse Whether danger is faded out for explore music
      */
-    public void tradeMusic(boolean reverse){
+    public void tradeThreadMusic(boolean reverse){
         switch (STATE){
             case SAFE:
                 if (!reverse){
@@ -354,7 +462,7 @@ public class SoundController {
     /**
      * Function to check whether fading is finished.
      */
-    public void updateState(){
+    public void updateMusicThread(){
         switch (STATE) {
             case LEAVE_DANGER:
                 if (FadeDone()) {
@@ -389,26 +497,24 @@ public class SoundController {
         // execution of thread starts from run() method
         public void run()
         {
+            long timeStamp = System.currentTimeMillis();
+            float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeTime;
             if(fadeIn){
-                long timeStamp = System.currentTimeMillis();
-                float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
                 float maxVolume = musicVolume;
                 while(percentage * maxVolume <= maxVolume && !exit){
                     music.get(index).setVolume(percentage * maxVolume);
                     print(index, ": volume is ");
-                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeTime;
                 }
                 music.get(index).setVolume(percentage * maxVolume);
                 setFadeInDone(true);
             } else {
-                long timeStamp = System.currentTimeMillis();
-                float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
                 float minVolume = 0;
                 float maxVolume = music.get(index).getVolume();
                 while((1 - percentage) * maxVolume >= minVolume && !exit){
                     print(index, ": volume is ");
                     music.get(index).setVolume((1 - percentage) * maxVolume);
-                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeTime;
                 }
                 music.get(index).setVolume((1 - percentage) * maxVolume);
                 setFadeOutDone(true);
