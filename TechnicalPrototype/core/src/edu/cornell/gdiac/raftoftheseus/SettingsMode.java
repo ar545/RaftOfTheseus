@@ -211,7 +211,7 @@ public class SettingsMode implements Screen {
         sliderBarDrawable.setMinHeight(10);
         SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
 
-        musicVolume = SoundController.getInstance().getMasterMusicVolume() * 1000f;
+        musicVolume = SoundController.getInstance().getMasterMusicVolume() * 100f;
         Label musicValueLabel = new Label(String.valueOf(musicVolume), textStyle);
         musicValueLabel.setFontScale(0.35f);
 

@@ -69,6 +69,7 @@ public class Bullet extends BoxObstacle {
         } else if ( BULLET_RANGE_FLY <= dist && dist <= BULLET_RANGE_FALL) {
             super.applyDrag();
         } else {
+            SoundController.getInstance().playSFX("spear_splash");
             this.setDestroyed(true);
         }
     }

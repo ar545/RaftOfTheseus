@@ -52,5 +52,6 @@
  "tilewidth":48,
  "type":"map",
  "version":"1.8",
- "width":12
+ "width":12,
+ "music_preset": 2
 }

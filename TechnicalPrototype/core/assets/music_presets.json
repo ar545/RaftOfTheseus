@@ -9,8 +9,9 @@
   },
   "preset2": {
     "background": "b1",
-    "explore": "e1",
-    "danger": "d1"},
+    "explore": "e2",
+    "danger": "d2"
+  },
   "preset3": {
     "background": "b1",
     "explore": "e1",
