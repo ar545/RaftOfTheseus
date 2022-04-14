@@ -2,12 +2,10 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Rectangle;
@@ -22,15 +20,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.raftoftheseus.obstacle.Obstacle;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
-
 import java.util.Iterator;
-
 import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
 
 public class WorldController implements Screen, ContactListener {
@@ -509,16 +503,17 @@ public class WorldController implements Screen, ContactListener {
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
-        // NEW: Ask the level model to process current effects on objects
+        // NEW*: Ask the level model to process current effects on objects and light effects :*NEW
         levelModel.updateAllCurrentEffects();
+        levelModel.updateLights();
 
+        // Read the player input
         InputController input = InputController.getInstance();
         input.readInput();
-
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) { map = !map; } // Toggle map
 
-        // Now it is time to maybe switch screens.
+        // Now it is time to maybe switch screens. First, check for input trigger screen switch
         if (input.didExit() || exitPressed) {
             pause();
             listener.exitScreen(this, EXIT_QUIT);
@@ -537,10 +532,8 @@ public class WorldController implements Screen, ContactListener {
 
         if (complete || failed) { return false; }
 
-        // Handle resets
-        if (input.didReset()) {
-            reset();
-        }
+        // Then, handle resets trigger by input
+        if (input.didReset()) {reset();}
 
         if (input.didPrevious()) {
             pause();
@@ -561,7 +554,7 @@ public class WorldController implements Screen, ContactListener {
         return true;
     }
 
-
+    /** The master bullet creation function. Add a new bullet to the world and send it in the right direction. */
     private void createBullet(Vector2 facing, Raft player){
         Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f), true);
         bullet.setTexture(bullet_texture);
@@ -572,9 +565,7 @@ public class WorldController implements Screen, ContactListener {
         player.addHealth(Bullet.BULLET_DAMAGE);
     }
 
-    /**
-     * Add a new bullet to the world and send it in the right direction.
-     */
+    /** From shark, Add a new bullet to the world and send it in the right direction. */
     private void createBullet(Shark nearestShark) {
         Raft player = levelModel.getPlayer();
         // Compute position and velocity
@@ -582,6 +573,7 @@ public class WorldController implements Screen, ContactListener {
         createBullet(facing, player);
     }
 
+    /** From fire location, Add a new bullet to the world and send it in the right direction. */
     private void createBullet(Vector2 firelocation) {
         Raft player = levelModel.getPlayer();
         // Compute position and velocity
@@ -589,16 +581,9 @@ public class WorldController implements Screen, ContactListener {
         createBullet(facing, player);
     }
 
-    /**
-     * The core gameplay loop of this world.
-     *
-     * This method contains the specific update code for this mini-game. It does
-     * not handle collisions, as those are managed by the parent class WorldController.
-     * This method is called after input is read, but before collisions are resolved.
-     * The very last thing that it should do is apply forces to the appropriate objects.
-     *
-     * @param dt	Number of seconds since last animation frame
-     */
+    /** The core gameplay loop of this world. This method is called after input is read, but before collisions
+     * are resolved. The very last thing that it should do is apply forces to the appropriate objects.
+     * @param dt	Number of seconds since last animation frame */
     public void update(float dt){
         // Process actions in object model
         InputController ic = InputController.getInstance();
@@ -663,15 +648,10 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    /**
-     * Processes physics
-     *
-     * Once the update phase is over, but before we draw, we are ready to handle
-     * physics.  The primary method is the step() method in world.  This implementation
-     * works for all applications and should not need to be overwritten.
-     *
-     * @param dt	Number of seconds since last animation frame
-     */
+    /** Processes physics
+     * Once the update phase is over, but before we draw, we are ready to handle physics.
+     * The primary method is the step() method in world. Also, update player health and garbage collection
+     * @param dt	Number of seconds since last animation frame */
     public void postUpdate(float dt) {
         // Add any objects created by actions
         while (!levelModel.getAddQueue().isEmpty()) {

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -132,6 +133,10 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
         this.star = INITIAL_PLAYER_STAR;
         fixture.filter.categoryBits = CATEGORY_PLAYER;
         fixture.filter.maskBits = MASK_PLAYER;
+//        Filter filter = new Filter();
+//        filter.categoryBits = (short) 1;
+//        filter.maskBits = (short) 0;
+//        setFilterData(filter);
     }
 
     /** Add one star to the player star count */

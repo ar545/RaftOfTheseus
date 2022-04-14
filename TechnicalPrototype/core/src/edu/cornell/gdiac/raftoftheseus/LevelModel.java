@@ -327,6 +327,12 @@ public class LevelModel {
         bounds = null;
         scale  = null;
         world  = null;
+
+        light.remove();
+        if (rayhandler != null) {
+            rayhandler.dispose();
+            rayhandler = null;
+        }
     }
 
     /**
@@ -605,6 +611,9 @@ public class LevelModel {
      * Precondition and Post-condition: canvas is closed */
     public void renderLights(){ if (rayhandler != null) { rayhandler.render(); } }
 
+    /** Update the light effect of the world */
+    public void updateLights(){ if (rayhandler != null) { rayhandler.update(); } }
+
     /** Add wood Objects to the world, using the Json value for goal
      * @param row the row gird position
      * @param col the column grid position
@@ -691,9 +700,9 @@ public class LevelModel {
 
         // Create a filter to exclude see through items
         Filter f = new Filter();
-//        f.maskBits = bitStringToComplement(lightJson.getString("excludeBits"));
+        f.maskBits = (short) lightJson.getInt("excludeBits");
         point.setContactFilter(f);
-        point.setActive(false); // TURN ON LATER
+        point.setActive(true); // TURN ON NOW
         return point;
     }
 
@@ -713,11 +722,11 @@ public class LevelModel {
 
         RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
         RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
-        rayhandler = new RayHandler(world, Gdx.graphics.getWidth(), Gdx.graphics.getWidth());
+        rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height); // Gdx.graphics.getWidth(), Gdx.graphics.getWidth()
         rayhandler.setCombinedMatrix(raycamera);
 
         float[] color = lightJson.get("color").asFloatArray();
-        rayhandler.setAmbientLight(color[0], color[0], color[0], color[0]);
+        rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
         int blur = lightJson.getInt("blur");
         rayhandler.setBlur(blur > 0);
         rayhandler.setBlurNum(blur);
