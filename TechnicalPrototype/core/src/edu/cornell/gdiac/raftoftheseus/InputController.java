@@ -64,9 +64,9 @@ public class InputController {
 	/** Whether the exit button was pressed. */
 	private boolean exitPressed;
 	private boolean exitPrevious;
-	/** Whether the pause button was pressed */
-	private boolean pausePressed;
-	private boolean pausePrevious;
+	/** Whether the settings button was pressed */
+	private boolean settingsPressed;
+	private boolean settingsPrevious;
 
 	/*=*=*=*=*=*=*=*=*=* PLAYER ACTIONS *=*=*=*=*=*=*=*=*=*/
 
@@ -254,7 +254,7 @@ public class InputController {
 	/** @return true if the sprint button was pressed. */
 	public boolean didSprint() { return sprintPressed; }
 	/** @return true if the settings button was pressed. */
-	public boolean didPause() { return pausePressed & !pausePrevious; }
+	public boolean didSettings() { return settingsPressed & !settingsPrevious; }
 	/** @return true if the mouse is being used. */
 	public boolean mouseActive() { return controlScheme == ControlScheme.KeyboardMouse; }
 	/** Find whether the player moved and should reduce health . */
@@ -281,7 +281,7 @@ public class InputController {
 		firePrevious = firePressed;
 		debugPrevious  = debugPressed;
 		exitPrevious = exitPressed;
-		pausePrevious = pausePressed;
+		settingsPrevious = settingsPressed;
 		tabPrevious = tabPressed;
 		changePrevious = changePressed;
 
@@ -297,7 +297,7 @@ public class InputController {
 		debugPressed  = Gdx.input.isKeyPressed(mappings.get("debug"));
 		resetPressed = Gdx.input.isKeyPressed(mappings.get("reset"));
 		exitPressed  = Gdx.input.isKeyPressed(mappings.get("exit"));
-		pausePressed = Gdx.input.isKeyPressed(mappings.get("pause"));
+		settingsPressed = Gdx.input.isKeyPressed(mappings.get("settings"));
 
 		// Player action keys
 		changePressed = Gdx.input.isKeyPressed(mappings.get("change controls"));

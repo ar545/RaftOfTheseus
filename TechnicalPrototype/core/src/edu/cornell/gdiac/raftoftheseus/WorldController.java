@@ -1,7 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
@@ -15,7 +14,6 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -23,7 +21,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
@@ -37,9 +34,6 @@ import java.util.Iterator;
 import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
 
 public class WorldController implements Screen, ContactListener {
-
-
-    // TODO -- add enums to switch between regular play mode, settings, pause, and transition
 
     /**
      * Method to call after loading to set all constants in World Controller,
@@ -91,7 +85,6 @@ public class WorldController implements Screen, ContactListener {
     private Stage stage;
     private Table table;
     private Skin skin;
-    private InputMultiplexer plexer;
 
     //TEXTURE
     /** The texture for the colored health bar */
@@ -106,18 +99,14 @@ public class WorldController implements Screen, ContactListener {
     protected BitmapFont displayFont;
     /** Texture for map background */
     protected Texture mapBackground;
-    /** Texture for game background */
+    /** Texture for GAME background */
     protected Texture gameBackground;
-    /** Texture for pause screen */
-    protected Texture pauseBackground;
     /** Texture for game background when using shader */
     protected Texture blueTexture;
     /** Texture for failed level */
     protected Texture failedBackground;
     /** Texture for success backgrounds where the index corresponds to the score */
     protected Texture[] successBackgrounds;
-    /** Whether the pause screen is built */
-    private boolean pauseBuilt;
     /** Whether the transition screen is built  */
     private boolean transitionBuilt;
 
@@ -135,8 +124,8 @@ public class WorldController implements Screen, ContactListener {
     private boolean failed;
     /** Whether the next button was clicked */
     private boolean nextPressed;
-    /** Whether the pause button was clicked on the transition screen */
-    private boolean pausePressed;
+    /** Whether the settings button was clicked on the transition screen */
+    private boolean settingsPressed;
     /** Player score */
     private int playerScore;
     /** Whether the map mode is active */
@@ -149,8 +138,6 @@ public class WorldController implements Screen, ContactListener {
     private SharkController[] controls;
     /** Find whether a hydra can see the player. */
     private HydraRayCast hydraSight;
-    /** Whether the settings button was pressed */
-    private boolean settingsPressed;
     /** Whether the exit button was pressed */
     private boolean exitPressed;
 
@@ -177,12 +164,10 @@ public class WorldController implements Screen, ContactListener {
         this.nextPressed = false;
         this.exitPressed = false;
         this.stage = new Stage();
-        this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        this.skin = new Skin();
         this.table = new Table();
-        this.plexer = new InputMultiplexer();
         hydraSight = new HydraRayCast();
         startTime = System.currentTimeMillis();
-        pauseBuilt = false;
         transitionBuilt = false;
     }
 
@@ -297,10 +282,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // Final message
-        if (pausePressed) {
-            drawPause();
-        }
-        if (complete && !failed || failed) {
+        if (complete && !failed) {
             if(!wasComplete && complete) {
                 SoundController.getInstance().playSFX("level_complete");
                 SoundController.getInstance().setLevelComplete();
@@ -308,134 +290,21 @@ public class WorldController implements Screen, ContactListener {
             }
             SoundController.getInstance().fadeMusic();
             drawTransition();
-        } 
+//            displayFont.setColor(Color.YELLOW);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+//            canvas.end();
+        } else if (failed) {
+            drawTransition();
+//            displayFont.setColor(Color.RED);
+//            canvas.begin(); // DO NOT SCALE
+//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+//            canvas.end();
+        }
+
         // draw a circle showing how far the player can move before they die
         float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-    }
-
-    private void drawTransparentOverlay() {
-        Pixmap pixmap = new Pixmap(1,1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.BLACK);
-        pixmap.fillRectangle(0, 0, 1, 1);
-        Texture darkBackgroundTexture = new Texture(pixmap);
-        pixmap.dispose();
-
-        Image transparentBackgroundTexture = new Image(darkBackgroundTexture);
-        transparentBackgroundTexture.setSize(canvas.getWidth(),canvas.getHeight());
-        transparentBackgroundTexture.setColor(0, 0, 0, 0.6f);
-        stage.addActor(transparentBackgroundTexture);
-    }
-
-    private void drawPause() {
-        if (!pauseBuilt) {
-            pauseBuilt = true;
-            drawTransparentOverlay();
-            table.setFillParent(true);
-            table.align(Align.center);
-            stage.addActor(table);
-            skin.add("pause_background", pauseBackground);
-            table.setBackground(skin.getDrawable("pause_background"));
-
-            TextButton resumeButton = new TextButton("RESUME", skin);
-            resumeButton.getLabel().setFontScale(0.4f);
-            resumeButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    super.enter(event, x, y, pointer, fromActor);
-                    resumeButton.getLabel().setColor(Color.GOLD);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    resumeButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    super.clicked(event, x, y);
-                    pausePressed = false;
-                }
-            });
-            table.add(resumeButton);
-            table.row();
-
-            TextButton restartButton = new TextButton("RESTART", skin);
-            restartButton.getLabel().setFontScale(0.4f);
-            restartButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    super.enter(event, x, y, pointer, fromActor);
-                    restartButton.getLabel().setColor(Color.GOLD);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    restartButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    super.clicked(event, x, y);
-                    reset();
-                }
-            });
-            table.add(restartButton);
-            table.row();
-
-            TextButton settingsButton = new TextButton("SETTINGS", skin);
-            settingsButton.getLabel().setFontScale(0.4f);
-            table.add(settingsButton);
-            settingsButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    super.enter(event, x, y, pointer, fromActor);
-                    settingsButton.getLabel().setColor(Color.GOLD);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    settingsButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    super.clicked(event, x, y);
-                    settingsPressed = true;
-
-                }
-            });
-            table.row();
-
-            TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.4f);
-            exitButton.getLabel().setColor(Color.GOLD);
-            exitButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    super.enter(event, x, y, pointer, fromActor);
-                    exitButton.getLabel().setColor(Color.GRAY);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    exitButton.getLabel().setColor(Color.GOLD);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    super.clicked(event, x, y);
-                    exitPressed = true;
-                }
-            });
-            table.add(exitButton);
-        }
-        stage.act();
-        stage.draw();
     }
 
     private void drawTransition() {
@@ -447,40 +316,40 @@ public class WorldController implements Screen, ContactListener {
                 buildTransitionScreen(failedBackground, true);
             }
         }
+        if (transitionBuilt) {
+            Gdx.input.setInputProcessor(stage);
+        }
         stage.act();
         stage.draw();
     }
 
     private void buildTransitionScreen(Texture background, boolean didFail) {
-        table.clear();
-        stage.clear();
-        drawTransparentOverlay();
+        Pixmap pixmap = new Pixmap(1,1, Pixmap.Format.RGBA8888);
+        pixmap.setColor(Color.BLACK);
+        pixmap.fillRectangle(0, 0, 1, 1);
+        Texture darkBackgroundTexture = new Texture(pixmap);
+        pixmap.dispose();
+
+        Image transparentBackgroundTexture = new Image(darkBackgroundTexture);
+        transparentBackgroundTexture.setSize(canvas.getWidth(),canvas.getHeight());
+        transparentBackgroundTexture.setColor(0, 0, 0, 0.6f);
+        stage.addActor(transparentBackgroundTexture);
+
         table.setFillParent(true);
         table.align(Align.center);
         stage.addActor(table);
-        skin.add("transition_background", background);
-        table.setBackground(skin.getDrawable("transition_background"));
+        skin.add("background", background);
+        skin.add("font", displayFont);
+        table.setBackground(skin.getDrawable("background"));
 
-        Table part1 = new Table();
-        TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", skin);
-        mainButton.getLabel().setFontScale(0.5f);
+        TextButtonStyle buttonStyle = new TextButtonStyle();
+        buttonStyle.font = skin.getFont("font");
+        TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", buttonStyle);
+        mainButton.getLabel().setFontScale(0.6f);
         float buttonWidth =  mainButton.getWidth();
-        mainButton.addListener(new ClickListener() {
+        mainButton.addListener(new ChangeListener() {
             @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                super.enter(event, x, y, pointer, fromActor);
-                mainButton.getLabel().setColor(Color.GOLD);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                mainButton.getLabel().setColor(Color.WHITE);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
+            public void changed(ChangeEvent event, Actor actor) {
                 if (didFail) {
                     reset();
                 } else {
@@ -488,84 +357,42 @@ public class WorldController implements Screen, ContactListener {
                 }
             }
         });
-        part1.add(mainButton).expandX().align(Align.center);
-        table.add(part1);
+        float padding = (canvas.getWidth() - buttonWidth) / 2f;
+        table.add(mainButton).expandX().padLeft(padding - buttonWidth / 2f).padRight(-padding);
         table.row();
 
-        Table part2 = new Table();
-        part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
-            TextButton replayButton = new TextButton("REPLAY", skin);
+            TextButton replayButton = new TextButton("REPLAY", buttonStyle);
             replayButton.getLabel().setFontScale(0.4f);
-            replayButton.addListener(new ClickListener() {
+            replayButton.addListener(new ChangeListener() {
                 @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    super.enter(event, x, y, pointer, fromActor);
-                    replayButton.getLabel().setColor(Color.GOLD);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    replayButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    super.clicked(event, x, y);
+                public void changed(ChangeEvent event, Actor actor) {
                     reset();
                 }
             });
-            part2.add(replayButton).expandX().padRight(70);
+            table.add(replayButton).expandX().padLeft(200);
         }
 
-        TextButton settingsButton = new TextButton("SETTINGS", skin);
+        TextButton settingsButton = new TextButton("SETTINGS", buttonStyle);
         settingsButton.getLabel().setFontScale(0.4f);
-        settingsButton.addListener(new ClickListener() {
+        settingsButton.addListener(new ChangeListener() {
             @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                super.enter(event, x, y, pointer, fromActor);
-                settingsButton.getLabel().setColor(Color.GOLD);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                settingsButton.getLabel().setColor(Color.WHITE);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
+            public void changed(ChangeEvent event, Actor actor) {
                 settingsPressed = true;
             }
         });
-        part2.add(settingsButton).expandX();
+        table.add(settingsButton).expandX().padLeft(didFail ? 325 : 0);
 
-        TextButton exitButton = new TextButton("EXIT", skin);
+        TextButton exitButton = new TextButton("EXIT", buttonStyle);
         exitButton.getLabel().setFontScale(0.4f);
         exitButton.getLabel().setColor(Color.GOLD);
-        exitButton.addListener(new ClickListener() {
+        exitButton.addListener(new ChangeListener() {
             @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                super.enter(event, x, y, pointer, fromActor);
-                exitButton.getLabel().setColor(Color.GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                exitButton.getLabel().setColor(Color.GOLD);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                super.clicked(event, x, y);
+            public void changed(ChangeEvent event, Actor actor) {
                 exitPressed = true;
             }
         });
-        part2.add(exitButton).expandX();
-        table.add(part2);
+        table.add(exitButton).expandX().padRight(didFail ? 325 : 200);
         table.row();
     }
 
@@ -655,9 +482,9 @@ public class WorldController implements Screen, ContactListener {
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
+        displayFont = directory.getEntry( "diogenes" ,BitmapFont.class);
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
-        pauseBackground = directory.getEntry("pause_background", Texture.class);
         blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         failedBackground = directory.getEntry("failed_background", Texture.class);
@@ -665,6 +492,7 @@ public class WorldController implements Screen, ContactListener {
         for (int i = 0; i < 4; i++) {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
+
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
         this.directory = directory;
@@ -700,7 +528,6 @@ public class WorldController implements Screen, ContactListener {
         // Now it is time to maybe switch screens.
         if (input.didExit() || exitPressed) {
             pause();
-            exitPressed = false;
             listener.exitScreen(this, EXIT_QUIT);
             return false;
         } else if (input.didNext() || nextPressed) {
@@ -708,26 +535,25 @@ public class WorldController implements Screen, ContactListener {
             nextPressed = false;
             listener.exitScreen(this, EXIT_NEXT);
             return false;
-        }  else if (settingsPressed) {
+        } else if (input.didSettings() || settingsPressed)  {
             pause();
             settingsPressed = false;
             listener.exitScreen(this, EXIT_SETTINGS);
             return false;
-        } else if (input.didPause() || pausePressed)  {
-            pause();
-            pausePressed = true;
-            return false;
-        } else if (input.didPrevious()) {
-            pause();
-            listener.exitScreen(this, EXIT_PREV);
-            return false;
-        } else if (input.didReset()) {
-            reset();
         }
 
         if (complete || failed) { return false; }
 
-        if (countdown > 0) {
+        // Handle resets
+        if (input.didReset()) {
+            reset();
+        }
+
+        if (input.didPrevious()) {
+            pause();
+            listener.exitScreen(this, EXIT_PREV);
+            return false;
+        } else if (countdown > 0) {
             countdown--;
         } else if (countdown == 0) {
             if (failed) {
@@ -980,7 +806,6 @@ public class WorldController implements Screen, ContactListener {
     public void show() {
         // Useless if called in outside animation loop
         active = true;
-        Gdx.input.setInputProcessor(stage);
     }
 
     /**
@@ -1303,13 +1128,10 @@ public class WorldController implements Screen, ContactListener {
         levelModel.loadLevel(level_int, level_data);
         prepareEnemy();
         stage.clear();
-        table.clear();
-        plexer.clear();
+        table = new Table();
         playerScore = 0;
-        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        skin = new Skin();
         transitionBuilt = false;
-        pausePressed = false;
-        pauseBuilt = false;
         settingsPressed = false;
         wasComplete = false;
 
