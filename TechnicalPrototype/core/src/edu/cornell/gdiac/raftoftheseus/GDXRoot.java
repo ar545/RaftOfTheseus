@@ -51,8 +51,6 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private int currentLevel = 0;
 	/** How many levels there are */
 	private int numLevels = 9;
-	/** Exit code for displaying start screen */
-	private static final int DISPLAY_START = 4;
 	/** Exit code for displaying menu screen */
 	private static final int DISPLAY_MENU = 5;
 	/** Exit code for displaying playing screen */
@@ -132,7 +130,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param exitCode The state of the screen upon exit
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
-		if (exitCode == WorldController.EXIT_PREV){
+		if (exitCode == WorldController.EXIT_PREV) {
 			SoundController.getInstance().haltSounds();
 			currentLevel = Math.max(0, currentLevel-1);
 			playing.setLevel(currentLevel);
@@ -147,30 +145,25 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			settings.setPreviousMode(DISPLAY_WORLD);
 			settings.resetPressedState();
 			settings.populate(directory);
-			settings.setIsBackMenu(true);
 			setScreen(settings);
 		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
 			settings.setScreenListener(this);
 			settings.setPreviousMode(DISPLAY_MENU);
 			settings.resetPressedState();
 			settings.populate(directory);
-			settings.setIsBackMenu(false);
+//			settings.setIsBackMenu(false);
 			setScreen(settings);
 		} else if (screen == settings) {
 			settings.resetPressedState();
 			menu.resetSettingsState();
 			switch (exitCode) {
-				case DISPLAY_START:
-					// TODO
-					break;
 				case DISPLAY_MENU:
-					SoundController.getInstance().haltSounds();
 					menu.setScreenListener(this);
 					setScreen(menu);
 					break;
 				case DISPLAY_WORLD:
 					playing.setScreenListener(this);
-					playing.setLevel(currentLevel);
+//					playing.setLevel(currentLevel);
 					setScreen(playing);
 					break;
 			}
@@ -195,6 +188,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			loading = null;
 		} else if (screen == playing) {
 			SoundController.getInstance().haltSounds();
+			menu.resetPressedState();
+			menu.resetSettingsState();
+			menu.resetPlayState();
 			menu.setScreenListener(this);
 			setScreen(menu);
 		} else if (screen == menu) {
