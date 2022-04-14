@@ -723,6 +723,7 @@ public class WorldController implements Screen, ContactListener {
 
     /** Update the level themed music according the game status */
     private void resolveMusic() {
+        SoundController.getInstance().updateState();
         boolean nowInDanger = false;
         for(SharkController ai : controls){
             if(ai.isAlive() && ai.getState() == Shark.enemyState.CHASE){
@@ -736,7 +737,6 @@ public class WorldController implements Screen, ContactListener {
         if(wasInDanger && !nowInDanger){
             SoundController.getInstance().tradeMusic(true);
         }
-        SoundController.getInstance().updateMusic();
         wasInDanger = nowInDanger;
     }
 
@@ -879,11 +879,9 @@ public class WorldController implements Screen, ContactListener {
                 ResolveCollision((Raft)bd2, (Shark) bd1);
             }
             // Check for player collision with treasure (star+)
-            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
+            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE) ||
+                    bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
                 ResolveCollision((Raft)bd1, (Treasure) bd2);
-                SoundController.getInstance().playSFX("chest_collect", false);
-            } else if(bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Treasure) bd1);
                 SoundController.getInstance().playSFX("chest_collect", false);
             }
             // Check for win condition

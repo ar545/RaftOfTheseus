@@ -93,7 +93,6 @@ public class SettingsMode implements Screen {
         active = true;
         exitPressed = false;
         menuPressed = false;
-        SoundController.getInstance().startLevelMusic();
     }
 
     /**

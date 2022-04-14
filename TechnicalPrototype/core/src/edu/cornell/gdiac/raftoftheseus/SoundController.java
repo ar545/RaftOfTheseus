@@ -1,10 +1,8 @@
 package edu.cornell.gdiac.raftoftheseus;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -23,9 +21,11 @@ public class SoundController {
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
     /** Speed taken to transition music in miliseconds. */
-    private long tradeRate = 1000L;
-    /** When transition is finished. */
-    private float tradeThreshold = 0.05f;
+    private long tradeRate = 5000L;
+    /** Whether or not fading in is complete */
+    private boolean fadeInDone = false;
+    /** Whether or not fading in is complete */
+    private boolean fadeOutDone = false;
     /** Current preset being used for music. */
     private  int musicPreset;
     /** Structure to hold all music presets for future reference. */
@@ -36,9 +36,10 @@ public class SoundController {
     private ArrayMap<String, Music> music;
     /** Whether or not a music trade is in progress. */
     private enum MusicState {
+        SAFE,
         ENTER_DANGER,
+        DANGER,
         LEAVE_DANGER,
-        STEADY
     }
     private MusicState STATE;
     /** The singleton instance of the input controller */
@@ -46,6 +47,8 @@ public class SoundController {
     /** The asset directory for getting new music. */
     private AssetDirectory directory;
     /** Boolean indicating whether music trading is in progress. */
+    Trader fadeIn;
+    Trader fadeOut;
 
     /**
      * @return the singleton instance of the input controller
@@ -70,14 +73,11 @@ public class SoundController {
     public void gatherAssets(AssetDirectory directory) {
         if (musicPresets == null) throw new NullPointerException("Constructor not called.");
         this.directory = directory;
-
         // Set sound settings values
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         sfxVolume = set.getFloat("sfx_volume", 1.0f);
         musicVolume = set.getFloat("music_volume", 1.0f);
         tradeRate = set.getLong("trade_rate", 1000L);
-        tradeThreshold = set.getFloat("trade_threshold", 0.05f);
-
         // Get sfx
         JsonValue sfxnames = set.get("sound_names");
         for(JsonValue s : sfxnames){
@@ -93,12 +93,23 @@ public class SoundController {
     }
 
     /**
-     * Checks whether both a and b are not null.
-     * @param a Any object that needs to be referenced.
-     * @param b Same as a.
+     * Check is a defensive function that simplifies checking whether the obtained sfx file is null.
+     * @param name Sfx key name
      */
-    private boolean assertObjects(Object a, Object b){
-        return a != null && b != null;
+    private Sound checkSound(String name){
+        Sound a = sfx.get(name);
+        if (a == null) throw new RuntimeException(name + "is not a valid sfx name.");
+        return a;
+    }
+
+    /**
+     * Check is a defensive function that simplifies checking whether the obtained music file is null.
+     * @param name Music key name
+     */
+    private Music checkMusic(String name){
+        Music a = music.get(name);
+        if (a == null) throw new RuntimeException(name + " is not a valid music name.");
+        return a;
     }
 
     /**
@@ -108,11 +119,13 @@ public class SoundController {
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
-        STATE = MusicState.STEADY;
+        STATE = MusicState.SAFE;
     }
 
+    /* TODO SETTINGS */
+
     /**
-     * TODO Loads music with the appropriate music instances.
+     * Sets the music according to the current preset stored.
      */
     private void setMusic(){
         music.clear();
@@ -122,24 +135,28 @@ public class SoundController {
         }
     }
 
-    // SETTINGS
-
     /**
      * Sets the values in sfx and music based on provided ids.
-     * Must be called every Controller change due to memory constraints on sounds.
+     * Must be called every WorldController or MenuController change due to memory constraints on sounds.
      * @param musicPreset is the JsonValue that contains text references to all sounds
      */
     public void setMusicPreset(int musicPreset){
-        STATE = MusicState.STEADY;
+        STATE = MusicState.SAFE;
         if (this.musicPreset != musicPreset){
             this.musicPreset = musicPreset;
             setMusic();
         }
     }
 
-    private void adjustMusicVolume(float musicVolume){
-        for(Music m: music.values()){
-            m.setVolume(m.getVolume()*musicVolume/this.musicVolume);
+    /**
+     * Changes the volume of all music files playing
+     * @param name The music to avoid volume changes.
+     */
+    private void adjustMusicVolume(String name){
+        for(String s: music.keys()){
+            if(!s.equals(name)) {
+                music.get(s).setVolume(musicVolume);
+            }
         }
     }
 
@@ -148,11 +165,12 @@ public class SoundController {
      * @param musicVolume Float between 0-1
      */
     public void setMasterMusicVolume(float musicVolume) {
-        if(musicVolume < tradeThreshold){
-            adjustMusicVolume(0.0000001f);
-        } else {
-            adjustMusicVolume(musicVolume);
-            this.musicVolume = musicVolume;
+        this.musicVolume = musicVolume;
+        switch(STATE){
+            case SAFE:
+                adjustMusicVolume("danger"); return;
+            case DANGER:
+                adjustMusicVolume("explore");
         }
     }
 
@@ -175,24 +193,24 @@ public class SoundController {
      */
     public float getMasterSFXVolume(){ return sfxVolume; }
 
-    // PLAYERS
+    /* TODO SFX PLAYERS */
+
     /**
-     * TODO Store id
      * Plays sfx with the filename name at given volume sfxvol. Returns if not found.
      * @param pan between -1 and 1.
      * @param sfxvol between 0 and 1.
      * @param name of sfx.
      * @param loop whether this sfx will loop.
      */
-    private void playSFX(float pan, float sfxvol, String name, boolean loop){
-        Sound s = sfx.get(name);
-        if (s == null) return;
+    private long playSFX(float pan, float sfxvol, String name, boolean loop){
+        Sound s = checkSound(name);
         long id;
         if (loop) {
             id = s.loop(sfxvol, 1.0f, pan);
         } else {
             id = s.play(sfxvol, 1, pan);
         }
+        return id;
     }
 
     /**
@@ -200,8 +218,8 @@ public class SoundController {
      * @param name of sfx
      * @param loop whether this sfx will loop.
      */
-    public void playSFX(String name, boolean loop){
-        playSFX(0f, sfxVolume, name, loop);
+    public long playSFX(String name, boolean loop){
+        return playSFX(0f, sfxVolume, name, loop);
     }
 
     /**
@@ -210,14 +228,21 @@ public class SoundController {
      * @param distance of source from player.
      * @param loop whether this sfx will loop.
      */
-    public void playSFX(String name, Vector2 distance, boolean loop){
+    public long playSFX(String name, Vector2 distance, boolean loop){
         // Play at full volume, no pan
         if (distance.len() < decayDistance){
             playSFX(name, loop);
         }
         // Calculate new volume with v2 = v1 * r1/r2 and pan with x component
-        playSFX(distance.nor().x,sfxVolume * decayDistance / distance.len(), name, loop);
+        return playSFX(distance.nor().x,sfxVolume * decayDistance / distance.len(), name, loop);
     }
+
+    public void stopSFX(String name, long id){
+        Sound s = sfx.get(name);
+
+    }
+
+    /* TODO MUSIC PLAYERS */
 
     /**
      * Plays a music file at specified volume with reference index.
@@ -225,22 +250,12 @@ public class SoundController {
      * @param index
      */
     private Music playMusic(String index, float volume){
-        Music m = music.get(index);
-        if (m != null && !m.isPlaying()) {
+        Music m = checkMusic(index);
+        if (!m.isPlaying()) {
             m.play();
             m.setVolume(volume);
         }
         return m;
-    }
-
-    /**
-     * Plays a music file at musicVolume with reference index starting at position in seconds and 0 volume.
-     * @param index
-     */
-    private void playMusic(String index, float volume, float position){
-        Music m = playMusic(index, volume);
-        if (m == null) return;
-        m.setPosition(position);
     }
 
     /**
@@ -267,109 +282,159 @@ public class SoundController {
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
     public void startLevelMusic(){
+        if (musicPresets == null) throw new NullPointerException("Constructor not called.");
+        System.out.println("start was called");
+        STATE = MusicState.SAFE;
         playMusic("danger", 0);
         playMusic("explore");
         playMusic("background");
     }
 
-    public void test(String... name){
 
+    // TODO DYNAMIC MUSIC
+
+    private void setFadeInDone(boolean f){
+        fadeInDone = f;
     }
 
-    // DYNAMIC MUSIC
+    private void setFadeOutDone(boolean f){
+        fadeOutDone = f;
+    }
+
+    private boolean FadeDone(){
+        if(fadeInDone && fadeOutDone){
+            setFadeInDone(false);
+            setFadeOutDone(false);
+            return true;
+        }
+        return false;
+    }
 
     /**
      * Trades explore/danger music for soundtrack switching.
      * Returns if either name does not exist || name1 is not playing || name2 is playing
-     * @param index1 either "explore" or "danger"
-     * @param index2 same as index1 but reversed.
+     * @param index either "explore" or "danger"
      */
-    private void tradeMusic(String index1, String index2){
-        // Gets music and check precondition
-        Music m2 = music.get(index2);
-        Thread trader = new Thread(() -> {
-            long timeStamp = System.currentTimeMillis() / 1_000;
-            float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
-            float maxVolume = music.get(index1).getVolume();
-            while(percentage * maxVolume <= maxVolume){
-                
-            }
-        });
+    private void fadeIn(String index){
+        if (music.get(index) == null) throw new RuntimeException();
+        fadeIn = new Trader("fadeIn", index, true);
     }
 
+    /**
+     * Trades explore/danger music for soundtrack switching.
+     * Returns if either name does not exist || name1 is not playing || name2 is playing
+     * @param index either "explore" or "danger"
+     */
+    private void fadeOut(String index){
+        if (music.get(index) == null) throw new RuntimeException();
+        fadeOut = new Trader("fadeOut", index, false);
+    }
     /**
      * Trades music with name1 out and name2 in for soundtrack switching if reverse is false.
      * Should be called only when the player situation CHANGES from EXPLORE to DANGER (2 enemies nearby).
      * @param reverse Whether danger is faded out for explore music
      */
     public void tradeMusic(boolean reverse){
-        return;
-        // if (STATE != MusicState.STEADY) return;
-//        if (reverse){
-//            tradeMusic("danger", "explore");
-//            STATE = MusicState.LEAVE_DANGER;
-//        }
-//        else{
-//            tradeMusic("explore", "danger");
-//            STATE = MusicState.ENTER_DANGER;
-//        }
-    }
-
-
-    /**
-     * Takes the music with key index and decreases its volume by dv.
-     * @param index key of music
-     * @param dv between 0-1
-     */
-    private float changeMusicVolume(String index, float dv){
-        Music m = music.get(index);
-        if (m != null && m.isPlaying()) {
-            float nv = m.getVolume()-dv;
-            m.setVolume(nv);
-            return nv;
-        }
-        // Should only reach here when music stops
-//        throw new RuntimeException("Music file for " + index + " not found!");
-        return 0f;
-    }
-
-    /**
-     * Takes the music with key index and decreases its volume by dv.
-     * @param index key of music
-     * @param volume between 0-1
-     */
-    private void setMusicVolume(String index, float volume){
-        Music m = music.get(index);
-        if (m != null && m.isPlaying()) {
-            m.setVolume(volume);
+        switch (STATE){
+            case SAFE:
+                if (!reverse){
+                    STATE = MusicState.ENTER_DANGER;
+                    fadeIn("danger");
+                    fadeOut("explore");
+                } return;
+            case DANGER:
+                if(reverse){
+                    STATE = MusicState.LEAVE_DANGER;
+                    fadeIn("explore");
+                    fadeOut("danger");
+                }
         }
     }
 
     /**
-     * Method to call every update loop to transition the music.
+     * Function to check whether fading is finished.
      */
-    public void updateMusic(){
-        if(STATE == MusicState.ENTER_DANGER){
-            if(music.get("explore").getVolume() < tradeThreshold){
-                setMusicVolume("danger", musicVolume);
-                STATE = MusicState.STEADY;
+    public void updateState(){
+        switch (STATE) {
+            case LEAVE_DANGER:
+                if (FadeDone()) {
+                    STATE = MusicState.SAFE;
+                }
+                return;
+            case ENTER_DANGER:
+                if (FadeDone()) {
+                    STATE = MusicState.DANGER;
+                }
+                return;
+        }
+    }
+
+    class Trader implements Runnable {
+
+        // to stop the thread
+        private boolean exit;
+        private String index;
+        private boolean fadeIn;
+        Thread t;
+
+        Trader(String threadname, String index, boolean fadeIn)
+        {
+            t = new Thread(this, threadname);
+            this.index = index;
+            this.fadeIn = fadeIn;
+            exit = false;
+            t.start();
+        }
+
+        // execution of thread starts from run() method
+        public void run()
+        {
+            if(fadeIn){
+                long timeStamp = System.currentTimeMillis();
+                float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+                float maxVolume = musicVolume;
+                while(percentage * maxVolume <= maxVolume && !exit){
+                    music.get(index).setVolume(percentage * maxVolume);
+                    print(index, ": volume is ");
+                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+                }
+                music.get(index).setVolume(percentage * maxVolume);
+                setFadeInDone(true);
             } else {
-                changeMusicVolume("explore", tradeRate);
-                changeMusicVolume("danger", -tradeRate);
+                long timeStamp = System.currentTimeMillis();
+                float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+                float minVolume = 0;
+                float maxVolume = music.get(index).getVolume();
+                while((1 - percentage) * maxVolume >= minVolume && !exit){
+                    print(index, ": volume is ");
+                    music.get(index).setVolume((1 - percentage) * maxVolume);
+                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeRate;
+                }
+                music.get(index).setVolume((1 - percentage) * maxVolume);
+                setFadeOutDone(true);
             }
         }
-        else if(STATE == MusicState.LEAVE_DANGER){
-            if (music.get("danger").getVolume() < tradeThreshold){
-                setMusicVolume("explore", musicVolume);
-                STATE = MusicState.STEADY;
-            } else {
-                changeMusicVolume("danger", tradeRate);
-                changeMusicVolume("explore", -tradeRate);
-            }
+
+        // for stopping the thread
+        public void stop()
+        {
+            exit = true;
         }
     }
 
-    // STOPPERS AND DISPOSE
+
+
+    // TODO STOPPERS AND DISPOSE
+
+    private void haltThreads(){
+        if(fadeIn != null){
+            fadeIn.stop();
+        }
+        if(fadeOut != null) {
+            fadeOut.stop();
+        }
+    }
+
 
     /**
      * Stops all sound.
@@ -384,13 +449,14 @@ public class SoundController {
      * Stops all music.
      */
     private void haltMusic(){
+        haltThreads();
         for(Music m : music.values()){
             m.stop();
         }
     }
 
     /**
-     * Stops all sfx and music.
+     * Stops all sfx and music and restores the state of the SoundController to normal.
      */
     public void haltSounds(){
         haltSFX();
@@ -407,5 +473,9 @@ public class SoundController {
         for(Music m : music.values()){
             m.dispose();
         }
+    }
+
+    public void print(String name, String info){
+        System.out.println(name + " " + info + music.get(name).getVolume());
     }
 }
