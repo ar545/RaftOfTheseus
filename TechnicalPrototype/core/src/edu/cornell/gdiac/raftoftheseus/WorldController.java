@@ -626,8 +626,6 @@ public class WorldController implements Screen, ContactListener {
         // NEW: Ask the level model to process current effects on objects
         levelModel.updateAllCurrentEffects();
 
-        System.out.println(pausePressed);
-
         InputController input = InputController.getInstance();
         input.readInput();
 
@@ -906,7 +904,7 @@ public class WorldController implements Screen, ContactListener {
         // Useless if called in outside animation loop
         active = true;
         this.plexer.addProcessor(Gdx.input.getInputProcessor());
-        plexer.addProcessor(stage);
+        this.plexer.addProcessor(stage);
         Gdx.input.setInputProcessor(this.plexer);
     }
 
@@ -1225,6 +1223,7 @@ public class WorldController implements Screen, ContactListener {
         prepareEnemy();
         stage.clear();
         table.clear();
+        plexer.clear();
         playerScore = 0;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         transitionBuilt = false;
