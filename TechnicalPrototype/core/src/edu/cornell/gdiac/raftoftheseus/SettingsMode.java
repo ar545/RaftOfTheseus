@@ -86,7 +86,6 @@ public class SettingsMode implements Screen {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
-        SoundController.getInstance().startLevelMusic();
     }
 
     /**
@@ -194,7 +193,7 @@ public class SettingsMode implements Screen {
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
         SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
 
-        musicVolume = SoundController.getInstance().getMasterMusicVolume() * 1000f;
+        musicVolume = SoundController.getInstance().getMasterMusicVolume() * 100f;
         Label musicValueLabel = new Label(String.valueOf((int) Math.floor(musicVolume)), skin);
         musicValueLabel.setFontScale(0.35f);
 
