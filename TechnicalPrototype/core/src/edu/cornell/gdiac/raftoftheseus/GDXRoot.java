@@ -145,7 +145,6 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			settings.setPreviousMode(DISPLAY_WORLD);
 			settings.resetPressedState();
 			settings.populate(directory);
-//			settings.setIsBackMenu(true);
 			setScreen(settings);
 		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
 			settings.setScreenListener(this);
@@ -189,6 +188,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			loading = null;
 		} else if (screen == playing) {
 			SoundController.getInstance().haltSounds();
+			menu.resetPressedState();
+			menu.resetSettingsState();
+			menu.resetPlayState();
 			menu.setScreenListener(this);
 			setScreen(menu);
 		} else if (screen == menu) {

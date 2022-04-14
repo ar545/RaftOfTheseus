@@ -297,7 +297,7 @@ public class WorldController implements Screen, ContactListener {
         if (pausePressed) {
             drawPause();
         }
-        if ((complete && !failed) || failed){
+        if (complete && !failed || failed){
             drawTransition();
         }
         // draw a circle showing how far the player can move before they die
@@ -319,15 +319,14 @@ public class WorldController implements Screen, ContactListener {
     }
 
     private void drawPause() {
-        table = new Table();
         if (!pauseBuilt) {
             pauseBuilt = true;
             drawTransparentOverlay();
             table.setFillParent(true);
             table.align(Align.center);
             stage.addActor(table);
-            skin.add("background", pauseBackground);
-            table.setBackground(skin.getDrawable("background"));
+            skin.add("pause_background", pauseBackground);
+            table.setBackground(skin.getDrawable("pause_background"));
 
             TextButton resumeButton = new TextButton("RESUME", skin);
             resumeButton.getLabel().setFontScale(0.4f);
@@ -415,7 +414,7 @@ public class WorldController implements Screen, ContactListener {
                 @Override
                 public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                     super.exit(event, x, y, pointer, toActor);
-                    settingsButton.getLabel().setColor(Color.GOLD);
+                    exitButton.getLabel().setColor(Color.GOLD);
                 }
 
                 @Override
@@ -444,20 +443,35 @@ public class WorldController implements Screen, ContactListener {
     }
 
     private void buildTransitionScreen(Texture background, boolean didFail) {
+        table.clear();
+        stage.clear();
         drawTransparentOverlay();
-
         table.setFillParent(true);
         table.align(Align.center);
         stage.addActor(table);
-        skin.add("background", background);
-        table.setBackground(skin.getDrawable("background"));
+        skin.add("transition_background", background);
+        table.setBackground(skin.getDrawable("transition_background"));
 
+        Table part1 = new Table();
         TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", skin);
-        mainButton.getLabel().setFontScale(0.6f);
+        mainButton.getLabel().setFontScale(0.5f);
         float buttonWidth =  mainButton.getWidth();
-        mainButton.addListener(new ChangeListener() {
+        mainButton.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                mainButton.getLabel().setColor(Color.GOLD);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                mainButton.getLabel().setColor(Color.WHITE);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
                 if (didFail) {
                     reset();
                 } else {
@@ -465,43 +479,84 @@ public class WorldController implements Screen, ContactListener {
                 }
             }
         });
-        float padding = (canvas.getWidth() - buttonWidth) / 2f;
-        table.add(mainButton).expandX().padLeft(padding - buttonWidth / 2f).padRight(-padding);
+        part1.add(mainButton).expandX().align(Align.center);
+        table.add(part1);
         table.row();
 
+        Table part2 = new Table();
+        part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
             TextButton replayButton = new TextButton("REPLAY", skin);
             replayButton.getLabel().setFontScale(0.4f);
-            replayButton.addListener(new ChangeListener() {
+            replayButton.addListener(new ClickListener() {
                 @Override
-                public void changed(ChangeEvent event, Actor actor) {
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    super.enter(event, x, y, pointer, fromActor);
+                    replayButton.getLabel().setColor(Color.GOLD);
+                }
+
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                    super.exit(event, x, y, pointer, toActor);
+                    replayButton.getLabel().setColor(Color.WHITE);
+                }
+
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    super.clicked(event, x, y);
                     reset();
                 }
             });
-
-            table.add(replayButton).expandX().padLeft(200);
+            part2.add(replayButton).expandX().padRight(70);
         }
 
         TextButton settingsButton = new TextButton("SETTINGS", skin);
         settingsButton.getLabel().setFontScale(0.4f);
-        settingsButton.addListener(new ChangeListener() {
+        settingsButton.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
-//                settingsPressed = true;
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                settingsButton.getLabel().setColor(Color.GOLD);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                settingsButton.getLabel().setColor(Color.WHITE);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                settingsPressed = true;
             }
         });
-        table.add(settingsButton).expandX().padLeft(didFail ? 325 : 0);
+        part2.add(settingsButton).expandX();
 
         TextButton exitButton = new TextButton("EXIT", skin);
         exitButton.getLabel().setFontScale(0.4f);
         exitButton.getLabel().setColor(Color.GOLD);
-        exitButton.addListener(new ChangeListener() {
+        exitButton.addListener(new ClickListener() {
             @Override
-            public void changed(ChangeEvent event, Actor actor) {
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                exitButton.getLabel().setColor(Color.GRAY);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                exitButton.getLabel().setColor(Color.GOLD);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
                 exitPressed = true;
             }
         });
-        table.add(exitButton).expandX().padRight(didFail ? 325 : 200);
+        part2.add(exitButton).expandX();
+        table.add(part2);
         table.row();
     }
 
@@ -635,12 +690,18 @@ public class WorldController implements Screen, ContactListener {
         // Now it is time to maybe switch screens.
         if (input.didExit() || exitPressed) {
             pause();
+            exitPressed = false;
             listener.exitScreen(this, EXIT_QUIT);
             return false;
         } else if (input.didNext() || nextPressed) {
             pause();
             nextPressed = false;
             listener.exitScreen(this, EXIT_NEXT);
+            return false;
+        }  else if (settingsPressed) {
+            pause();
+            settingsPressed = false;
+            listener.exitScreen(this, EXIT_SETTINGS);
             return false;
         } else if (input.didPause() || pausePressed)  {
             pause();
@@ -903,9 +964,7 @@ public class WorldController implements Screen, ContactListener {
     public void show() {
         // Useless if called in outside animation loop
         active = true;
-        this.plexer.addProcessor(Gdx.input.getInputProcessor());
-        this.plexer.addProcessor(stage);
-        Gdx.input.setInputProcessor(this.plexer);
+        Gdx.input.setInputProcessor(stage);
     }
 
     /**

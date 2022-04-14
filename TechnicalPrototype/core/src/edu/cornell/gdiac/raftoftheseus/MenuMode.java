@@ -218,7 +218,7 @@ public class MenuMode implements Screen {
         menuTable.align(Align.top);
 
         // instantiate the "back" button, which is used in multiple menus
-        TextButton menuButton = new TextButton("MENU", skin);
+        TextButton menuButton = new TextButton("BACK", skin);
         menuButton.getLabel().setFontScale(0.35f);
         menuButton.getLabel().setColor(Color.GOLD);
         menuButton.addListener(new ClickListener(){
@@ -363,9 +363,22 @@ public class MenuMode implements Screen {
 
                 for (int i = 0; i < LEVEL_COUNT; i ++) {
                     levelButtons[i] = new TextButton(String.valueOf(i), buttonStyle);
-                    levelButtons[i].getLabel().setFontScale(0.5f);
+                    TextButton currentButton = levelButtons[i];
+                    currentButton.getLabel().setFontScale(0.5f);
                     int finalI = i;
-                    levelButtons[i].addListener(new ClickListener(){
+                    currentButton.addListener(new ClickListener(){
+                        @Override
+                        public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                            super.enter(event, x, y, pointer, fromActor);
+                            currentButton.setColor(Color.LIGHT_GRAY);
+                        }
+
+                        @Override
+                        public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                            super.exit(event, x, y, pointer, toActor);
+                            currentButton.setColor(Color.WHITE);
+                        }
+
                         @Override
                         public void clicked(InputEvent event, float x, float y) {
                             selectlevel(finalI);
@@ -374,65 +387,82 @@ public class MenuMode implements Screen {
                     //Add button to table
                     if (i > 0 && i % NUM_COLS == 0)
                         part3.row().padTop(colPadding);
-                    part3.add(levelButtons[i]).size(150).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+                    part3.add(currentButton).size(150).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
                 }
                 menuTable.add(part3);
                 menuTable.row();
                 break;
             case CREDITS:
-                menuTable.add(menuButton).expandX().align(Align.left).padLeft(30).padTop(10);
+                Table creditsPart1 = new Table();
+                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(830).padTop(10);
+                menuTable.add(creditsPart1);
                 menuTable.row();
 
+                Table creditsPart2 = new Table();
                 Label creditsLabel = new Label("CREDITS", skin);
                 creditsLabel.setFontScale(0.6f);
-                menuTable.add(creditsLabel).expandX().align(Align.center);
+                creditsPart2.add(creditsLabel).expandX().align(Align.center);
+                menuTable.add(creditsPart2);
                 menuTable.row();
 
+                Table creditsPart3 = new Table();
+                creditsPart3.align(Align.center);
+
+                Table creditsPart3Left = new Table();
                 Label programmersLabel = new Label("PROGRAMMER", skin);
                 programmersLabel.setFontScale(0.38f);
-                Label designersLabel = new Label("DESIGNER", skin);
-                designersLabel.setFontScale(0.38f);
-
-                menuTable.add(programmersLabel).expandX().align(Align.center);
-                menuTable.add(designersLabel).expandX().align(Align.center);
-                menuTable.row();
+                creditsPart3Left.add(programmersLabel).expandX().align(Align.center);
+                creditsPart3Left.row();
 
                 Label amy = new Label("Amy Huang", skin);
                 amy.setFontScale(0.3f);
-                Label gloria = new Label("Gloria Shi", skin);
-                gloria.setFontScale(0.3f);
-                menuTable.add(amy);
-                menuTable.add(gloria);
-                menuTable.row();
-
                 Label demian = new Label("Demian Yutin", skin);
                 demian.setFontScale(0.3f);
-                Label noah = new Label("Noah Braun", skin);
-                noah.setFontScale(0.3f);
-                menuTable.add(demian);
-                menuTable.add(noah);
-                menuTable.row();
-
                 Label howard = new Label("Howard Fu", skin);
                 howard.setFontScale(0.3f);
-                Label spencer = new Label("Spencer Pettee", skin);
-                spencer.setFontScale(0.3f);
-                menuTable.add(howard);
-                menuTable.add(spencer);
-                menuTable.row();
-
                 Label jaden = new Label("Jaden O'Brien", skin);
                 jaden.setFontScale(0.3f);
                 Label jason = new Label("Jason Tung", skin);
                 jason.setFontScale(0.3f);
-                menuTable.add(jaden);
-                menuTable.add(jason);
-                menuTable.row();
-
                 Label leo = new Label("Leo Zhao", skin);
                 leo.setFontScale(0.3f);
-                menuTable.add(leo);
-                menuTable.row();
+                creditsPart3Left.add(amy).expandX().align(Align.center);
+                creditsPart3Left.row();
+                creditsPart3Left.add(demian).expandX().align(Align.center);
+                creditsPart3Left.row();
+                creditsPart3Left.add(howard).expandX().align(Align.center);
+                creditsPart3Left.row();
+                creditsPart3Left.add(jaden).expandX().align(Align.center);
+                creditsPart3Left.row();
+                creditsPart3Left.add(jason).expandX().align(Align.center);
+                creditsPart3Left.row();
+                creditsPart3Left.add(leo).expandX().align(Align.center);
+
+                Table creditsPart3Right = new Table();
+                Label designersLabel = new Label("DESIGNER", skin);
+                designersLabel.setFontScale(0.38f);
+                creditsPart3Right.add(designersLabel).expandX().align(Align.center);
+                creditsPart3Right.row();
+
+                Label gloria = new Label("Gloria Shi", skin);
+                gloria.setFontScale(0.3f);
+                Label noah = new Label("Noah Braun", skin);
+                noah.setFontScale(0.3f);
+                Label spencer = new Label("Spencer Pettee", skin);
+                spencer.setFontScale(0.3f);
+
+                creditsPart3Right.add(gloria).expandX().align(Align.center);
+                creditsPart3Right.row();
+                creditsPart3Right.add(noah).expandX().align(Align.center);
+                creditsPart3Right.row();
+                creditsPart3Right.add(spencer).expandX().align(Align.center);
+                creditsPart3Right.row();
+                creditsPart3Right.add(new Label("", skin));
+                creditsPart3Right.row();
+
+                creditsPart3.add(creditsPart3Left).expandX().align(Align.center).padRight(180).padLeft(-100);
+                creditsPart3.add(creditsPart3Right).expandX().align(Align.center).padTop(20);
+                menuTable.add(creditsPart3);
                 break;
         }
 

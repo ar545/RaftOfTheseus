@@ -63,16 +63,12 @@ public class SettingsMode implements Screen {
     private int heightY;
     /** Exit button clicked */
     private boolean exitPressed;
-    /** Previous screen (4 - start, 5 - menu, 6 - world) */
+    /** Previous screen (5 - menu, 6 - world) */
     private int previousMode;
     /** Music volume */
     private float musicVolume;
     /** Sound effects volume */
     private float soundEffectsVolume;
-    /** Whether there is a back to menu button */
-    private boolean isBackMenu;
-    /** Menu pressed */
-    private boolean menuPressed;
     /** Exit code to display menu screen */
     private int EXIT_MENU;
 
@@ -90,7 +86,6 @@ public class SettingsMode implements Screen {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
-        menuPressed = false;
         SoundController.getInstance().startLevelMusic();
     }
 
@@ -117,9 +112,6 @@ public class SettingsMode implements Screen {
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
     }
-
-    /** Sets is back to menu boolean */
-    public void setIsBackMenu(boolean value) { this.isBackMenu = value; }
 
     /** Sets exit code to menu */
     public void setExitMenu(int value) { this.EXIT_MENU = value; }
@@ -154,7 +146,9 @@ public class SettingsMode implements Screen {
         skin.add("background", background);
         table.setBackground(skin.getDrawable("background"));
 
-        TextButton menuButton = new TextButton("MENU", skin);
+        Table part1 = new Table();
+        part1.align(Align.left);
+        TextButton menuButton = new TextButton("BACK", skin);
         menuButton.getLabel().setFontScale(0.35f);
         menuButton.getLabel().setColor(Color.GOLD);
         menuButton.addListener(new ClickListener(){
@@ -175,22 +169,26 @@ public class SettingsMode implements Screen {
                 exitPressed = true;
             }
         });
-        table.add(menuButton).expandX().align(Align.left).expandX().align(Align.left).padLeft(60).padTop(10);
+        part1.add(menuButton).expandX().align(Align.left).padRight(830).padTop(10);
+        table.add(part1);
         table.row();
 
+        Table part2 = new Table();
         Label titleLabel = new Label("SETTINGS", skin);
         titleLabel.setFontScale(0.6f);
-        table.add(titleLabel).expandX().align(Align.left).padLeft(100);
+        part2.add(titleLabel).expandX().align(Align.center);
+        table.add(part2);
         table.row();
 
+        Table part3 = new Table();
         Label volumeLabel = new Label("VOLUME", skin);
         volumeLabel.setFontScale(0.4f);
-        table.add(volumeLabel).padLeft(100).expandX().align(Align.left);
-        table.row();
+        part3.add(volumeLabel).padLeft(80).expandX().align(Align.left);
+        part3.row();
 
         Label musicLabel = new Label("MUSIC", skin);
         musicLabel.setFontScale(0.35f);
-        table.add(musicLabel).padLeft(120).expandX().align(Align.left);
+        part3.add(musicLabel).padLeft(100).expandX().align(Align.left);
 
         Drawable sliderKnobDrawable = new TextureRegionDrawable(new TextureRegion(sliderKnob));
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
@@ -211,14 +209,14 @@ public class SettingsMode implements Screen {
             }
         });
         stage.addActor(musicSlider);
-        table.add(musicSlider).expandX().align(Align.left).width(300);
-        table.add(musicValueLabel).expandX().align(Align.left).width(100).padLeft(30);
-        table.row();
+        part3.add(musicSlider).expandX().align(Align.left).width(350).padLeft(-100);
+        part3.add(musicValueLabel).expandX().align(Align.left).width(80).padRight(80);
+        part3.row();
 
         soundEffectsVolume = SoundController.getInstance().getMasterSFXVolume() * 100;
         Label soundEffectsLabel = new Label("SOUND EFFECTS", skin);
         soundEffectsLabel.setFontScale(0.35f);
-        table.add(soundEffectsLabel).padLeft(120).align(Align.left);
+        part3.add(soundEffectsLabel).padLeft(100).align(Align.left);
         Label soundEffectsValueLabel = new Label(String.valueOf((int) Math.floor(soundEffectsVolume)), skin);
         soundEffectsValueLabel.setFontScale(0.35f);
         soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
@@ -232,30 +230,32 @@ public class SettingsMode implements Screen {
             }
         });
         stage.addActor(soundEffectsSlider);
-        table.add(soundEffectsSlider).expandX().align(Align.left).width(300);
-        table.add(soundEffectsValueLabel).align(Align.left).width(100).padLeft(30);
-        table.row();
+        part3.add(soundEffectsSlider).expandX().align(Align.left).width(350).padLeft(-100);
+        part3.add(soundEffectsValueLabel).align(Align.left).width(80).padRight(80);
+        part3.row();
 
         Label keyboardSchemeLabel = new Label("KEYBOARD SCHEME", skin);
         keyboardSchemeLabel.setFontScale(0.4f);
-        table.add(keyboardSchemeLabel).padLeft(100).expandX().align(Align.left);
-        table.row();
+        part3.add(keyboardSchemeLabel).padLeft(80).expandX().align(Align.left);
+        part3.row();
 
         Image wasdImage = new Image(wasdIcon);
         Image arrowsImage = new Image(arrrowsIcon);
-        table.add(wasdImage).expandX().padLeft(120).align(Align.left);
-        table.add(arrowsImage).align(Align.left).padLeft(-100);
-        table.row();
+        part3.add(wasdImage).expandX().padLeft(100).align(Align.left);
+        part3.add(arrowsImage).align(Align.left).padLeft(-100);
+        part3.row();
 
         Label keyboardShortcutLabel = new Label("KEYBOARD SHORTCUTS", skin);
         keyboardShortcutLabel.setFontScale(0.4f);
-        table.add(keyboardShortcutLabel).padLeft(100);
-        table.row();
+        part3.add(keyboardShortcutLabel).padLeft(80);
+        part3.row();
 
         Image keysImage1 = new Image(keysIcon1);
-        table.add(keysImage1).padLeft(120).align(Align.left).expandX();
+        part3.add(keysImage1).padLeft(100).align(Align.left).expandX();
         Image keysImage2 = new Image(keysIcon2);
-        table.add(keysImage2).expandX();
+        part3.add(keysImage2).expandX();
+        table.add(part3);
+        table.row();
     }
 
     /**
@@ -282,8 +282,6 @@ public class SettingsMode implements Screen {
             draw();
             if (exitPressed || InputController.getInstance().didExit()) {
                 listener.exitScreen(this, previousMode);
-            } else if (menuPressed) {
-                listener.exitScreen(this, EXIT_MENU);
             }
         }
     }
@@ -321,7 +319,6 @@ public class SettingsMode implements Screen {
 
     /** Reset the settings menu and exit pressed state */
     public void resetPressedState() {
-        menuPressed = false;
         exitPressed = false;
     }
 }
