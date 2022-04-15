@@ -255,6 +255,9 @@ public class WorldController implements Screen, ContactListener {
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(levelModel.getPlayer().getHealthRatio(), playerPosOnScreen);
         canvas.end();
+        // draw a circle showing how far the player can move before they die
+        float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
+        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
 
         drawStar(levelModel.getPlayer().getStar());
 
@@ -308,10 +311,7 @@ public class WorldController implements Screen, ContactListener {
             }
             SoundController.getInstance().fadeMusic();
             drawTransition();
-        } 
-        // draw a circle showing how far the player can move before they die
-        float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
-        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        }
     }
 
     private void drawTransparentOverlay() {
