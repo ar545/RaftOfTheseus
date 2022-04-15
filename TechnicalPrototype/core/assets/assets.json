@@ -69,18 +69,23 @@
     "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
     "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
     "raft_damage": "sounds/Sfx_Raft_Damage.ogg",
+    "raft_sail_open" : "sounds/Sfx_Raft_SailOpening.ogg",
     "chest_collect" : "sounds/Sfx_Chest_Collect.mp3",
     "spear_splash" : "sounds/Sfx_Spear_Splash.ogg",
     "spear_throw" : "sounds/Sfx_Spear_Throw.ogg",
-    "level_complete" : "sounds/Sfx_Level_Complete.mp3"
+    "level_complete" : "sounds/Sfx_Level_Complete.mp3",
+    "button_island" : "sounds/Sfx_Button_Island.ogg",
+    "button_enter" : "sounds/Sfx_Button_MainMenuEnter.ogg",
+    "button_click" : "sounds/Sfx_Button_MainMenuClick.ogg",
+    "map_open" : "sounds/Sfx_Map_Opening.ogg"
   },
   "music" : {
-      "m": "sounds/Msc_Menu_RoTTheme.ogg",
-      "b1": "sounds/Msc_Background_CalmOcean.ogg",
-      "e1": "sounds/Msc_Explore_Longing.ogg",
-      "d1": "sounds/Msc_Danger_Longing.ogg",
-    "e2": "sounds/Msc_Explore_Flow.ogg",
-    "d2": "sounds/Msc_Danger_Flow.ogg"
+      "m": "music/Msc_Menu_RoTTheme.ogg",
+      "b1": "music/Msc_Background_CalmOcean.ogg",
+      "e1": "music/Msc_Explore_Longing.ogg",
+      "d1": "music/Msc_Danger_Longing.ogg",
+    "e2": "music/Msc_Explore_Flow.ogg",
+    "d2": "music/Msc_Danger_Flow.ogg"
   },
   "jsons" : {
     "sound_settings" : "sound_settings.json",

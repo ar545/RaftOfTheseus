@@ -131,12 +131,12 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if (exitCode == WorldController.EXIT_PREV) {
-			SoundController.getInstance().haltSounds();
+			SoundController.getInstance().haltMusic();
 			currentLevel = Math.max(0, currentLevel-1);
 			playing.setLevel(currentLevel);
 			setScreen(playing);
 		} else if(exitCode == WorldController.EXIT_NEXT){
-			SoundController.getInstance().haltSounds();
+			SoundController.getInstance().haltMusic();
 			currentLevel = Math.min(numLevels-1, currentLevel+1);
 			playing.setLevel(currentLevel);
 			setScreen(playing);
@@ -187,14 +187,14 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			loading.dispose();
 			loading = null;
 		} else if (screen == playing) {
-			SoundController.getInstance().haltSounds();
+			SoundController.getInstance().haltMusic();
 			menu.resetPressedState();
 			menu.resetSettingsState();
 			menu.resetPlayState();
 			menu.setScreenListener(this);
 			setScreen(menu);
 		} else if (screen == menu) {
-			SoundController.getInstance().haltSounds();
+			SoundController.getInstance().haltMusic();
 			menu.resetPressedState();
 			menu.resetSettingsState();
 			// Load level

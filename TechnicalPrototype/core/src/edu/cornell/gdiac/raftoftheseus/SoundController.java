@@ -597,7 +597,7 @@ public class SoundController {
     /**
      * Stops all music.
      */
-    private void haltMusic(){
+    public void haltMusic(){
         haltThreads();
         for(Music m : music.values()){
             m.stop();

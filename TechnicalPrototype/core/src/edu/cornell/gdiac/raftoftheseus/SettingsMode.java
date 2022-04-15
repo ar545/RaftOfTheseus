@@ -153,6 +153,7 @@ public class SettingsMode implements Screen {
         menuButton.addListener(new ClickListener(){
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
                 menuButton.getLabel().setColor(Color.GRAY);
             }
@@ -165,6 +166,7 @@ public class SettingsMode implements Screen {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                SoundController.getInstance().playSFX("button_click");
                 exitPressed = true;
             }
         });

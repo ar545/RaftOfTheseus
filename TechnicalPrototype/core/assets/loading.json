@@ -25,6 +25,6 @@
         }
 	},
   "music" : {
-    "menu": "sounds/Msc_Menu_RoTTheme.ogg"
+    "menu": "music/Msc_Menu_RoTTheme.ogg"
   }
 }
