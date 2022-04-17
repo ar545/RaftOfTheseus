@@ -51,8 +51,11 @@ public abstract class GameObject {
     protected final static short MASK_GOAL = CATEGORY_PLAYER;
     protected final static short MASK_SIREN = 0; // Siren does not interact with anything, flying over player
 
-    /** How much to scale the texture before displaying (screen pixels / texture pixels) */
-    public Vector2 textureScale;
+    /** How much to scale the texture before displaying (Box2D units / texture pixels) */
+    protected Vector2 textureScale;
+    /** How much to translate the texture before displaying (in Box2D units) */
+    protected Vector2 textureOffset;
+    /** TextureRegion for this object */
     protected TextureRegion texture; // should be a TextureRegion and not a Texture, in case we want to optimize memory usage later
     /** The texture origin for drawing */
     protected Vector2 origin = new Vector2();
@@ -156,7 +159,7 @@ public abstract class GameObject {
      */
     public void draw(GameCanvas canvas, Color color) {
         if (texture != null) {
-            canvas.draw(texture, color, origin.x, origin.y, getX(), getY(), getAngle(), textureScale.x, textureScale.y);
+            canvas.draw(texture, color, origin.x, origin.y, getX() + textureOffset.x, getY() + textureOffset.y, getAngle(), textureScale.x, textureScale.y);
         }
     }
 
@@ -173,8 +176,17 @@ public abstract class GameObject {
 	public void setTexture(TextureRegion value) {
         texture = value;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
-        textureScale = new Vector2(getWidth() / texture.getRegionWidth(), getHeight() / texture.getRegionHeight());
+        setTextureTransform();
 	}
+
+    /**
+     * Sets textureScale and textureOffset. May be overridden by subclasses to display textures that aren't
+     * stretched to fit the hitbox.
+     */
+    protected void setTextureTransform() {
+        textureScale = new Vector2(getWidth() / texture.getRegionWidth(), getHeight() / texture.getRegionHeight());
+        textureOffset = new Vector2(0,0);
+    }
 
     // Current physics information
 

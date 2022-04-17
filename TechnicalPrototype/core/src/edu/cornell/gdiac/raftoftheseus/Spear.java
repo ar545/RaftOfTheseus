@@ -60,6 +60,13 @@ public class Spear extends GameObject {
         }
     }
 
+    @Override
+    protected void setTextureTransform() {
+        float h = getHeight() / texture.getRegionHeight();
+        textureScale = new Vector2(h, h);
+        textureOffset = new Vector2(0, 0);
+    }
+
     /**
      * @return how far this spear has traveled.
      */
