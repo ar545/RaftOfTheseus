@@ -706,7 +706,7 @@ public class LevelModel {
         Spear bullet = new Spear(raft.getPosition());
         bullet.setTexture(spearTexture);
         bullet.physicsObject.setLinearVelocity(facing.scl(Spear.SPEAR_SPEED).mulAdd(raft.physicsObject.getLinearVelocity(), 0.5f));
-        bullet.setAngle(facing.angleDeg()+90f);
+        bullet.setAngle(facing.angleDeg()-90f);
         addQueuedObject(bullet);
     }
 

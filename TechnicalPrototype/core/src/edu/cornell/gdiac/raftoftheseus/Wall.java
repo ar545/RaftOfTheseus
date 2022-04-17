@@ -18,4 +18,9 @@ public class Wall extends GameObject {
         physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
         physicsObject.getFilterData().maskBits = MASK_TERRAIN;
     }
+
+    @Override
+    public void draw(GameCanvas canvas) {
+        // do nothing (wall drawing is disabled for now)
+    }
 }

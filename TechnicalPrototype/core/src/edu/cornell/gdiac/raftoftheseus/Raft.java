@@ -116,7 +116,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
         if (movementInput.isZero()) {
             // Damp out player motion
-            forceCache.set(getLinearVelocity()).scl(-DAMPING);
+            forceCache.set(physicsObject.getLinearVelocity()).scl(-DAMPING);
             physicsObject.getBody().applyForce(forceCache,getPosition(),true);
         } else {
             // Accelerate player based on input
@@ -125,7 +125,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         }
 
         // Velocity too high, clamp it
-        float speedRatio = MAX_SPEED / getLinearVelocity().len();
+        float speedRatio = MAX_SPEED / physicsObject.getLinearVelocity().len();
         if (speedRatio < 1) {
             physicsObject.setLinearVelocity(physicsObject.getLinearVelocity().scl(speedRatio));
         }
@@ -207,7 +207,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
     @Override
     public Vector2 getLinearVelocity() {
-        return null;
+        throw new RuntimeException("use physicsObject.getLinearVelocity() instead. This method only exists because Raft implements Steerable, which it won't in the future.");
     }
 
     @Override

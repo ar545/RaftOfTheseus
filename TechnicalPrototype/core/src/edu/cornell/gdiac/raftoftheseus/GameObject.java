@@ -17,7 +17,7 @@ public abstract class GameObject {
     public enum ObjectType {
         RAFT, // aka Player
         WOOD,
-        OBSTACLE, // aka Rock
+        OBSTACLE, // aka Rock or Wall
         CURRENT,
         SHARK,
         GOAL,
@@ -181,16 +181,9 @@ public abstract class GameObject {
 	}
 
 	public void setTexture(TextureRegion value) {
-		if(getType() != ObjectType.SPEAR) {
-            texture = value;
-		} else {
-            texture = new TextureRegion(value.getTexture(), 0.4f, 0.1f, 0.6f, 0.9f );
-		}
-
+        texture = value;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
-
         textureScale = new Vector2(getWidth() / texture.getRegionWidth(), getHeight() / texture.getRegionHeight());
-//        textureScale = new Vector2(1, 1);
 	}
 
     // Current physics?

@@ -33,7 +33,7 @@ public class Spear extends GameObject {
      * Constructor for the Spear.
      */
     public Spear(Vector2 position) {
-        physicsObject = new BoxObstacle(0.6f, 2f);
+        physicsObject = new BoxObstacle(0.3f, 2f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
 
