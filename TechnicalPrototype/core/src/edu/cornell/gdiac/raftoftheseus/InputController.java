@@ -107,6 +107,7 @@ public class InputController {
 		fire_location = new Vector2();
 		mappings = new ArrayMap<>();
 		setKeyboardOnly();
+		setKeyboardMouse();
 	}
 
 	/* TODO SETTERS */
@@ -300,7 +301,8 @@ public class InputController {
 		pausePressed = Gdx.input.isKeyPressed(mappings.get("pause"));
 
 		// Player action keys
-		changePressed = Gdx.input.isKeyPressed(mappings.get("change controls"));
+//		changePressed = Gdx.input.isKeyPressed(mappings.get("change controls"));
+		changePressed = false;
 		tabPressed = Gdx.input.isKeyPressed(mappings.get("tab"));
 		sprintPressed = Gdx.input.isKeyPressed(mappings.get("sprint"));
 
@@ -324,15 +326,20 @@ public class InputController {
 			y_offset -= 1.0f;
 		}
 		// Map dependent
-		if(controlScheme == ControlScheme.KeyboardMouse) {
-			mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map"));
-			firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire"));
-			if (firePressed) {
-				fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-			}
-		} else if (controlScheme == ControlScheme.KeyboardOnly) {
-			mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
-			firePressed = Gdx.input.isKeyPressed(mappings.get("fire"));
+//		if(controlScheme == ControlScheme.KeyboardMouse) {
+//			mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map"));
+//			firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire"));
+//			if (firePressed) {
+//				fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
+//			}
+//		} else if (controlScheme == ControlScheme.KeyboardOnly) {
+//			mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
+//			firePressed = Gdx.input.isKeyPressed(mappings.get("fire"));
+//		}
+		mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map")) || Gdx.input.isKeyPressed(mappings.get("map"));
+		firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fire"));
+		if (firePressed) {
+			fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 		}
 
 		if(didChange()){changeControlScheme();}

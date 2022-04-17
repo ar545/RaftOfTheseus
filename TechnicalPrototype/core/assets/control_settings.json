@@ -6,7 +6,7 @@
     "debug": "G",
     "exit": "Escape",
     "fire": 0,
-    "map": 1,
+    "map": "Z",
     "sprint": "Shift",
     "w" : "W",
     "s" : "S",

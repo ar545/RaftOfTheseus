@@ -1,7 +1,7 @@
 {
 	"textures": {
         "background": {
-          "file":     "images/main_background.png",
+          "file":     "images/loading_background.png",
           "minFilter": "linear",
           "magFilter": "linear"
         },
@@ -25,6 +25,6 @@
         }
 	},
   "music" : {
-    "menu": "sounds/Msc_Menu_RoTTheme.ogg"
+    "menu": "music/Msc_Menu_RoTTheme.ogg"
   }
 }
