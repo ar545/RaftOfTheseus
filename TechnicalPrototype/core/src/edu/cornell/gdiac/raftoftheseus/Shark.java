@@ -1,7 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Queue;
@@ -11,7 +10,6 @@ import edu.cornell.gdiac.util.FilmStrip;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.PriorityQueue;
 import java.util.Random;
 
 
@@ -48,7 +46,7 @@ public class Shark extends WheelObstacle {
 //    private Random rand = new Random();
 
     public ObjectType getType() {
-        return ObjectType.ENEMY;
+        return ObjectType.SHARK;
     }
 
     /**

@@ -31,7 +31,7 @@ public abstract class GameObject extends SimpleObstacle {
         /**
          * The enemy
          */
-        ENEMY,
+        SHARK,
         /**
          * The goal tile
          */
@@ -186,6 +186,6 @@ public abstract class GameObject extends SimpleObstacle {
 
     /** Whether this object is affected by the current */
     public boolean AffectedByCurrent(){
-        return getType() == ObjectType.RAFT || getType() == ObjectType.WOOD || getType() == ObjectType.ENEMY;
+        return getType() == ObjectType.RAFT || getType() == ObjectType.WOOD || getType() == ObjectType.SHARK;
     }
 }

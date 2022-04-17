@@ -3,12 +3,10 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.Rectangle;
@@ -21,20 +19,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.raftoftheseus.obstacle.Obstacle;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 
 import java.util.Iterator;
-
-import static edu.cornell.gdiac.raftoftheseus.GameObject.CATEGORY_PLAYER;
 
 public class WorldController implements Screen, ContactListener {
 
@@ -47,7 +39,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
-        Bullet.setConstants(objParams.get("bullet"));
+        Spear.setConstants(objParams.get("bullet"));
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
@@ -241,7 +233,7 @@ public class WorldController implements Screen, ContactListener {
         for(GameObject obj : levelModel.getObjects()) {
 
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) {
-                if (obj.getType() == GameObject.ObjectType.ENEMY) {
+                if (obj.getType() == GameObject.ObjectType.SHARK) {
                     obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
                 } else {
                     obj.draw(canvas);
@@ -283,7 +275,7 @@ public class WorldController implements Screen, ContactListener {
                     levelModel.bounds().width/mapBackground.getWidth(), levelModel.bounds().height/mapBackground.getHeight());
             for(GameObject obj : levelModel.getObjects()) {
                 GameObject.ObjectType type = obj.getType();
-                if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.ENEMY
+                if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.SHARK
                         && type != GameObject.ObjectType.WOOD) {
                     obj.draw(canvas);
                 }
@@ -656,8 +648,6 @@ public class WorldController implements Screen, ContactListener {
         canvas.end();
     }
 
-
-
     /**
      * Gather the assets for this controller.
      *
@@ -692,6 +682,25 @@ public class WorldController implements Screen, ContactListener {
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
+
+    /**
+     * Called when the Screen should render itself.
+     *
+     * We defer to the other methods update() and draw().  However, it is VERY important
+     * that we only quit AFTER a draw.
+     *
+     * @param delta Number of seconds since last animation frame
+     */
+    @Override
+    public void render(float delta) {
+        if (active) {
+            if (preUpdate(delta)) { // Check for level reset and win/lose condition
+                update(delta); // Update player actions, set Forces, and update enemy AI
+                postUpdate(delta); // Call Physics Engine
+            }
+            draw(delta); // Draw to canvas
+        }
+    }
 
     /**
      * Returns whether to process the update loop.
@@ -743,9 +752,9 @@ public class WorldController implements Screen, ContactListener {
         } else if (input.didReset()) {
             reset();
         }
-
+        // Level completed or failed
         if (complete || failed) { return false; }
-
+        // Start countdown otherewise.
         if (countdown > 0) {
             countdown--;
         } else if (countdown == 0) {
@@ -757,42 +766,7 @@ public class WorldController implements Screen, ContactListener {
                 return false;
             }
         }
-
         return true;
-    }
-
-
-    /**
-     * Add a new bullet to the world and send it in the right direction.
-     * @param facing
-     * @param player
-     */
-    private void createBullet(Vector2 facing, Raft player){
-        Bullet bullet = new Bullet(player.getPosition().mulAdd(facing, 0.5f), true);
-        bullet.setTexture(bullet_texture);
-        bullet.setLinearVelocity(facing.scl(Bullet.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
-        bullet.setAngle(facing.angleDeg()+90f);
-        levelModel.addQueuedObject(bullet);
-        player.addHealth(Bullet.BULLET_DAMAGE);
-        SoundController.getInstance().playSFX("spear_throw");
-    }
-
-    /**
-     * Add a new bullet to the world based on the nearest Shark.
-     */
-    private void createBullet(Shark nearestShark) {
-        Raft player = levelModel.getPlayer();
-        Vector2 facing = nearestShark.getPosition().sub(player.getPosition()).nor();
-        createBullet(facing, player);
-    }
-
-    /**
-     * Add a new bullet to the world based on clicked point.
-     */
-    private void createBullet(Vector2 firelocation) {
-        Raft player = levelModel.getPlayer();
-        Vector2 facing = firelocation.sub(player.getPosition()).nor();
-        createBullet(facing, player);
     }
 
     /**
@@ -815,33 +789,17 @@ public class WorldController implements Screen, ContactListener {
         // Add a bullet if we fire
         if (player.isFire()) {
             // find nearest enemy to player
-            if(ic.mouseActive()){
-                Vector2 firePixel = ic.getFireDirection();
-                Affine2 camera = calculateMovingCamera(100/3.0f);
-                camera.inv().applyTo(firePixel);
-                createBullet(firePixel);
-            }
-            else {
-                Shark nearestShark = null;
-                float nearestD2 = -1;
-                for (Shark e : levelModel.getEnemies()) {
-                    if (!e.isDestroyed()) {
-                        float d2 = e.getPosition().dst2(player.getPosition());
-                        if (nearestD2 == -1 || d2 < nearestD2) {
-                            nearestD2 = d2;
-                            nearestShark = e;
-                        }
-                    }
-                }
-                if (nearestShark != null) {
-                    createBullet(nearestShark);
-                }
-            }
+            Vector2 firePixel = ic.getFireDirection();
+            Affine2 camera = calculateMovingCamera(100/3.0f);
+            camera.inv().applyTo(firePixel);
+            levelModel.createSpear(firePixel, player);
+            player.addHealth(Spear.BULLET_DAMAGE);
+            SoundController.getInstance().playSFX("spear_throw");
         }
 
         // update forces for enemies, players, objects
-        resolveEnemies(dt);
         player.applyInputForce();
+        resolveEnemies(dt);
         for (GameObject o : levelModel.getObjects())
             o.applyDrag();
     }
@@ -857,7 +815,7 @@ public class WorldController implements Screen, ContactListener {
         for (Hydra h : levelModel.getHydras()) {
             levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
             h.setSee(hydraSight.getCanSee());
-            if(h.willAttack()) {createBullet(h.getPosition(), levelModel.getPlayer());}
+//            if(h.willAttack()) {createBullet(h.getPosition(), levelModel.getPlayer());}
             h.update(dt);
         }
 
@@ -935,24 +893,7 @@ public class WorldController implements Screen, ContactListener {
         wasInDanger = nowInDanger;
     }
 
-    /**
-     * Called when the Screen should render itself.
-     *
-     * We defer to the other methods update() and draw().  However, it is VERY important
-     * that we only quit AFTER a draw.
-     *
-     * @param delta Number of seconds since last animation frame
-     */
-    @Override
-    public void render(float delta) {
-        if (active) {
-            if (preUpdate(delta)) { // Check for level reset and win/lose condition
-                update(delta); // Update player actions, set Forces, and update enemy AI
-                postUpdate(delta); // Call Physics Engine
-            }
-            draw(delta); // Draw to canvas
-        }
-    }
+
 
     /**
      * Called when the Screen is resized.
@@ -1022,11 +963,6 @@ public class WorldController implements Screen, ContactListener {
 
 
     /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
-    /** Remove a new bullet from the world.
-     * @param  bullet   the bullet to remove
-     */
-    public void removeBullet(GameObject bullet) {bullet.setDestroyed(true);}
-
     /**
      * Callback method for the start of a collision
      *
@@ -1037,212 +973,77 @@ public class WorldController implements Screen, ContactListener {
      */
     @Override
     public void beginContact(Contact contact) {
-        Fixture fix1 = contact.getFixtureA();
-        Fixture fix2 = contact.getFixtureB();
-        Body body1 = fix1.getBody();
-        Body body2 = fix2.getBody();
-
+        Body body1 = contact.getFixtureA().getBody();
+        Body body2 = contact.getFixtureB().getBody();
         try {
             GameObject bd1 = (GameObject) body1.getUserData();
             GameObject bd2 = (GameObject) body2.getUserData();
-            // Check for object interaction with current. Cancelled due to new implementation
-//            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
-//                enterCurrent((Current) bd1, bd2);
-//            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
-//                enterCurrent((Current) bd2, bd1);
-//            } else
             // Check for bullet collision with object (terrain or enemy)
             if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
-                ResolveCollision((Bullet) bd1, bd2);
-            }else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
-                ResolveCollision((Bullet) bd2, bd1);
+                ResolveSpearCollision((Spear) bd1, bd2);
+            } else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
+                ResolveSpearCollision((Spear) bd2, bd1);
             }
             // Check for player collision with wood (health+)
-            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.WOOD)){
-                ResolveCollision((Raft)bd1, (Wood)bd2);
-                 SoundController.getInstance().playSFX("wood_pickup");
-            } else if (bd1.getType().equals(GameObject.ObjectType.WOOD) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Wood)bd1);
-                SoundController.getInstance().playSFX("wood_pickup");
-            }
-            // Check for player kill enemies (health-)
-            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.ENEMY)){
-                ResolveCollision((Raft)bd1, (Shark) bd2);
-                SoundController.getInstance().playSFX("raft_damage");
-            }
-            else if (bd1.getType().equals(GameObject.ObjectType.ENEMY) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Shark) bd1);
-                SoundController.getInstance().playSFX("raft_damage");
-            }
-            // Check for player collision with treasure (star+)
-            else if(bd1.getType().equals(GameObject.ObjectType.RAFT) && bd2.getType().equals(GameObject.ObjectType.TREASURE)){
-                ResolveCollision((Raft)bd1, (Treasure) bd2);
-                SoundController.getInstance().playSFX("chest_collect");
-            }
-            else if( bd1.getType().equals(GameObject.ObjectType.TREASURE) && bd2.getType().equals(GameObject.ObjectType.RAFT)){
-                ResolveCollision((Raft)bd2, (Treasure) bd1);
-                SoundController.getInstance().playSFX("chest_collect");
-            }
-            // Check for win condition
-            else if ((bd1 == levelModel.getPlayer() && bd2 == levelModel.getGoal()) ||
-                    (bd1 == levelModel.getGoal() && bd2 == levelModel.getPlayer())) {
-                if (!complete && !failed)
-                    setComplete(true);
-            }
-            // Check for hydra collision with bullet
-            else if(bd1.getType().equals(GameObject.ObjectType.BULLET) && bd2.getType().equals(GameObject.ObjectType.HYDRA)){
-                ResolveCollision((Hydra) bd2, (Bullet) bd1);
-            } else if(bd1.getType().equals(GameObject.ObjectType.HYDRA) && bd2.getType().equals(GameObject.ObjectType.BULLET)){
-                ResolveCollision((Hydra) bd1, (Bullet) bd2);
+            else if(bd1.getType().equals(GameObject.ObjectType.RAFT)){
+                ResolveRaftCollision((Raft) bd1, bd2);
+            } else if(bd2.getType().equals(GameObject.ObjectType.RAFT)){
+                ResolveRaftCollision((Raft) bd2, bd1);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    /** Callback method for the end of a collision
-     * This method is called when two objects cease to touch.
-     * This was used in the collision current model in Technical prototype, and has been commented out for now. */
-    @Override
-    public void endContact(Contact contact) {
-//        collisionCurrentMethod(contact);
-    }
-
-    /** The collision current model of exit current in Technical prototype */
-    public void collisionCurrentMethod(Contact contact){
-        Fixture fix1 = contact.getFixtureA();
-        Fixture fix2 = contact.getFixtureB();
-        Body body1 = fix1.getBody();
-        Body body2 = fix2.getBody();
-
-        try {
-            GameObject bd1 = (GameObject)body1.getUserData();
-            GameObject bd2 = (GameObject)body2.getUserData();
-            // Check for object interaction with current
-            if(bd1.getType().equals(GameObject.ObjectType.CURRENT)){
-                exitCurrent((Current) bd1, bd2);
-            } else if(bd2.getType().equals(GameObject.ObjectType.CURRENT)){
-                exitCurrent((Current) bd2, bd1);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Push o according to c
-     */
-    private void enterCurrent(Current c, GameObject o) {
-        // check for "ghost coll
-        if(o.getType() == GameObject.ObjectType.RAFT) { // TODO I don't know how to solve this problem
-            float dx = 2*Math.abs(c.getPosition().x - o.getPosition().x);
-            float dy = 2*Math.abs(c.getPosition().y - o.getPosition().y);
-            if (!(dx < c.getWidth() + ((Raft)o).getWidth() && dy < c.getHeight() + ((Raft)o).getHeight()))
-                System.out.println("enterCurrent was called, but the raft wasn't in the current :( ");
-            o.enterCurrent(c.getDirectionVector());
-        } else {
-            o.enterCurrent(c.getDirectionVector());
-        }
-    }
-
-    /**
-     * Push o according to c
-     */
-    private void exitCurrent(Current c, GameObject o) {
-        o.exitCurrent(c.getDirectionVector());
-    }
-
-//    /** Place the object back to its position cache to revert its most recent movement
-//     * @param o the game object to revert */
-//    private void revertRecentMovement(GameObject o) { o.setPosition(o.getPositionCache()); }
 
     /** Resolve collision between two objects of specific types
      * @param b bullet
-     * @param e enemy */
-    private void ResolveCollision(Bullet b, GameObject e) {
-        if(e.getType() == GameObject.ObjectType.ENEMY) {
-            // destroy enemy
-            e.setDestroyed(true);
+     * @param g enemy */
+    private void ResolveSpearCollision(Spear b, GameObject g) {
+        if(g.getType() == GameObject.ObjectType.SHARK) {
+            // stun shark
+            g.setDestroyed(true);
+        }
+        if(g.getType() == GameObject.ObjectType.HYDRA) {
+            // stun hydra
+            ((Hydra) g).setHit(true);
         }
         // destroy bullet
-        removeBullet(b);
-    }
-
-    /** Resolve collision between two objects of specific types
-     * @param r raft
-     * @param e enemy */
-    private void ResolveCollision(Raft r, Shark e) {
-        // update player health
-        r.addHealth(Shark.ENEMY_DAMAGE);
-        // destroy enemy
-        e.setDestroyed(true);
-    }
-
-    /** Resolve collision between two objects of specific types
-     * @param r raft
-     * @param w wood */
-    private void ResolveCollision(Raft r, Wood w) {
-        // update player health
-        r.addHealth(w.getWood());
-        // destroy wood
-        w.setDestroyed(true);
-    }
-
-    /** Resolve collision between two objects of specific types
-     * @param r raft
-     * @param t treasure */
-    private void ResolveCollision(Raft r, Treasure t) {
-        // update player health
-        r.addStar();
-        // destroy treasure
-        t.setDestroyed(true);
-        // add random wood
-        levelModel.addRandomWood();
-        // update player score
-        playerScore++;
-    }
-
-    private void ResolveCollision(Hydra h, Bullet b){
-        // Hydra gets stunned
-        h.setHit(true);
         b.setDestroyed(true);
     }
 
-    /** Unused ContactListener method. May be used to play sound effects */
+    private void ResolveRaftCollision(Raft r, GameObject g){
+        if(g.getType().equals(GameObject.ObjectType.WOOD)){
+            // update player health
+            r.addHealth(((Wood) g).getWood());
+            SoundController.getInstance().playSFX("wood_pickup");
+            g.setDestroyed(true);
+        } else if(g.getType().equals(GameObject.ObjectType.SHARK)){
+            // update player health
+            r.addHealth(Shark.ENEMY_DAMAGE);
+            SoundController.getInstance().playSFX("raft_damage");
+            g.setDestroyed(true);
+        } else if(g.getType().equals(GameObject.ObjectType.TREASURE)){
+            // add random wood and update player score
+            r.addStar();
+            levelModel.addRandomWood();
+            playerScore++;
+            SoundController.getInstance().playSFX("chest_collect");
+            g.setDestroyed(true);
+        } else if(g.getType().equals(GameObject.ObjectType.GOAL)){
+            // Check player win
+            if (!complete && !failed) setComplete(true);
+        }
+    }
+
+    /** Unused Callback method for the end of a collision.*/
+    @Override
+    public void endContact(Contact contact) {
+    }
+    /** Unused ContactListener method.*/
     @Override
     public void preSolve(Contact contact, Manifold oldManifold) {
-//        float speed = 0;
-//        Vector2 cache = new Vector2();
-//        float bumpThresh = 5f;
-//
-//        // Use Ian Par-berry's method to compute a speed threshold
-//        Body body1 = contact.getFixtureA().getBody();
-//        Body body2 = contact.getFixtureB().getBody();
-//        WorldManifold worldManifold = contact.getWorldManifold();
-//        Vector2 wp = worldManifold.getPoints()[0];
-//        cache.set(body1.getLinearVelocityFromWorldPoint(wp));
-//        cache.sub(body2.getLinearVelocityFromWorldPoint(wp));
-//        speed = cache.dot(worldManifold.getNormal());
-
-        // Play a sound if above threshold (otherwise too many sounds)
-//        GameObject.ObjectType s1 = ((GameObject)body1.getUserData()).getType();
-//        GameObject.ObjectType s2 = ((GameObject)body2.getUserData()).getType();
-//        if (s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.ENEMY
-//                || s1 == GameObject.ObjectType.ENEMY && s2 == GameObject.ObjectType.RAFT) {
-//
-//        }
-//        if ((s1 == GameObject.ObjectType.RAFT && s2 == GameObject.ObjectType.WOOD)
-//                || s1 == GameObject.ObjectType.WOOD && s2 == GameObject.ObjectType.RAFT) {
-//
-//        }
     }
-
-    /** Play sound effect according to the situation */
-    private void playSoundEffect() {
-
-    }
-
-    /** Unused ContactListener method */
+    /** Unused ContactListener method.*/
     @Override
     public void postSolve(Contact contact, ContactImpulse impulse) {}
 

@@ -136,7 +136,7 @@ public class LevelModel {
     /** Texture for current placeholder: texture alas in future */
     private FilmStrip enemyTexture;
     /** Texture for current placeholder: texture alas in future */
-    private Texture bulletTexture;
+    private Texture spearTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
     private GameObject[][] obstacles;
@@ -643,8 +643,8 @@ public class LevelModel {
         currentTexture = directory.getEntry("current", Texture.class);
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
-        bulletTexture = directory.getEntry("earth", Texture.class);
-        Bullet.setText(bulletTexture);
+        spearTexture = directory.getEntry("earth", Texture.class);
+        Spear.setText(spearTexture);
     }
 
     /** Add wood Objects to random location in the world */
@@ -692,5 +692,17 @@ public class LevelModel {
         raft.act(dt);
         /* OR */
         currentField.updateCurrentEffects(raft);
+    }
+
+    /**
+     * Add a new bullet to the world based on clicked point.
+     */
+    public void createSpear(Vector2 firelocation, Raft player) {
+        Vector2 facing = firelocation.sub(player.getPosition()).nor();
+        Spear bullet = new Spear(player.getPosition().mulAdd(facing, 0.5f), true);
+        bullet.setTexture(spearTexture);
+        bullet.setLinearVelocity(facing.scl(Spear.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        bullet.setAngle(facing.angleDeg()+90f);
+        addQueuedObject(bullet);
     }
 }

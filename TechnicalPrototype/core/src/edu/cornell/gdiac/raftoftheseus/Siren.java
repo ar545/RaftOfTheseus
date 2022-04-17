@@ -2,8 +2,6 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
-import com.badlogic.gdx.ai.msg.Telegram;
-import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
@@ -67,7 +65,7 @@ public class Siren extends WheelObstacle {
     public StateMachine<Siren, SirenController> getStateMachine(){ return this.stateMachine; }
 
     public GameObject.ObjectType getType() {
-        return GameObject.ObjectType.ENEMY;
+        return GameObject.ObjectType.SHARK;
     }
 
     public void setTargetRaft(Raft targetRaft) {
