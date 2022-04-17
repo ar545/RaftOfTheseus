@@ -233,14 +233,6 @@ public class LevelModel {
         obj.activatePhysics(world);
     }
 
-    /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
-     * @param obj the object to check for bounds */
-    protected void checkBulletBounds(GameObject obj){
-        if(obj.getType() == GameObject.ObjectType.BULLET && !inBounds(obj)){
-            obj.setDestroyed(true);
-        }
-    }
-
     /** Immediately adds the object to the physics world, adding it to the front of the list, so it gets draw the first
      * @param obj The environmental object (usually are currents only) to add */
     protected void addCurrentObject(Current obj) {
@@ -644,7 +636,6 @@ public class LevelModel {
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = directory.getEntry("earth", Texture.class);
-        Spear.setText(spearTexture);
     }
 
     /** Add wood Objects to random location in the world */
@@ -694,15 +685,26 @@ public class LevelModel {
         currentField.updateCurrentEffects(raft);
     }
 
+    // BULLET MANIPULATION
+
     /**
      * Add a new bullet to the world based on clicked point.
+     * @param firelocation where the player cliked in box2d coordinates
      */
-    public void createSpear(Vector2 firelocation, Raft player) {
-        Vector2 facing = firelocation.sub(player.getPosition()).nor();
-        Spear bullet = new Spear(player.getPosition().mulAdd(facing, 0.5f), true);
+    public void createSpear(Vector2 firelocation) {
+        Vector2 facing = firelocation.sub(raft.getPosition()).nor();
+        Spear bullet = new Spear(raft.getPosition());
         bullet.setTexture(spearTexture);
-        bullet.setLinearVelocity(facing.scl(Spear.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        bullet.setLinearVelocity(facing.scl(Spear.SPEAR_SPEED).mulAdd(raft.getLinearVelocity(), 0.5f));
         bullet.setAngle(facing.angleDeg()+90f);
         addQueuedObject(bullet);
+    }
+
+    /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
+     * @param s the spear to check for in range */
+    protected void checkSpear(Spear s){
+        if(s.outMaxDistance()){
+           s.setDestroyed(true);
+        }
     }
 }

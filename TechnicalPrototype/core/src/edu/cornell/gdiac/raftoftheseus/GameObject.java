@@ -43,7 +43,7 @@ public abstract class GameObject extends SimpleObstacle {
         /**
          * A bullet shot by the player
          */
-        BULLET,
+        SPEAR,
         HYDRA,
         SIREN
     }

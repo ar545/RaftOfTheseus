@@ -792,8 +792,8 @@ public class WorldController implements Screen, ContactListener {
             Vector2 firePixel = ic.getFireDirection();
             Affine2 camera = calculateMovingCamera(100/3.0f);
             camera.inv().applyTo(firePixel);
-            levelModel.createSpear(firePixel, player);
-            player.addHealth(Spear.BULLET_DAMAGE);
+            levelModel.createSpear(firePixel);
+            player.addHealth(Spear.SPEAR_DAMAGE);
             SoundController.getInstance().playSFX("spear_throw");
         }
 
@@ -859,7 +859,7 @@ public class WorldController implements Screen, ContactListener {
         while (iterator.hasNext()) {
             PooledList<GameObject>.Entry entry = iterator.next();
             GameObject obj = entry.getValue();
-            levelModel.checkBulletBounds(obj);
+            if(obj.getType() == GameObject.ObjectType.SPEAR) levelModel.checkSpear((Spear) obj);
             if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);
                 entry.remove();
@@ -979,15 +979,15 @@ public class WorldController implements Screen, ContactListener {
             GameObject bd1 = (GameObject) body1.getUserData();
             GameObject bd2 = (GameObject) body2.getUserData();
             // Check for bullet collision with object (terrain or enemy)
-            if (bd1.getType().equals(GameObject.ObjectType.BULLET)) {
+            if (bd1.getType() == GameObject.ObjectType.SPEAR) {
                 ResolveSpearCollision((Spear) bd1, bd2);
-            } else if (bd2.getType().equals(GameObject.ObjectType.BULLET)) {
+            } else if (bd2.getType() == GameObject.ObjectType.SPEAR) {
                 ResolveSpearCollision((Spear) bd2, bd1);
             }
             // Check for player collision with wood (health+)
-            else if(bd1.getType().equals(GameObject.ObjectType.RAFT)){
+            else if(bd1.getType() == GameObject.ObjectType.RAFT){
                 ResolveRaftCollision((Raft) bd1, bd2);
-            } else if(bd2.getType().equals(GameObject.ObjectType.RAFT)){
+            } else if(bd2.getType() == GameObject.ObjectType.RAFT){
                 ResolveRaftCollision((Raft) bd2, bd1);
             }
         } catch (Exception e) {
@@ -1012,24 +1012,24 @@ public class WorldController implements Screen, ContactListener {
     }
 
     private void ResolveRaftCollision(Raft r, GameObject g){
-        if(g.getType().equals(GameObject.ObjectType.WOOD)){
+        if(g.getType() == GameObject.ObjectType.WOOD){
             // update player health
             r.addHealth(((Wood) g).getWood());
             SoundController.getInstance().playSFX("wood_pickup");
             g.setDestroyed(true);
-        } else if(g.getType().equals(GameObject.ObjectType.SHARK)){
+        } else if(g.getType() == GameObject.ObjectType.SHARK){
             // update player health
             r.addHealth(Shark.ENEMY_DAMAGE);
             SoundController.getInstance().playSFX("raft_damage");
             g.setDestroyed(true);
-        } else if(g.getType().equals(GameObject.ObjectType.TREASURE)){
+        } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             r.addStar();
             levelModel.addRandomWood();
             playerScore++;
             SoundController.getInstance().playSFX("chest_collect");
             g.setDestroyed(true);
-        } else if(g.getType().equals(GameObject.ObjectType.GOAL)){
+        } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
         }

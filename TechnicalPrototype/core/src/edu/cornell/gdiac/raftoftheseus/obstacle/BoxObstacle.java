@@ -209,7 +209,7 @@ public abstract class BoxObstacle extends GameObject {
 
 	// ACCESSORS
 	public void setTexture(Texture texture) {
-		if(getType() != ObjectType.BULLET) {
+		if(getType() != ObjectType.SPEAR) {
 			super.setTexture(new TextureRegion(texture));
 		} else {
 			super.setTexture(new TextureRegion(texture, 0.4f, 0.1f, 0.6f, 0.9f ));
