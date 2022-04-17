@@ -96,14 +96,8 @@ public class WorldController implements Screen, ContactListener {
     protected Texture bullet_texture;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
-    /** Texture for map background */
-    protected Texture mapBackground;
-    /** Texture for game background */
-    protected Texture gameBackground;
     /** Texture for pause screen */
     protected Texture pauseBackground;
-    /** Texture for game background when using shader */
-    protected Texture blueTexture;
     /** Texture for failed level */
     protected Texture failedBackground;
     /** Texture for success backgrounds where the index corresponds to the score */
@@ -157,7 +151,7 @@ public class WorldController implements Screen, ContactListener {
      */
     protected WorldController(GameCanvas canvas) {
         this.canvas = canvas;
-        levelModel = new LevelModel();
+        levelModel = new LevelModel(canvas);
         this.complete = false;
         this.wasComplete = false;
         this.failed = false;
@@ -227,62 +221,31 @@ public class WorldController implements Screen, ContactListener {
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
         Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
+        // Draw the level
         canvas.clear();
         canvas.begin(cameraTransform);
-        drawWater();
-        for(GameObject obj : levelModel.getObjects()) {
-
-            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) {
-                if (obj.getType() == GameObject.ObjectType.SHARK) {
-                    obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
-                } else {
-                    obj.draw(canvas);
-                }
-            }
-        }
+        levelModel.drawWater(USE_SHADER_FOR_WATER, startTime);
+        levelModel.drawObjects(USE_SHADER_FOR_WATER);
         canvas.end();
+
         // reset camera transform (because health bar isn't in game units)
         canvas.begin();
         Vector2 playerPosOnScreen = levelModel.getPlayer().getPosition();
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(levelModel.getPlayer().getHealthRatio(), playerPosOnScreen);
         canvas.end();
+
         // draw a circle showing how far the player can move before they die
         float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
 
+        // draw stars
         drawStar(levelModel.getPlayer().getStar());
 
+        // draw interfaces
         if (map) {
-            // translate center point of level to (0,0):
-            Vector2 translation_1 = levelModel.bounds().getCenter(new Vector2(0,0)).scl(-1);
-
-            // scale down so that the whole level fits on the screen, with a margin:
-            int pixelMargin = 150;
-            float wr = (canvas.getWidth()-2*pixelMargin) / (levelModel.bounds().width);
-            float hr = (canvas.getHeight()-2*pixelMargin) / (levelModel.bounds().height);
-            float scale = Math.min(wr, hr);
-
-            // translate center point of level to center of screen:
-            Vector2 translation_2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
-
-            Affine2 mapTransform = new Affine2();
-            mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
-
-            canvas.begin(mapTransform);
-            canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
-                    levelModel.bounds().width/2, levelModel.bounds().height/2, 0.0f,
-                    levelModel.bounds().width/mapBackground.getWidth(), levelModel.bounds().height/mapBackground.getHeight());
-            for(GameObject obj : levelModel.getObjects()) {
-                GameObject.ObjectType type = obj.getType();
-                if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.SHARK
-                        && type != GameObject.ObjectType.WOOD) {
-                    obj.draw(canvas);
-                }
-            }
-            canvas.end();
+            levelModel.drawMap();
         }
-
         if (debug) {
             canvas.beginDebug(cameraTransform);
             for(GameObject obj : levelModel.getObjects()) {
@@ -290,7 +253,6 @@ public class WorldController implements Screen, ContactListener {
             }
             canvas.endDebug();
         }
-
         // Final message
         if (pausePressed) {
             drawPause();
@@ -577,7 +539,6 @@ public class WorldController implements Screen, ContactListener {
         table.row();
     }
 
-//<<<<<<< HEAD
     /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
      * boundary of the world with walls, the player position, and the pixel per unit scale.
      * @param pixelsPerUnit scalar pixel per unit
@@ -616,22 +577,6 @@ public class WorldController implements Screen, ContactListener {
         if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
     }
 
-    /** draws background water (for the sea) and moving currents (using shader)
-     * Precondition & post-condition: the game canvas is open */
-    private void drawWater() {
-        if (USE_SHADER_FOR_WATER)
-            canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
-        float pixel = 1;
-        float x_scale = levelModel.boundsVector2().x * pixel;
-        float y_scale = levelModel.boundsVector2().y * pixel;
-        if (!USE_SHADER_FOR_WATER)
-            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
-        else
-            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
-        if (USE_SHADER_FOR_WATER)
-            canvas.stopUsingShader();
-    }
-
     /** Draw star at the up left corner
      * Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
     private void drawStar(int star) {
@@ -661,10 +606,7 @@ public class WorldController implements Screen, ContactListener {
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
-        mapBackground = directory.getEntry("map_background", Texture.class);
-        gameBackground = directory.getEntry("background", Texture.class);
         pauseBackground = directory.getEntry("pause_background", Texture.class);
-        blueTexture = directory.getEntry("blue_texture", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         failedBackground = directory.getEntry("failed_background", Texture.class);
         successBackgrounds = new Texture[4];
@@ -723,7 +665,6 @@ public class WorldController implements Screen, ContactListener {
             map = !map;
             SoundController.getInstance().playSFX("map_open");
         } // Toggle map
-//        if (input.didTab()) { SoundController.getInstance().playSFX("level_complete");}
 
         // Now it is time to maybe switch screens.
         if (input.didExit() || exitPressed) {

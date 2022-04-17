@@ -70,9 +70,6 @@ public class Hydra extends WheelObstacle {
     }
 
     // Targeting
-    public void setTargetRaft(Raft targetRaft) {
-        this.targetRaft = targetRaft;
-    }
     public Vector2 getTargetDirection() { return getPosition().sub(targetRaft.getPosition()).nor(); }
     public boolean inRange(){
         return getPosition().dst(targetRaft.getPosition()) <= FIRING_RANGE;

@@ -1,9 +1,11 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -93,6 +95,8 @@ public class LevelModel {
     private float[] polygonVertices;
     /** Reference to the game assets directory */
     private AssetDirectory directory;
+    /** Reference to the game canvas. */
+    private GameCanvas canvas;
     /** The read-in level data */
     private JsonValue level_data;
     /** The Box2D world */
@@ -137,6 +141,12 @@ public class LevelModel {
     private FilmStrip enemyTexture;
     /** Texture for current placeholder: texture alas in future */
     private Texture spearTexture;
+    /** Texture for map background */
+    protected Texture mapBackground;
+    /** Texture for game background */
+    protected Texture gameBackground;
+    /** Texture for game background when using shader */
+    protected Texture blueTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
     private GameObject[][] obstacles;
@@ -161,7 +171,7 @@ public class LevelModel {
     /** Get boundary wall drawscale */
     public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
     /** Constructor call for this singleton class */
-    public LevelModel(){}
+    public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
 
     public int cols(){
         return map_size.x;
@@ -636,6 +646,9 @@ public class LevelModel {
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = directory.getEntry("earth", Texture.class);
+        mapBackground = directory.getEntry("map_background", Texture.class);
+        gameBackground = directory.getEntry("background", Texture.class);
+        blueTexture = directory.getEntry("blue_texture", Texture.class);
     }
 
     /** Add wood Objects to random location in the world */
@@ -702,9 +715,66 @@ public class LevelModel {
 
     /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
      * @param s the spear to check for in range */
-    protected void checkSpear(Spear s){
+    public void checkSpear(Spear s){
         if(s.outMaxDistance()){
            s.setDestroyed(true);
+        }
+    }
+
+    public void drawMap(){
+        // translate center point of level to (0,0):
+        Vector2 translation_1 = bounds().getCenter(new Vector2(0,0)).scl(-1);
+
+        // scale down so that the whole level fits on the screen, with a margin:
+        int pixelMargin = 150;
+        float wr = (canvas.getWidth()-2*pixelMargin) / (bounds().width);
+        float hr = (canvas.getHeight()-2*pixelMargin) / (bounds().height);
+        float scale = Math.min(wr, hr);
+
+        // translate center point of level to center of screen:
+        Vector2 translation_2 = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2);
+
+        Affine2 mapTransform = new Affine2();
+        mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
+
+        canvas.begin(mapTransform);
+        canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
+                bounds().width/2, bounds().height/2, 0.0f,
+                bounds().width/mapBackground.getWidth(), bounds().height/mapBackground.getHeight());
+        for(GameObject obj : getObjects()) {
+            GameObject.ObjectType type = obj.getType();
+            if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.SHARK
+                    && type != GameObject.ObjectType.WOOD) {
+                obj.draw(canvas);
+            }
+        }
+        canvas.end();
+    }
+
+    /** draws background water (for the sea) and moving currents (using shader)
+     * Precondition & post-condition: the game canvas is open */
+    public void drawWater(boolean useShader, long startTime) {
+        if (useShader) canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+        float pixel = 1;
+        float x_scale = boundsVector2().x * pixel;
+        float y_scale = boundsVector2().y * pixel;
+        if (!useShader)
+            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+        else
+            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
+        if (useShader)
+            canvas.stopUsingShader();
+    }
+
+    public void drawObjects(boolean useShader){
+        for(GameObject obj : getObjects()) {
+            if (!useShader || obj.getType() != GameObject.ObjectType.CURRENT) {
+                if (obj.getType() == GameObject.ObjectType.SHARK) {
+                    obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
+                } else {
+                    obj.draw(canvas);
+                }
+            }
         }
     }
 }
