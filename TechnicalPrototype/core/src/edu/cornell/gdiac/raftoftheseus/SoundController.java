@@ -93,7 +93,7 @@ public class SoundController {
             sfx.put(s.name(), directory.getEntry(s.name(), Sound.class));
         }
         // Get music presets
-        JsonValue mscpresets = directory.getEntry("music_presets", JsonValue.class);
+        JsonValue mscpresets = directory.getEntry("music_settings", JsonValue.class);
         int i = 0;
         for(JsonValue m : mscpresets){
             musicPresets.put(i, m);

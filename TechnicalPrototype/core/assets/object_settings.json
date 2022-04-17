@@ -1,4 +1,11 @@
 {
+  "world" : {
+    "exit count" : 1000,
+    "use shaders" : true,
+    "world step" : 60.0,
+    "world velocity" : 6,
+    "world posit" : 2
+  },
   "siren" : {
     "idle time" : 500,
     "singing time" : 3000,
@@ -39,29 +46,6 @@
   },
   "terrain": {
   },
-  "exit codes" : {
-    "from loading" : -1,
-    "quit" : 0,
-    "next level" : 1,
-    "previous level" : 2,
-    "world to settings" : 3,
-    "to menu" : 5,
-    "to world" : 6,
-    "menu to settings" : 8
-  },
-  "screen" : {
-    "standard width" : 800,
-    "standard height" : 700,
-    "column number" : 4,
-    "column padding" : 25
-  },
-  "world" : {
-    "exit count" : 1000,
-    "use shaders" : true,
-    "world step" : 60.0,
-    "world velocity" : 6,
-    "world posit" : 2
-  },
   "raft" : {
     "move cost" : 2,
     "with current" : 0.45,
@@ -72,5 +56,4 @@
     "thrust" : 0.3,
     "max speed" : 10
   },
-  "level count" : 9
 }

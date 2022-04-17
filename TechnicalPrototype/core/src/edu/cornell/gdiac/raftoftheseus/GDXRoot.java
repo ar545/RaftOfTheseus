@@ -140,14 +140,13 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		if (screen == loading) {
 			directory = loading.getAssets();
 			// Load sounds and CONSTANTS
-			JsonValue objParams = directory.getEntry("object_parameters", JsonValue.class);
-			NUM_LEVELS = objParams.getInt("level count", 9);
-			setExitCodes(objParams.get("exit codes"));
-			WorldController.setConstants(objParams);
-			MenuMode.setConstants(objParams.get("screen"));
-			SettingsMode.setContants(objParams.get("screen"));
-			JsonValue keys = directory.getEntry("control_settings", JsonValue.class);
-			InputController.setConstants(keys);
+			JsonValue screenParams = directory.getEntry("screen_settings", JsonValue.class);
+			NUM_LEVELS = screenParams.getInt("level count", 9);
+			setExitCodes(screenParams.get("exit codes"));
+			MenuMode.setConstants(screenParams.get("screen"));
+			SettingsMode.setContants(screenParams.get("screen"));
+			WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
+			InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
 			InputController.getInstance();
 			SoundController.getInstance().gatherAssets(directory);
 			// Create menu

@@ -793,7 +793,8 @@ public class LevelModel {
         canvas.end();
     }
 
-    /** draws background water (for the sea) and moving currents (using shader)
+    /**
+     * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(boolean useShader, float time) {
         if (useShader) canvas.useShader(time);
@@ -808,6 +809,10 @@ public class LevelModel {
             canvas.stopUsingShader();
     }
 
+    /**
+     *
+     * @param useShader
+     */
     public void drawObjects(boolean useShader){
         for(GameObject obj : getObjects()) {
             if (!useShader || obj.getType() != GameObject.ObjectType.CURRENT) {

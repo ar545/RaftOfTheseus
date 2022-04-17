@@ -89,9 +89,10 @@
   },
   "jsons" : {
     "sound_settings" : "sound_settings.json",
-    "music_presets" : "music_presets.json",
-    "object_parameters" : "object_parameters.json",
-    "control_settings" : "control_settings.json",
+    "music_settings" : "music_settings.json",
+    "object_settings" : "object_settings.json",
+    "screen_settings" : "screen_settings.json",
+    "input_settings" : "input_settings.json",
     "level:0" : "levels/level0.json",
     "level:1" : "levels/level1.json",
     "level:2" : "levels/level2.json",

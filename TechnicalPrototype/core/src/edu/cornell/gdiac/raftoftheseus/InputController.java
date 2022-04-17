@@ -106,11 +106,10 @@ public class InputController {
 		mov_offset = new Vector2();
 		fire_location = new Vector2();
 		mappings = new ArrayMap<>();
-		setKeyboardOnly();
-		setKeyboardMouse();
+		populateMap("mouse keyboard");
 	}
 
-	/* TODO SETTERS */
+	/* SETTERS */
 
 	/**
 	 * Puts in the control mapping the default key value pairs
@@ -127,45 +126,7 @@ public class InputController {
 		}
 	}
 
-	/**
-	 * Changes the control mappings depending on which control scheme is being used.
-	 */
-	private void setControlScheme(){
-		switch (controlScheme) {
-			case KeyboardMouse: populateMap("mouse keyboard"); return;
-			case KeyboardOnly: populateMap("keyboard only"); return;
-			case Custom: return;
-		}
-	}
-
-	/**
-	 * For internal use to update the control scheme when the user presses C
-	 */
-	private void changeControlScheme(){
-		switch (controlScheme){
-			case KeyboardMouse: setKeyboardOnly(); return;
-			case KeyboardOnly: setKeyboardMouse(); return;
-			case Custom: return;
-		}
-	}
-
-	/* TODO CUSTOMIZATION INTERFACE */
-
-	/**
-	 * Changes the controls to use keyboard and mouse.
-	 */
-	public void setKeyboardMouse(){
-		controlScheme = ControlScheme.KeyboardMouse;
-		setControlScheme();
-	}
-
-	/**
-	 * Changes the controls to use keyboard only.
-	 */
-	public void setKeyboardOnly(){
-		controlScheme = ControlScheme.KeyboardOnly;
-		setControlScheme();
-	}
+	/* CUSTOMIZATION INTERFACE */
 
 	/**
 	 * Operation to allow customization of key binds. Should be limited
@@ -192,7 +153,6 @@ public class InputController {
 	public String getControlScheme(){
 		switch (controlScheme){
 			case KeyboardMouse: return "Keyboard and Mouse";
-			case KeyboardOnly: setKeyboardMouse(); return "Keyboard Only";
 			case Custom: return "Custom";
 			default: throw new RuntimeException("Illegal state reached in Input Controller.");
 		}
@@ -220,7 +180,7 @@ public class InputController {
 
 	}
 
-	/* TODO GETTERS */
+	/* GETTERS */
 
 	/** @return the singleton instance of the input controller */
 	public static InputController getInstance() {
@@ -270,7 +230,7 @@ public class InputController {
 	/** @return where the mouse was clicked in screen coordinates */
 	public Vector2 getFireDirection() { return fire_location; }
 
-	/* TODO READ INPUT */
+	/* READ INPUT */
 
 	/** Reads the input for the player and converts the result into game logic. */
 	public void readInput() {
@@ -325,23 +285,13 @@ public class InputController {
 		if (Gdx.input.isKeyPressed(mappings.get("down")) || Gdx.input.isKeyPressed(mappings.get("s"))) {
 			y_offset -= 1.0f;
 		}
-		// Map dependent
-//		if(controlScheme == ControlScheme.KeyboardMouse) {
-//			mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map"));
-//			firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire"));
-//			if (firePressed) {
-//				fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-//			}
-//		} else if (controlScheme == ControlScheme.KeyboardOnly) {
-//			mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
-//			firePressed = Gdx.input.isKeyPressed(mappings.get("fire"));
-//		}
+
+		// TODO add rotational aiming
+
 		mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map")) || Gdx.input.isKeyPressed(mappings.get("map"));
 		firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fire"));
 		if (firePressed) {
 			fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 		}
-
-		if(didChange()){changeControlScheme();}
 	}
 }
