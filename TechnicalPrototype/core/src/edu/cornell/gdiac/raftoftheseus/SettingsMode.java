@@ -63,7 +63,7 @@ public class SettingsMode implements Screen {
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH;
     /** Standard window height (for scaling) */
-    private static int STANDARD_HEIGHT = 700;
+    private static int STANDARD_HEIGHT;
     /** Scaling factor. */
     private float scale;
     /** The height of the canvas window (necessary since sprite origin != screen origin) */

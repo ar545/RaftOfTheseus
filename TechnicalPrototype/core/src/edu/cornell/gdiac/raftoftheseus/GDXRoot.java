@@ -21,7 +21,6 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.g2d.freetype.*;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
 
@@ -50,12 +49,22 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	/** Which level is currently loaded */
 	private int currentLevel = 0;
 	/** How many levels there are */
-	private int numLevels = 9;
+	public static int NUM_LEVELS;
+	/** Exit code from loading = -1 */
+	/** Exit code for quitting = 0 */
+	public static int QUIT;
+	/** Exit code for next level = 1 */
+	public static int NEXT_LEVEL;
+	/** Exit code for previous level = 2 */
+	public static int PREV_LEVEL;
+	/** Exit code for world to settings = 3 */
+	public static int WORLD_TO_SETTINGS;
 	/** Exit code for displaying menu screen */
-	private static final int DISPLAY_MENU = 5;
+	public static int TO_MENU;
 	/** Exit code for displaying playing screen */
-	private static final int DISPLAY_WORLD = 6;
-	private boolean constantsLoaded;
+	public static int TO_WORLD;
+	/** Exit code for menu to settings = 8 */
+	public static int MENU_TO_SETTINGS;
 
 	/**
 	 * Creates a new game from the configuration settings.
@@ -77,10 +86,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
 		settings = new SettingsMode(canvas);
-		settings.setExitMenu(DISPLAY_MENU);
+		settings.setExitMenu(TO_MENU);
 		setScreen(loading);
 		loading.setScreenListener(this);
-		constantsLoaded = false;
 	}
 
 	/**
@@ -129,56 +137,18 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param exitCode The state of the screen upon exit
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
-		if (exitCode == WorldController.EXIT_PREV) {
-			SoundController.getInstance().haltMusic();
-			currentLevel = Math.max(0, currentLevel-1);
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if(exitCode == WorldController.EXIT_NEXT){
-			SoundController.getInstance().haltMusic();
-			currentLevel = Math.min(numLevels-1, currentLevel+1);
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if (exitCode == WorldController.EXIT_SETTINGS) {
-			settings.setScreenListener(this);
-			settings.setPreviousMode(DISPLAY_WORLD);
-			settings.resetPressedState();
-			settings.populate(directory);
-			setScreen(settings);
-		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
-			settings.setScreenListener(this);
-			settings.setPreviousMode(DISPLAY_MENU);
-			settings.resetPressedState();
-			settings.populate(directory);
-//			settings.setIsBackMenu(false);
-			setScreen(settings);
-		} else if (screen == settings) {
-			settings.resetPressedState();
-			menu.resetSettingsState();
-			switch (exitCode) {
-				case DISPLAY_MENU:
-					menu.setScreenListener(this);
-					setScreen(menu);
-					break;
-				case DISPLAY_WORLD:
-					playing.setScreenListener(this);
-//					playing.setLevel(currentLevel);
-					setScreen(playing);
-					break;
-			}
-		} else if (screen == loading) {
+		if (screen == loading) {
 			directory = loading.getAssets();
-			// Stop load sounds and CONSTANTS
-			if(!constantsLoaded) {
-				constantsLoaded = true;
-				JsonValue objParams = directory.getEntry("object_parameters", JsonValue.class);
-				WorldController.setConstants(objParams);
-				MenuMode.setConstants(objParams.get("screen"));
-				SettingsMode.setContants(objParams.get("screen"));
-				JsonValue keys = directory.getEntry("control_settings", JsonValue.class);
-				InputController.setConstants(keys);
-				InputController.getInstance();
-			}
+			// Load sounds and CONSTANTS
+			JsonValue objParams = directory.getEntry("object_parameters", JsonValue.class);
+			NUM_LEVELS = objParams.getInt("level count", 9);
+			setExitCodes(objParams.get("exit codes"));
+			WorldController.setConstants(objParams);
+			MenuMode.setConstants(objParams.get("screen"));
+			SettingsMode.setContants(objParams.get("screen"));
+			JsonValue keys = directory.getEntry("control_settings", JsonValue.class);
+			InputController.setConstants(keys);
+			InputController.getInstance();
 			SoundController.getInstance().gatherAssets(directory);
 			// Create menu
 			menu.setScreenListener(this);
@@ -186,6 +156,39 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			setScreen(menu);
 			loading.dispose();
 			loading = null;
+		} else if (exitCode == PREV_LEVEL) {
+			SoundController.getInstance().haltMusic();
+			currentLevel = Math.max(0, currentLevel-1);
+			playing.setLevel(currentLevel);
+			setScreen(playing);
+		} else if(exitCode == NEXT_LEVEL){
+			SoundController.getInstance().haltMusic();
+			currentLevel = Math.min(NUM_LEVELS -1, currentLevel+1);
+			playing.setLevel(currentLevel);
+			setScreen(playing);
+		} else if (exitCode == WORLD_TO_SETTINGS) {
+			settings.setScreenListener(this);
+			settings.setPreviousMode(TO_WORLD);
+			settings.resetPressedState();
+			settings.populate(directory);
+			setScreen(settings);
+		} else if (exitCode == MENU_TO_SETTINGS) {
+			settings.setScreenListener(this);
+			settings.setPreviousMode(TO_MENU);
+			settings.resetPressedState();
+			settings.populate(directory);
+			setScreen(settings);
+		} else if (screen == settings) {
+			settings.resetPressedState();
+			menu.resetSettingsState();
+			if(exitCode == TO_MENU) {
+				menu.setScreenListener(this);
+				setScreen(menu);
+			} else if (exitCode == TO_WORLD) {
+				playing.setScreenListener(this);
+//					playing.setLevel(currentLevel);
+				setScreen(playing);
+			}
 		} else if (screen == playing) {
 			SoundController.getInstance().haltMusic();
 			menu.resetPressedState();
@@ -200,10 +203,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			// Load level
 			playing.setScreenListener(this);
 			playing.gatherAssets(directory);
-			currentLevel = menu.getSelectedLevel() < numLevels ? menu.getSelectedLevel() : 0;
+			currentLevel = menu.getSelectedLevel() < NUM_LEVELS ? menu.getSelectedLevel() : 0;
 			playing.setLevel(currentLevel);
 			setScreen(playing);
-		} else if (exitCode != WorldController.EXIT_QUIT) {
+		} else if (exitCode != QUIT) {
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
 		} else {
@@ -212,4 +215,18 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		}
 	}
 
+	/**
+	 * Method to set the exit codes for the different screens.
+	 * Found in object_parameters.json
+	 * @param objParams JsonValue "exit codes"
+	 */
+	private static void setExitCodes(JsonValue objParams){
+		QUIT = objParams.getInt("quit");
+		NEXT_LEVEL = objParams.getInt("next level");
+		PREV_LEVEL = objParams.getInt("previous level");
+		WORLD_TO_SETTINGS = objParams.getInt("world to settings");
+		TO_MENU = objParams.getInt("to menu");
+		TO_WORLD = objParams.getInt("to world");
+		MENU_TO_SETTINGS = objParams.getInt("menu to settings");
+	}
 }

@@ -18,6 +18,8 @@ import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 
+import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
+
 /**
  * Class that provides the menu screen for the state of the game.
  * */
@@ -56,7 +58,6 @@ public class MenuMode implements Screen {
         NUM_COLS = objParams.getInt(2);
         colPadding = objParams.getInt("column padding", 25);
         LEVEL_COUNT = objParams.getInt("level count", 9);
-        EXIT_SETTINGS = objParams.getInt("exit settings", 8);
     }
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH;
@@ -83,8 +84,6 @@ public class MenuMode implements Screen {
     private boolean active;
     /** Level count **/
     private static int LEVEL_COUNT;
-    /** Exit code for displaying settings */
-    public static int EXIT_SETTINGS = 8;
     /** Whether the play button was pressed on the main menu */
     private boolean playPressed;
     /** Whether the settings button was pressed on the main menu */
@@ -195,7 +194,7 @@ public class MenuMode implements Screen {
         if (active) {
             draw();
             if (settingsPressed) {
-                listener.exitScreen(this, EXIT_SETTINGS);
+                listener.exitScreen(this, MENU_TO_SETTINGS);
             } else if ((isReady() && listener != null) || playPressed) {
                 listener.exitScreen(this, 0);
             }

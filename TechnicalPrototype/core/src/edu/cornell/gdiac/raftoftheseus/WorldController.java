@@ -28,6 +28,8 @@ import edu.cornell.gdiac.util.PooledList;
 
 import java.util.Iterator;
 
+import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
+
 public class WorldController implements Screen, ContactListener {
 
 
@@ -45,33 +47,27 @@ public class WorldController implements Screen, ContactListener {
         Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
         Rock.setConstants(objParams.get("rock"));
+        JsonValue world = objParams.get("world");
+        EXIT_COUNT = world.getInt("exit count", 1000);
+        USE_SHADER_FOR_WATER = world.getBoolean("use shaders", true);
+        WORLD_STEP = 1/world.getFloat("world step", 60f);
+        WORLD_VELOCITY = world.getInt("world velocity", 6);
+        WORLD_POSIT = world.getInt("world posit", 2);
     }
 
     // CONSTANTS
-    /** Exit code for quitting the game */
-    public static int EXIT_QUIT = 0;
-    /** Exit code for advancing to next level */
-    public static int EXIT_NEXT = 1;
-    /** Exit code for jumping back to previous level */
-    public static final int EXIT_PREV = 2;
-    /** Exit code for opening settings */
-    public static final int EXIT_SETTINGS = 3;
     /** How many frames after winning/losing do we continue? */
-    public static int EXIT_COUNT = 1000;
-
+    public static int EXIT_COUNT;
     /** Whether to use shaders or not */
-    private static boolean USE_SHADER_FOR_WATER = true;
-
+    private static boolean USE_SHADER_FOR_WATER;
     /** The amount of time for a physics engine step. */
-    public static float WORLD_STEP = 1/60.0f;
+    public static float WORLD_STEP;
     /** Number of velocity iterations for the constraint solvers */
-    public static int WORLD_VELOCITY = 6;
+    public static int WORLD_VELOCITY;
     /** Number of position iterations for the constraint solvers */
-    public static int WORLD_POSIT = 2;
-
+    public static int WORLD_POSIT;
     /** Scale for the health bar */
     private static final float HEALTH_BAR_SCALE = 0.6f;
-
 
     // FIELDS
     // CANVAS AND OBJECT LIST
@@ -672,17 +668,17 @@ public class WorldController implements Screen, ContactListener {
         if (input.didExit() || exitPressed) {
             pause();
             exitPressed = false;
-            listener.exitScreen(this, EXIT_QUIT);
+            listener.exitScreen(this, QUIT);
             return false;
         } else if (input.didNext() || nextPressed) {
             pause();
             nextPressed = false;
-            listener.exitScreen(this, EXIT_NEXT);
+            listener.exitScreen(this, NEXT_LEVEL);
             return false;
         }  else if (settingsPressed) {
             pause();
             settingsPressed = false;
-            listener.exitScreen(this, EXIT_SETTINGS);
+            listener.exitScreen(this, WORLD_TO_SETTINGS);
             return false;
         } else if (input.didPause() || pausePressed)  {
             pause();
@@ -690,7 +686,7 @@ public class WorldController implements Screen, ContactListener {
             return false;
         } else if (input.didPrevious()) {
             pause();
-            listener.exitScreen(this, EXIT_PREV);
+            listener.exitScreen(this, PREV_LEVEL);
             return false;
         } else if (input.didReset()) {
             reset();
@@ -705,7 +701,7 @@ public class WorldController implements Screen, ContactListener {
                 reset();
             } else if (complete) {
                 pause();
-                listener.exitScreen(this, EXIT_NEXT);
+                listener.exitScreen(this, NEXT_LEVEL);
                 return false;
             }
         }

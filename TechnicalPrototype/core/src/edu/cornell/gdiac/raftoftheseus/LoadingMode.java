@@ -39,6 +39,8 @@ import edu.cornell.gdiac.util.Controllers;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.XBoxController;
 
+import static edu.cornell.gdiac.raftoftheseus.GDXRoot.TO_MENU;
+
 /**
  * Class that provides a loading screen for the state of the game.
  *
@@ -330,7 +332,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 			// We are are ready, notify our listener
 			if (isReady() && listener != null) {
-				listener.exitScreen(this, 0);
+				listener.exitScreen(this, -1);
 			}
 		}
 	}
