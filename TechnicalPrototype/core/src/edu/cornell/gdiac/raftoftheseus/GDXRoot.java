@@ -178,6 +178,21 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	}
 
 	/**
+	 * Method to set the exit codes for the different screens.
+	 * Found in object_parameters.json
+	 * @param objParams JsonValue "exit codes"
+	 */
+	private static void setExitCodes(JsonValue objParams){
+		QUIT = objParams.getInt("quit");
+		NEXT_LEVEL = objParams.getInt("next level");
+		PREV_LEVEL = objParams.getInt("previous level");
+		WORLD_TO_SETTINGS = objParams.getInt("world to settings");
+		TO_MENU = objParams.getInt("to menu");
+		TO_WORLD = objParams.getInt("to world");
+		MENU_TO_SETTINGS = objParams.getInt("menu to settings");
+	}
+
+	/**
 	 * Method to populate all screens with their appropriate assets.
 	 */
 	private void populateScreens(){
@@ -211,8 +226,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		SoundController.getInstance().haltMusic();
 		this.currentLevel = currentLevel;
 		playing.setLevel(this.currentLevel);
-		playing.setScreenListener(this);
-		setScreen(playing);
+		setPlayScreen();
 	}
 
 	/**
@@ -221,20 +235,5 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private void setPlayScreen(){
 		playing.setScreenListener(this);
 		setScreen(playing);
-	}
-
-	/**
-	 * Method to set the exit codes for the different screens.
-	 * Found in object_parameters.json
-	 * @param objParams JsonValue "exit codes"
-	 */
-	private static void setExitCodes(JsonValue objParams){
-		QUIT = objParams.getInt("quit");
-		NEXT_LEVEL = objParams.getInt("next level");
-		PREV_LEVEL = objParams.getInt("previous level");
-		WORLD_TO_SETTINGS = objParams.getInt("world to settings");
-		TO_MENU = objParams.getInt("to menu");
-		TO_WORLD = objParams.getInt("to world");
-		MENU_TO_SETTINGS = objParams.getInt("menu to settings");
 	}
 }
