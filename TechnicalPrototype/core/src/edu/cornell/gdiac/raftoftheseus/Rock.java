@@ -8,7 +8,7 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Rock extends BoxObstacle {
+public class Rock extends GameObject {
 
     public static void setConstants(JsonValue objParams){
         WIDTH = objParams.getFloat(0);
@@ -24,11 +24,11 @@ public class Rock extends BoxObstacle {
 
     /** Constructor for rock */
     public Rock(Vector2 position) {
-        super(WIDTH, HEIGHT);
+        physicsObject = new BoxObstacle(WIDTH, HEIGHT);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.StaticBody);
-        fixture.filter.categoryBits = CATEGORY_TERRAIN;
-        fixture.filter.maskBits = MASK_TERRAIN;
+        physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
+        physicsObject.getFilterData().maskBits = MASK_TERRAIN;
     }
 
 }

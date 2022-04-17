@@ -34,14 +34,14 @@ import edu.cornell.gdiac.raftoftheseus.*;
  * center.  In addition the texture coordinates are computed automatically
  * from the texture size, using the same policy as PolygonSpriteBatch.
  */
-public abstract class PolygonObstacle extends GameObject {
+public class PolygonObstacle extends SimpleObstacle {
 	/** An earclipping triangular to make sure we work with convex shapes */
 	private static final EarClippingTriangulator TRIANGULATOR = new EarClippingTriangulator();
 	
 	/** Shape information for this physics object */
 	protected PolygonShape[] shapes;
 	/** Texture information for this object */
-	protected PolygonRegion region;
+//	protected PolygonRegion region;
 	
 	/** The polygon vertices, scaled for drawing */
 	private float[] scaled;
@@ -225,13 +225,13 @@ public abstract class PolygonObstacle extends GameObject {
 		// Draw the shape with the appropriate scaling factor
 		scaled = new float[points.length];
 		for(int ii = 0; ii < points.length; ii+= 2) {
-			scaled[ii  ] = points[ii  ]*drawScale.x;
-			scaled[ii+1] = points[ii+1]*drawScale.y;
+			scaled[ii  ] = points[ii  ]*1;
+			scaled[ii+1] = points[ii+1]*1;
 		}
-		if (texture != null) {
-			// WARNING: PolygonRegion constructor by REFERENCE
-			region = new PolygonRegion(texture,scaled,tridx);
-		}
+//		if (texture != null) {
+//			// WARNING: PolygonRegion constructor by REFERENCE
+//			region = new PolygonRegion(texture,scaled,tridx);
+//		}
 
 	}
 	
@@ -329,10 +329,10 @@ public abstract class PolygonObstacle extends GameObject {
 	 * 
 	 * @param value  the object texture for drawing purposes.
 	 */
-	public void setTexture(TextureRegion value) {
-		texture = value;
-		region = new PolygonRegion(texture,scaled,tridx);
-	}
+//	public void setTexture(TextureRegion value) {
+//		texture = value;
+//		region = new PolygonRegion(texture,scaled,tridx);
+//	}
 	
     /**
      * Sets the drawing scale for this physics object
@@ -349,17 +349,16 @@ public abstract class PolygonObstacle extends GameObject {
      */
     public void setDrawScale(float x, float y) {
     	assert x != 0 && y != 0 : "Scale cannot be 0";
-    	float dx = x/drawScale.x; 
-    	float dy = y/drawScale.y;
+    	float dx = x/1; 
+    	float dy = y/1;
 		// Reset the drawing shape as well
 		for(int ii = 0; ii < scaled.length; ii+= 2) {
 			scaled[ii  ] *= dx;
 			scaled[ii+1] *= dy;
 		}
-		if (texture != null) {
-			region = new PolygonRegion(texture,scaled,tridx);
-		}
-    	drawScale.set(x,y);
+//		if (texture != null) {
+//			region = new PolygonRegion(texture,scaled,tridx);
+//		}
     }
 	
 	/**
@@ -367,11 +366,11 @@ public abstract class PolygonObstacle extends GameObject {
 	 *
 	 * @param canvas Drawing context
 	 */
-	public void draw(GameCanvas canvas) {
-		if (region != null) {
-			canvas.draw(region,Color.WHITE,0,0,getX()*drawScale.x,getY()*drawScale.y,getAngle(),1,1);
-		}
-	}
+//	public void draw(GameCanvas canvas) {
+//		if (region != null) {
+//			canvas.draw(region,Color.WHITE,0,0,getX()*1,getY()*1,getAngle(),1,1);
+//		}
+//	}
 
 	/**
 	 * Draws the outline of the physics body.
@@ -382,7 +381,7 @@ public abstract class PolygonObstacle extends GameObject {
 	 */
 	public void drawDebug(GameCanvas canvas) {
 		for(PolygonShape tri : shapes) {
-			canvas.drawPhysics(tri,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
+			canvas.drawPhysics(tri,Color.YELLOW,getX(),getY(),getAngle(),1,1);
 		}
 	}
 

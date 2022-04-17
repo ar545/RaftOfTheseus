@@ -4,8 +4,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Spear extends BoxObstacle {
+public class Spear extends GameObject {
     /** Scaling factor the speed of a bullet. */
     public static float SPEAR_SPEED;
     /** Health cost for creating a bullet. */
@@ -30,33 +31,32 @@ public class Spear extends BoxObstacle {
 
     /**
      * Constructor for the Spear.
-     * @param position Where the bullet was created
      */
     public Spear(Vector2 position) {
-        // Set body
-        super(0.6f, 3);
+        physicsObject = new BoxObstacle(0.3f, 2f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
-        setFriction(0);
-        setRestitution(0);
-        setLinearDamping(0);
-        originalPos = new Vector2(position);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
 
-        // Set filters
-        fixture.filter.categoryBits = CATEGORY_PLAYER_BULLET;
-        fixture.filter.maskBits = MASK_PLAYER_BULLET;
+        physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
+        physicsObject.getFilterData().maskBits = MASK_PLAYER_BULLET;
+
+        physicsObject.setFriction(0);
+        physicsObject.setRestitution(0);
+        physicsObject.setLinearDamping(0);
+
+        originalPos = new Vector2(position);
     }
 
     /**
-     * Applying drag to slow the object down. Depends on how far the spear has traveled.
+     * Applying drag to slow the spear down. Depends on how far the spear has traveled.
      */
     @Override
-    public void applyDrag(){
+    public void update(float delta) {
+        super.update(delta);
         if(inFlyDistance()) {
-            dragCache.scl(dragCache.len() * dragCoefficient * getCrossSectionalArea());
-            body.applyForce(dragCache, getPosition(), true);
+            physicsObject.getBody().applyForce(physicsObject.getLinearVelocity().scl(-2f), getPosition(), true);
         } else if (inFallDistance()) {
-            super.applyDrag();
+            // do something?
         }
     }
 
