@@ -18,16 +18,18 @@ import edu.cornell.gdiac.util.PooledList;
 public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
-    /** Default width and height of a single grid in Box2d units */
-    private static final float DEFAULT_GRID_EDGE_LENGTH = 3.0f;
+    /** Width and height of a single grid square in Box2d units */
+    private static final float GRID_SIZE = 3.0f;
+    /** Pixels per grid square */
+    private static final float GRID_PIXELS = 100.0f;
+    /** Pixels per Box2D unit */
+    private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** Default boundary width and height of a single grid in Box2d units */
     private static final float DEFAULT_BOUNDARY = 3.0f;
     /** Default num of rows in the map (y, height) */
     private static final int DEFAULT_GRID_ROW = 8;
     /** Default num of columns in the map (x, width) */
     private static final int DEFAULT_GRID_COL = 10;
-    /** Representing the length and width of a single gird unit on the board */
-    private static final Vector2 GRID_SIZE = new Vector2(DEFAULT_GRID_EDGE_LENGTH, DEFAULT_GRID_EDGE_LENGTH);
     /** Top-down game with no gravity */
     protected static final Vector2 NO_GRAVITY = new Vector2(0f ,0f );
     /** This is used as a level int representing restarting the level */
@@ -270,7 +272,7 @@ public class LevelModel {
 
     /** Getter for how long each tile is **/
     public float getTileSize() {
-        return GRID_SIZE.x;
+        return GRID_SIZE;
     }
 
     /**
@@ -397,7 +399,7 @@ public class LevelModel {
      * Notice that the walls are not included in this boundary, i.e. all walls are out of bounds
      * To include the walls in the bounds, expand the size of rectangle by DEFAULT_BOUNDARY on each side */
     private void setBound() {
-        this.bounds = new Rectangle(0,0,GRID_SIZE.x * map_size.x ,GRID_SIZE.y * map_size.y );
+        this.bounds = new Rectangle(0,0,GRID_SIZE * map_size.x ,GRID_SIZE * map_size.y );
     }
 
     /**
@@ -646,8 +648,8 @@ public class LevelModel {
      * @param x_col the x grid value
      * @param y_row the y grid value */
     private void computePosition(int x_col, int y_row){
-        compute_temp.x = ((float) x_col + 0.5f) * GRID_SIZE.x;
-        compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE.y;
+        compute_temp.x = ((float) x_col + 0.5f) * GRID_SIZE;
+        compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE;
     }
 
     /** This gather the assets required for initializing the objects
@@ -685,7 +687,7 @@ public class LevelModel {
             if (o.getType() == GameObject.ObjectType.CURRENT) {
                 Current c = (Current)o;
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
-                p.scl(1.0f/GRID_SIZE.x, 1.0f/GRID_SIZE.y); // in tiles
+                p.scl(1.0f/GRID_SIZE); // in tiles
                 // TODO figure out a *good* way to represent current magnitude in the shader.
                 Vector2 d = c.getDirectionVector().nor(); // length independent of magnitude
                 d.add(1,1).scl(0.5f); // between 0 and 1
@@ -757,7 +759,7 @@ public class LevelModel {
         canvas.end();
 
         // draw a circle showing how far the player can move before they die
-        float r = getPlayer().getPotentialDistance() * 100/DEFAULT_GRID_EDGE_LENGTH;
+        float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
     }
 
@@ -848,19 +850,18 @@ public class LevelModel {
      * boundary of the world with walls, the player position, and the pixel per unit scale.
      * @return an affine2 representing the affine transformation that texture will go through */
     public void updateCameraTransform() {
-        float pixelsPerUnit = 100/DEFAULT_GRID_EDGE_LENGTH;
-        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
+        Affine2 a = new Affine2().setToScaling(PIXELS_PER_UNIT, PIXELS_PER_UNIT);
 
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
+                .sub(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT));
 
         // "Capped Camera": bound x and y within walls
         Rectangle wallBounds = wallBounds();
-        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
-        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
-        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
-        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
+        translation.x = Math.min(translation.x, - wallBounds.x * PIXELS_PER_UNIT);
+        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * PIXELS_PER_UNIT);
+        translation.y = Math.min(translation.y, - wallBounds.y * PIXELS_PER_UNIT);
+        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * PIXELS_PER_UNIT);
         cameraTransform = a.preTranslate(translation);
     }
 }
