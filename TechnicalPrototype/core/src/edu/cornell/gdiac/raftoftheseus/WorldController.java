@@ -59,9 +59,6 @@ public class WorldController implements Screen, ContactListener {
     /** How many frames after winning/losing do we continue? */
     public static int EXIT_COUNT = 1000;
 
-    /** Whether to use shaders or not */
-    private static boolean USE_SHADER_FOR_WATER = true;
-
     /** The amount of time for a physics engine step. */
     public static float WORLD_STEP = 1/60.0f;
     /** Number of velocity iterations for the constraint solvers */
@@ -88,10 +85,6 @@ public class WorldController implements Screen, ContactListener {
     private InputMultiplexer plexer;
 
     //TEXTURE
-    /** The texture for the colored health bar */
-    protected Texture colorBar;
-    /** The texture for the health bar background */
-    protected TextureRegion greyBar;
     /** The texture for the star */
     protected TextureRegion star;
     /** The texture for the exit condition */
@@ -213,53 +206,31 @@ public class WorldController implements Screen, ContactListener {
     public void draw(float dt) {
         if(canvas == null)
             return; // return if no canvas pointer
-        if (!canvas.shaderCanBeUsed)
-            USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
+        canvas.clear();
 
         // update animations
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
         int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
         levelModel.getPlayer().animationFrame = frame % 19; // TODO don't hardcode number of frames in animation
-        float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
-        Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
 
         // Draw the level
-        canvas.clear();
-        canvas.begin(cameraTransform);
-        levelModel.drawWater(USE_SHADER_FOR_WATER, startTime);
-        levelModel.drawObjects(USE_SHADER_FOR_WATER);
-        canvas.end();
-
-        // reset camera transform (because health bar isn't in game units)
-        canvas.begin();
-        Vector2 playerPosOnScreen = levelModel.getPlayer().getPosition();
-        cameraTransform.applyTo(playerPosOnScreen);
-        drawHealthBar(levelModel.getPlayer().getHealthRatio(), playerPosOnScreen);
-        canvas.end();
-
-        // draw a circle showing how far the player can move before they die
-        float r = levelModel.getPlayer().getPotentialDistance() * pixelsPerUnit;
-        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        levelModel.updateCameraTransform();
+        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f);
 
         // draw stars
         drawStar(levelModel.getPlayer().getStar());
 
         // draw interfaces
+        if (debug) {
+            levelModel.drawDebug();
+        }
         if (map) {
             levelModel.drawMap();
         }
-        if (debug) {
-            canvas.beginDebug(cameraTransform);
-            for(GameObject obj : levelModel.getObjects()) {
-                obj.drawDebug(canvas);
-            }
-            canvas.endDebug();
-        }
-        // Final message
         if (pausePressed) {
             drawPause();
         }
-        if (complete && !failed || failed) {
+        if (complete || failed) {
             if(!wasComplete && complete) {
                 SoundController.getInstance().playSFX("level_complete");
                 SoundController.getInstance().setLevelComplete();
@@ -541,44 +512,6 @@ public class WorldController implements Screen, ContactListener {
         table.row();
     }
 
-    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
-     * boundary of the world with walls, the player position, and the pixel per unit scale.
-     * @param pixelsPerUnit scalar pixel per unit
-     * @return an affine2 representing the affine transformation that texture will go through */
-    private Affine2 calculateMovingCamera(float pixelsPerUnit) {
-        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
-
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
-
-        // "Capped Camera": bound x and y within walls
-        Rectangle wallBounds = levelModel.wallBounds();
-        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
-        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
-        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
-        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
-        return a.preTranslate(translation);
-    }
-
-    /** This function calculate the correct health bar color
-     * @param median for red color the median should be 1/3 and 2/3 for green color
-     * @param health the health percentage for the player
-     * @return the rgb code representing the red or green color
-     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
-    private float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
-
-    /** Precondition & post-condition: the game canvas is open
-     * @param health the health percentage for the player */
-    private void drawHealthBar(float health, Vector2 player_position) {
-        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
-        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
-        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
-        float y_origin = (player_position.y + 20);
-        canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
-        if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
-    }
-
     /** Draw star at the up left corner
      * Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
     private void drawStar(int star) {
@@ -605,9 +538,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
-        greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
-        colorBar  = directory.getEntry( "white_bar", Texture.class );
         pauseBackground = directory.getEntry("pause_background", Texture.class);
         bullet_texture = directory.getEntry( "bullet", Texture.class );
         failedBackground = directory.getEntry("failed_background", Texture.class);
@@ -618,11 +549,10 @@ public class WorldController implements Screen, ContactListener {
         levelModel.setDirectory(directory);
         levelModel.gatherAssets(directory);
         this.directory = directory;
-        if (USE_SHADER_FOR_WATER) {
-            Texture waterTexture = directory.getEntry("water_texture", Texture.class);
-            waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-            canvas.setWaterTexture(waterTexture);
-        }
+
+        Texture waterTexture = directory.getEntry("water_texture", Texture.class);
+        waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        canvas.setWaterTexture(waterTexture);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -733,8 +663,7 @@ public class WorldController implements Screen, ContactListener {
         if (player.isFire()) {
             // find nearest enemy to player
             Vector2 firePixel = ic.getFireDirection();
-            Affine2 camera = calculateMovingCamera(100/3.0f);
-            camera.inv().applyTo(firePixel);
+            levelModel.getCameraTransform().inv().applyTo(firePixel);
             levelModel.createSpear(firePixel);
             player.addHealth(Spear.SPEAR_DAMAGE);
             SoundController.getInstance().playSFX("spear_throw");
@@ -833,8 +762,6 @@ public class WorldController implements Screen, ContactListener {
         SoundController.getInstance().updateMusic();
         wasInDanger = nowInDanger;
     }
-
-
 
     /**
      * Called when the Screen is resized.
@@ -1077,11 +1004,6 @@ public class WorldController implements Screen, ContactListener {
         // Reset Soundcontroller
         SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SoundController.getInstance().startLevelMusic();
-
-        // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
-        // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
-        if (USE_SHADER_FOR_WATER)
-            canvas.setFlowMap(levelModel.recalculateFlowMap());
     }
 
     /**

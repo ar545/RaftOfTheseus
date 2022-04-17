@@ -147,6 +147,16 @@ public class LevelModel {
     protected Texture blueTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
+    /** The texture for the colored health bar */
+    protected Texture colorBar;
+    /** The texture for the health bar background */
+    protected TextureRegion greyBar;
+
+    /** Transform from Box2D coordinates to screen coordinates */
+    private Affine2 cameraTransform;
+    /** Whether to use shaders or not */
+    private static boolean USE_SHADER_FOR_WATER = true;
+
     private GameObject[][] obstacles;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
@@ -292,6 +302,11 @@ public class LevelModel {
     public float boardToScreen(int n) {
         return (float) (n + 0.5f) * (getTileSize());
     }
+
+    public Affine2 getCameraTransform() {
+        return new Affine2().set(cameraTransform);
+    }
+
     // TODO Create enemy super class to reduce redundant code.
     protected void addHydraObject(Hydra obj) {
         assert inBounds(obj) : "Object is not in bounds";
@@ -370,6 +385,11 @@ public class LevelModel {
 
         final FollowFlowField<Vector2> followFlowFieldSB = new FollowFlowField<Vector2>(raft, currentField);
         raft.setSteeringBehavior(followFlowFieldSB);
+
+        // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
+        // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
+        if (USE_SHADER_FOR_WATER)
+            canvas.setFlowMap(recalculateFlowMap());
     }
 
     /** Calculate the world bounds base on the grid map. Set the physical boundary of the level and the world.
@@ -646,6 +666,8 @@ public class LevelModel {
         mapBackground = directory.getEntry("map_background", Texture.class);
         gameBackground = directory.getEntry("background", Texture.class);
         blueTexture = directory.getEntry("blue_texture", Texture.class);
+        greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
+        colorBar  = directory.getEntry( "white_bar", Texture.class );
     }
 
     /** Add wood Objects to random location in the world */
@@ -655,7 +677,7 @@ public class LevelModel {
         addQueuedObject(this_wood);
     }
 
-    public Texture recalculateFlowMap() {
+    private Texture recalculateFlowMap() {
         Pixmap pix = new Pixmap(map_size.x, map_size.y,  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
@@ -718,6 +740,27 @@ public class LevelModel {
         }
     }
 
+    public void draw(float time) {
+        if (!canvas.shaderCanBeUsed)
+            USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
+
+        canvas.begin(cameraTransform);
+        drawWater(USE_SHADER_FOR_WATER, time);
+        drawObjects(USE_SHADER_FOR_WATER);
+        canvas.end();
+
+        // reset camera transform (because health bar isn't in game units)
+        canvas.begin();
+        Vector2 playerPosOnScreen = getPlayer().getPosition();
+        cameraTransform.applyTo(playerPosOnScreen);
+        drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
+        canvas.end();
+
+        // draw a circle showing how far the player can move before they die
+        float r = getPlayer().getPotentialDistance() * 100/DEFAULT_GRID_EDGE_LENGTH;
+        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+    }
+
     public void drawMap(){
         // translate center point of level to (0,0):
         Vector2 translation_1 = bounds().getCenter(new Vector2(0,0)).scl(-1);
@@ -750,8 +793,8 @@ public class LevelModel {
 
     /** draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
-    public void drawWater(boolean useShader, long startTime) {
-        if (useShader) canvas.useShader((System.currentTimeMillis() - startTime) / 1000.0f);
+    public void drawWater(boolean useShader, float time) {
+        if (useShader) canvas.useShader(time);
         float pixel = 1;
         float x_scale = boundsVector2().x * pixel;
         float y_scale = boundsVector2().y * pixel;
@@ -773,5 +816,51 @@ public class LevelModel {
                 }
             }
         }
+    }
+
+    /** Precondition & post-condition: the game canvas is open
+     * @param health the health percentage for the player */
+    private void drawHealthBar(float health, Vector2 player_position) {
+        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
+        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
+        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
+        float y_origin = (player_position.y + 20);
+        canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
+        if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
+    }
+
+    /** This function calculate the correct health bar color
+     * @param median for red color the median should be 1/3 and 2/3 for green color
+     * @param health the health percentage for the player
+     * @return the rgb code representing the red or green color
+     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
+    private float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
+
+    public void drawDebug() {
+        canvas.beginDebug(cameraTransform);
+        for(GameObject obj : getObjects()) {
+            obj.drawDebug(canvas);
+        }
+        canvas.endDebug();
+    }
+
+    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
+     * boundary of the world with walls, the player position, and the pixel per unit scale.
+     * @return an affine2 representing the affine transformation that texture will go through */
+    public void updateCameraTransform() {
+        float pixelsPerUnit = 100/DEFAULT_GRID_EDGE_LENGTH;
+        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
+                .sub(getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
+
+        // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = wallBounds();
+        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
+        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
+        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
+        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
+        cameraTransform = a.preTranslate(translation);
     }
 }
