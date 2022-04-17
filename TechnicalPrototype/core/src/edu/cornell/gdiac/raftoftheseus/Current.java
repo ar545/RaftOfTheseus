@@ -10,7 +10,7 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 import java.util.Random;
 
-public class Current extends BoxObstacle {
+public class Current extends GameObject {
 
     private static void setConstants(JsonValue objParams){
     }
@@ -56,15 +56,14 @@ public class Current extends BoxObstacle {
 
     /** constructor with known direction */
     public Current(Vector2 position, Direction direction, int magnitude_input){
-        super(3f, 3f);
+        physicsObject = new BoxObstacle(3f, 3f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.StaticBody);
-        setSensor(true);
+        physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        physicsObject.setSensor(true);
         this.direction = direction;
         setRotationFromDirection();
-        fixture.filter.categoryBits = CATEGORY_CURRENT;
-        fixture.filter.maskBits = MASK_CURRENT;
-//        magnitude = (float) magnitude_input * CURRENT_SPEED_FACTOR;
+        physicsObject.getFilterData().categoryBits = CATEGORY_CURRENT;
+        physicsObject.getFilterData().maskBits = MASK_CURRENT;
         magnitude = (float) Math.pow(1.6, magnitude_input) + 0.5f * magnitude_input;
     }
 

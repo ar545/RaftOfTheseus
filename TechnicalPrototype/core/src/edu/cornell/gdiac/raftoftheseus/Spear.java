@@ -1,12 +1,14 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Spear extends BoxObstacle {
+public class Spear extends GameObject {
     /** Scaling factor the speed of a bullet. */
     public static float BULLET_SPEED;
     /** Health cost for creating a bullet. */
@@ -21,9 +23,6 @@ public class Spear extends BoxObstacle {
     /** Whether it was created by the player or not. */
     private boolean player;
 
-    private static Texture text;
-
-
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
     public ObjectType getType() { return ObjectType.BULLET; }
     public static void setConstants(JsonValue objParams){
@@ -33,36 +32,36 @@ public class Spear extends BoxObstacle {
         BULLET_RANGE_FLY = objParams.getFloat(3);
         BULLET_RANGE_FALL = objParams.getFloat(4);
     }
-    public static void setText(Texture t){
-        text = t;
-    }
 
 
     public Spear(Vector2 position, boolean player) {
-        super(0.6f, 3);
+        physicsObject = new BoxObstacle(0.6f, 2f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
-        setFriction(0);
-        setRestitution(0);
-        setLinearDamping(0);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
+
+        if(player) {
+            physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
+            physicsObject.getFilterData().maskBits = MASK_PLAYER_BULLET;
+        } else {
+            physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY_BULLET;
+            physicsObject.getFilterData().maskBits = MASK_ENEMY_BULLET;
+        }
+
+        physicsObject.setFriction(0);
+        physicsObject.setRestitution(0);
+        physicsObject.setLinearDamping(0);
+
         this.player = player;
         originalPos = new Vector2(position);
-        if(player) {
-            fixture.filter.categoryBits = CATEGORY_PLAYER_BULLET;
-            fixture.filter.maskBits = MASK_PLAYER_BULLET;
-        } else {
-            fixture.filter.categoryBits = CATEGORY_ENEMY_BULLET;
-            fixture.filter.maskBits = MASK_ENEMY_BULLET;
-        }
-        super.setTexture(text);
     }
 
     @Override
     public void applyDrag(){
         float dist = originalPos.sub(this.getPosition()).len();
+        Vector2 dragCache = new Vector2(0,0);
         if( dist < BULLET_RANGE_FLY ) {
-            dragCache.scl(dragCache.len() * dragCoefficient * getCrossSectionalArea());
-            body.applyForce(dragCache, getPosition(), true);
+            dragCache.scl(dragCache.len() * 0.5f * getCrossSectionalArea());
+            physicsObject.getBody().applyForce(dragCache, getPosition(), true);
         } else if ( BULLET_RANGE_FLY <= dist && dist <= BULLET_RANGE_FALL) {
             super.applyDrag();
         } else {

@@ -24,7 +24,7 @@ import edu.cornell.gdiac.raftoftheseus.*;
  *
  * Unless otherwise specified, the center of mass is as the center.
  */
-public abstract class BoxObstacle extends GameObject {
+public class BoxObstacle extends SimpleObstacle {
 	/** Shape information for this box */
 	protected PolygonShape shape;
 	/** The width and height of the box */
@@ -203,20 +203,20 @@ public abstract class BoxObstacle extends GameObject {
 	 * @param canvas Drawing context
 	 */
 	public void drawDebug(GameCanvas canvas) {
-		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
+		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),1,1);
 	}
 
 
 	// ACCESSORS
-	public void setTexture(Texture texture) {
-		if(getType() != ObjectType.BULLET) {
-			super.setTexture(new TextureRegion(texture));
-		} else {
-			super.setTexture(new TextureRegion(texture, 0.4f, 0.1f, 0.6f, 0.9f ));
-		}
-		textureScale = new Vector2(getWidth() * drawScale.x / texture.getWidth(),
-				getHeight() * drawScale.x / texture.getHeight());
-	}
+//	public void setTexture(Texture texture) {
+//		if(getType() != ObjectType.BULLET) {
+//			super.setTexture(new TextureRegion(texture));
+//		} else {
+//			super.setTexture(new TextureRegion(texture, 0.4f, 0.1f, 0.6f, 0.9f ));
+//		}
+//		textureScale = new Vector2(getWidth() * drawScale.x / texture.getWidth(),
+//				getHeight() * drawScale.x / texture.getHeight());
+//	}
 
 	public float getCrossSectionalArea() {
 		return getWidth()*getHeight()*0.5f;

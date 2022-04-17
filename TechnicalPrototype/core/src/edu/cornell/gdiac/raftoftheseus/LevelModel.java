@@ -119,24 +119,22 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
     private FilmStrip raftTexture;
-    /** Texture for the ocean tiles */
-    private Texture oceanTexture;
     /** Texture for wood pieces that represent single pile of log */
-    private Texture woodTexture;
+    private TextureRegion woodTexture;
     /** Texture for wood pieces that represents double pile of logs */
-    private Texture doubleTexture;
+    private TextureRegion doubleTexture;
     /** Texture for all target, as they look the same */
-    private Texture targetTexture;
+    private TextureRegion targetTexture;
     /** Texture for all treasures */
-    private Texture treasureTexture;
+    private TextureRegion treasureTexture;
     /** Texture for all rock, as they look the same */
-    private Texture rockTexture;
+    private TextureRegion rockTexture;
     /** Texture for current placeholder: texture alas in future */
-    private Texture currentTexture;
+    private TextureRegion currentTexture;
     /** Texture for current placeholder: texture alas in future */
     private FilmStrip enemyTexture;
     /** Texture for current placeholder: texture alas in future */
-    private Texture spearTexture;
+    private TextureRegion spearTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
     private GameObject[][] obstacles;
@@ -159,7 +157,7 @@ public class LevelModel {
     /** Get boundary wall vertices */
     public float[] getWallVertices() { return polygonVertices; }
     /** Get boundary wall drawscale */
-    public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
+//    public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
     /** Constructor call for this singleton class */
     public LevelModel(){}
 
@@ -634,17 +632,15 @@ public class LevelModel {
      * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
         raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 4, 5, 19);// TODO: use data-driven design for rows/cols/size
-        oceanTexture = directory.getEntry("water_tile", Texture.class);
-        woodTexture = directory.getEntry("wood", Texture.class);
-        doubleTexture = directory.getEntry("double", Texture.class);
-        targetTexture = directory.getEntry("target", Texture.class);
-        rockTexture = directory.getEntry("rock", Texture.class);
-        treasureTexture = directory.getEntry("treasure", Texture.class);
-        currentTexture = directory.getEntry("current", Texture.class);
+        woodTexture = new TextureRegion(directory.getEntry("wood", Texture.class));
+        doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
+        targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
+        rockTexture = new TextureRegion(directory.getEntry("rock", Texture.class));
+        treasureTexture = new TextureRegion(directory.getEntry("treasure", Texture.class));
+        currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
-        spearTexture = directory.getEntry("earth", Texture.class);
-        Spear.setText(spearTexture);
+        spearTexture = new TextureRegion(directory.getEntry("bullet", Texture.class));
     }
 
     /** Add wood Objects to random location in the world */
@@ -701,7 +697,7 @@ public class LevelModel {
         Vector2 facing = firelocation.sub(player.getPosition()).nor();
         Spear bullet = new Spear(player.getPosition().mulAdd(facing, 0.5f), true);
         bullet.setTexture(spearTexture);
-        bullet.setLinearVelocity(facing.scl(Spear.BULLET_SPEED).mulAdd(player.getLinearVelocity(), 0.5f));
+        bullet.physicsObject.setLinearVelocity(facing.scl(Spear.BULLET_SPEED).mulAdd(player.physicsObject.getLinearVelocity(), 0.5f));
         bullet.setAngle(facing.angleDeg()+90f);
         addQueuedObject(bullet);
     }

@@ -8,7 +8,7 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 /**
  * Model class for driftwood.
  */
-public class Wood extends WheelObstacle {
+public class Wood extends GameObject {
     // ATTRIBUTES
     /** How many logs is in this pile of wood. player health will add correspondingly */
     private final float wood;
@@ -28,14 +28,15 @@ public class Wood extends WheelObstacle {
      * @param value: amount of wood
      */
     public Wood(Vector2 position, int value) {
-        super();
-        setRadius(1.25f);
-        setDensity(0.2f);
+        physicsObject = new WheelObstacle(1.25f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.setSensor(true);
+        physicsObject.getFilterData().categoryBits = CATEGORY_PUSHABLE;
+        physicsObject.getFilterData().maskBits = MASK_WOOD;
+
+        physicsObject.setDensity(0.2f);
         wood = value;
-        fixture.filter.categoryBits = CATEGORY_PUSHABLE;
-        fixture.filter.maskBits = MASK_WOOD;
     }
 
     /** generate wood at random location */

@@ -27,7 +27,7 @@ import edu.cornell.gdiac.raftoftheseus.*;
  *
  * Unless otherwise specified, the center of mass is as the center.
  */
-public abstract class CapsuleObstacle extends GameObject {
+public class CapsuleObstacle extends SimpleObstacle {
 	/** Epsilon factor to prevent issues with the fixture seams */
 	private static final float DEFAULT_EPSILON = 0.01f;
 	
@@ -488,7 +488,7 @@ public abstract class CapsuleObstacle extends GameObject {
 	 * @param canvas Drawing context
 	 */
 	public void drawDebug(GameCanvas canvas) {
-		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
+		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),1,1);
 		if (cap1 != null) {
 			// Need to manually rotate caps off axis
 			float dx; float dy;
@@ -501,7 +501,7 @@ public abstract class CapsuleObstacle extends GameObject {
 				dx = (float)(r*Math.cos(Math.PI/2.0f+getAngle()));
 				dy = (float)(r*Math.sin(Math.PI/2.0f+getAngle()));
 			}
-			canvas.drawPhysics(end1,Color.YELLOW,getX()+dx,getY()+dy,drawScale.x,drawScale.y);			
+			canvas.drawPhysics(end1,Color.YELLOW,getX()+dx,getY()+dy,1,1);			
 		}
 		if (cap2 != null) {
 			// Need to manually rotate caps off axis
@@ -515,17 +515,17 @@ public abstract class CapsuleObstacle extends GameObject {
 				dx = (float)(r*Math.cos(-Math.PI/2.0f+getAngle()));
 				dy = (float)(r*Math.sin(-Math.PI/2.0f+getAngle()));
 			}
-			canvas.drawPhysics(end2,Color.YELLOW,getX()+dx,getY()+dy,drawScale.x,drawScale.y);			
+			canvas.drawPhysics(end2,Color.YELLOW,getX()+dx,getY()+dy,1,1);			
 		}
 	}
 
 
 	// ACCESSORS
-	public void setTexture(Texture texture) {
-		super.setTexture(new TextureRegion(texture));
-		textureScale = new Vector2(getWidth()*drawScale.x / texture.getWidth(),
-				getHeight()*drawScale.x / texture.getHeight());
-	}
+//	public void setTexture(Texture texture) {
+//		super.setTexture(new TextureRegion(texture));
+//		textureScale = new Vector2(getWidth()*1 / texture.getWidth(),
+//				getHeight()*1 / texture.getHeight());
+//	}
 
 	/** The cross-sectional area of this object which is underwater. Used for drag calculation. */
 	public float getCrossSectionalArea() {

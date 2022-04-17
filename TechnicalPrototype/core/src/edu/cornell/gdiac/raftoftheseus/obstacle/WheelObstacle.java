@@ -24,7 +24,7 @@ import edu.cornell.gdiac.raftoftheseus.*;
  *
  * Unless otherwise specified, the center of mass is as the center.
  */
-public abstract class WheelObstacle extends GameObject {
+public class WheelObstacle extends SimpleObstacle {
 	/** Shape information for this circle */
 	protected CircleShape shape;
 	/** A cache value for the fixture (for resizing) */
@@ -66,6 +66,14 @@ public abstract class WheelObstacle extends GameObject {
 		super(0, 0);
 		shape = new CircleShape();
 		shape.setRadius(1.49f);
+	}
+
+	public float getHeight() {
+		return 2f*getRadius();
+	}
+
+	public float getWidth() {
+		return 2f*getRadius();
 	}
 
 	/**
@@ -123,15 +131,15 @@ public abstract class WheelObstacle extends GameObject {
 	 * @param canvas Drawing context
 	 */
 	 public void drawDebug(GameCanvas canvas) {
-		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),drawScale.x,drawScale.y);
+		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),1, 1);
 	}
 
 	// ACCESSORS
-	public void setTexture(Texture texture) {
-		super.setTexture(new TextureRegion(texture));
-		textureScale = new Vector2(2.0f*getRadius()*drawScale.x / texture.getWidth(),
-				2.0f*getRadius()*drawScale.x / texture.getHeight());
-	}
+//	public void setTexture(Texture texture) {
+//		super.setTexture(new TextureRegion(texture));
+//		textureScale = new Vector2(2.0f*getRadius()*drawScale.x / texture.getWidth(),
+//				2.0f*getRadius()*drawScale.x / texture.getHeight());
+//	}
 
 	public float getCrossSectionalArea() {
 		return ((float)Math.PI)*getRadius()*getRadius()*0.5f;

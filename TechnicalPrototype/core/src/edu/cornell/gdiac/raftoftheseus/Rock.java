@@ -7,18 +7,18 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Rock extends BoxObstacle {
+public class Rock extends GameObject {
     public ObjectType getType() {
         return ObjectType.OBSTACLE;
     }
 
     /** Constructor for rock */
     public Rock(Vector2 position) {
-        super(3f, 3f);
+        physicsObject = new BoxObstacle(3f, 3f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.StaticBody);
-        fixture.filter.categoryBits = CATEGORY_TERRAIN;
-        fixture.filter.maskBits = MASK_TERRAIN;
+        physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
+        physicsObject.getFilterData().maskBits = MASK_TERRAIN;
     }
 
 }

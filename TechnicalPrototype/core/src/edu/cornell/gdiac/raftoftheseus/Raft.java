@@ -10,13 +10,14 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Align;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 /**
  * Model class for the player raft.
  */
-public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
+public class Raft extends GameObject implements Steerable<Vector2> {
 
     // CONSTANTS
     /** Movement cost for a unit distance **/
@@ -56,6 +57,20 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
     public int animationFrame = 0;
 
     // METHODS
+    /** Constructor for Raft object
+     * @param position: position of raft
+     */
+    public Raft(Vector2 position) {
+        physicsObject = new CapsuleObstacle(2.8f, 1.3f);
+        setPosition(position);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER;
+        physicsObject.getFilterData().maskBits = MASK_PLAYER;
+
+        this.health = INITIAL_PLAYER_HEALTH;
+        this.star = INITIAL_PLAYER_STAR;
+    }
+
     /**
      * Returns the type of this object.
      *
@@ -91,18 +106,18 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
 
         if (movementInput.isZero()) {
             // Damp out player motion
-            forceCache.set(getLinearVelocity()).scl(-damping);
-            body.applyForce(forceCache,getPosition(),true);
+            forceCache.set(physicsObject.getLinearVelocity()).scl(-damping);
+            physicsObject.getBody().applyForce(forceCache,getPosition(),true);
         } else {
             // Accelerate player based on input
             forceCache.set(movementInput).scl(thrust);
-            body.applyLinearImpulse(forceCache,getPosition(),true);
+            physicsObject.getBody().applyLinearImpulse(forceCache,getPosition(),true);
         }
 
         // Velocity too high, clamp it
-        float speedRatio = maxSpeed / getLinearVelocity().len();
+        float speedRatio = maxSpeed / physicsObject.getLinearVelocity().len();
         if (speedRatio < 1) {
-            setLinearVelocity(getLinearVelocity().scl(speedRatio));
+            physicsObject.setLinearVelocity(physicsObject.getLinearVelocity().scl(speedRatio));
         }
     }
 
@@ -120,20 +135,6 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
         health = Math.min(health + wood, MAXIMUM_PLAYER_HEALTH);
     }
 
-    /** Constructor for Raft object
-     * @param position: position of raft
-     */
-    public Raft(Vector2 position) {
-        super(2.8f, 1.3f);
-//        setRadius(1.4f);
-        setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
-        this.health = INITIAL_PLAYER_HEALTH;
-        this.star = INITIAL_PLAYER_STAR;
-        fixture.filter.categoryBits = CATEGORY_PLAYER;
-        fixture.filter.maskBits = MASK_PLAYER;
-    }
-
     /** Add one star to the player star count */
     protected void addStar() { star++; }
 
@@ -143,15 +144,16 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
     /** Reduce player health based on distance traveled and movement cost. */
     public void applyMoveCost(float dt) {
         if (!movementInput.isZero()) {
-            float L = getLinearVelocity().len();
+            float L = physicsObject.getLinearVelocity().len();
             if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
                 float cost = MOVE_COST * L * dt; // base movement cost (no current)
-                if (!waterVelocity.isZero()) { // reduced cost if moving with the current, increased if moving against the current
-                    // TODO: Demian: I wrote this code, but looking at it again, I should probably rewrite it so it doesn't use all this math.
-                    float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
-                    float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
-                    cost *= b;
-                }
+                // reduced cost if moving with the current, increased if moving against the current
+                // TODO: This code stopped working when currents were changed to use a vector field. It was also overly complicated. Feel free to replace it with something better.
+//                if (!waterVelocity.isZero()) {
+//                    float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
+//                    float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
+//                    cost *= b;
+//                }
                 health -= cost;
             }
         }
@@ -169,7 +171,7 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
         texture = value;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
 
-        float w = getWidth()*drawScale.x / texture.getRegionWidth() * 1.50f;
+        float w = getWidth() / texture.getRegionWidth() * 1.50f;
         textureScale = new Vector2(w, w);
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f * getHeight()/getWidth());
     }
@@ -181,7 +183,7 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
     public void draw(GameCanvas canvas, Color color) {
         if (texture != null) {
             texture.setFrame(animationFrame);
-            canvas.draw(texture, color, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+            canvas.draw(texture, color, origin.x, origin.y, getX(), getY(),
                     getAngle(), textureScale.x, textureScale.y);
         }
     }
@@ -192,6 +194,16 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
     }
 
     /* STEERING */
+
+    @Override
+    public Vector2 getLinearVelocity() {
+        return null;
+    }
+
+    @Override
+    public float getAngularVelocity() {
+        return 0;
+    }
 
     @Override
     public float getBoundingRadius() {
@@ -326,7 +338,7 @@ public class Raft extends CapsuleObstacle implements Steerable<Vector2> {
             // If we haven't got any velocity, then we can do nothing.
             if (!getLinearVelocity().isZero(getZeroLinearSpeedThreshold())) {
                 float newOrientation = vectorToAngle(getLinearVelocity());
-                setAngularVelocity((newOrientation - getAngle() * MathUtils.degreesToRadians) * time); // this is superfluous if independentFacing is always true
+                physicsObject.getBody().setAngularVelocity((newOrientation - getAngle() * MathUtils.degreesToRadians) * time); // this is superfluous if independentFacing is always true
                 setAngle(newOrientation * MathUtils.radiansToDegrees);
             }
 //        }

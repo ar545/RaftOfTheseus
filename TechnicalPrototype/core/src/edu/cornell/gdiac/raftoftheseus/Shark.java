@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.JsonValue;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
@@ -13,7 +14,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 
-public class Shark extends WheelObstacle {
+public class Shark extends GameObject {
     Random rand = new Random();
 
     private FilmStrip texture;
@@ -44,6 +45,17 @@ public class Shark extends WheelObstacle {
 
 
 //    private Random rand = new Random();
+
+    public Shark(Vector2 position, Raft targetRaft, LevelModel level) {
+        physicsObject = new WheelObstacle(1.45f);
+        setPosition(position);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
+        physicsObject.getFilterData().maskBits = MASK_ENEMY;
+
+        this.targetRaft = targetRaft;
+        this.level = level;
+    }
 
     public ObjectType getType() {
         return ObjectType.SHARK;
@@ -135,21 +147,11 @@ public class Shark extends WheelObstacle {
         this.targetRaft = targetRaft;
     }
 
-    public Shark(Vector2 position, Raft targetRaft, LevelModel level) {
-        super();
-        setPosition(position);
-        setBodyType(BodyDef.BodyType.DynamicBody);
-        this.targetRaft = targetRaft;
-        fixture.filter.categoryBits = CATEGORY_ENEMY;
-        fixture.filter.maskBits = MASK_ENEMY;
-        this.level = level;
-    }
-
 //    // TODO: this will change depending on implementation of AIController
     public void update(float dt) {
         super.update(dt);
         if (moveVector != null && targetRaft != null) {
-            body.applyLinearImpulse(moveVector, getPosition(), true);
+            physicsObject.getBody().applyLinearImpulse(moveVector, getPosition(), true);
         }
     }
 
@@ -397,8 +399,8 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
      * @param smoothing Impulse is scaled by (1-smoothing). Higher smoothing means wider turns, slower responses.
      */
     private void calculateImpulse(float topSpeed, float smoothing) {
-        float currentSpeed = getLinearVelocity().dot(moveVector); // current speed in that direction
-        float impulseMagnitude = (topSpeed - currentSpeed)*body.getMass()*(1-smoothing);
+        float currentSpeed = physicsObject.getBody().getLinearVelocity().dot(moveVector); // current speed in that direction
+        float impulseMagnitude = (topSpeed - currentSpeed)*physicsObject.getBody().getMass()*(1-smoothing);
         moveVector.scl(impulseMagnitude);
     }
 
@@ -412,7 +414,7 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
         texture = value;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
 
-        float w = 2*getRadius()*drawScale.x / texture.getRegionWidth()*1.50f;
+        float w = getWidth() / texture.getRegionWidth()*1.50f;
         textureScale = new Vector2(w, w);
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f);
     }
@@ -424,7 +426,7 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
     public void draw(GameCanvas canvas, Color color) {
         if (texture != null) {
             texture.setFrame(animationFrame);
-            canvas.draw(texture, color, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y,
+            canvas.draw(texture, color, origin.x, origin.y, getX(), getY(),
                     getAngle(), textureScale.x, textureScale.y);
         }
     }
