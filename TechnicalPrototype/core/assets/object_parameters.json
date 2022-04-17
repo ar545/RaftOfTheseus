@@ -48,5 +48,15 @@
     "column padding" : 25,
     "level count" : 9,
     "exit settings" : 8
+  },
+  "raft" : {
+    "move cost" : 1.5,
+    "with current" : 0.45,
+    "against current" : 1.75,
+    "max health" : 120,
+    "initial health" : 40,
+    "damping" : 20,
+    "thrust" : 10,
+    "max speed" : 20
   }
 }

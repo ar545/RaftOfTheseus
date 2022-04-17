@@ -39,6 +39,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
+        Raft.setConstants(objParams.get("raft"));
         Spear.setConstants(objParams.get("bullet"));
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
