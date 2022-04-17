@@ -209,7 +209,7 @@ public class WorldController implements Screen, ContactListener {
         int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
         levelModel.getPlayer().animationFrame = frame % 19; // TODO don't hardcode number of frames in animation
         float pixelsPerUnit = 100.0f/3.0f; // Tiles are 100 pixels wide, a tile is 3 units
-        Affine2 cameraTransform = calculateMovingCamera(pixelsPerUnit);
+        Affine2 cameraTransform = levelModel.calculateMovingCamera(pixelsPerUnit,canvas);
 
         canvas.clear();
         canvas.begin(cameraTransform);
@@ -383,27 +383,6 @@ public class WorldController implements Screen, ContactListener {
         });
         table.add(exitButton).expandX().padRight(didFail ? 325 : 200);
         table.row();
-    }
-
-//<<<<<<< HEAD
-    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
-     * boundary of the world with walls, the player position, and the pixel per unit scale.
-     * @param pixelsPerUnit scalar pixel per unit
-     * @return an affine2 representing the affine transformation that texture will go through */
-    private Affine2 calculateMovingCamera(float pixelsPerUnit) {
-        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
-
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(levelModel.getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
-
-        // "Capped Camera": bound x and y within walls
-        Rectangle wallBounds = levelModel.wallBounds();
-        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
-        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
-        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
-        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
-        return a.preTranslate(translation);
     }
 
     /** This function calculate the correct health bar color
@@ -596,7 +575,7 @@ public class WorldController implements Screen, ContactListener {
             // find nearest enemy to player
             if(ic.mouseActive()){
                 Vector2 firePixel = ic.getFireDirection();
-                Affine2 camera = calculateMovingCamera(100/3.0f);
+                Affine2 camera = levelModel.calculateMovingCamera(100/3.0f, canvas);
                 camera.inv().applyTo(firePixel);
                 createBullet(firePixel);
             }

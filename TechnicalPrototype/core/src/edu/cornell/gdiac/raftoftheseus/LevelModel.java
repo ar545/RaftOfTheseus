@@ -8,9 +8,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.GridPoint2;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
@@ -106,8 +104,8 @@ public class LevelModel {
     protected World world;
     /** The boundary of the world */
     private Rectangle bounds;
-    /** The world scale */
-    protected Vector2 scale = new Vector2(1, 1);
+//    /** The world scale */
+//    protected Vector2 scale = new Vector2(1, 1);
     /** The map size in grid */
     protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
     /** Vector 2 holding the temp position vector for the game object to create */
@@ -325,7 +323,7 @@ public class LevelModel {
         objects = null;
         addQueue = null;
         bounds = null;
-        scale  = null;
+//        scale  = null;
         world  = null;
 
         light.remove();
@@ -716,14 +714,21 @@ public class LevelModel {
      * @param  lightJson	the JSON tree defining the light
      */
     private void initLighting(JsonValue lightJson) {
-        raycamera = new OrthographicCamera(bounds.width,bounds.height);
-        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
-        raycamera.update();
+//        int temp = 3;
+//        raycamera = new OrthographicCamera(bounds.width * temp, bounds.height * temp);
+//        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
+//        raycamera.update();
+
+        Matrix4 rayMatrix = new Matrix4();
+
+        rayMatrix.setTranslation( calculateMovingCamera().x, calculateMovingCamera().y, 0);
+        rayMatrix.setToScaling(100f/3, 100f/3, 100f/3);
+
 
         RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
         RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
         rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height); // Gdx.graphics.getWidth(), Gdx.graphics.getWidth()
-        rayhandler.setCombinedMatrix(raycamera);
+        rayhandler.setCombinedMatrix(rayMatrix, bounds.width/2.0f, bounds.height/2.0f, bounds.width, bounds.height);
 
         float[] color = lightJson.get("color").asFloatArray();
         rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
@@ -792,4 +797,44 @@ public class LevelModel {
         /* OR */
         currentField.updateCurrentEffects(raft);
     }
+
+    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
+     * boundary of the world with walls, the player position, and the pixel per unit scale.
+     * @param pixelsPerUnit scalar pixel per unit
+     * @return an affine2 representing the affine transformation that texture will go through */
+    Affine2 calculateMovingCamera(float pixelsPerUnit, GameCanvas canvas) {
+        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
+                .sub(getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
+
+        // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = wallBounds();
+        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
+        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
+        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
+        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
+        return a.preTranslate(translation);
+    }
+
+    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
+     * boundary of the world with walls, the player position, and the pixel per unit scale.
+     * @return an affine2 representing the affine transformation that texture will go through */
+    Vector2 calculateMovingCamera() {
+        float pixelsPerUnit = 100f / 3;
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 translation = new Vector2((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/2)
+                .sub(getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
+
+        // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = wallBounds();
+        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
+        translation.x = Math.max(translation.x, Gdx.graphics.getWidth() - wallBounds.width * pixelsPerUnit);
+        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
+        translation.y = Math.max(translation.y, Gdx.graphics.getHeight() - wallBounds.height * pixelsPerUnit);
+        return translation;
+    }
+
 }
