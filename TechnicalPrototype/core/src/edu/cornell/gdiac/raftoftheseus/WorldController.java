@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Affine2;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -228,11 +226,11 @@ public class WorldController implements Screen, ContactListener {
         }
         if (complete || failed) {
             if(!wasComplete && complete) {
-                SoundController.getInstance().playSFX("level_complete");
-                SoundController.getInstance().setLevelComplete();
+                SfxController.getInstance().playSFX("level_complete");
+                SfxController.getInstance().setLevelComplete();
                 wasComplete = true;
             }
-            SoundController.getInstance().fadeMusic();
+            SfxController.getInstance().fadeMusic();
             drawTransition();
         }
     }
@@ -265,7 +263,7 @@ public class WorldController implements Screen, ContactListener {
             resumeButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
                     resumeButton.getLabel().setColor(Color.GOLD);
                 }
@@ -278,7 +276,7 @@ public class WorldController implements Screen, ContactListener {
 
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    SoundController.getInstance().playSFX("button_click");
+                    SfxController.getInstance().playSFX("button_click");
                     super.clicked(event, x, y);
                     pausePressed = false;
                 }
@@ -291,7 +289,7 @@ public class WorldController implements Screen, ContactListener {
             restartButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
                     restartButton.getLabel().setColor(Color.GOLD);
                 }
@@ -304,7 +302,7 @@ public class WorldController implements Screen, ContactListener {
 
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    SoundController.getInstance().playSFX("button_click");
+                    SfxController.getInstance().playSFX("button_click");
                     super.clicked(event, x, y);
                     reset();
                 }
@@ -318,7 +316,7 @@ public class WorldController implements Screen, ContactListener {
             settingsButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
                     settingsButton.getLabel().setColor(Color.GOLD);
                 }
@@ -331,7 +329,7 @@ public class WorldController implements Screen, ContactListener {
 
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    SoundController.getInstance().playSFX("button_click");
+                    SfxController.getInstance().playSFX("button_click");
                     super.clicked(event, x, y);
                     settingsPressed = true;
 
@@ -345,7 +343,7 @@ public class WorldController implements Screen, ContactListener {
             exitButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
                     exitButton.getLabel().setColor(Color.GRAY);
                 }
@@ -358,7 +356,7 @@ public class WorldController implements Screen, ContactListener {
 
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    SoundController.getInstance().playSFX("button_click");
+                    SfxController.getInstance().playSFX("button_click");
                     super.clicked(event, x, y);
                     exitPressed = true;
                 }
@@ -399,7 +397,7 @@ public class WorldController implements Screen, ContactListener {
         mainButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
                 mainButton.getLabel().setColor(Color.GOLD);
             }
@@ -412,7 +410,7 @@ public class WorldController implements Screen, ContactListener {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                SoundController.getInstance().playSFX("button_click");
+                SfxController.getInstance().playSFX("button_click");
                 super.clicked(event, x, y);
                 if (didFail) {
                     reset();
@@ -433,7 +431,7 @@ public class WorldController implements Screen, ContactListener {
             replayButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
                     replayButton.getLabel().setColor(Color.GOLD);
                 }
@@ -446,7 +444,7 @@ public class WorldController implements Screen, ContactListener {
 
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    SoundController.getInstance().playSFX("button_click");
+                    SfxController.getInstance().playSFX("button_click");
                     super.clicked(event, x, y);
                     reset();
                 }
@@ -459,7 +457,7 @@ public class WorldController implements Screen, ContactListener {
         settingsButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
                 settingsButton.getLabel().setColor(Color.GOLD);
             }
@@ -472,7 +470,7 @@ public class WorldController implements Screen, ContactListener {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                SoundController.getInstance().playSFX("button_click");
+                SfxController.getInstance().playSFX("button_click");
                 super.clicked(event, x, y);
                 settingsPressed = true;
             }
@@ -485,7 +483,7 @@ public class WorldController implements Screen, ContactListener {
         exitButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
                 exitButton.getLabel().setColor(Color.GRAY);
             }
@@ -498,7 +496,7 @@ public class WorldController implements Screen, ContactListener {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                SoundController.getInstance().playSFX("button_click");
+                SfxController.getInstance().playSFX("button_click");
                 super.clicked(event, x, y);
                 exitPressed = true;
             }
@@ -591,7 +589,7 @@ public class WorldController implements Screen, ContactListener {
         if (input.didDebug()) { debug = !debug; } // Toggle debug
         if (input.didMap()) {
             map = !map;
-            SoundController.getInstance().playSFX("map_open");
+            SfxController.getInstance().playSFX("map_open");
         } // Toggle map
 
         // Now it is time to maybe switch screens.
@@ -662,7 +660,7 @@ public class WorldController implements Screen, ContactListener {
             levelModel.getCameraTransform().inv().applyTo(firePixel);
             levelModel.createSpear(firePixel);
             player.addHealth(Spear.SPEAR_DAMAGE);
-            SoundController.getInstance().playSFX("spear_throw");
+            SfxController.getInstance().playSFX("spear_throw");
         }
 
         // update forces for enemies, players, objects
@@ -750,12 +748,12 @@ public class WorldController implements Screen, ContactListener {
             }
         }
         if(!wasInDanger && nowInDanger){
-            SoundController.getInstance().tradeMusic(false);
+            SfxController.getInstance().tradeMusic(false);
         }
         if(wasInDanger && !nowInDanger){
-            SoundController.getInstance().tradeMusic(true);
+            SfxController.getInstance().tradeMusic(true);
         }
-        SoundController.getInstance().updateMusic();
+        SfxController.getInstance().updateMusic();
         wasInDanger = nowInDanger;
     }
 
@@ -879,19 +877,19 @@ public class WorldController implements Screen, ContactListener {
         if(g.getType() == GameObject.ObjectType.WOOD){
             // update player health
             r.addHealth(((Wood) g).getWood());
-            SoundController.getInstance().playSFX("wood_pickup");
+            SfxController.getInstance().playSFX("wood_pickup");
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.SHARK){
             // update player health
             r.addHealth(Shark.ENEMY_DAMAGE);
-            SoundController.getInstance().playSFX("raft_damage");
+            SfxController.getInstance().playSFX("raft_damage");
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             r.addStar();
             levelModel.addRandomWood();
             playerScore++;
-            SoundController.getInstance().playSFX("chest_collect");
+            SfxController.getInstance().playSFX("chest_collect");
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
@@ -998,8 +996,8 @@ public class WorldController implements Screen, ContactListener {
         wasComplete = false;
 
         // Reset Soundcontroller
-        SoundController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
-        SoundController.getInstance().startLevelMusic();
+        SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
+        SfxController.getInstance().startLevelMusic();
     }
 
     /**
@@ -1008,7 +1006,7 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-        SoundController.getInstance().haltMusic();
+        SfxController.getInstance().haltMusic();
         setLevel(level_id);
     }
 

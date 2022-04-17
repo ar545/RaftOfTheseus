@@ -101,7 +101,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		Screen screen = getScreen();
 		setScreen(null);
 		screen.dispose();
-		SoundController.getInstance().dispose();
+		SfxController.getInstance().dispose();
 		canvas.dispose();
 		canvas = null;
 
@@ -174,7 +174,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
 		InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
 		InputController.getInstance();
-		SoundController.getInstance().gatherAssets(directory);
+		SfxController.getInstance().gatherAssets(directory);
+		MusicController.getInstance().gatherAssets(directory);
 	}
 
 	/**
@@ -214,7 +215,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * Factored out code for creating the menu screen.
 	 */
 	private void setMenuScreen(boolean stopMusic){
-		if(stopMusic) SoundController.getInstance().haltMusic();
+		if(stopMusic) SfxController.getInstance().haltMusic();
 		menu.setScreenListener(this);
 		setScreen(menu);
 	}
@@ -223,7 +224,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * Set the playing screen when going from everything but settings.
 	 */
 	private void setPlayScreen(int currentLevel){
-		SoundController.getInstance().haltMusic();
+		SfxController.getInstance().haltMusic();
 		this.currentLevel = currentLevel;
 		playing.setLevel(this.currentLevel);
 		setPlayScreen();

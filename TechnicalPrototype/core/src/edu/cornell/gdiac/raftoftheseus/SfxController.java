@@ -13,7 +13,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
  * Usage is as follows: getInstance() -> gatherAssets() -> setPresets() -> playSFX(), playMusic() etc.
  * Changed loaded sounds with setPresets() as needed.
  */
-public class SoundController {
+public class SfxController {
     private boolean level_complete = false;
     /** Master volume for SFX */
     private float sfxVolume = 1.0f;
@@ -50,19 +50,16 @@ public class SoundController {
     }
     private MusicState STATE;
     /** The singleton instance of the input controller */
-    private static SoundController theController = null;
+    private static SfxController theController = null;
     /** The asset directory for getting new music. */
     private AssetDirectory directory;
-    /** Boolean indicating whether music trading is in progress. */
-    Trader fadeIn;
-    Trader fadeOut;
 
     /**
      * @return the singleton instance of the input controller
      */
-    public static SoundController getInstance() {
+    public static SfxController getInstance() {
         if (theController == null) {
-            theController = new SoundController();
+            theController = new SfxController();
         }
         return theController;
     }
@@ -124,7 +121,7 @@ public class SoundController {
     /**
      * Constructor that initializes sfx and music variables.
      */
-    public SoundController(){
+    public SfxController(){
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
         music = new ArrayMap<>();
@@ -409,14 +406,6 @@ public class SoundController {
     }
 
     /**
-     * Fades out both explore and danger music in separate threads. BUGGY.
-     */
-    public void levelComplete(){
-        fadeIn = new Trader("fadeOut", "danger", false);
-        fadeOut = new Trader("fadeOut", "explore", false);
-    }
-
-    /**
      * Method to call every update loop to transition the music.
      */
     public void updateMusic(){
@@ -443,148 +432,7 @@ public class SoundController {
         }
     }
 
-    private void setFadeInDone(boolean f){
-        fadeInDone = f;
-    }
-
-    private void setFadeOutDone(boolean f){
-        fadeOutDone = f;
-    }
-
-    private boolean FadeDone(){
-        if(fadeInDone && fadeOutDone){
-            setFadeInDone(false);
-            setFadeOutDone(false);
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Trades explore/danger music for soundtrack switching.
-     * Returns if either name does not exist || name1 is not playing || name2 is playing
-     * @param index either "explore" or "danger"
-     */
-    private void fadeIn(String index){
-        if (music.get(index) == null) throw new RuntimeException();
-        fadeIn = new Trader("fadeIn", index, true);
-    }
-
-    /**
-     * Trades explore/danger music for soundtrack switching.
-     * Returns if either name does not exist || name1 is not playing || name2 is playing
-     * @param index either "explore" or "danger"
-     */
-    private void fadeOut(String index){
-        if (music.get(index) == null) throw new RuntimeException();
-        fadeOut = new Trader("fadeOut", index, false);
-    }
-
-    /**
-     * Trades music with name1 out and name2 in for soundtrack switching if reverse is false.
-     * Should be called only when the player situation CHANGES from EXPLORE to DANGER (2 enemies nearby).
-     * @param reverse Whether danger is faded out for explore music
-     */
-    public void tradeThreadMusic(boolean reverse){
-        switch (STATE){
-            case SAFE:
-                if (!reverse){
-                    STATE = MusicState.ENTER_DANGER;
-                    fadeIn("danger");
-                    fadeOut("explore");
-                } return;
-            case DANGER:
-                if(reverse){
-                    STATE = MusicState.LEAVE_DANGER;
-                    fadeIn("explore");
-                    fadeOut("danger");
-                }
-        }
-    }
-
-    /**
-     * Function to check whether fading is finished.
-     */
-    public void updateMusicThread(){
-        switch (STATE) {
-            case LEAVE_DANGER:
-                if (FadeDone()) {
-                    STATE = MusicState.SAFE;
-                }
-                return;
-            case ENTER_DANGER:
-                if (FadeDone()) {
-                    STATE = MusicState.DANGER;
-                }
-                return;
-        }
-    }
-
-    class Trader implements Runnable {
-
-        // to stop the thread
-        private boolean exit;
-        private String index;
-        private boolean fadeIn;
-        Thread t;
-
-        Trader(String threadname, String index, boolean fadeIn)
-        {
-            t = new Thread(this, threadname);
-            this.index = index;
-            this.fadeIn = fadeIn;
-            exit = false;
-            t.start();
-        }
-
-        // execution of thread starts from run() method
-        public void run()
-        {
-            long timeStamp = System.currentTimeMillis();
-            float percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeTime;
-            if(fadeIn){
-                float maxVolume = musicVolume;
-                while(percentage * maxVolume <= maxVolume && !exit){
-                    music.get(index).setVolume(percentage * maxVolume);
-                    print(index);
-                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeTime;
-                }
-                music.get(index).setVolume(percentage * maxVolume);
-                setFadeInDone(true);
-            } else {
-                float minVolume = 0;
-                float maxVolume = music.get(index).getVolume();
-                while((1 - percentage) * maxVolume >= minVolume && !exit){
-                    print(index);
-                    music.get(index).setVolume((1 - percentage) * maxVolume);
-                    percentage = (float) (System.currentTimeMillis() - timeStamp) / tradeTime;
-                }
-                music.get(index).setVolume((1 - percentage) * maxVolume);
-                setFadeOutDone(true);
-            }
-        }
-
-        // for stopping the thread
-        public void stop()
-        {
-            exit = true;
-        }
-    }
-
-
-
     // TODO STOPPERS AND DISPOSE
-
-    private void haltThreads(){
-        if(fadeIn != null){
-            fadeIn.stop();
-        }
-        if(fadeOut != null) {
-            fadeOut.stop();
-        }
-    }
-
-
     /**
      * Stops all sound.
      */
@@ -598,18 +446,9 @@ public class SoundController {
      * Stops all music.
      */
     public void haltMusic(){
-        haltThreads();
         for(Music m : music.values()){
             m.stop();
         }
-    }
-
-    /**
-     * Stops all sfx and music and restores the state of the SoundController to normal.
-     */
-    public void haltSounds(){
-        haltSFX();
-        haltMusic();
     }
 
     /**
@@ -622,9 +461,5 @@ public class SoundController {
         for(Music m : music.values()){
             m.dispose();
         }
-    }
-
-    public void print(String name){
-        System.out.println(name + " " + " volume: " + music.get(name).getVolume());
     }
 }

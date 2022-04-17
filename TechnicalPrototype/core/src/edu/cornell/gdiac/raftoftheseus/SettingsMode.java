@@ -4,12 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -21,8 +18,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
-
-import java.text.DecimalFormat;
 
 public class SettingsMode implements Screen {
 
@@ -159,7 +154,7 @@ public class SettingsMode implements Screen {
         menuButton.addListener(new ClickListener(){
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
                 menuButton.getLabel().setColor(Color.GRAY);
             }
@@ -172,7 +167,7 @@ public class SettingsMode implements Screen {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                SoundController.getInstance().playSFX("button_click");
+                SfxController.getInstance().playSFX("button_click");
                 exitPressed = true;
             }
         });
@@ -201,7 +196,7 @@ public class SettingsMode implements Screen {
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
         SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
 
-        musicVolume = SoundController.getInstance().getMasterMusicVolume() * 100f;
+        musicVolume = SfxController.getInstance().getMasterMusicVolume() * 100f;
         Label musicValueLabel = new Label(String.valueOf((int) Math.floor(musicVolume)), skin);
         musicValueLabel.setFontScale(0.35f);
 
@@ -211,7 +206,7 @@ public class SettingsMode implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 musicVolume = musicSlider.getValue();
-                SoundController.getInstance().setMasterMusicVolume(musicVolume / 1000);
+                SfxController.getInstance().setMasterMusicVolume(musicVolume / 1000);
                 musicValueLabel.setText((int) Math.floor(musicVolume));
             }
         });
@@ -220,7 +215,7 @@ public class SettingsMode implements Screen {
         part3.add(musicValueLabel).expandX().align(Align.left).width(80).padRight(80);
         part3.row();
 
-        soundEffectsVolume = SoundController.getInstance().getMasterSFXVolume() * 100;
+        soundEffectsVolume = SfxController.getInstance().getMasterSFXVolume() * 100;
         Label soundEffectsLabel = new Label("SOUND EFFECTS", skin);
         soundEffectsLabel.setFontScale(0.35f);
         part3.add(soundEffectsLabel).padLeft(100).align(Align.left);
@@ -232,7 +227,7 @@ public class SettingsMode implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 soundEffectsVolume = soundEffectsSlider.getValue();
-                SoundController.getInstance().setMasterSfxVolume(soundEffectsVolume / 100);
+                SfxController.getInstance().setMasterSfxVolume(soundEffectsVolume / 100);
                 soundEffectsValueLabel.setText((int) Math.floor(soundEffectsVolume));
             }
         });

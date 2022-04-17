@@ -33,13 +33,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.Controllers;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.XBoxController;
-
-import static edu.cornell.gdiac.raftoftheseus.GDXRoot.TO_MENU;
 
 /**
  * Class that provides a loading screen for the state of the game.
@@ -236,7 +233,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		}
 
 		// Start music?
-		SoundController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
+		SfxController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
 
 		// Start loading the real assets
 		assets = new AssetDirectory( file );

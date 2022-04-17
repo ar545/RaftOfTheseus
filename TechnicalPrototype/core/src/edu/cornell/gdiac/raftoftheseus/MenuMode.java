@@ -1,7 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.Screen;
@@ -216,7 +215,7 @@ public class MenuMode implements Screen {
         menuButton.addListener(new ClickListener(){
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
                 menuButton.getLabel().setColor(Color.GRAY);
             }
@@ -229,7 +228,7 @@ public class MenuMode implements Screen {
 
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                SoundController.getInstance().playSFX("button_click");
+                SfxController.getInstance().playSFX("button_click");
                 changeScreenTo(MenuScreen.TITLE);
             }
         });
@@ -250,7 +249,7 @@ public class MenuMode implements Screen {
                 startButton.addListener(new ClickListener(){
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                         super.enter(event, x, y, pointer, fromActor);
                         startButton.getLabel().setColor(activeColor);
                     }
@@ -263,14 +262,14 @@ public class MenuMode implements Screen {
 
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        SoundController.getInstance().playSFX("raft_sail_open");
+                        SfxController.getInstance().playSFX("raft_sail_open");
                         playPressed = true;
                     }
                 });
                 levelsButton.addListener(new ClickListener(){
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                         super.enter(event, x, y, pointer, fromActor);
                         levelsButton.getLabel().setColor(activeColor);
                     }
@@ -283,14 +282,14 @@ public class MenuMode implements Screen {
 
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        SoundController.getInstance().playSFX("map_open");
+                        SfxController.getInstance().playSFX("map_open");
                         changeScreenTo(MenuScreen.LEVEL_SELECT);
                     }
                 });
                 settingsButton.addListener(new ClickListener(){
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                         super.enter(event, x, y, pointer, fromActor);
                         settingsButton.getLabel().setColor(activeColor);
                     }
@@ -303,14 +302,14 @@ public class MenuMode implements Screen {
 
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        SoundController.getInstance().playSFX("button_click");
+                        SfxController.getInstance().playSFX("button_click");
                         settingsPressed = true;
                     }
                 });
                 creditsButton.addListener(new ClickListener(){
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SoundController.getInstance().playSFX("button_enter");
+                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                         super.enter(event, x, y, pointer, fromActor);
                         creditsButton.getLabel().setColor(activeColor);
                     }
@@ -323,7 +322,7 @@ public class MenuMode implements Screen {
 
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        SoundController.getInstance().playSFX("button_click");
+                        SfxController.getInstance().playSFX("button_click");
                         changeScreenTo(MenuScreen.CREDITS);
                     }
                 });
@@ -371,7 +370,7 @@ public class MenuMode implements Screen {
                     currentButton.addListener(new ClickListener(){
                         @Override
                         public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                            if(pointer == -1) SoundController.getInstance().playSFX("button_island");
+                            if(pointer == -1) SfxController.getInstance().playSFX("button_island");
                             super.enter(event, x, y, pointer, fromActor);
                             currentButton.setColor(Color.LIGHT_GRAY);
                         }
@@ -384,7 +383,7 @@ public class MenuMode implements Screen {
 
                         @Override
                         public void clicked(InputEvent event, float x, float y) {
-                            SoundController.getInstance().playSFX("raft_sail_open");
+                            SfxController.getInstance().playSFX("raft_sail_open");
                             selectlevel(finalI);
                         }
                     });
