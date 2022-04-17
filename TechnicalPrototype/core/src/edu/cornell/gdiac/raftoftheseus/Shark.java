@@ -407,12 +407,6 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
         moveVector.scl(impulseMagnitude);
     }
 
-    @Override
-    public float getCrossSectionalArea() {
-        return super.getCrossSectionalArea()*0.2f; // sharks are less affected by drag
-    }
-
-
     public void setTexture(FilmStrip value) {
         texture = value;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);

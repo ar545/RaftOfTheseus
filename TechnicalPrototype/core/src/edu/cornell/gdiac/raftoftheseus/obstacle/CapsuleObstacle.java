@@ -518,17 +518,4 @@ public class CapsuleObstacle extends SimpleObstacle {
 			canvas.drawPhysics(end2,Color.YELLOW,getX()+dx,getY()+dy,1,1);			
 		}
 	}
-
-
-	// ACCESSORS
-//	public void setTexture(Texture texture) {
-//		super.setTexture(new TextureRegion(texture));
-//		textureScale = new Vector2(getWidth()*1 / texture.getWidth(),
-//				getHeight()*1 / texture.getHeight());
-//	}
-
-	/** The cross-sectional area of this object which is underwater. Used for drag calculation. */
-	public float getCrossSectionalArea() {
-		return dimension.x*dimension.y*0.5f;
-	}
 }

@@ -205,11 +205,4 @@ public class BoxObstacle extends SimpleObstacle {
 	public void drawDebug(GameCanvas canvas) {
 		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),getAngle(),1,1);
 	}
-
-
-	// ACCESSORS
-
-	public float getCrossSectionalArea() {
-		return getWidth()*getHeight()*0.5f;
-	}
 }

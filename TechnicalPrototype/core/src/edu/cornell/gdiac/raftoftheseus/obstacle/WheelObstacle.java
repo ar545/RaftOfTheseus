@@ -133,15 +133,4 @@ public class WheelObstacle extends SimpleObstacle {
 	 public void drawDebug(GameCanvas canvas) {
 		canvas.drawPhysics(shape,Color.YELLOW,getX(),getY(),1, 1);
 	}
-
-	// ACCESSORS
-//	public void setTexture(Texture texture) {
-//		super.setTexture(new TextureRegion(texture));
-//		textureScale = new Vector2(2.0f*getRadius()*drawScale.x / texture.getWidth(),
-//				2.0f*getRadius()*drawScale.x / texture.getHeight());
-//	}
-
-	public float getCrossSectionalArea() {
-		return ((float)Math.PI)*getRadius()*getRadius()*0.5f;
-	}
 }

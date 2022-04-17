@@ -57,16 +57,6 @@ public abstract class GameObject {
     /** The texture origin for drawing */
     protected Vector2 origin = new Vector2();
 
-    // TODO figure out if these can be deleted
-//    /** Combined force vectors of all currents affecting this object */
-//    private Vector2 currentsCache = new Vector2();
-//    /** The average velocity of water flowing near this object */
-//    protected Vector2 waterVelocity = new Vector2();
-//    /** Modifier on force applied by current */
-//    protected final float dragCoefficient = 0.5f;
-//    /** cache vector for calculation */
-//    protected Vector2 dragCache = new Vector2(0,0);
-
     // ABSTRACT METHODS
 
     /**
@@ -186,18 +176,7 @@ public abstract class GameObject {
         textureScale = new Vector2(getWidth() / texture.getRegionWidth(), getHeight() / texture.getRegionHeight());
 	}
 
-    // Current physics?
-
-    public void applyDrag() {
-//        dragCache.set(waterVelocity).sub(getLinearVelocity());
-//        dragCache.scl(dragCache.len() * dragCoefficient * getCrossSectionalArea());
-//        body.applyForce(dragCache, getPosition(), true);
-    }
-
-    /** The cross-sectional area of this object which is underwater. Used for drag calculation. */
-    public float getCrossSectionalArea() {
-        return 0;
-    }
+    // Current physics information
 
     /** Whether this object is affected by the current */
     public boolean AffectedByCurrent(){

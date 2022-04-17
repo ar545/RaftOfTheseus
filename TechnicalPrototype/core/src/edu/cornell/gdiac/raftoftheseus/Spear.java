@@ -48,17 +48,15 @@ public class Spear extends GameObject {
     }
 
     /**
-     * Applying drag to slow the object down. Depends on how far the spear has traveled.
+     * Applying drag to slow the spear down. Depends on how far the spear has traveled.
      */
     @Override
-    public void applyDrag(){
-        // TODO: This method shouldn't be coupled to GameObject.applyDrag(), which no longer works because it was tied to the old implementation of currents.
-        Vector2 dragCache = new Vector2(0,0);
+    public void update(float delta) {
+        super.update(delta);
         if(inFlyDistance()) {
-            dragCache.scl(dragCache.len() * 0.5f * getCrossSectionalArea());
-            physicsObject.getBody().applyForce(dragCache, getPosition(), true);
+            physicsObject.getBody().applyForce(physicsObject.getLinearVelocity().scl(-2f), getPosition(), true);
         } else if (inFallDistance()) {
-            super.applyDrag();
+            // do something?
         }
     }
 

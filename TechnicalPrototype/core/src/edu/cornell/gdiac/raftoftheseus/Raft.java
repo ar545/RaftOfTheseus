@@ -198,11 +198,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         }
     }
 
-    @Override
-    public float getCrossSectionalArea() {
-        return 1.5f*super.getCrossSectionalArea();
-    }
-
     /* STEERING */
 
     @Override

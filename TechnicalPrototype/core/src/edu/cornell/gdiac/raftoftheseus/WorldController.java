@@ -743,8 +743,6 @@ public class WorldController implements Screen, ContactListener {
         // update forces for enemies, players, objects
         player.applyInputForce();
         resolveEnemies(dt);
-        for (GameObject o : levelModel.getObjects())
-            o.applyDrag();
     }
 
     /** get enemies take actions according to their AI */
