@@ -63,9 +63,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
 
-    private FilmStrip texture;
-    public int animationFrame = 0;
-
     // METHODS
     /** Constructor for Raft object
      * @param position: position of raft
@@ -169,25 +166,15 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         return health / MOVE_COST;
     }
 
-    public void setTexture(FilmStrip value) {
-        texture = value;
-        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
-
+    @Override
+    protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * 1.50f;
         textureScale = new Vector2(w, w);
-        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f * getHeight()/getWidth());
+        textureOffset = new Vector2(0,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
     }
 
-    public void draw(GameCanvas canvas) {
-        draw(canvas, Color.WHITE);
-    }
-
-    public void draw(GameCanvas canvas, Color color) {
-        if (texture != null) {
-            texture.setFrame(animationFrame);
-            canvas.draw(texture, color, origin.x, origin.y, getX(), getY(),
-                    getAngle(), textureScale.x, textureScale.y);
-        }
+    public void setAnimationFrame(int animationFrame) {
+        ((FilmStrip)texture).setFrame(animationFrame);
     }
 
     /* STEERING */
