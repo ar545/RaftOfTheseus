@@ -105,7 +105,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     public void setFire(boolean fire) { this.fire = fire; }
 
     /**
-     * Applies the force to the body of this dude
+     * Applies the force to the body
      *
      * This method should be called after the force attribute is set.
      */
@@ -113,7 +113,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         if (super.isDestroyed()) {
             return;
         }
-
         if (movementInput.isZero()) {
             // Damp out player motion
             forceCache.set(physicsObject.getLinearVelocity()).scl(-DAMPING);
@@ -123,7 +122,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
             forceCache.set(movementInput).scl(THRUST);
             physicsObject.getBody().applyLinearImpulse(forceCache,getPosition(),true);
         }
-
         // Velocity too high, clamp it
         float speedRatio = MAX_SPEED / physicsObject.getLinearVelocity().len();
         if (speedRatio < 1) {
@@ -157,13 +155,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
             float L = physicsObject.getLinearVelocity().len();
             if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
                 float cost = MOVE_COST * L * dt; // base movement cost (no current)
-                // reduced cost if moving with the current, increased if moving against the current
                 // TODO: This code stopped working when currents were changed to use a vector field. It was also overly complicated. Feel free to replace it with something better.
-//                if (!waterVelocity.isZero()) {
-//                    float c = (float)Math.cos(getLinearVelocity().angleRad(waterVelocity));// c = +1 with current, -1 against current
-//                    float b = 1 + (WITH_CURRENT-AGAINST_CURRENT)*0.5f*c + ((WITH_CURRENT+AGAINST_CURRENT)*0.5f-1)*c*c;// interpolate between modifiers based on c
-//                    cost *= b;
-//                }
                 health -= cost;
             }
         }

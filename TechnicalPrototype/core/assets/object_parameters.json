@@ -53,7 +53,7 @@
     "standard width" : 800,
     "standard height" : 700,
     "column number" : 4,
-    "column padding" : 25,
+    "column padding" : 25
   },
   "world" : {
     "exit count" : 1000,
@@ -63,14 +63,14 @@
     "world posit" : 2
   },
   "raft" : {
-    "move cost" : 1.5,
+    "move cost" : 2,
     "with current" : 0.45,
     "against current" : 1.75,
-    "max health" : 120,
-    "initial health" : 40,
-    "damping" : 20,
-    "thrust" : 10,
-    "max speed" : 20
+    "max health" : 200,
+    "initial health" : 60,
+    "damping" : 5,
+    "thrust" : 0.3,
+    "max speed" : 10
   },
   "level count" : 9
 }
