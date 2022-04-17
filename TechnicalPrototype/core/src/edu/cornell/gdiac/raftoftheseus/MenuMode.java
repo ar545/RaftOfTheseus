@@ -36,7 +36,6 @@ public class MenuMode implements Screen {
     // https://stackoverflow.com/questions/31794636/clickable-buttons-using-libgdx
     private Stage stage;
     private Skin skin;
-
     /** Background texture for menu */
     private Texture menuBackground;
     /** Background texture for credits */
@@ -45,26 +44,28 @@ public class MenuMode implements Screen {
     private Texture levelButtonImage;
     /** Texture for the levels to select. */
     private TextButton[] levelButtons;
-
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
 
+    // Load from "screen" in "obj parameters"
+    public static void setConstants(JsonValue objParams){
+        STANDARD_WIDTH = objParams.getInt(0);
+        STANDARD_HEIGHT = objParams.getInt(1);
+        NUM_COLS = objParams.getInt(2);
+        colPadding = objParams.getInt("column padding", 25);
+        LEVEL_COUNT = objParams.getInt("level count", 9);
+        EXIT_SETTINGS = objParams.getInt("exit settings", 8);
+    }
     /** Standard window size (for scaling) */
-    private static int STANDARD_WIDTH  = 800;
+    private static int STANDARD_WIDTH;
     /** Standard window height (for scaling) */
-    private static int STANDARD_HEIGHT = 700;
-    /** Standard button scale */
-    private static float BUTTON_SCALE  = 1.25f;
-    /** Level padding x-axis inset */
-    private static int PADDING_X = 100;
-    /** Level button padding along the y-axis */
-    private static int PADDING_Y = 100;
+    private static int STANDARD_HEIGHT;
     /** Number of levels in each row */
-    private static int NUM_COLS = 4;
+    private static int NUM_COLS;
     /** Padding between columns */
-    private static int colPadding = 25;
+    private static int colPadding;
     /** Scaling factor. */
     private float scale;
     /** The height of the canvas window (necessary since sprite origin != screen origin) */
@@ -81,25 +82,13 @@ public class MenuMode implements Screen {
     /** Whether this player mode is still active */
     private boolean active;
     /** Level count **/
-    private static int LEVEL_COUNT = 9;
+    private static int LEVEL_COUNT;
     /** Exit code for displaying settings */
     public static int EXIT_SETTINGS = 8;
     /** Whether the play button was pressed on the main menu */
     private boolean playPressed;
     /** Whether the settings button was pressed on the main menu */
     private boolean settingsPressed;
-
-    // Load constants
-    public static void setConstants(JsonValue objParams){
-        JsonValue menuParams = objParams.getChild("menu");
-        STANDARD_WIDTH = menuParams.getInt("width", 800);
-        STANDARD_HEIGHT = menuParams.getInt("height", 700);
-        BUTTON_SCALE = menuParams.getFloat("button scale", 1.25f);
-        PADDING_X = menuParams.getInt("padding x", 100);
-        PADDING_Y = menuParams.getInt("padding y", 100);
-        NUM_COLS = menuParams.getInt("level columns", 5);
-        LEVEL_COUNT = menuParams.getInt("level count", 9);
-    }
 
     /**
      * Creates a MenuMode with the default size and position.

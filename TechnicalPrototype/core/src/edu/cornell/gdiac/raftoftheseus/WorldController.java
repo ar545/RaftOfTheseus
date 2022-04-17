@@ -43,6 +43,7 @@ public class WorldController implements Screen, ContactListener {
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
+        Rock.setConstants(objParams.get("rock"));
     }
 
     // CONSTANTS
