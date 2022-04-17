@@ -208,15 +208,6 @@ public class BoxObstacle extends SimpleObstacle {
 
 
 	// ACCESSORS
-//	public void setTexture(Texture texture) {
-//		if(getType() != ObjectType.BULLET) {
-//			super.setTexture(new TextureRegion(texture));
-//		} else {
-//			super.setTexture(new TextureRegion(texture, 0.4f, 0.1f, 0.6f, 0.9f ));
-//		}
-//		textureScale = new Vector2(getWidth() * drawScale.x / texture.getWidth(),
-//				getHeight() * drawScale.x / texture.getHeight());
-//	}
 
 	public float getCrossSectionalArea() {
 		return getWidth()*getHeight()*0.5f;

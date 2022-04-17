@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.ScreenListener;
 
@@ -53,8 +54,14 @@ public class SettingsMode implements Screen {
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
 
+    // Load from "screen" in "obj parameters"
+    public static void setContants(JsonValue objParams){
+        STANDARD_WIDTH = objParams.getInt(0);
+        STANDARD_HEIGHT = objParams.getInt(1);
+    }
+
     /** Standard window size (for scaling) */
-    private static int STANDARD_WIDTH  = 800;
+    private static int STANDARD_WIDTH;
     /** Standard window height (for scaling) */
     private static int STANDARD_HEIGHT = 700;
     /** Scaling factor. */
@@ -71,7 +78,6 @@ public class SettingsMode implements Screen {
     private float soundEffectsVolume;
     /** Exit code to display menu screen */
     private int EXIT_MENU;
-
     /** Whether this player mode is still active */
     private boolean active;
 

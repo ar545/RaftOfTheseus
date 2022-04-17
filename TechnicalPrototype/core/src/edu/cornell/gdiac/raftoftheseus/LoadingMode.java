@@ -33,6 +33,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.util.Controllers;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -120,7 +121,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	private int   pressState;
 	/** The amount of time to devote to loading assets (as opposed to on screen hints, etc.) */
 	private int   budget;
-
 	/** Whether or not this player mode is still active */
 	private boolean active;
 
@@ -199,7 +199,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	public LoadingMode(String file, GameCanvas canvas, int millis) {
 		this.canvas  = canvas;
 		budget = millis;
-		
 		// Compute the dimensions from the canvas
 		resize(canvas.getWidth(),canvas.getHeight());
 

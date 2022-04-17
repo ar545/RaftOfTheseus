@@ -1203,7 +1203,6 @@ public class GameCanvas {
 			Gdx.app.error("GameCanvas", "Cannot draw without active beginDebug()", new IllegalStateException());
 			return;
 		}
-
 		float x0 = x*sx;
 		float y0 = y*sy;
 		float w = shape.getRadius()*sx;

@@ -55,6 +55,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private static final int DISPLAY_MENU = 5;
 	/** Exit code for displaying playing screen */
 	private static final int DISPLAY_WORLD = 6;
+	private boolean constantsLoaded;
 
 	/**
 	 * Creates a new game from the configuration settings.
@@ -77,9 +78,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		playing = new WorldController(canvas);
 		settings = new SettingsMode(canvas);
 		settings.setExitMenu(DISPLAY_MENU);
-		constantsLoaded = false;
 		setScreen(loading);
 		loading.setScreenListener(this);
+		constantsLoaded = false;
 	}
 
 	/**
@@ -118,8 +119,6 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		canvas.resize();
 		super.resize(width,height);
 	}
-
-	private boolean constantsLoaded;
 
 	/**
 	 * The given screen has made a request to exit its player mode.
@@ -170,16 +169,17 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		} else if (screen == loading) {
 			directory = loading.getAssets();
 			// Stop load sounds and CONSTANTS
-			SoundController.getInstance().gatherAssets(directory);
 			if(!constantsLoaded) {
 				constantsLoaded = true;
 				JsonValue objParams = directory.getEntry("object_parameters", JsonValue.class);
 				WorldController.setConstants(objParams);
-//				MenuMode.setConstants(objParams);
+				MenuMode.setConstants(objParams.get("screen"));
+				SettingsMode.setContants(objParams.get("screen"));
 				JsonValue keys = directory.getEntry("control_settings", JsonValue.class);
 				InputController.setConstants(keys);
 				InputController.getInstance();
 			}
+			SoundController.getInstance().gatherAssets(directory);
 			// Create menu
 			menu.setScreenListener(this);
 			menu.populate(directory);

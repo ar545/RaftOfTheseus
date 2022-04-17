@@ -22,7 +22,7 @@ public abstract class GameObject {
         SHARK,
         GOAL,
         TREASURE,
-        BULLET,
+        SPEAR,
         HYDRA,
         SIREN
     }
@@ -181,7 +181,7 @@ public abstract class GameObject {
 	}
 
 	public void setTexture(TextureRegion value) {
-		if(getType() != ObjectType.BULLET) {
+		if(getType() != ObjectType.SPEAR) {
             texture = value;
 		} else {
             texture = new TextureRegion(value.getTexture(), 0.4f, 0.1f, 0.6f, 0.9f );

@@ -22,7 +22,10 @@
     "chase distance" : 12,
     "wander speed" : 1.5,
     "chase speed" : 2.0,
-    "damage" : -25
+    "enrage speed" : 8.0,
+    "damage" : -25,
+    "protect range" : 5,
+    "search range" : 30
   },
   "bullet": {
     "speed scale" : 24.0,
@@ -30,5 +33,30 @@
     "bullet size" : 0.25,
     "bullet range fly" :  800.0,
     "bullet range fall" : 1000.0
+  },
+  "rock": {
+    "width": 3,
+    "height": 3
+  },
+  "terrain": {
+
+  },
+  "screen" : {
+    "standard width" : 800,
+    "standard height" : 700,
+    "column number" : 4,
+    "column padding" : 25,
+    "level count" : 9,
+    "exit settings" : 8
+  },
+  "raft" : {
+    "move cost" : 1.5,
+    "with current" : 0.45,
+    "against current" : 1.75,
+    "max health" : 120,
+    "initial health" : 40,
+    "damping" : 20,
+    "thrust" : 10,
+    "max speed" : 20
   }
 }

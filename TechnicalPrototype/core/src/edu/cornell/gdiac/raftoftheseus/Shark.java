@@ -61,6 +61,15 @@ public class Shark extends GameObject {
         return ObjectType.SHARK;
     }
 
+    static void setConstants(JsonValue objParams){
+        ENEMY_WANDER_SPEED = objParams.getFloat("wander speed");
+        ENEMY_CHASE_SPEED = objParams.getFloat("chase speed");
+        ENEMY_DAMAGE = objParams.getFloat("damage");
+        ENEMY_ENRAGE_CHASE_SPEED = objParams.getFloat("enrage speed", 8f);
+        PROTECT_RANGE = objParams.getInt("protect range", 5);
+        MAX_DEPTH = objParams.getInt("search range", 30);
+    }
+
     /**
      * How much damage an enemy deals to the player upon collision, per animation frame
      */
@@ -76,23 +85,17 @@ public class Shark extends GameObject {
     /**
      * How fast the enemy moves towards its target while enraged , in units per second
      */
-    public static final float ENEMY_ENRAGE_CHASE_SPEED = 8.0f;
+    public static float ENEMY_ENRAGE_CHASE_SPEED = 8.0f;
     /**
      * How much health will enemy take from player upon collision
      */
     protected static float ENEMY_DAMAGE;
 
-    static void setConstants(JsonValue objParams){
-        ENEMY_WANDER_SPEED = objParams.getFloat("wander speed");
-        ENEMY_CHASE_SPEED = objParams.getFloat("chase speed");
-        ENEMY_DAMAGE = objParams.getFloat("damage");
-    }
-
     /** how far will the enemy go from a nearby treasure in tiles **/
-    private static final int PROTECT_RANGE = 5;
+    private static int PROTECT_RANGE = 5;
 
     /** max depth for djikstra pathfind **/
-    public static final int MAX_DEPTH = 30;
+    public static int MAX_DEPTH = 30;
 
     private Vector2 moveVector = new Vector2();
 

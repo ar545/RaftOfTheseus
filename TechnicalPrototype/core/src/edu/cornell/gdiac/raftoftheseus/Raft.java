@@ -5,12 +5,9 @@ import com.badlogic.gdx.ai.steer.SteeringAcceleration;
 import com.badlogic.gdx.ai.steer.SteeringBehavior;
 import com.badlogic.gdx.ai.utils.Location;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.utils.Align;
-import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
@@ -19,37 +16,50 @@ import edu.cornell.gdiac.util.FilmStrip;
  */
 public class Raft extends GameObject implements Steerable<Vector2> {
 
+    /**
+     * Method to set Raft parameters
+     */
+    public static void setConstants(JsonValue objParams){
+        MOVE_COST = objParams.getFloat("move cost");
+        WITH_CURRENT = objParams.getFloat("with current");
+        AGAINST_CURRENT = objParams.getFloat("against current");
+        MAXIMUM_PLAYER_HEALTH = objParams.getFloat("max health");
+        INITIAL_PLAYER_HEALTH = objParams.getFloat("initial health");
+        DAMPING = objParams.getFloat("damping");
+        THRUST = objParams.getFloat("thrust");
+        MAX_SPEED = objParams.getFloat("max speed");
+    }
+
     // CONSTANTS
     /** Movement cost for a unit distance **/
-    private static final float MOVE_COST = 1.5f;
+    private static float MOVE_COST;
     /** Movement cost multiplier for moving with the current */
-    private static final float WITH_CURRENT = 0.45f;
+    private static float WITH_CURRENT;
     /** Movement cost increase for moving with the current */
-    private static final float AGAINST_CURRENT = 1.75f;
+    private static float AGAINST_CURRENT;
 
     // ATTRIBUTES
     /** The player's movement input */
     private Vector2 movementInput = new Vector2(0f,0f);
-
     /** The health of the raft. This must be >=0. */
     private float health;
     /** Maximum player health */
-    public static final float MAXIMUM_PLAYER_HEALTH = 120.0f;
+    public static float MAXIMUM_PLAYER_HEALTH;
     /** Initial player health */
-    public static final float INITIAL_PLAYER_HEALTH = 40.0f;
+    public static float INITIAL_PLAYER_HEALTH;
     /** The star of the level. This must be >=0. */
     private int star;
     /** Initial player health */
-    private static final int INITIAL_PLAYER_STAR = 0; //TODO: potential bugs on stars upon level restart
+    private static int INITIAL_PLAYER_STAR = 0; //TODO: potential bugs on stars upon level restart
 
     /** Whether the raft is actively firing */
     private boolean fire;
     /** The amount to slow the character down, while they aren't moving */
-    private final float damping = 20f;
+    private static float DAMPING;
     /** The amount to accelerate the character */
-    private final float thrust = 10f;
+    private static float THRUST;
     /** The maximum character speed allowed */
-    private final float maxSpeed = 20f;
+    private static float MAX_SPEED;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
 
@@ -106,16 +116,16 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
         if (movementInput.isZero()) {
             // Damp out player motion
-            forceCache.set(physicsObject.getLinearVelocity()).scl(-damping);
+            forceCache.set(getLinearVelocity()).scl(-DAMPING);
             physicsObject.getBody().applyForce(forceCache,getPosition(),true);
         } else {
             // Accelerate player based on input
-            forceCache.set(movementInput).scl(thrust);
+            forceCache.set(movementInput).scl(THRUST);
             physicsObject.getBody().applyLinearImpulse(forceCache,getPosition(),true);
         }
 
         // Velocity too high, clamp it
-        float speedRatio = maxSpeed / physicsObject.getLinearVelocity().len();
+        float speedRatio = MAX_SPEED / getLinearVelocity().len();
         if (speedRatio < 1) {
             physicsObject.setLinearVelocity(physicsObject.getLinearVelocity().scl(speedRatio));
         }
