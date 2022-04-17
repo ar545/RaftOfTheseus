@@ -288,6 +288,7 @@ public class SettingsMode implements Screen {
         if (active) {
             draw();
             if (exitPressed || InputController.getInstance().didExit()) {
+                resetPressedState();
                 listener.exitScreen(this, previousMode);
             }
         }
@@ -325,7 +326,7 @@ public class SettingsMode implements Screen {
     }
 
     /** Reset the settings menu and exit pressed state */
-    public void resetPressedState() {
+    private void resetPressedState() {
         exitPressed = false;
     }
 }

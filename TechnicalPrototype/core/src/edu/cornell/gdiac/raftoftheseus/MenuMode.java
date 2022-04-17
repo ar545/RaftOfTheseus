@@ -194,8 +194,11 @@ public class MenuMode implements Screen {
         if (active) {
             draw();
             if (settingsPressed) {
+                resetSettingsState();
                 listener.exitScreen(this, MENU_TO_SETTINGS);
             } else if ((isReady() && listener != null) || playPressed) {
+                resetPressedState();
+                resetPlayState();
                 listener.exitScreen(this, 0);
             }
         }
@@ -501,13 +504,13 @@ public class MenuMode implements Screen {
     }
 
     /** Reset the play pressed state */
-    public void resetPlayState() { playPressed = false; }
+    private void resetPlayState() { playPressed = false; }
 
     /** Reset the level pressed state */
-    public void resetPressedState() { isLevelPressed = false; }
+    private void resetPressedState() { isLevelPressed = false; }
 
     /** Reset the settings pressed state */
-    public void resetSettingsState() { settingsPressed = false; }
+    private void resetSettingsState() { settingsPressed = false; }
 
     /**
      * Called when the Screen is paused.

@@ -139,79 +139,88 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	public void exitScreen(Screen screen, int exitCode) {
 		if (screen == loading) {
 			directory = loading.getAssets();
-			// Load sounds and CONSTANTS
-			JsonValue screenParams = directory.getEntry("screen_settings", JsonValue.class);
-			NUM_LEVELS = screenParams.getInt("level count", 9);
-			setExitCodes(screenParams.get("exit codes"));
-			MenuMode.setConstants(screenParams.get("screen"));
-			SettingsMode.setContants(screenParams.get("screen"));
-			WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
-			InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
-			InputController.getInstance();
-			SoundController.getInstance().gatherAssets(directory);
-			// Create menu
-			menu.setScreenListener(this);
-			menu.populate(directory);
-			setScreen(menu);
+			setConstants();
+			populateScreens();
+			setMenuScreen(false);
 			loading.dispose();
 			loading = null;
-		} else if (exitCode == PREV_LEVEL) {
-			SoundController.getInstance().haltMusic();
-			currentLevel = Math.max(0, currentLevel-1);
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if(exitCode == NEXT_LEVEL){
-			SoundController.getInstance().haltMusic();
-			currentLevel = Math.min(NUM_LEVELS -1, currentLevel+1);
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if (exitCode == WORLD_TO_SETTINGS) {
-			settings.setScreenListener(this);
-			settings.setPreviousMode(TO_WORLD);
-			settings.resetPressedState();
-			settings.populate(directory);
-			setScreen(settings);
-		} else if (exitCode == MENU_TO_SETTINGS) {
-			settings.setScreenListener(this);
-			settings.setPreviousMode(TO_MENU);
-			settings.resetPressedState();
-			settings.populate(directory);
-			setScreen(settings);
-		} else if (screen == settings) {
-			settings.resetPressedState();
-			menu.resetSettingsState();
-			if(exitCode == TO_MENU) {
-				menu.setScreenListener(this);
-				setScreen(menu);
-			} else if (exitCode == TO_WORLD) {
-				playing.setScreenListener(this);
-//					playing.setLevel(currentLevel);
-				setScreen(playing);
-			}
-		} else if (screen == playing) {
-			SoundController.getInstance().haltMusic();
-			menu.resetPressedState();
-			menu.resetSettingsState();
-			menu.resetPlayState();
-			menu.setScreenListener(this);
-			setScreen(menu);
-		} else if (screen == menu) {
-			SoundController.getInstance().haltMusic();
-			menu.resetPressedState();
-			menu.resetSettingsState();
-			// Load level
-			playing.setScreenListener(this);
-			playing.gatherAssets(directory);
-			currentLevel = menu.getSelectedLevel() < NUM_LEVELS ? menu.getSelectedLevel() : 0;
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if (exitCode != QUIT) {
+		}
+		else if (exitCode == PREV_LEVEL) setPlayScreen(Math.max(0, currentLevel-1));
+		else if(exitCode == NEXT_LEVEL) setPlayScreen(Math.min(NUM_LEVELS -1, currentLevel+1));
+		else if (exitCode == WORLD_TO_SETTINGS) setSettingsScreen(TO_WORLD);
+		else if (exitCode == MENU_TO_SETTINGS) setSettingsScreen(TO_MENU);
+		else if (screen == settings) {
+			if(exitCode == TO_MENU) setMenuScreen(false);
+			else if (exitCode == TO_WORLD) setPlayScreen();
+		}
+		else if (screen == playing) setMenuScreen(true);
+		else if (screen == menu) setPlayScreen(menu.getSelectedLevel() < NUM_LEVELS ? menu.getSelectedLevel() : 0);
+		else if (exitCode != QUIT) {
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
-		} else {
-			// We quit the main application
-			Gdx.app.exit();
 		}
+		else Gdx.app.exit();
+	}
+
+	/**
+	 * Set all constants in the game before anything starts.
+	 */
+	private void setConstants(){
+		JsonValue screenParams = directory.getEntry("screen_settings", JsonValue.class);
+		NUM_LEVELS = screenParams.getInt("level count", 9);
+		setExitCodes(screenParams.get("exit codes"));
+		MenuMode.setConstants(screenParams.get("screen"));
+		SettingsMode.setContants(screenParams.get("screen"));
+		WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
+		InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
+		InputController.getInstance();
+		SoundController.getInstance().gatherAssets(directory);
+	}
+
+	/**
+	 * Method to populate all screens with their appropriate assets.
+	 */
+	private void populateScreens(){
+		settings.populate(directory);
+		menu.populate(directory);
+		playing.gatherAssets(directory);
+	}
+
+	/**
+	 * Factored out code for creating the settings screen.
+	 */
+	private void setSettingsScreen(int KEY){
+		settings.setPreviousMode(KEY);
+		settings.setScreenListener(this);
+		setScreen(settings);
+	}
+
+	/**
+	 * Factored out code for creating the menu screen.
+	 */
+	private void setMenuScreen(boolean stopMusic){
+		if(stopMusic) SoundController.getInstance().haltMusic();
+		menu.setScreenListener(this);
+		setScreen(menu);
+	}
+
+	/**
+	 * Set the playing screen when going from everything but settings.
+	 */
+	private void setPlayScreen(int currentLevel){
+		SoundController.getInstance().haltMusic();
+		this.currentLevel = currentLevel;
+		playing.setLevel(this.currentLevel);
+		playing.setScreenListener(this);
+		setScreen(playing);
+	}
+
+	/**
+	 * Set the playing screen when nothing has changed i.e. coming from settings.
+	 */
+	private void setPlayScreen(){
+		playing.setScreenListener(this);
+		setScreen(playing);
 	}
 
 	/**
