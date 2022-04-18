@@ -69,7 +69,7 @@ public class Spear extends GameObject {
      * @return how far this spear has traveled.
      */
     private float getDistTraveled(){
-        return originalPos.sub(this.getPosition()).len();
+        return this.getPosition().sub(originalPos).len();
     }
 
     /**
