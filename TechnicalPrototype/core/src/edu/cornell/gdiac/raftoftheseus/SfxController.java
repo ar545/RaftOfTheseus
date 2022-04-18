@@ -27,12 +27,6 @@ public class SfxController {
     private float tradeThreshold = 0.0001f;
     /** Speed taken to transition music in miliseconds. */
     private float fadeOutRate = 0.02f;
-    /** Speed taken to transition music in miliseconds. */
-    private long tradeTime = 1000L;
-    /** Whether or not fading in is complete */
-    private boolean fadeInDone = false;
-    /** Whether or not fading in is complete */
-    private boolean fadeOutDone = false;
     /** Current preset being used for music. */
     private  int musicPreset;
     /** Structure to hold all music presets for future reference. */
@@ -83,7 +77,6 @@ public class SfxController {
         musicVolume = set.getFloat("music_volume", 1.0f);
         tradeRate = set.getFloat("trade_rate", 0.0001f);
         tradeThreshold = set.getFloat("trade_threshold", 0.00001f);
-        tradeTime = set.getLong("trade_time", 1000L);
         // Get sfx
         JsonValue sfxnames = set.get("sound_names");
         for(JsonValue s : sfxnames){
@@ -247,9 +240,21 @@ public class SfxController {
         return playSFX(distance.nor().x,sfxVolume * decayDistance / distance.len(), name, loop);
     }
 
+    /**
+     * Stop a sound effect
+     * @param name The name of the sound.
+     * @param id The id of the instance
+     */
     public void stopSFX(String name, long id){
-        Sound s = sfx.get(name);
+        sfx.get(name).stop(id);
+    }
 
+    /**
+     * Stop a sound effect
+     * @param name The name of the sound.
+     */
+    public void stopLoopingSFX(String name){
+        sfx.get(name).stop();
     }
 
     /* TODO MUSIC PLAYERS */

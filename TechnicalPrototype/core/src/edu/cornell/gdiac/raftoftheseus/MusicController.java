@@ -10,14 +10,6 @@ public class MusicController {
 
     /** Master volume for Music */
     private static float musicVolume = 0.3f;
-    /** Set screen distance to calculate sound decay */
-    private float decayDistance = 400f;
-    /** Speed taken to transition music in miliseconds. */
-    private float tradeRate = 0.0001f;
-    /** Speed taken to transition music in miliseconds. */
-    private float tradeThreshold = 0.0001f;
-    /** Speed taken to transition music in miliseconds. */
-    private float fadeOutRate = 0.02f;
     /** Speed taken to transition music in miliseconds. */
     private static long tradeTime = 1000L;
     /** Current preset being used for music. */
@@ -62,8 +54,6 @@ public class MusicController {
         // Setsettings values
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         musicVolume = set.getFloat("music_volume", 1.0f);
-        tradeRate = set.getFloat("trade_rate", 0.0001f);
-        tradeThreshold = set.getFloat("trade_threshold", 0.00001f);
         tradeTime = set.getLong("trade_time", 1000L);
         // Get music presets
         JsonValue mscpresets = directory.getEntry("music_settings", JsonValue.class);

@@ -736,10 +736,12 @@ public class LevelModel {
 
     /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
      * @param s the spear to check for in range */
-    public void checkSpear(Spear s){
+    public boolean checkSpear(Spear s){
         if(s.outMaxDistance()){
            s.setDestroyed(true);
+           return true;
         }
+        return false;
     }
 
     public void draw(float time) {

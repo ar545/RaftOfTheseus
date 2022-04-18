@@ -4,7 +4,6 @@ import com.badlogic.gdx.ai.steer.Steerable;
 import com.badlogic.gdx.ai.steer.SteeringAcceleration;
 import com.badlogic.gdx.ai.steer.SteeringBehavior;
 import com.badlogic.gdx.ai.utils.Location;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
@@ -62,6 +61,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float MAX_SPEED;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
+    /** Raft sail sound id */
+    private long sailSound;
 
     // METHODS
     /** Constructor for Raft object
@@ -91,6 +92,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
     /** Returns the player movement input. */
     protected Vector2 getMovementInput() { return movementInput; }
+
+    public boolean isMoving() { return physicsObject.getLinearVelocity().len() >= 0.01; }
 
     /** Sets the player movement input. */
     public void setMovementInput(Vector2 value) { movementInput.set(value); }
@@ -175,6 +178,20 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
     public void setAnimationFrame(int animationFrame) {
         ((FilmStrip)texture).setFrame(animationFrame);
+    }
+
+    // MUSIC
+
+    /** @param id the id of the sail moving sound. */
+    public void setSailSound(long id){
+        sailSound = id;
+    }
+
+    /** @return the current sail sound and reset the id. */
+    public long getSailSound(){
+        long temp = sailSound;
+        sailSound = -1;
+        return temp;
     }
 
     /* STEERING */

@@ -33,7 +33,7 @@ public class Spear extends GameObject {
      * Constructor for the Spear.
      */
     public Spear(Vector2 position) {
-        physicsObject = new BoxObstacle(0.3f, 2f);
+        physicsObject = new BoxObstacle(0.1f, 2f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
 
@@ -55,8 +55,6 @@ public class Spear extends GameObject {
         super.update(delta);
         if(inFlyDistance()) {
             physicsObject.getBody().applyForce(physicsObject.getLinearVelocity().scl(-2f), getPosition(), true);
-        } else if (inFallDistance()) {
-            // do something?
         }
     }
 
@@ -79,13 +77,6 @@ public class Spear extends GameObject {
      */
     private boolean inFlyDistance(){
         return getDistTraveled() < SPEAR_RANGE_FLY;
-    }
-
-    /**
-     * @return whether the spear is slowing down
-     */
-    private boolean inFallDistance(){
-        return !inFlyDistance() && getDistTraveled() <= SPEAR_RANGE_FALL;
     }
 
     /**

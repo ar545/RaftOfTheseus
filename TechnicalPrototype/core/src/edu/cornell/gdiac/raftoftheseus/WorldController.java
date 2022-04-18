@@ -723,7 +723,9 @@ public class WorldController implements Screen, ContactListener {
         while (iterator.hasNext()) {
             PooledList<GameObject>.Entry entry = iterator.next();
             GameObject obj = entry.getValue();
-            if(obj.getType() == GameObject.ObjectType.SPEAR) levelModel.checkSpear((Spear) obj);
+            if(obj.getType() == GameObject.ObjectType.SPEAR) {
+                if(levelModel.checkSpear((Spear) obj)) SfxController.getInstance().playSFX("spear_splash");
+            }
             if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);
                 entry.remove();
@@ -732,14 +734,15 @@ public class WorldController implements Screen, ContactListener {
                 obj.update(dt);
             }
         }
-        resolveMusic();
+        resolveMusic(player);
     }
 
     // TODO: where should this field belong?
     private boolean wasInDanger = false;
+    private boolean wasMoving = false;
 
     /** Update the level themed music according the game status */
-    private void resolveMusic() {
+    private void resolveMusic(Raft player) {
         boolean nowInDanger = false;
         for(SharkController ai : controls){
             if(ai.isAlive() && ai.getState() == Shark.enemyState.ENRAGE){
@@ -755,6 +758,16 @@ public class WorldController implements Screen, ContactListener {
         }
         SfxController.getInstance().updateMusic();
         wasInDanger = nowInDanger;
+
+        boolean nowMoving = player.isMoving();
+        if(!wasMoving && nowMoving){
+            player.setSailSound(SfxController.getInstance().playSFX("raft_sail_wind", true));
+            wasMoving = true;
+        } else if(wasMoving && !player.isMoving()){
+            SfxController.getInstance().stopSFX("raft_sail_wind", player.getSailSound());
+            SfxController.getInstance().playSFX("raft_sail_down");
+            wasMoving = false;
+        }
     }
 
     /**
@@ -863,11 +876,16 @@ public class WorldController implements Screen, ContactListener {
     private void ResolveSpearCollision(Spear b, GameObject g) {
         if(g.getType() == GameObject.ObjectType.SHARK) {
             // stun shark
+            SfxController.getInstance().playSFX("spear_enemy_hit");
+            SfxController.getInstance().playSFX("shark_hit");
             g.setDestroyed(true);
-        }
-        if(g.getType() == GameObject.ObjectType.HYDRA) {
+        } else if(g.getType() == GameObject.ObjectType.HYDRA) {
             // stun hydra
+            SfxController.getInstance().playSFX("spear_enemy_hit");
+            SfxController.getInstance().playSFX("shark_hit");
             ((Hydra) g).setHit(true);
+        } else if (g.getType() == GameObject.ObjectType.OBSTACLE) {
+            SfxController.getInstance().playSFX("spear_break");
         }
         // destroy bullet
         b.setDestroyed(true);
