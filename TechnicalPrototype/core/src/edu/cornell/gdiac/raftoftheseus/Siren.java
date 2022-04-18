@@ -2,15 +2,13 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
-import com.badlogic.gdx.ai.msg.Telegram;
-import com.badlogic.gdx.ai.msg.Telegraph;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Siren extends WheelObstacle {
+public class Siren extends GameObject {
 
     public static void setConstants(JsonValue objParams){
         IDLE_TIME = objParams.getLong("idle time", 500L);
@@ -47,27 +45,29 @@ public class Siren extends WheelObstacle {
     private static float FLY_SPEED;
 
     public Siren(Vector2 position1, Vector2 position2, Raft targetRaft) {
-        super();
+        physicsObject = new WheelObstacle(1.45f);
         setPosition(position1);
-        setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
+        physicsObject.getFilterData().maskBits = MASK_SIREN;
+
         location1.set(position1);
         location2.set(position2);
         direction1.set(position2.sub(position1).scl(FLY_SPEED));
         direction2.set(position1.sub(position2).scl(FLY_SPEED));
         this.targetRaft = targetRaft;
-        fixture.filter.maskBits = MASK_SIREN;
         stateMachine = new DefaultStateMachine<Siren, SirenController>(this, SirenController.IDLE);
     }
 
     public void update(float dt) {
-        body.setLinearVelocity(moveVector);
+        physicsObject.getBody().setLinearVelocity(moveVector);
         stateMachine.update();
     }
 
     public StateMachine<Siren, SirenController> getStateMachine(){ return this.stateMachine; }
 
     public GameObject.ObjectType getType() {
-        return GameObject.ObjectType.ENEMY;
+        return GameObject.ObjectType.SHARK;
     }
 
     public void setTargetRaft(Raft targetRaft) {

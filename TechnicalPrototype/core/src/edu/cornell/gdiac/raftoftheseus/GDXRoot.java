@@ -21,7 +21,6 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.g2d.freetype.*;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
 
@@ -50,13 +49,22 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	/** Which level is currently loaded */
 	private int currentLevel = 0;
 	/** How many levels there are */
-	private int numLevels = 9;
-	/** Exit code for displaying start screen */
-	private static final int DISPLAY_START = 4;
+	public static int NUM_LEVELS;
+	/** Exit code from loading = -1 */
+	/** Exit code for quitting = 0 */
+	public static int QUIT;
+	/** Exit code for next level = 1 */
+	public static int NEXT_LEVEL;
+	/** Exit code for previous level = 2 */
+	public static int PREV_LEVEL;
+	/** Exit code for world to settings = 3 */
+	public static int WORLD_TO_SETTINGS;
 	/** Exit code for displaying menu screen */
-	private static final int DISPLAY_MENU = 5;
+	public static int TO_MENU;
 	/** Exit code for displaying playing screen */
-	private static final int DISPLAY_WORLD = 6;
+	public static int TO_WORLD;
+	/** Exit code for menu to settings = 8 */
+	public static int MENU_TO_SETTINGS;
 
 	/**
 	 * Creates a new game from the configuration settings.
@@ -78,8 +86,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
 		settings = new SettingsMode(canvas);
-		settings.setExitMenu(DISPLAY_MENU);
-		constantsLoaded = false;
+		settings.setExitMenu(TO_MENU);
 		setScreen(loading);
 		loading.setScreenListener(this);
 	}
@@ -94,7 +101,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		Screen screen = getScreen();
 		setScreen(null);
 		screen.dispose();
-		SoundController.getInstance().dispose();
+		SfxController.getInstance().dispose();
 		canvas.dispose();
 		canvas = null;
 
@@ -121,8 +128,6 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		super.resize(width,height);
 	}
 
-	private boolean constantsLoaded;
-
 	/**
 	 * The given screen has made a request to exit its player mode.
 	 *
@@ -132,88 +137,108 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param exitCode The state of the screen upon exit
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
-		if (exitCode == WorldController.EXIT_PREV){
-			SoundController.getInstance().haltSounds();
-			currentLevel = Math.max(0, currentLevel-1);
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if(exitCode == WorldController.EXIT_NEXT){
-			SoundController.getInstance().haltSounds();
-			currentLevel = Math.min(numLevels-1, currentLevel+1);
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if (exitCode == WorldController.EXIT_SETTINGS) {
-			settings.setScreenListener(this);
-			settings.setPreviousMode(DISPLAY_WORLD);
-			settings.resetPressedState();
-			settings.populate(directory);
-			settings.setIsBackMenu(true);
-			setScreen(settings);
-		} else if (exitCode == MenuMode.EXIT_SETTINGS) {
-			settings.setScreenListener(this);
-			settings.setPreviousMode(DISPLAY_MENU);
-			settings.resetPressedState();
-			settings.populate(directory);
-			settings.setIsBackMenu(false);
-			setScreen(settings);
-		} else if (screen == settings) {
-			settings.resetPressedState();
-			menu.resetSettingsState();
-			switch (exitCode) {
-				case DISPLAY_START:
-					// TODO
-					break;
-				case DISPLAY_MENU:
-					SoundController.getInstance().haltSounds();
-					menu.setScreenListener(this);
-					setScreen(menu);
-					break;
-				case DISPLAY_WORLD:
-					playing.setScreenListener(this);
-					playing.setLevel(currentLevel);
-					setScreen(playing);
-					break;
-			}
-		} else if (screen == loading) {
+		if (screen == loading) {
 			directory = loading.getAssets();
-			// Stop load sounds and CONSTANTS
-			SoundController.getInstance().gatherAssets(directory);
-			if(!constantsLoaded) {
-				constantsLoaded = true;
-				JsonValue objParams = directory.getEntry("object_parameters", JsonValue.class);
-				WorldController.setConstants(objParams);
-//				MenuMode.setConstants(objParams);
-				JsonValue keys = directory.getEntry("control_settings", JsonValue.class);
-				InputController.setConstants(keys);
-				InputController.getInstance();
-			}
-			// Create menu
-			menu.setScreenListener(this);
-			menu.populate(directory);
-			setScreen(menu);
+			setConstants();
+			populateScreens();
+			setMenuScreen(false);
 			loading.dispose();
 			loading = null;
-		} else if (screen == playing) {
-			SoundController.getInstance().haltSounds();
-			menu.setScreenListener(this);
-			setScreen(menu);
-		} else if (screen == menu) {
-			SoundController.getInstance().haltSounds();
-			menu.resetPressedState();
-			menu.resetSettingsState();
-			// Load level
-			playing.setScreenListener(this);
-			playing.gatherAssets(directory);
-			currentLevel = menu.getSelectedLevel() < numLevels ? menu.getSelectedLevel() : 0;
-			playing.setLevel(currentLevel);
-			setScreen(playing);
-		} else if (exitCode != WorldController.EXIT_QUIT) {
+		}
+		else if (exitCode == PREV_LEVEL) setPlayScreen(Math.max(0, currentLevel-1));
+		else if(exitCode == NEXT_LEVEL) setPlayScreen(Math.min(NUM_LEVELS -1, currentLevel+1));
+		else if (exitCode == WORLD_TO_SETTINGS) setSettingsScreen(TO_WORLD);
+		else if (exitCode == MENU_TO_SETTINGS) setSettingsScreen(TO_MENU);
+		else if (screen == settings) {
+			if(exitCode == TO_MENU) setMenuScreen(false);
+			else if (exitCode == TO_WORLD) setPlayScreen();
+		}
+		else if (screen == playing) setMenuScreen(true);
+		else if (screen == menu) setPlayScreen(menu.getSelectedLevel() < NUM_LEVELS ? menu.getSelectedLevel() : 0);
+		else if (exitCode != QUIT) {
 			Gdx.app.error("GDXRoot", "Exit with error code "+exitCode, new RuntimeException());
 			Gdx.app.exit();
-		} else {
-			// We quit the main application
-			Gdx.app.exit();
 		}
+		else Gdx.app.exit();
 	}
 
+	/**
+	 * Set all constants in the game before anything starts.
+	 */
+	private void setConstants(){
+		JsonValue screenParams = directory.getEntry("screen_settings", JsonValue.class);
+		NUM_LEVELS = screenParams.getInt("level count", 9);
+		setExitCodes(screenParams.get("exit codes"));
+		MenuMode.setConstants(screenParams.get("screen"));
+		SettingsMode.setContants(screenParams.get("screen"));
+		WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
+		InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
+		InputController.getInstance();
+		SfxController.getInstance().gatherAssets(directory);
+		MusicController.getInstance().gatherAssets(directory);
+	}
+
+	/**
+	 * Method to set the exit codes for the different screens.
+	 * Found in object_parameters.json
+	 * @param objParams JsonValue "exit codes"
+	 */
+	private static void setExitCodes(JsonValue objParams){
+		QUIT = objParams.getInt("quit");
+		NEXT_LEVEL = objParams.getInt("next level");
+		PREV_LEVEL = objParams.getInt("previous level");
+		WORLD_TO_SETTINGS = objParams.getInt("world to settings");
+		TO_MENU = objParams.getInt("to menu");
+		TO_WORLD = objParams.getInt("to world");
+		MENU_TO_SETTINGS = objParams.getInt("menu to settings");
+	}
+
+	/**
+	 * Method to populate all screens with their appropriate assets.
+	 */
+	private void populateScreens(){
+		settings.populate(directory);
+		menu.populate(directory);
+		playing.gatherAssets(directory);
+	}
+
+	/**
+	 * Factored out code for creating the settings screen.
+	 */
+	private void setSettingsScreen(int KEY){
+		settings.setPreviousMode(KEY);
+		settings.setScreenListener(this);
+		setScreen(settings);
+	}
+
+	/**
+	 * Factored out code for creating the menu screen.
+	 */
+	private void setMenuScreen(boolean stopMusic){
+		if(stopMusic) {
+			SfxController.getInstance().haltMusic();
+			SfxController.getInstance().stopLoopingSFX("raft_sail_wind");
+		}
+		menu.setScreenListener(this);
+		setScreen(menu);
+	}
+
+	/**
+	 * Set the playing screen when going from everything but settings.
+	 */
+	private void setPlayScreen(int currentLevel){
+		SfxController.getInstance().haltMusic();
+		SfxController.getInstance().stopLoopingSFX("raft_sail_wind");
+		this.currentLevel = currentLevel;
+		playing.setLevel(this.currentLevel);
+		setPlayScreen();
+	}
+
+	/**
+	 * Set the playing screen when nothing has changed i.e. coming from settings.
+	 */
+	private void setPlayScreen(){
+		playing.setScreenListener(this);
+		setScreen(playing);
+	}
 }

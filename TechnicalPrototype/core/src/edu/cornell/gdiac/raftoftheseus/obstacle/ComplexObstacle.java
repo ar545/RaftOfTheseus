@@ -1019,7 +1019,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) {
 		// Delegate to components
@@ -1041,24 +1041,24 @@ public abstract class ComplexObstacle extends Obstacle {
      * @param x  the x-axis scale for this physics object
      * @param y  the y-axis scale for this physics object
      */
-    public void setDrawScale(float x, float y) {
-    	drawScale.set(x,y);
-		for(Obstacle obj : bodies) {
-			obj.setDrawScale(x,y);
-		}
-    }
+//    public void setDrawScale(float x, float y) {
+//    	drawScale.set(x,y);
+//		for(Obstacle obj : bodies) {
+//			obj.setDrawScale(x,y);
+//		}
+//    }
 
 	/**
 	 * Draws the physics object.
 	 *
 	 * @param canvas Drawing context
 	 */
-	public void draw(GameCanvas canvas) {
-		// Delegate to components
-		for(Obstacle obj : bodies) {
-			obj.draw(canvas);
-		}
-	}
+//	public void draw(GameCanvas canvas) {
+//		// Delegate to components
+//		for(Obstacle obj : bodies) {
+//			obj.draw(canvas);
+//		}
+//	}
 
 	/**
 	 * Draws the outline of the physics body.

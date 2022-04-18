@@ -28,7 +28,7 @@
     "speed scale" : 24.0,
     "health cost" : -5.0,
     "bullet size" : 0.25,
-    "bullet range fly" :  1200.0,
-    "bullet range fall" : 1500.0
+    "bullet range fly" :  800.0,
+    "bullet range fall" : 1000.0
   }
 }

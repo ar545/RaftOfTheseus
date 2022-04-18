@@ -5,20 +5,21 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Treasure extends WheelObstacle {
+public class Treasure extends GameObject {
 
     // ATTRIBUTES
     /** Has the treasure been collected yet? */
     protected boolean collected;
 
     public Treasure(Vector2 position) {
-        super();
+        physicsObject = new WheelObstacle(1.45f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.StaticBody);
-        setSensor(true);
+        physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        physicsObject.setSensor(true);
+        physicsObject.getFilterData().categoryBits = CATEGORY_NON_PUSHABLE;
+        physicsObject.getFilterData().maskBits = MASK_TREASURE;
+
         collected = false;
-        fixture.filter.categoryBits = CATEGORY_NON_PUSHABLE;
-        fixture.filter.maskBits = MASK_TREASURE;
     }
 
     public ObjectType getType() {

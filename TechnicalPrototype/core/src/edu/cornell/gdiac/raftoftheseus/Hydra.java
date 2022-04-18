@@ -6,9 +6,10 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
-public class Hydra extends WheelObstacle {
+public class Hydra extends GameObject {
     public GameObject.ObjectType getType() {
         return ObjectType.HYDRA;
     }
@@ -40,11 +41,13 @@ public class Hydra extends WheelObstacle {
     private StateMachine<Hydra, HydraController> stateMachine;
 
     public Hydra(Vector2 position, Raft targetRaft) {
+        physicsObject = new WheelObstacle(1.45f);
         setPosition(position);
-        setBodyType(BodyDef.BodyType.StaticBody);
+        physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
+        physicsObject.getFilterData().maskBits = MASK_ENEMY;
+
         this.targetRaft = targetRaft;
-        fixture.filter.categoryBits = CATEGORY_ENEMY;
-        fixture.filter.maskBits = MASK_ENEMY;
         stateMachine = new DefaultStateMachine<>(this, HydraController.IDLE);
     }
 
@@ -70,9 +73,6 @@ public class Hydra extends WheelObstacle {
     }
 
     // Targeting
-    public void setTargetRaft(Raft targetRaft) {
-        this.targetRaft = targetRaft;
-    }
     public Vector2 getTargetDirection() { return getPosition().sub(targetRaft.getPosition()).nor(); }
     public boolean inRange(){
         return getPosition().dst(targetRaft.getPosition()) <= FIRING_RANGE;

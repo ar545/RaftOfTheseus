@@ -120,7 +120,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	private int   pressState;
 	/** The amount of time to devote to loading assets (as opposed to on screen hints, etc.) */
 	private int   budget;
-
 	/** Whether or not this player mode is still active */
 	private boolean active;
 
@@ -199,7 +198,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	public LoadingMode(String file, GameCanvas canvas, int millis) {
 		this.canvas  = canvas;
 		budget = millis;
-		
 		// Compute the dimensions from the canvas
 		resize(canvas.getWidth(),canvas.getHeight());
 
@@ -235,7 +233,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		}
 
 		// Start music?
-		SoundController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
+		SfxController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
 
 		// Start loading the real assets
 		assets = new AssetDirectory( file );
@@ -331,7 +329,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 			// We are are ready, notify our listener
 			if (isReady() && listener != null) {
-				listener.exitScreen(this, 0);
+				listener.exitScreen(this, -1);
 			}
 		}
 	}

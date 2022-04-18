@@ -1,16 +1,28 @@
 {
-  "music_volume": 0.05,
-  "sfx_volume": 0.3,
+  "music_volume": 1,
+  "sfx_volume": 1,
   "decay_distance": 400.0,
-  "trade_rate": 0.001,
-  "trade_threshold": 0.002,
+  "trade_rate": 0.01,
+  "trade_threshold": 0.001,
+  "trade_time" : 1000,
   "sound_names" : {
     "current_flow": "sounds/Sfx_Current_Flow1.ogg",
     "wood_pickup": "sounds/Sfx_Wood_PickUp.ogg",
     "raft_breaking": "sounds/Sfx_Raft_BreakingSplash.ogg",
-    "raft_throw": "sounds/Sfx_Raft_Throw.ogg",
-    "raft_damage": "sounds/Sfx_Raft_Damage.mp3",
+    "raft_damage": "sounds/Sfx_Raft_Damage.ogg",
+    "raft_sail_open" : "sounds/Sfx_Raft_SailOpening.ogg",
+    "raft_sail_wind" : "sounds/Sfx_Raft_SailWind.ogg",
+    "raft_sail_down" : "sounds/Sfx_Raft_SailDown.ogg",
+    "chest_collect" : "sounds/Sfx_Chest_Collect.mp3",
+    "spear_splash" : "sounds/Sfx_Spear_Splash.ogg",
+    "spear_throw" : "sounds/Sfx_Spear_Throw.ogg",
+    "spear_break" : "sounds/Sfx_Spear_Break.ogg",
+    "spear_enemy_hit" : "sounds/Sfx_Spear_EnemyHit.ogg",
     "level_complete" : "sounds/Sfx_Level_Complete.mp3",
-    "chest_collect" : "sounds/Sfx_Chest_Collect.mp3"
+    "button_island" : "sounds/Sfx_Button_Island.ogg",
+    "button_enter" : "sounds/Sfx_Button_MainMenuEnter.ogg",
+    "button_click" : "sounds/Sfx_Button_MainMenuClick.ogg",
+    "map_open" : "sounds/Sfx_Map_Opening.ogg",
+    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg"
   }
 }

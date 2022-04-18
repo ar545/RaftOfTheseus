@@ -1,0 +1,19 @@
+{
+  "exit codes" : {
+  "from loading" : -1,
+  "quit" : 0,
+  "next level" : 1,
+  "previous level" : 2,
+  "world to settings" : 3,
+  "to menu" : 5,
+  "to world" : 6,
+  "menu to settings" : 8
+  },
+  "screen" : {
+  "standard width" : 800,
+  "standard height" : 700,
+  "column number" : 4,
+  "column padding" : 25
+  },
+  "level count" : 9
+}

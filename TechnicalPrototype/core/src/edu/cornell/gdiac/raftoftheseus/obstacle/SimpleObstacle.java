@@ -37,12 +37,6 @@ import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 public abstract class SimpleObstacle extends Obstacle {
 	/** The physics body for Box2D. */
 	protected Body body;
-
-	/** The texture for the shape. */
-	protected TextureRegion texture;
-
-	/** The texture origin for drawing */
-	protected Vector2 origin;
 	
 	/// BodyDef Methods
 	/**
@@ -87,7 +81,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	public Vector2 getPosition() {
 		return (body != null ? body.getPosition() : super.getPosition());
 	}
-	
+
 	/**
 	 * Sets the current position for this physics body
 	 *
@@ -745,43 +739,6 @@ public abstract class SimpleObstacle extends Obstacle {
 		}
 	}
 	
-	/// Texture Information
-	/**
-	 * Returns the object texture for drawing purposes.
-	 *
-	 * In order for drawing to work properly, you MUST set the drawScale.
-	 * The drawScale converts the physics units to pixels.
-	 * 
-	 * @return the object texture for drawing purposes.
-	 */
-	public TextureRegion getTexture() {
-		return texture;
-	}
-	
-	/**
-	 * Sets the object texture for drawing purposes.
-	 *
-	 * In order for drawing to work properly, you MUST set the drawScale.
-	 * The drawScale converts the physics units to pixels.
-	 * 
-	 * @param value  the object texture for drawing purposes.
-	 */
-	public void setTexture(TextureRegion value) {
-		texture = value;
-		origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
-	}
-	
-	/**
-	 * Draws the physics object.
-	 *
-	 * @param canvas Drawing context
-	 */
-	public void draw(GameCanvas canvas) {
-		if (texture != null) {
-			canvas.draw(texture,Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.x,getAngle(),1,1);
-		}
-	}
-	
 	/**
 	 * Returns the Box2D body for this object.
 	 *
@@ -810,9 +767,12 @@ public abstract class SimpleObstacle extends Obstacle {
 	 */
 	protected SimpleObstacle(float x, float y) {
 		super(x,y);
-		origin = new Vector2();
 		body = null;
 	}
+
+	public abstract float getHeight();
+
+	public abstract float getWidth();
 	
 	/**
 	 * Creates the physics Body(s) for this object, adding them to the world.
@@ -879,7 +839,7 @@ public abstract class SimpleObstacle extends Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) {
 		// Recreate the fixture object if dimensions changed.

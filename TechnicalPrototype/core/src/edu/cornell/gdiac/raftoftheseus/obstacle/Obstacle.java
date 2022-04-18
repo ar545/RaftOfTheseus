@@ -48,7 +48,7 @@ public abstract class Obstacle {
     /** A tag for debugging purposes */
     private String nametag;
 	/** Drawing scale to convert physics units to pixels */
-	protected Vector2 drawScale;
+//	protected Vector2 drawScale;
 
 	/// Track garbage collection status
 	/** Whether the object should be removed from the world on next pass */
@@ -848,10 +848,10 @@ public abstract class Obstacle {
      *
      * @return the drawing scale for this physics object
      */
-    public Vector2 getDrawScale() { 
-    	scaleCache.set(drawScale);
-    	return scaleCache; 
-    }
+//    public Vector2 getDrawScale() {
+//    	scaleCache.set(drawScale);
+//    	return scaleCache;
+//    }
     
     /**
      * Sets the drawing scale for this physics object
@@ -865,9 +865,9 @@ public abstract class Obstacle {
      *
      * @param value  the drawing scale for this physics object
      */
-    public void setDrawScale(Vector2 value) { 
-    	setDrawScale(value.x,value.y); 
-	}
+//    public void setDrawScale(Vector2 value) {
+//    	setDrawScale(value.x,value.y);
+//	}
     
     /**
      * Sets the drawing scale for this physics object
@@ -882,9 +882,9 @@ public abstract class Obstacle {
      * @param x  the x-axis scale for this physics object
      * @param y  the y-axis scale for this physics object
      */
-    public void setDrawScale(float x, float y) {
-    	drawScale.set(x,y);
-    }
+//    public void setDrawScale(float x, float y) {
+//    	drawScale.set(x,y);
+//    }
     	
 	/// DEBUG METHODS
 	/**
@@ -945,7 +945,7 @@ public abstract class Obstacle {
 		massdata = new MassData();
 		
 		// Set the default drawing scale
-		drawScale = new Vector2(1,1);
+//		drawScale = new Vector2(1,1);
 	}
 
 	/// Abstract Methods
@@ -977,17 +977,17 @@ public abstract class Obstacle {
 	 * primary purpose is to adjust changes to the fixture, which have to take place 
 	 * after collision.
 	 *
-	 * @param dt Timing values from parent loop
+	 * @param delta Timing values from parent loop
 	 */
 	public void update(float delta) { 
 	}
 
-	/**
-	 * Draws the texture physics object.
-	 *
-	 * @param canvas Drawing context
-	 */
-	public abstract void draw(GameCanvas canvas);
+//	/**
+//	 * Draws the texture physics object.
+//	 *
+//	 * @param canvas Drawing context
+//	 */
+//	public abstract void draw(GameCanvas canvas);
 
 	/**
 	 * Draws the outline of the physics body.
