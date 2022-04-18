@@ -999,23 +999,4 @@ public class LevelModel {
         cameraTransform = a.preTranslate(translation);
     }
 
-//    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
-//     * boundary of the world with walls, the player position, and the pixel per unit scale.
-//     * @param pixelsPerUnit scalar pixel per unit
-//     * @return an affine2 representing the affine transformation that texture will go through */
-//    Affine2 calculateMovingCamera(float pixelsPerUnit, GameCanvas canvas) {
-//        Affine2 a = new Affine2().setToScaling(pixelsPerUnit, pixelsPerUnit);
-//
-//        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-//        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-//                .sub(getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
-//
-//        // "Capped Camera": bound x and y within walls
-//        Rectangle wallBounds = wallBounds();
-//        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
-//        translation.x = Math.max(translation.x, canvas.getWidth() - wallBounds.width * pixelsPerUnit);
-//        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
-//        translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
-//        return a.preTranslate(translation);
-//    }
 }
