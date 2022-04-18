@@ -121,7 +121,7 @@ public class LevelModel {
     /** Reference to the current field */
     private CurrentField currentField;
     /** The light source of this level */
-    private LightSource light;
+    private PointSource light;
     /** The rayhandler for storing lights, and drawing them (SIGH) */
     protected RayHandler rayhandler;
     /** The camera defining the RayHandler view; scale is in physics coordinates */
@@ -585,33 +585,6 @@ public class LevelModel {
         goal = this_goal;
     }
 
-    /** Add Raft Objects to the world, using the Json value for raft
-     * @param row the row gird position
-     * @param col the column grid position */
-    private void addRaft(int row, int col) {
-        computePosition(col, row);
-        Raft this_raft = new Raft(compute_temp);
-        this_raft.setTexture(raftTexture);
-        addObject(this_raft);
-        raft = this_raft;
-        prepareLights(this_raft);
-    }
-
-    /** Prepare the box2d light settings once raft is ready */
-    private void prepareLights(Raft r){
-        initLighting(lightSettings.get("init")); // Box2d lights initialization
-        light = createPointLights(lightSettings.get("point")); // Box2d lights information
-        attachLights(r);
-    }
-
-    /** Render the shadow effects. This function should be called after all objects are drawn,
-     * but before any health-bar, map, or de-bug information is drawn.
-     * Precondition and Post-condition: canvas is closed */
-    public void renderLights(){ if (rayhandler != null) { rayhandler.render(); } }
-
-    /** Update the light effect of the world */
-    public void updateLights(){ if (rayhandler != null) { rayhandler.update(); } }
-
     /** Add wood Objects to the world, using the Json value for goal
      * @param row the row gird position
      * @param col the column grid position
@@ -652,6 +625,57 @@ public class LevelModel {
     private void computePosition(int x_col, int y_row){
         compute_temp.x = ((float) x_col + 0.5f) * GRID_SIZE.x;
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE.y;
+    }
+
+    /** Add Raft Objects to the world, using the Json value for raft
+     * @param row the row gird position
+     * @param col the column grid position */
+    private void addRaft(int row, int col) {
+        computePosition(col, row);
+        Raft this_raft = new Raft(compute_temp);
+        this_raft.setTexture(raftTexture);
+        addObject(this_raft);
+        raft = this_raft;
+        prepareLights(this_raft);
+    }
+
+    /** Prepare the box2d light settings once raft is ready */
+    private void prepareLights(Raft r){
+        initLighting(lightSettings.get("init")); // Box2d lights initialization
+        light = createPointLights(lightSettings.get("point")); // Box2d lights information
+        attachLights(r);
+    }
+
+    /** Update the light effect of the world */
+    public void updateLights(){ if (rayhandler != null) { rayhandler.update(); } }
+
+    /** Render the shadow effects. This function should be called after all objects are drawn,
+     * but before any health-bar, map, or de-bug information is drawn.
+     * Precondition and Post-condition: canvas is closed */
+    public void renderLights(){ if (rayhandler != null) {
+        Vector2 lightTrans = lightTranslation();
+        light.attachToBody(getPlayer().getBody(), lightTrans.x, lightTrans.y, light.getDirection());
+        rayhandler.render(); // System.out.println("x: " + light.getPosition().x + "-- y: " +light.getPosition().y);
+    } }
+
+    /** This calculates the box2d light position translation according to the screen (canvas) size,
+     *  the player position, and the pixel per unit scale.
+     * @return a Vector2 representing the translation that texture will go through */
+    Vector2 lightTranslation() {
+        float unitPerPixel = 0.09f ;
+
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 translation = new Vector2((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/2);
+        translation.scl(unitPerPixel);
+        translation.sub(getPlayer().getPosition().add(0, 0.5f));
+
+         // "Capped Camera": bound x and y within walls
+//        Rectangle wallBounds = wallBounds();
+//        translation.x = Math.min(translation.x, 0);
+//        translation.x = Math.max(translation.x, Gdx.graphics.getWidth() * unitPerPixel);
+//        translation.y = Math.min(translation.y, 0);
+//        translation.y = Math.max(translation.y, Gdx.graphics.getHeight() * unitPerPixel);
+        return translation;
     }
 
     /*=*=*=*=*=*=*=*=*=* Texture assets and box2d lighting *=*=*=*=*=*=*=*=*=*/
@@ -714,21 +738,18 @@ public class LevelModel {
      * @param  lightJson	the JSON tree defining the light
      */
     private void initLighting(JsonValue lightJson) {
-//        int temp = 3;
-//        raycamera = new OrthographicCamera(bounds.width * temp, bounds.height * temp);
-//        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
-//        raycamera.update();
-
-        Matrix4 rayMatrix = new Matrix4();
-
-        rayMatrix.setTranslation( calculateMovingCamera().x, calculateMovingCamera().y, 0);
-        rayMatrix.setToScaling(100f/3, 100f/3, 100f/3);
-
+        raycamera = new OrthographicCamera(bounds.width, bounds.height);
+        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
+        raycamera.update();
 
         RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
         RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
         rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height); // Gdx.graphics.getWidth(), Gdx.graphics.getWidth()
-        rayhandler.setCombinedMatrix(rayMatrix, bounds.width/2.0f, bounds.height/2.0f, bounds.width, bounds.height);
+        rayhandler.setCombinedMatrix(raycamera);
+//        Matrix4 rayMatrix = new Matrix4();
+//        Vector2 movingCamera = calculateMovingCamera();
+//        rayMatrix.setTranslation( movingCamera.x, movingCamera.y, 0);
+//        rayhandler.setCombinedMatrix(rayMatrix, bounds.width/2.0f, bounds.height/2.0f, bounds.width, bounds.height);
 
         float[] color = lightJson.get("color").asFloatArray();
         rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
@@ -817,24 +838,4 @@ public class LevelModel {
         translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * pixelsPerUnit);
         return a.preTranslate(translation);
     }
-
-    /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
-     * boundary of the world with walls, the player position, and the pixel per unit scale.
-     * @return an affine2 representing the affine transformation that texture will go through */
-    Vector2 calculateMovingCamera() {
-        float pixelsPerUnit = 100f / 3;
-
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 translation = new Vector2((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/2)
-                .sub(getPlayer().getPosition().add(0, 0.5f).scl(pixelsPerUnit));
-
-        // "Capped Camera": bound x and y within walls
-        Rectangle wallBounds = wallBounds();
-        translation.x = Math.min(translation.x, - wallBounds.x * pixelsPerUnit);
-        translation.x = Math.max(translation.x, Gdx.graphics.getWidth() - wallBounds.width * pixelsPerUnit);
-        translation.y = Math.min(translation.y, - wallBounds.y * pixelsPerUnit);
-        translation.y = Math.max(translation.y, Gdx.graphics.getHeight() - wallBounds.height * pixelsPerUnit);
-        return translation;
-    }
-
 }
