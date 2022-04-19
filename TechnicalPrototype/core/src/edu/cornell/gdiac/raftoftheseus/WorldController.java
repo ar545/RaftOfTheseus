@@ -22,6 +22,9 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Projectile;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -43,7 +46,8 @@ public class WorldController implements Screen, ContactListener {
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
         Raft.setConstants(objParams.get("raft"));
-        Spear.setConstants(objParams.get("bullet"));
+        Projectile.setConstants(objParams);
+        Note.setConstants(objParams.get("note"));
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
@@ -76,6 +80,7 @@ public class WorldController implements Screen, ContactListener {
     /** Reference to the game assets directory */
     private AssetDirectory directory;
 
+    // UI Elements
     private Stage stage;
     private Table table;
     private Skin skin;
@@ -126,7 +131,7 @@ public class WorldController implements Screen, ContactListener {
     /** array of controls for each enemy**/
     private SharkController[] controls;
     /** Find whether a hydra can see the player. */
-    private HydraRayCast hydraSight;
+    private EnemyRayCast hydraSight;
     /** Whether the settings button was pressed */
     private boolean settingsPressed;
     /** Whether the exit button was pressed */
@@ -158,7 +163,7 @@ public class WorldController implements Screen, ContactListener {
         this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         this.table = new Table();
         this.plexer = new InputMultiplexer();
-        hydraSight = new HydraRayCast();
+        hydraSight = new EnemyRayCast();
         startTime = System.currentTimeMillis();
         pauseBuilt = false;
         transitionBuilt = false;
@@ -661,7 +666,7 @@ public class WorldController implements Screen, ContactListener {
             Vector2 firePixel = ic.getFireDirection();
             levelModel.getCameraTransform().inv().applyTo(firePixel);
             levelModel.createSpear(firePixel);
-            player.addHealth(Spear.SPEAR_DAMAGE);
+            player.addHealth(Spear.DAMAGE);
             SfxController.getInstance().playSFX("spear_throw");
         }
 

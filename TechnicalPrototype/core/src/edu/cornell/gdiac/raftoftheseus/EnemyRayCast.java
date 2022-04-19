@@ -6,7 +6,7 @@ import com.badlogic.gdx.physics.box2d.RayCastCallback;
 
 import static edu.cornell.gdiac.raftoftheseus.model.GameObject.CATEGORY_PLAYER;
 
-public class HydraRayCast implements RayCastCallback {
+public class EnemyRayCast implements RayCastCallback {
 
     private boolean canSee = true;
 

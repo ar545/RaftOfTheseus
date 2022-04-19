@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
@@ -727,10 +728,9 @@ public class LevelModel {
      */
     public void createSpear(Vector2 firelocation) {
         Vector2 facing = firelocation.sub(raft.getPosition()).nor();
-        Spear bullet = new Spear(raft.getPosition());
+        Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
+        Spear bullet = new Spear(raft.getPosition(), facing, raft_speed);
         bullet.setTexture(spearTexture);
-        bullet.physicsObject.setLinearVelocity(facing.scl(Spear.SPEAR_SPEED).mulAdd(raft.physicsObject.getLinearVelocity(), 0.5f));
-        bullet.setAngle(facing.angleDeg()-90f);
         addQueuedObject(bullet);
     }
 
