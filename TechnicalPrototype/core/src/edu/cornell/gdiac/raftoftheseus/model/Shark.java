@@ -1,11 +1,11 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
@@ -61,7 +61,7 @@ public class Shark extends GameObject {
         return ObjectType.SHARK;
     }
 
-    static void setConstants(JsonValue objParams){
+    public static void setConstants(JsonValue objParams){
         ENEMY_WANDER_SPEED = objParams.getFloat("wander speed");
         ENEMY_CHASE_SPEED = objParams.getFloat("chase speed");
         ENEMY_DAMAGE = objParams.getFloat("damage");
@@ -89,7 +89,7 @@ public class Shark extends GameObject {
     /**
      * How much health will enemy take from player upon collision
      */
-    protected static float ENEMY_DAMAGE;
+    public static float ENEMY_DAMAGE;
 
     /** how far will the enemy go from a nearby treasure in tiles **/
     private static int PROTECT_RANGE = 5;

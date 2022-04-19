@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;

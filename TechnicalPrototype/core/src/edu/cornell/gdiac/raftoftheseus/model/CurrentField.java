@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;

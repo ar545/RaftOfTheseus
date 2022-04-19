@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.steer.Steerable;
 import com.badlogic.gdx.ai.steer.SteeringAcceleration;
@@ -148,10 +148,10 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     }
 
     /** Add one star to the player star count */
-    protected void addStar() { star++; }
+    public void addStar() { star++; }
 
     /** Get the star of the level */
-    protected int getStar() { return star; }
+    public int getStar() { return star; }
 
     /** Reduce player health based on distance traveled and movement cost. */
     public void applyMoveCost(float dt) {

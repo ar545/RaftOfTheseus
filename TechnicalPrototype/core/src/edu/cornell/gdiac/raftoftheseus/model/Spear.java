@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -79,23 +79,23 @@ public class Spear extends GameObject {
     private long getTimeElapsed(){
         return TimeUtils.millis() - timer;
     }
-    
+
     private float getDistTraveled(){
-        return this.getPosition().sub(originalPos).len();
+        return this.getPosition().cpy().sub(originalPos).len();
     }
 
     /**
      * @return whether the spear is still flying at max speed
      */
     private boolean inFlyDistance(){
-        return getTimeElapsed() < SPEAR_RANGE_FLY;
+        return getDistTraveled() < SPEAR_RANGE_FLY;
     }
 
     /**
      * @return wheter the spear should be destroyed
      */
     public boolean outMaxDistance(){
-        return getTimeElapsed() > SPEAR_RANGE_FALL;
+        return getDistTraveled() > SPEAR_RANGE_FALL;
     }
 
 }

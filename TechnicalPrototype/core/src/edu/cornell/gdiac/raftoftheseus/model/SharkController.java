@@ -1,9 +1,9 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 
 import java.util.Random;
 import com.badlogic.gdx.utils.JsonValue;
-import static edu.cornell.gdiac.raftoftheseus.Shark.enemyState.*;
+import static edu.cornell.gdiac.raftoftheseus.model.Shark.enemyState.*;
 
 
 

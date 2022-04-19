@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
@@ -12,6 +12,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
@@ -102,7 +103,7 @@ public class LevelModel {
     /** The read-in level data */
     private JsonValue level_data;
     /** The Box2D world */
-    protected World world;
+    public World world;
     /** The boundary of the world */
     private Rectangle bounds;
     /** The world scale */
@@ -175,7 +176,7 @@ public class LevelModel {
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
-    protected void setDirectory(AssetDirectory directory) { this.directory = directory; }
+    public void setDirectory(AssetDirectory directory) { this.directory = directory; }
     /** Get boundary wall vertices */
     public float[] getWallVertices() { return polygonVertices; }
     /** Get boundary wall drawscale */
@@ -247,7 +248,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world
      * @param obj The object to add */
-    protected void addObject(GameObject obj) {
+    public void addObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -672,7 +673,7 @@ public class LevelModel {
     }
 
     /** Add wood Objects to random location in the world */
-    protected void addRandomWood() {
+    public void addRandomWood() {
         Wood this_wood = new Wood(boundsVector2());
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
