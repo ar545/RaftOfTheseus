@@ -36,7 +36,7 @@ public class Siren extends GameObject {
     private Vector2 moveVector = new Vector2();
     private boolean fromLocation1 = true;
     /** FSM to control Siren AI */
-    private StateMachine<Siren, SirenController> stateMachine;
+    private StateMachine<Siren, SirenState> stateMachine;
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
@@ -70,7 +70,7 @@ public class Siren extends GameObject {
         direction1.set(position2.sub(position1).scl(FLY_SPEED));
         direction2.set(position1.sub(position2).scl(FLY_SPEED));
         this.targetRaft = targetRaft;
-        stateMachine = new DefaultStateMachine<Siren, SirenController>(this, SirenController.IDLE);
+        stateMachine = new DefaultStateMachine<Siren, SirenState>(this, SirenState.IDLE);
     }
 
     /**
@@ -82,7 +82,7 @@ public class Siren extends GameObject {
         stateMachine.update();
     }
     /** @return this Siren's FSM */
-    public StateMachine<Siren, SirenController> getStateMachine(){ return this.stateMachine; }
+    public StateMachine<Siren, SirenState> getStateMachine(){ return this.stateMachine; }
     /** @return this Siren's ObjectType for collision. */
     public GameObject.ObjectType getType() {
         return GameObject.ObjectType.SIREN;
@@ -154,7 +154,7 @@ public class Siren extends GameObject {
      *  Resets
      */
     public boolean willAttack(){
-        hasAttacked = stateMachine.isInState(SirenController.ATTACKING) && inAttackRange();
+        hasAttacked = stateMachine.isInState(SirenState.ATTACKING) && inAttackRange();
         return hasAttacked;
     }
     /** @return whether the Siren has just attacked. */

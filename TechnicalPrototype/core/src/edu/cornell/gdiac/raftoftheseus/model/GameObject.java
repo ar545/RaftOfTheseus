@@ -29,7 +29,7 @@ public abstract class GameObject {
     }
 
     /** Collision filtering categories */
-    protected final static short CATEGORY_PLAYER = 1<<1;
+    public final static short CATEGORY_PLAYER = 1<<1;
     protected final static short CATEGORY_ENEMY = 1<<2;
     protected final static short CATEGORY_PLAYER_BULLET = 1<<3;
     protected final static short CATEGORY_ENEMY_BULLET = 1<<4;
