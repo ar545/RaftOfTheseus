@@ -680,8 +680,6 @@ public class LevelModel {
         Vector2 lightTrans = lightTranslation();
         light.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, light.getDirection());
         rayhandler.render();
-//      System.out.println("x: " + (light.getPosition().x) + "-- y: " + (  light.getPosition().y));
-//      System.out.println("x: " + (getPlayer().getPosition().x +  lightTrans.x) + "-- y: " + (getPlayer().getPosition().y +  lightTrans.y));
     } }
 
     /** This calculates the box2d light position translation according to the screen (canvas) size,
@@ -777,12 +775,8 @@ public class LevelModel {
 
         RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
         RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
-        rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height); // Gdx.graphics.getWidth(), Gdx.graphics.getWidth()
+        rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height);
         rayhandler.setCombinedMatrix(raycamera);
-//        Matrix4 rayMatrix = new Matrix4();
-//        Vector2 movingCamera = calculateMovingCamera();
-//        rayMatrix.setTranslation( movingCamera.x, movingCamera.y, 0);
-//        rayhandler.setCombinedMatrix(rayMatrix, bounds.width/2.0f, bounds.height/2.0f, bounds.width, bounds.height);
 
         float[] color = lightJson.get("color").asFloatArray();
         rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
