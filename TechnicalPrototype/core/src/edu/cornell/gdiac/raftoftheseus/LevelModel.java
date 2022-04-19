@@ -30,7 +30,7 @@ public class LevelModel {
     /** Pixels per Box2D unit */
     private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** Default boundary width and height of a single grid in Box2d units */
-    private static final float DEFAULT_BOUNDARY = 3.0f;
+    private static final float DEFAULT_BOUNDARY = 1.0f;
     /** Default num of rows in the map (y, height) */
     private static final int DEFAULT_GRID_ROW = 8;
     /** Default num of columns in the map (x, width) */
@@ -240,7 +240,7 @@ public class LevelModel {
      * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
     public Rectangle wallBounds(){
         return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - DEFAULT_BOUNDARY,
-                bounds.width + DEFAULT_BOUNDARY, bounds.height + DEFAULT_BOUNDARY);
+                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2 * DEFAULT_BOUNDARY);
     }
 
     /** Adds a physics object in to the insertion queue.
@@ -679,26 +679,32 @@ public class LevelModel {
     public void renderLights(){ if (rayhandler != null) {
         Vector2 lightTrans = lightTranslation();
         light.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, light.getDirection());
-        rayhandler.render(); // System.out.println("x: " + light.getPosition().x + "-- y: " +light.getPosition().y);
+        rayhandler.render();
+//      System.out.println("x: " + (light.getPosition().x) + "-- y: " + (  light.getPosition().y));
+//      System.out.println("x: " + (getPlayer().getPosition().x +  lightTrans.x) + "-- y: " + (getPlayer().getPosition().y +  lightTrans.y));
     } }
 
     /** This calculates the box2d light position translation according to the screen (canvas) size,
      *  the player position, and the pixel per unit scale.
      * @return a Vector2 representing the translation that texture will go through */
     Vector2 lightTranslation() {
-        float unitPerPixel = 0.09f ;
-
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/2);
-        translation.scl(unitPerPixel);
-        translation.sub(getPlayer().getPosition().add(0, 0.5f));
+        translation.scl(0.09f);
+        translation.sub(getPlayer().getPosition());
 
          // "Capped Camera": bound x and y within walls
-//        Rectangle wallBounds = wallBounds();
-//        translation.x = Math.min(translation.x, 0);
-//        translation.x = Math.max(translation.x, Gdx.graphics.getWidth() * unitPerPixel);
-//        translation.y = Math.min(translation.y, 0);
-//        translation.y = Math.max(translation.y, Gdx.graphics.getHeight() * unitPerPixel);
+        Rectangle wallBounds = wallBounds();
+        translation.x = Math.min(translation.x, - wallBounds.x + 0.03f * canvas.getWidth());
+        translation.x = Math.max(translation.x, canvas.getWidth() * 0.06f - wallBounds.width);
+        translation.y = Math.min(translation.y, - wallBounds.y + 0.03f * canvas.getHeight());
+        translation.y = Math.max(translation.y, canvas.getHeight() * 0.06f - wallBounds.height);
+
+        // "Scaled Camera": adjust x and y scale
+        float x_diff = 0.045f * canvas.getWidth() - (getPlayer().getPosition().x + translation.x);
+        float y_diff = 0.045f * canvas.getHeight() - (getPlayer().getPosition().y + translation.y);
+        if( x_diff != 0 ){ translation.x -= x_diff * 2f; }
+        if( y_diff != 0 ){ translation.y -= y_diff * 2f; }
         return translation;
     }
 
