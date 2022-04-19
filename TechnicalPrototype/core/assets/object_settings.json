@@ -36,9 +36,9 @@
   "bullet": {
     "speed scale" : 24.0,
     "health cost" : -5.0,
-    "bullet size" : 0.25,
-    "bullet range fly" :  800.0,
-    "bullet range fall" : 1000.0
+    "bullet size" : 2,
+    "bullet range fly" :  800,
+    "bullet range fall" : 850
   },
   "rock": {
     "width": 3,
@@ -55,5 +55,5 @@
     "damping" : 5,
     "thrust" : 0.3,
     "max speed" : 10
-  },
+  }
 }

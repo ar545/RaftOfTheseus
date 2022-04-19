@@ -69,8 +69,6 @@ public abstract class GameObject {
      */
     public abstract ObjectType getType();
 
-    // NON-ABSTRACT METHODS
-
     // PHYSICS INTERFACE
 
     /** An Obstacle which encapsulates Box2D physics behavior and attributes. This is the GameObject's "hit box". */

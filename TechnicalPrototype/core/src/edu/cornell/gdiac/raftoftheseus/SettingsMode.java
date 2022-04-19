@@ -206,7 +206,7 @@ public class SettingsMode implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 musicVolume = musicSlider.getValue();
-                SfxController.getInstance().setMasterMusicVolume(musicVolume / 1000);
+                SfxController.getInstance().setMasterMusicVolume(musicVolume / 100);
                 musicValueLabel.setText((int) Math.floor(musicVolume));
             }
         });

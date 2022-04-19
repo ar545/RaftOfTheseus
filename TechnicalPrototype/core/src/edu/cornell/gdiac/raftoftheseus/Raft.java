@@ -48,9 +48,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     public static float INITIAL_PLAYER_HEALTH;
     /** The star of the level. This must be >=0. */
     private int star;
-    /** Initial player health */
-    private static int INITIAL_PLAYER_STAR = 0; //TODO: potential bugs on stars upon level restart
-
     /** Whether the raft is actively firing */
     private boolean fire;
     /** The amount to slow the character down, while they aren't moving */
@@ -64,6 +61,14 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** Raft sail sound id */
     private long sailSound;
 
+    // ANIMATION
+    /** How much to enlarge the raft. */
+    private static float TEXTURE_SCALE = 1.5f;
+    /** The animation speed for the raft. */
+    private static float ANIMATION_SPEED = 15f;
+    /** The number of frames for this animation + 1. */
+    private static int FRAMES = 19;
+
     // METHODS
     /** Constructor for Raft object
      * @param position: position of raft
@@ -74,9 +79,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER;
         physicsObject.getFilterData().maskBits = MASK_PLAYER;
-
         this.health = INITIAL_PLAYER_HEALTH;
-        this.star = INITIAL_PLAYER_STAR;
+        this.star = 0;
     }
 
     /**
@@ -93,7 +97,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** Returns the player movement input. */
     protected Vector2 getMovementInput() { return movementInput; }
 
-    public boolean isMoving() { return physicsObject.getLinearVelocity().len() >= 0.01; }
+    public boolean isMoving() { return !physicsObject.getLinearVelocity().isZero() || !movementInput.isZero(); }
 
     /** Sets the player movement input. */
     public void setMovementInput(Vector2 value) { movementInput.set(value); }
@@ -154,9 +158,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         if (!movementInput.isZero()) {
             float L = physicsObject.getLinearVelocity().len();
             if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
-                float cost = MOVE_COST * L * dt; // base movement cost (no current)
-                // TODO: This code stopped working when currents were changed to use a vector field. It was also overly complicated. Feel free to replace it with something better.
-                health -= cost;
+                // base movement cost (no current)
+                health -= MOVE_COST * L * dt;
             }
         }
     }
@@ -171,13 +174,20 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
     @Override
     protected void setTextureTransform() {
-        float w = getWidth() / texture.getRegionWidth() * 1.50f;
+        float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
         textureOffset = new Vector2(0,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
     }
 
-    public void setAnimationFrame(int animationFrame) {
-        ((FilmStrip)texture).setFrame(animationFrame);
+    /**
+     * Method to set animation based on the time elapsed in the game.
+     * @param time the current time in the game.
+     */
+    public void setAnimationFrame(float time) {
+        // Get frame number
+        int frame = (int)(time * ANIMATION_SPEED);
+        // Find frame
+        ((FilmStrip)texture).setFrame(frame % FRAMES);
     }
 
     // MUSIC

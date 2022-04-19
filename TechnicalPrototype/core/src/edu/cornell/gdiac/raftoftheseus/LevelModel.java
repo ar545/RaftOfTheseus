@@ -379,9 +379,8 @@ public class LevelModel {
         }
         // Add wall to the world
         computeWall(bounds.width, bounds.height);
-
+        // Set current field
         currentField = new CurrentField(bounds.width, bounds.height, 3);
-
         // Populate game objects
         populateLevel();
 

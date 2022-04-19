@@ -204,8 +204,7 @@ public class WorldController implements Screen, ContactListener {
 
         // update animations
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
-        int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
-        levelModel.getPlayer().setAnimationFrame(frame % 19); // TODO don't hardcode number of frames in animation
+        levelModel.getPlayer().setAnimationFrame(time); // TODO don't hardcode number of frames in animation
 
         // Draw the level
         levelModel.updateCameraTransform();
