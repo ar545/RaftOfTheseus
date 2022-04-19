@@ -546,9 +546,15 @@ public class WorldController implements Screen, ContactListener {
         levelModel.gatherAssets(directory);
         this.directory = directory;
 
-        Texture waterTexture = directory.getEntry("water_texture", Texture.class);
-        waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        canvas.setWaterTexture(waterTexture);
+        Texture waterDiffuse = directory.getEntry("water_diffuse", Texture.class);
+        waterDiffuse.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        Texture waterNormal = directory.getEntry("water_normal", Texture.class);
+        waterNormal.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        Texture waterUVOffset = directory.getEntry("water_uv_offset", Texture.class);
+        waterUVOffset.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        Texture waterLight = directory.getEntry("water_light", Texture.class);
+//        waterLight.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset, waterLight);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/

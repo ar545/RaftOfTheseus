@@ -144,10 +144,10 @@ public class LevelModel {
     private TextureRegion spearTexture;
     /** Texture for map background */
     protected Texture mapBackground;
-    /** Texture for game background */
-    protected Texture gameBackground;
-    /** Texture for game background when using shader */
-    protected Texture blueTexture;
+//    /** Texture for game background */
+//    protected Texture gameBackground;
+    /** Texture for water */
+    protected Texture waterTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
     /** The texture for the colored health bar */
@@ -666,8 +666,9 @@ public class LevelModel {
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = new TextureRegion(directory.getEntry("bullet", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
-        gameBackground = directory.getEntry("background", Texture.class);
-        blueTexture = directory.getEntry("blue_texture", Texture.class);
+//        gameBackground = directory.getEntry("background", Texture.class);
+//        blueTexture = directory.getEntry("blue_texture", Texture.class);
+        waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
     }
@@ -803,10 +804,7 @@ public class LevelModel {
         float pixel = 1;
         float x_scale = boundsVector2().x * pixel;
         float y_scale = boundsVector2().y * pixel;
-        if (!useShader)
-            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
-        else
-            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
+        canvas.draw(waterTexture, Color.WHITE, 0, 0,  x_scale, y_scale);
         if (useShader)
             canvas.stopUsingShader();
     }

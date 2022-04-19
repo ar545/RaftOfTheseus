@@ -140,8 +140,8 @@ public class GameCanvas {
 		vertex = new Vector2();
 
 		try {
-			String vertexShader = Gdx.files.internal("shaders/wavy_vertex.glsl").readString();
-			String fragmentShader = Gdx.files.internal("shaders/wavy_fragment.glsl").readString();
+			String vertexShader = Gdx.files.internal("shaders/godotwater_vertex.glsl").readString();
+			String fragmentShader = Gdx.files.internal("shaders/godotwater_fragment.glsl").readString();
 			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
 		} catch (GdxRuntimeException e) {
 			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
@@ -425,9 +425,12 @@ public class GameCanvas {
 		objToWorldMat.setAsAffine(transform);
 		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
 		// pass textures (as indices)
-		shaderProgram.setUniformi("u_flowMap", 1);
+//		shaderProgram.setUniformi("u_flowMap", 1);
 		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
-		shaderProgram.setUniformi("u_waveTexture", 2);
+//		shaderProgram.setUniformi("TEXTURE", 2); // waterDiffuse
+//		shaderProgram.setUniformi("NORMAL_TEXTURE", 3); // u_waterNormal
+		shaderProgram.setUniformi("texture_offset_uv", 4); // waterUVOffset
+//		shaderProgram.setUniformi("u_waterLight", 5);
 		// pass time
 		shaderProgram.setUniformf("u_time", time);
 	}
@@ -439,9 +442,15 @@ public class GameCanvas {
 		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
 	}
 
-	public void setWaterTexture(Texture waterTexture) {
+	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset, Texture waterLight) {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
-		waterTexture.bind();
+		waterDiffuse.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE3);
+		waterNormal.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
+		waterUVOffset.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE5);
+		waterLight.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 	}
 
