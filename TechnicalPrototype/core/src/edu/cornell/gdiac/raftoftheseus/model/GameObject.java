@@ -18,7 +18,8 @@ public abstract class GameObject {
     public enum ObjectType {
         RAFT, // aka Player
         WOOD,
-        OBSTACLE, // aka Rock or Wall
+        ROCK,
+        OBSTACLE, // aka Wall or Terrain
         CURRENT,
         SHARK,
         GOAL,

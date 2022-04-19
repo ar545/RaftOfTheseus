@@ -546,7 +546,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addRock(int row, int col) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp);
+        Rock this_rock = new Rock(compute_temp, false);
         this_rock.setTexture(rockTexture);
 //        System.out.println(map_size);
         obstacles[col][row] = this_rock;

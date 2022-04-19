@@ -15,14 +15,13 @@
  * Based on original Optimization Lab by Don Holden, 2007
  * LibGDX version, 2/2/2015
  */
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.singleton;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ArrayMap;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.util.Controllers;
 
 /**
  * Singleton class for reading player input.

@@ -42,7 +42,8 @@
   },
   "rock": {
     "width": 3,
-    "height": 3
+    "height": 3,
+    "damage": 10
   },
   "terrain": {
   },

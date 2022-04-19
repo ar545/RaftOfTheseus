@@ -3,7 +3,6 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 
 public class Spear extends GameObject {
@@ -12,7 +11,7 @@ public class Spear extends GameObject {
     /** Health cost for creating a bullet. */
     public static float SPEAR_DAMAGE;
     /** Size of a bullet. */
-    private static float SPEAR_TEXTURE_SCALE = 2f;
+    private static float SPEAR_TEXTURE_SCALE;
     private static float SPEAR_LENGTH = 1f;
     private static float SPEAR_WIDTH = 0.1f;
     /** Range of a bullet. */
@@ -21,7 +20,6 @@ public class Spear extends GameObject {
     /** Original bullet position. */
     private Vector2 originalPos;
     /** Timer to destroy bullet. */
-    private long timer;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
     public ObjectType getType() { return ObjectType.SPEAR; }
@@ -38,7 +36,7 @@ public class Spear extends GameObject {
      */
     public Spear(Vector2 position) {
         physicsObject = new BoxObstacle(SPEAR_WIDTH, SPEAR_LENGTH);
-        setPosition(position);
+
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
 
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
@@ -49,7 +47,7 @@ public class Spear extends GameObject {
         physicsObject.setLinearDamping(0);
 
         originalPos = new Vector2(position);
-        timer = TimeUtils.millis();
+        setPosition(position);
     }
 
     /**
@@ -76,10 +74,6 @@ public class Spear extends GameObject {
     /**
      * @return how far this spear has traveled.
      */
-    private long getTimeElapsed(){
-        return TimeUtils.millis() - timer;
-    }
-
     private float getDistTraveled(){
         return this.getPosition().cpy().sub(originalPos).len();
     }

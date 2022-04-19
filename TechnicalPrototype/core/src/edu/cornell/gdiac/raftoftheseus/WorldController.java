@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
+import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
@@ -860,7 +861,7 @@ public class WorldController implements Screen, ContactListener {
             } else if (bd2.getType() == GameObject.ObjectType.SPEAR) {
                 ResolveSpearCollision((Spear) bd2, bd1);
             }
-            // Check for player collision with wood (health+)
+            // Check for player collision
             else if(bd1.getType() == GameObject.ObjectType.RAFT){
                 ResolveRaftCollision((Raft) bd1, bd2);
             } else if(bd2.getType() == GameObject.ObjectType.RAFT){
@@ -871,10 +872,10 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    /** Resolve collision between two objects of specific types
-     * @param b bullet
-     * @param g enemy */
-    private void ResolveSpearCollision(Spear b, GameObject g) {
+    /** Resolve collision between the spear and any other object.
+     * @param s spear
+     * @param g terrain or enemy */
+    private void ResolveSpearCollision(Spear s, GameObject g) {
         if(g.getType() == GameObject.ObjectType.SHARK) {
             // stun shark
             SfxController.getInstance().playSFX("spear_enemy_hit");
@@ -889,9 +890,14 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_break");
         }
         // destroy bullet
-        b.setDestroyed(true);
+        s.setDestroyed(true);
     }
 
+    /**
+     * Resolve collisions between the raft and any other object.
+     * @param r the player
+     * @param g wood, enemies, treasure, or projectiles
+     */
     private void ResolveRaftCollision(Raft r, GameObject g){
         if(g.getType() == GameObject.ObjectType.WOOD){
             // update player health
@@ -913,6 +919,8 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
+        } else if(g.getType() == GameObject.ObjectType.ROCK){
+            if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
         }
     }
 
