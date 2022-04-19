@@ -79,6 +79,10 @@ public class Spear extends GameObject {
     private long getTimeElapsed(){
         return TimeUtils.millis() - timer;
     }
+    
+    private float getDistTraveled(){
+        return this.getPosition().sub(originalPos).len();
+    }
 
     /**
      * @return whether the spear is still flying at max speed
