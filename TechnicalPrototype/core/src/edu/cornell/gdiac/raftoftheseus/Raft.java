@@ -6,6 +6,7 @@ import com.badlogic.gdx.ai.steer.SteeringBehavior;
 import com.badlogic.gdx.ai.utils.Location;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -198,6 +199,13 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         long temp = sailSound;
         sailSound = -1;
         return temp;
+    }
+
+    @Override
+    public void deactivatePhysics(World world){
+        // TODO: save level star
+        star = INITIAL_PLAYER_STAR; // Clear level star
+        super.deactivatePhysics(world);
     }
 
     /* STEERING */

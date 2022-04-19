@@ -83,12 +83,14 @@ public class LevelModel {
     private static final int TILE_WEST = 8;
     /** Offset of west current in tile set index */
     private static final int TILE_WEST_NORTH = 9;
+    /** layer of land */
+    private static final int LAYER_LAND = 0;
     /** layer of environment */
-    private static final int LAYER_ENV = 0;
+    private static final int LAYER_ENV = 1;
     /** layer of collectables */
-    private static final int LAYER_COL = 1;
+    private static final int LAYER_COL = 2;
     /** layer of enemies */
-    private static final int LAYER_ENE = 2;
+    private static final int LAYER_ENE = 3;
     private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
@@ -365,7 +367,11 @@ public class LevelModel {
         if (world != null)
             world.dispose();
         world = new World(NO_GRAVITY,false);
-
+        light.remove();
+        if (rayhandler != null) {
+            rayhandler.dispose();
+            rayhandler = null;
+        }
     }
 
     /** Load the level representing by the parameter level_int.
@@ -449,6 +455,14 @@ public class LevelModel {
         JsonValue environment = layers.get(LAYER_ENV);
         JsonValue collectables = layers.get(LAYER_COL);
         JsonValue enemies = layers.get(LAYER_ENE);
+        JsonValue land = layers.get(LAYER_LAND);
+        for(JsonValue layer : layers){
+            if(layer.getString("name").equals("Environment")){ environment = layer;}
+            else if(layer.getString("name").equals("Collectable")){ collectables = layer;}
+            else if(layer.getString("name").equals("Enemy")){ enemies = layer;}
+            else if(layer.getString("name").equals("Land")){ land = layer;}
+            else { System.out.println("Un-parse-able information: layer name not recognized.");}
+        }
 
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
         for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
@@ -458,6 +472,7 @@ public class LevelModel {
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 populateEnemies(row, col, enemies.get("data").getInt(index));
+                populateLand(row, col, land.get("data").getInt(index));
                 // TODO: if we populate the raft field before instantiating enemies,
                 //  we can properly instantiate instead of putting null for target raft field
                 //  see the Enemy this_enemy = new Enemy(compute_temp, null);
@@ -520,9 +535,18 @@ public class LevelModel {
         if(tile_int == TILE_DEFAULT){ return; }
         else if(tile_int == TILE_GOAL){ addGoal(row, col); return; }
         for (int j : TILE_ROCK) {
-            if (tile_int == j) { addRock(row, col); return; }
+            if (tile_int == j) { addRock(row, col, 0); return; }
         }
         addCurrent(row, col, compute_direction(tile_int % TILE_CURRENT_DIVISION), compute_magnitude(tile_int));
+    }
+
+    /** This is the level editor JSON parser that populate the environment layer
+     * @param row the row the environment element is in the world
+     * @param col the column the environment element is in the world
+     * @param tile_int whether this tile is a rock or a current or a goal */
+    private void populateLand(int row, int col, int tile_int) {
+        if(tile_int == TILE_DEFAULT){ return; }
+        addRock(row, col, tile_int);
     }
 
     /** Compute the magnitude of the current base on the level json input
@@ -553,11 +577,12 @@ public class LevelModel {
 
     /** Add Rock Objects to the world, using the Json value for goal.
      * @param row the row gird position
-     * @param col the column grid position */
-    private void addRock(int row, int col) {
+     * @param col the column grid position
+     * @param tile_int 0 if stand-alone, 1-16 if texture alas */
+    private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp);
-        this_rock.setTexture(rockTexture);
+        this_rock.setTexture(rockTexture); // TODO: new land texture
 //        System.out.println(map_size);
         obstacles[col][row] = this_rock;
         addObject(this_rock);
