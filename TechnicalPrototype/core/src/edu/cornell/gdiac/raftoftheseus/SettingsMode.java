@@ -17,6 +17,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
+import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 
 public class SettingsMode implements Screen {
@@ -206,7 +208,7 @@ public class SettingsMode implements Screen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 musicVolume = musicSlider.getValue();
-                SfxController.getInstance().setMasterMusicVolume(musicVolume / 1000);
+                SfxController.getInstance().setMasterMusicVolume(musicVolume / 100);
                 musicValueLabel.setText((int) Math.floor(musicVolume));
             }
         });

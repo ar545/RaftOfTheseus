@@ -21,6 +21,12 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.model.*;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Projectile;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
+import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
+import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 import java.util.Iterator;
@@ -38,7 +44,8 @@ public class WorldController implements Screen, ContactListener {
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
         Raft.setConstants(objParams.get("raft"));
-        Spear.setConstants(objParams.get("bullet"));
+        Projectile.setConstants(objParams.get("spear"));
+        Note.setConstants(objParams.get("note"));
         Shark.setConstants(objParams.get("shark"));
         Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
@@ -71,6 +78,7 @@ public class WorldController implements Screen, ContactListener {
     /** Reference to the game assets directory */
     private AssetDirectory directory;
 
+    // UI Elements
     private Stage stage;
     private Table table;
     private Skin skin;
@@ -121,7 +129,7 @@ public class WorldController implements Screen, ContactListener {
     /** array of controls for each enemy**/
     private SharkController[] controls;
     /** Find whether a hydra can see the player. */
-    private HydraRayCast hydraSight;
+    private EnemyRayCast hydraSight;
     /** Whether the settings button was pressed */
     private boolean settingsPressed;
     /** Whether the exit button was pressed */
@@ -153,7 +161,7 @@ public class WorldController implements Screen, ContactListener {
         this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         this.table = new Table();
         this.plexer = new InputMultiplexer();
-        hydraSight = new HydraRayCast();
+        hydraSight = new EnemyRayCast();
         startTime = System.currentTimeMillis();
         pauseBuilt = false;
         transitionBuilt = false;
@@ -202,8 +210,7 @@ public class WorldController implements Screen, ContactListener {
 
         // update animations
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
-        int frame = (int)(time*15.0f);// TODO don't hardcode animation speed
-        levelModel.getPlayer().setAnimationFrame(frame % 19); // TODO don't hardcode number of frames in animation
+        levelModel.getPlayer().setAnimationFrame(time); // TODO don't hardcode number of frames in animation
 
         // Draw the level
         levelModel.updateCameraTransform();
@@ -653,7 +660,7 @@ public class WorldController implements Screen, ContactListener {
             Vector2 firePixel = ic.getFireDirection();
             levelModel.getCameraTransform().inv().applyTo(firePixel);
             levelModel.createSpear(firePixel);
-            player.addHealth(Spear.SPEAR_DAMAGE);
+            player.addHealth(Spear.DAMAGE);
             SfxController.getInstance().playSFX("spear_throw");
         }
 
@@ -848,7 +855,7 @@ public class WorldController implements Screen, ContactListener {
             } else if (bd2.getType() == GameObject.ObjectType.SPEAR) {
                 ResolveSpearCollision((Spear) bd2, bd1);
             }
-            // Check for player collision with wood (health+)
+            // Check for player collision
             else if(bd1.getType() == GameObject.ObjectType.RAFT){
                 ResolveRaftCollision((Raft) bd1, bd2);
             } else if(bd2.getType() == GameObject.ObjectType.RAFT){
@@ -859,10 +866,10 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    /** Resolve collision between two objects of specific types
-     * @param b bullet
-     * @param g enemy */
-    private void ResolveSpearCollision(Spear b, GameObject g) {
+    /** Resolve collision between the spear and any other object.
+     * @param s spear
+     * @param g terrain or enemy */
+    private void ResolveSpearCollision(Spear s, GameObject g) {
         if(g.getType() == GameObject.ObjectType.SHARK) {
             // stun shark
             SfxController.getInstance().playSFX("spear_enemy_hit");
@@ -877,9 +884,14 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_break");
         }
         // destroy bullet
-        b.setDestroyed(true);
+        s.setDestroyed(true);
     }
 
+    /**
+     * Resolve collisions between the raft and any other object.
+     * @param r the player
+     * @param g wood, enemies, treasure, or projectiles
+     */
     private void ResolveRaftCollision(Raft r, GameObject g){
         if(g.getType() == GameObject.ObjectType.WOOD){
             // update player health
@@ -901,6 +913,8 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
+        } else if(g.getType() == GameObject.ObjectType.ROCK){
+            if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
         }
     }
 

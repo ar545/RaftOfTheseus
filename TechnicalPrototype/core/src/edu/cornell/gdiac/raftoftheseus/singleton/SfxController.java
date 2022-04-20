@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.singleton;
 
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -16,12 +16,12 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 public class SfxController {
     private boolean level_complete = false;
     /** Master volume for SFX */
-    private float sfxVolume = 1.0f;
+    private float sfxVolume = 1f;
     /** Master volume for Music */
-    private float musicVolume = 0.3f;
+    private float musicVolume = 1f;
     /** Set screen distance to calculate sound decay */
     private float decayDistance = 400f;
-    /** Speed taken to transition music in miliseconds. */
+    /** How fast the music volume is increased or decreased. */
     private float tradeRate = 0.0001f;
     /** Speed taken to transition music in miliseconds. */
     private float tradeThreshold = 0.0001f;
@@ -73,8 +73,8 @@ public class SfxController {
         this.directory = directory;
         // Set sound settings values
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
-        sfxVolume = set.getFloat("sfx_volume", 1.0f);
-        musicVolume = set.getFloat("music_volume", 1.0f);
+        sfxVolume = set.getFloat("sfx_volume");
+        musicVolume = set.getFloat("music_volume");
         tradeRate = set.getFloat("trade_rate", 0.0001f);
         tradeThreshold = set.getFloat("trade_threshold", 0.00001f);
         // Get sfx

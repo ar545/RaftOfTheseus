@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.singleton;
 
 import com.badlogic.gdx.audio.Music;
 

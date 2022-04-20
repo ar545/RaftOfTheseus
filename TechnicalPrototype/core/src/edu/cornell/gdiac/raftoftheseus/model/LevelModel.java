@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
@@ -17,6 +17,8 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.lights.PointSource;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
@@ -109,7 +111,7 @@ public class LevelModel {
     /** The read-in level data */
     private JsonValue level_data;
     /** The Box2D world */
-    protected World world;
+    public World world;
     /** The boundary of the world */
     private Rectangle bounds;
     /** The map size in grid */
@@ -188,7 +190,7 @@ public class LevelModel {
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
-    protected void setDirectory(AssetDirectory directory) { this.directory = directory; }
+    public void setDirectory(AssetDirectory directory) { this.directory = directory; }
     /** @return the bounds of this world in rectangle */
     public Rectangle bounds() {return bounds;}
     /** @return the currents */
@@ -199,11 +201,8 @@ public class LevelModel {
     public int rows(){ return map_size.y; }
     /** Getter for how long each tile is **/
     public float getTileSize() { return GRID_SIZE; }
-
     /** Get boundary wall vertices */
     public float[] getWallVertices() { return polygonVertices; }
-//    /** Get boundary wall drawscale */
-//        public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
     /** Constructor call for this singleton class */
     public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
 
@@ -256,7 +255,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world
      * @param obj The object to add */
-    protected void addObject(GameObject obj) {
+    public void addObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -386,9 +385,8 @@ public class LevelModel {
         }
         // Add wall to the world
         computeWall(bounds.width, bounds.height);
-
+        // Set current field
         currentField = new CurrentField(bounds.width, bounds.height, 3);
-
         // Populate game objects
         populateLevel();
 
@@ -574,9 +572,8 @@ public class LevelModel {
      * @param tile_int 0 if stand-alone, 1-16 if texture alas */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp);
-        this_rock.setTexture(rockTexture); // TODO: new land texture
-//        System.out.println(map_size);
+        Rock this_rock = new Rock(compute_temp, false);
+        this_rock.setTexture(rockTexture); // TODO: new land texture if tile_int != 0
         obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
@@ -818,7 +815,7 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* New-added current and wood methods *=*=*=*=*=*=*=*=*=*/
 
     /** Add wood Objects to random location in the world */
-    protected void addRandomWood() {
+    public void addRandomWood() {
         Wood this_wood = new Wood(boundsVector2());
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
@@ -872,10 +869,9 @@ public class LevelModel {
      */
     public void createSpear(Vector2 firelocation) {
         Vector2 facing = firelocation.sub(raft.getPosition()).nor();
-        Spear bullet = new Spear(raft.getPosition());
+        Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
+        Spear bullet = new Spear(raft.getPosition(), facing, raft_speed);
         bullet.setTexture(spearTexture);
-        bullet.physicsObject.setLinearVelocity(facing.scl(Spear.SPEAR_SPEED).mulAdd(raft.physicsObject.getLinearVelocity(), 0.5f));
-        bullet.setAngle(facing.angleDeg()-90f);
         addQueuedObject(bullet);
     }
 

@@ -1,8 +1,8 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
-public enum HydraController implements State<Hydra> {
+public enum HydraState implements State<Hydra> {
 
     IDLE(){
         @Override

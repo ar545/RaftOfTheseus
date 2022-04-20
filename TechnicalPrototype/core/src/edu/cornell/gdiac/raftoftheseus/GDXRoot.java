@@ -23,6 +23,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
+import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
+import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
+import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 
 /**
  * Root class for a LibGDX.  

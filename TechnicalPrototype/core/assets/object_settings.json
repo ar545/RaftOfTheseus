@@ -33,16 +33,24 @@
     "protect range" : 5,
     "search range" : 30
   },
-  "bullet": {
+  "spear": {
     "speed scale" : 24.0,
     "health cost" : -5.0,
-    "bullet size" : 0.25,
-    "bullet range fly" :  10.0,
-    "bullet range fall" : 12.0
+    "spear size" : 2,
+    "spear range fly" :  10.0,
+    "spear range fall" : 11.0
+  },
+  "note" : {
+    "speed scale" : 24.0,
+    "health cost" : -15.0,
+    "spear size" : 2,
+    "spear range fly" :  10.0,
+    "spear range fall" : 11.0
   },
   "rock": {
     "width": 3,
-    "height": 3
+    "height": 3,
+    "damage": 10
   },
   "terrain": {
   },
@@ -55,5 +63,5 @@
     "damping" : 5,
     "thrust" : 0.3,
     "max speed" : 10
-  },
+  }
 }

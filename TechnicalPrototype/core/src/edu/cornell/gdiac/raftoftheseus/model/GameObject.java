@@ -1,10 +1,11 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 
 /**
@@ -17,7 +18,8 @@ public abstract class GameObject {
     public enum ObjectType {
         RAFT, // aka Player
         WOOD,
-        OBSTACLE, // aka Rock or Wall
+        ROCK,
+        OBSTACLE, // aka Wall or Terrain
         CURRENT,
         SHARK,
         GOAL,
@@ -28,7 +30,7 @@ public abstract class GameObject {
     }
 
     /** Collision filtering categories */
-    protected final static short CATEGORY_PLAYER = 1<<1;
+    public final static short CATEGORY_PLAYER = 1<<1;
     protected final static short CATEGORY_ENEMY = 1<<2;
     protected final static short CATEGORY_PLAYER_BULLET = 1<<3;
     protected final static short CATEGORY_ENEMY_BULLET = 1<<4;
@@ -68,8 +70,6 @@ public abstract class GameObject {
      * @return the type of this object.
      */
     public abstract ObjectType getType();
-
-    // NON-ABSTRACT METHODS
 
     // PHYSICS INTERFACE
 

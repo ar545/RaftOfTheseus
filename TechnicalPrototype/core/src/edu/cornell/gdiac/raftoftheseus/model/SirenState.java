@@ -1,9 +1,9 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
 
-public enum SirenController implements State<Siren> {
+public enum SirenState implements State<Siren> {
 
     IDLE() {
         @Override
@@ -59,7 +59,7 @@ public enum SirenController implements State<Siren> {
         public void update (Siren entity){
             if(entity.hasAttacked()){
                 entity.resetHasAttacked();
-                SirenController.changeToFlying(entity);
+                SirenState.changeToFlying(entity);
             }
         }
     };

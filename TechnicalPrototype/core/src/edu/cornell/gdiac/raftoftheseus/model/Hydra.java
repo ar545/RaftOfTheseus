@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus;
+package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
-import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Hydra extends GameObject {
@@ -38,7 +37,7 @@ public class Hydra extends GameObject {
 
 
     private Raft targetRaft;
-    private StateMachine<Hydra, HydraController> stateMachine;
+    private StateMachine<Hydra, HydraState> stateMachine;
 
     public Hydra(Vector2 position, Raft targetRaft) {
         physicsObject = new WheelObstacle(1.45f);
@@ -48,14 +47,14 @@ public class Hydra extends GameObject {
         physicsObject.getFilterData().maskBits = MASK_ENEMY;
 
         this.targetRaft = targetRaft;
-        stateMachine = new DefaultStateMachine<>(this, HydraController.IDLE);
+        stateMachine = new DefaultStateMachine<>(this, HydraState.IDLE);
     }
 
     public void update(float dt) {
         stateMachine.update();
     }
 
-    public StateMachine<Hydra, HydraController> getStateMachine(){ return this.stateMachine; }
+    public StateMachine<Hydra, HydraState> getStateMachine(){ return this.stateMachine; }
 
     // Timing
     public void setTimeStamp(){
@@ -86,7 +85,7 @@ public class Hydra extends GameObject {
         return canSee && inRange() && cooldownElapsed();
     }
     public boolean willFire(){
-        hasFired = canFire() && stateMachine.isInState(HydraController.SPLASHING);
+        hasFired = canFire() && stateMachine.isInState(HydraState.SPLASHING);
         return hasFired;
     }
     public boolean hasFired(){ return hasFired; }
@@ -97,7 +96,7 @@ public class Hydra extends GameObject {
         return targetRaft.getPosition().sub(getPosition()).len() <= HITTING_RANGE;
     }
     public boolean willAttack(){
-        hasAttacked = stateMachine.isInState(HydraController.HITTING) && inAttackRange();
+        hasAttacked = stateMachine.isInState(HydraState.HITTING) && inAttackRange();
         return hasAttacked;
     }
     public boolean hasAttacked(){ return hasAttacked; }
@@ -106,7 +105,7 @@ public class Hydra extends GameObject {
     // Stunned
     public boolean isHit(){ return isHit; }
     public void setHit(boolean h){
-        if (!stateMachine.isInState(HydraController.STUNNED)){
+        if (!stateMachine.isInState(HydraState.STUNNED)){
             isHit = h;
         }
     }
