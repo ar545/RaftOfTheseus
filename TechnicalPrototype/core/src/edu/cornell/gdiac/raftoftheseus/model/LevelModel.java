@@ -21,6 +21,8 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
+import java.util.HashMap;
+
 public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
@@ -49,7 +51,7 @@ public class LevelModel {
     /** Index of the representation of start in tile set texture */
     private static final int TILE_START = 1;
     /** Index of the representation of enemy in tile set texture */
-    private static final int TILE_ENEMY_HYDRA = 2;
+    private static final int TILE_ENEMY_SIREN = 2;
     /** Index of the representation of enemy in tile set texture */
     private static final int TILE_ENEMY_SHARK = 3;
     /** Index of the representation of rock in tile set texture */
@@ -63,11 +65,11 @@ public class LevelModel {
     /** Index of the representation of default wood in tile set texture */
     private static final int TILE_WOOD_OFFSET = 15;
     /** Index of the representation of place-holder in tile set texture */
-    private static final int TILE_STAR = 28;
+    private static final int TILE_PLANT = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
-    private static final int TILE_LAND_END = 42;
+    private static final int TILE_SEA = 42;
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Offset of north current in tile set index */
@@ -86,19 +88,12 @@ public class LevelModel {
     private static final int TILE_WEST_NORTH = 13;
     /** Offset of north current in tile set index */
     private static final int TILE_NORTH = 14;
-    /** Index of the representation of default current in tile set texture */
-    private static final int TILE_CURRENT_DIVISION = 7;
-    /** layer of land */
-    private static final int LAYER_LAND = 0;
-    /** layer of environment */
-    private static final int LAYER_ENV = 1;
-    /** layer of collectables */
-    private static final int LAYER_COL = 2;
-    /** layer of enemies */
-    private static final int LAYER_ENE = 3;
-    /** layer of enemies */
-    private static final int LAYER_SIREN = 4;
-
+    /** layer of environment and land */
+    private static final int LAYER_ENV = 0;
+    /** layer of collectables and shark */
+    private static final int LAYER_COL = 1;
+    /** layer of siren */
+    private static final int LAYER_SIREN = 2;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -448,14 +443,10 @@ public class LevelModel {
         JsonValue layers = level_data.get("layers");
         JsonValue environment = layers.get(LAYER_ENV);
         JsonValue collectables = layers.get(LAYER_COL);
-        JsonValue enemies = layers.get(LAYER_ENE);
-        JsonValue land = layers.get(LAYER_LAND);
         JsonValue sirenLayer = layers.get(LAYER_SIREN);
         for(JsonValue layer : layers){
             if(layer.getString("name").equals("Environment")){ environment = layer;}
             else if(layer.getString("name").equals("Collectable")){ collectables = layer;}
-            else if(layer.getString("name").equals("Enemy")){ enemies = layer;}
-            else if(layer.getString("name").equals("Land")){ land = layer;}
             else if(layer.getString("name").equals("Siren")){ sirenLayer = layer;}
             else { System.out.println("Un-parse-able information: layer name not recognized." + layer.getString("name"));}
         }
@@ -467,8 +458,6 @@ public class LevelModel {
                 int index = row_reversed * cols() + col;
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
-                populateEnemies(row, col, enemies.get("data").getInt(index));
-                populateLand(row, col, land.get("data").getInt(index));
                 // TODO: if we populate the raft field before instantiating enemies,
                 //  we can properly instantiate instead of putting null for target raft field
                 //  see the Enemy this_enemy = new Enemy(compute_temp, null);
@@ -480,20 +469,38 @@ public class LevelModel {
         populateSiren(sirenLayer.get("objects"));
     }
 
-    /** Populate the new created siren layer */
+    /** Populate the new created siren layer. This is the level editor JSON parser that populate the enemy layer
+     * @param objects the list of sirens */
     private void populateSiren(JsonValue objects) {
+        HashMap<Integer, Vector2> existingPositions = new HashMap<>();
         for(JsonValue obj : objects){
             JsonValue properties = obj.get("properties");
-            int id = properties.get(0).getInt("value");
-            boolean isStart = properties.get(1).getBoolean("value");
-            float x = obj.getFloat("x") / 50f;
-            float y = obj.getFloat("y") / 50f;
-            // TODO: add siren is not finished
-//            if(isStart){
-//                addEnemy((int)x, (int)y, 2);
-//            }
+            int id = 0;
+            boolean isStart = false;
+            if(properties != null){
+                for(JsonValue property : properties){
+                    if(property.getString("name").equals("ID")){
+                        id = property.getInt("value");
+                    }else if(property.getString("name").equals("isStart")){
+                        isStart = property.getBoolean("value"); // always true
+                    }
+                }
+            }
+            Vector2 position = new Vector2(obj.getFloat("x") / 50f, obj.getFloat("y") / 50f);
+
+            // Now, add this siren by finding another copy of it
+            if(existingPositions.containsKey(id)){
+                Vector2 altPosition = existingPositions.remove(id);
+                if(isStart){ addSiren(position, altPosition); }else{ addSiren(altPosition, position); }
+            }else{
+                existingPositions.put(id, position);
+            }
         }
+        existingPositions.clear();
     }
+
+    // TODO: add siren is not finished
+    private void addSiren(Vector2 startPosition, Vector2 endPosition) {}
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
@@ -502,29 +509,18 @@ public class LevelModel {
         }
     }
 
-    /** This is the level editor JSON parser that populate the enemy layer
-     * @param row the row the enemy is in the world
-     * @param col the column the enemy is in the world
-     * @param tile_int whether this tile is an emery or the player */
-    private void populateEnemies(int row, int col, int tile_int) {
-        if (tile_int == TILE_DEFAULT) { return; }
-        else if (tile_int == TILE_START) { addRaft(row, col); return; }
-        else if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, 0); return; }
-        else if (tile_int == TILE_ENEMY_HYDRA){ addEnemy(row, col, 2); return; }
-        // This function should never reach here.
-        System.out.println("Un-parse-able information detected in enemy layer:" + tile_int);
-    }
-
     /** This is the level editor JSON parser that populate the collectable layer
      * @param row the row the collectable is in the world
      * @param col the column the collectable is in the world
      * @param tile_int whether this tile is a wood or treasure */
     private void populateCollect(int row, int col, int tile_int) {
-        if(tile_int == TILE_DEFAULT){ return; }
-        if(tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
-        if(tile_int == TILE_STAR - 1){ addWood(row, col, 20); return; }
-        if(tile_int == TILE_STAR - 2){ addWood(row, col, 15); return; }
-        if(tile_int > TILE_WOOD_OFFSET && tile_int < TILE_STAR){
+        if (tile_int == TILE_DEFAULT){ return; }
+        if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
+        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, 0); return; }
+        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, 2); return; }
+        if (tile_int == TILE_PLANT - 1){ addWood(row, col, 20); return; }
+        if (tile_int == TILE_PLANT - 2){ addWood(row, col, 15); return; }
+        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_PLANT){
             addWood(row, col, tile_int - TILE_WOOD_OFFSET);
             return;
         }
@@ -539,33 +535,18 @@ public class LevelModel {
      * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateEnv(int row, int col, int tile_int) {
         currentField.field[col][row] = ZERO_VECTOR_2;
-        if(tile_int == TILE_DEFAULT){ return; }
-        else if(tile_int == TILE_GOAL){ addGoal(row, col); return; }
-        else if(tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
-        else if(tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
-        else if(tile_int >= TILE_WOOD_OFFSET)
+        if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
+        if (tile_int == TILE_START) { addRaft(row, col); return; }
+        if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
+        if (tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
+        if (tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
+        if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){
+            addRock(row, col, tile_int - TILE_LAND_OFFSET); return;
+        }
+        if (tile_int >= TILE_WOOD_OFFSET)
         { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
         addCurrent(row, col, compute_direction(tile_int));
     }
-
-    /** This is the level editor JSON parser that populate the environment layer
-     * @param row the row the environment element is in the world
-     * @param col the column the environment element is in the world
-     * @param tile_int whether this tile is a rock or a current or a goal */
-    private void populateLand(int row, int col, int tile_int) {
-        if(tile_int == TILE_DEFAULT){ return; }
-        if(tile_int == TILE_LAND_END){ return; }
-        if(tile_int <= TILE_LAND_OFFSET || tile_int > TILE_LAND_END)
-        { System.out.println("Un-parse-able information detected in land layer:" + tile_int); return; }
-        addRock(row, col, tile_int - TILE_LAND_OFFSET);
-    }
-
-//    /** Compute the magnitude of the current base on the level json input
-//     * @param tile_int level json input indicating object type
-//     * @return the magnitude of the current */
-//    private int compute_magnitude(int tile_int) {
-//        if(tile_int < 1 || tile_int > 60) { return 1; }
-//        return (tile_int - TILE_CURRENT_OFFSET) / TILE_CURRENT_DIVISION; }
 
     /** Compute the direction of the current base on the level json input
      * @param i level json input
