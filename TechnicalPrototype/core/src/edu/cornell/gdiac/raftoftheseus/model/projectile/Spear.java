@@ -30,5 +30,4 @@ public class Spear extends Projectile {
         textureScale = new Vector2(h, h);
         textureOffset = new Vector2(0, 0);
     }
-
 }

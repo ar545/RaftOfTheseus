@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
+//import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
@@ -119,7 +120,7 @@ public class LevelModel {
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Shark> enemies = new PooledList<>();
-    private PooledList<Hydra> hydras = new PooledList<>();
+//    private PooledList<Hydra> hydras = new PooledList<>();
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
@@ -172,7 +173,7 @@ public class LevelModel {
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
     public PooledList<Shark> getEnemies() { return enemies; }
-    public PooledList<Hydra> getHydras() { return hydras; }
+//    public PooledList<Hydra> getHydras() { return hydras; }
     public PooledList<Siren> getSirens() { return sirens; }
     /***/
     public PooledList<GameObject> getAddQueue() { return addQueue; }
@@ -312,12 +313,12 @@ public class LevelModel {
     }
 
     // TODO Create enemy super class to reduce redundant code.
-    protected void addHydraObject(Hydra obj) {
-        assert inBounds(obj) : "Object is not in bounds";
-        objects.add(obj);
-        obj.activatePhysics(world);
-        hydras.add(obj);
-    }
+//    protected void addHydraObject(Hydra obj) {
+//        assert inBounds(obj) : "Object is not in bounds";
+//        objects.add(obj);
+//        obj.activatePhysics(world);
+//        hydras.add(obj);
+//    }
 
     protected void addSirenObject(Siren obj) {
         assert inBounds(obj) : "Object is not in bounds";
@@ -566,10 +567,10 @@ public class LevelModel {
                 addEnemyObject(this_shark);
                 break;
             case 1: // Hydras
-                Hydra th = new Hydra(compute_temp, null);
-                th.setTexture(enemyTexture);
-                addHydraObject(th);
-                break;
+//                Hydra th = new Hydra(compute_temp, null);
+//                th.setTexture(enemyTexture);
+//                addHydraObject(th);
+//                break;
             case 2: // Sirens
 //                Siren ts = new Siren(compute_temp, null);
 //                ts.setTexture(enemyTexture);

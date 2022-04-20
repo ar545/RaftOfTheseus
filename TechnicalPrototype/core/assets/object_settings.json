@@ -34,18 +34,19 @@
     "search range" : 30
   },
   "spear": {
-    "speed scale" : 24.0,
+    "speed scale" : 25.0,
     "health cost" : -5.0,
     "spear size" : 2,
     "spear range fly" :  10.0,
     "spear range fall" : 11.0
   },
   "note" : {
-    "speed scale" : 24.0,
+    "speed scale" : 25.0,
     "health cost" : -15.0,
-    "spear size" : 2,
-    "spear range fly" :  10.0,
-    "spear range fall" : 11.0
+    "size" : 2,
+    "range fly" :  10.0,
+    "range fall" : 11.0,
+    "force" : 5
   },
   "rock": {
     "width": 3,

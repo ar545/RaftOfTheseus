@@ -25,6 +25,7 @@ import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Projectile;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
+//import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -49,7 +50,7 @@ public class WorldController implements Screen, ContactListener {
         Projectile.setConstants(objParams.get("spear"));
         Note.setConstants(objParams.get("note"));
         Shark.setConstants(objParams.get("shark"));
-        Hydra.setConstants(objParams.get("hydra"));
+//        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
         Rock.setConstants(objParams.get("rock"));
         JsonValue world = objParams.get("world");
@@ -130,8 +131,8 @@ public class WorldController implements Screen, ContactListener {
     private int countdown;
     /** array of controls for each enemy**/
     private SharkController[] controls;
-    /** Find whether a hydra can see the player. */
-    private EnemyRayCast hydraSight;
+    /** Find whether an enemy can see the player. */
+    private EnemyRayCast enemySight;
     /** Whether the settings button was pressed */
     private boolean settingsPressed;
     /** Whether the exit button was pressed */
@@ -163,7 +164,7 @@ public class WorldController implements Screen, ContactListener {
         this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         this.table = new Table();
         this.plexer = new InputMultiplexer();
-        hydraSight = new EnemyRayCast();
+        enemySight = new EnemyRayCast();
         startTime = System.currentTimeMillis();
         pauseBuilt = false;
         transitionBuilt = false;
@@ -683,12 +684,12 @@ public class WorldController implements Screen, ContactListener {
             shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
         }
 
-        for (Hydra h : levelModel.getHydras()) {
-            levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
-            h.setSee(hydraSight.getCanSee());
-//            if(h.willAttack()) {createBullet(h.getPosition(), levelModel.getPlayer());}
-            h.update(dt);
-        }
+//        for (Hydra h : levelModel.getHydras()) {
+//            levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
+//            h.setSee(hydraSight.getCanSee());
+////            if(h.willAttack()) {createBullet(h.getPosition(), levelModel.getPlayer());}
+//            h.update(dt);
+//        }
 
         for(Siren s : levelModel.getSirens()){
             s.update(dt);
@@ -886,12 +887,13 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
             g.setDestroyed(true);
-        } else if(g.getType() == GameObject.ObjectType.HYDRA) {
-            // stun hydra
-            SfxController.getInstance().playSFX("spear_enemy_hit");
-            SfxController.getInstance().playSFX("shark_hit");
-            ((Hydra) g).setHit(true);
-        } else if (g.getType() == GameObject.ObjectType.OBSTACLE) {
+        }
+//      else if(g.getType() == GameObject.ObjectType.HYDRA) {
+//            // stun hydra
+//            SfxController.getInstance().playSFX("spear_enemy_hit");
+//            SfxController.getInstance().playSFX("shark_hit");
+//            ((Hydra) g).setHit(true);}
+        else if (g.getType() == GameObject.ObjectType.OBSTACLE) {
             SfxController.getInstance().playSFX("spear_break");
         }
         // destroy bullet
