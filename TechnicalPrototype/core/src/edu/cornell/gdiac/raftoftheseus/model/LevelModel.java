@@ -37,8 +37,10 @@ public class LevelModel {
     private static final int DEFAULT_GRID_ROW = 8;
     /** Default num of columns in the map (x, width) */
     private static final int DEFAULT_GRID_COL = 10;
+    /** a final vector 2 with both x and y as 0 */
+    private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
     /** Top-down game with no gravity */
-    protected static final Vector2 NO_GRAVITY = new Vector2(0f ,0f );
+    protected static final Vector2 NO_GRAVITY = ZERO_VECTOR_2;
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
 
@@ -47,44 +49,46 @@ public class LevelModel {
     private static final int TILE_DEFAULT = 0;
     /** Index of the representation of start in tile set texture */
     private static final int TILE_START = 1;
+    /** Index of the representation of enemy in tile set texture */
+    private static final int TILE_ENEMY_HYDRA = 2;
+    /** Index of the representation of enemy in tile set texture */
+    private static final int TILE_ENEMY_SHARK = 3;
+    /** Index of the representation of rock in tile set texture */
+    private static final int TILE_ROCK_ALONE = 8;
+    /** Index of the representation of rock in tile set texture */
+    private static final int TILE_ROCK_SHARP = 9;
     /** Index of the representation of goal in tile set texture */
-    private static final int TILE_GOAL = 2;
-    /** Index of the representation of rock in tile set texture */
-    private static final int[] TILE_ROCK = {11, 12, 21, 22};
-    /** Index of the representation of rock in tile set texture */
-    private static final int TILE_ROCK_DEFAULT = TILE_ROCK[0];
-    /** Index of the representation of enemy in tile set texture */
-    private static final int[] TILE_ENEMY = {31, 32, 41, 42};
-    /** Index of the representation of enemy in tile set texture */
-    private static final int TILE_ENEMY_DEFAULT = TILE_ENEMY[0];
-    /** Index of the representation of default treasure in tile set texture */
-    private static final int[] TILE_TREASURE = {51, 52};
-    /** Index of the representation of default treasure in tile set texture */
-    private static final int TILE_TREASURE_DEFAULT = TILE_TREASURE[0];
+    private static final int TILE_GOAL = 10;
+    /** Index of the representation of treasure in tile set texture */
+    private static final int TILE_TREASURE = 15;
     /** Index of the representation of default wood in tile set texture */
-    private static final int TILE_WOOD_OFFSET = 60;
+    private static final int TILE_WOOD_OFFSET = 15;
+    /** Index of the representation of place-holder in tile set texture */
+    private static final int TILE_STAR = 28;
     /** Index of the representation of default current in tile set texture */
-    private static final int TILE_CURRENT_DIVISION = 10;
+    private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
-    private static final int TILE_CURRENT_OFFSET = -10;
+    private static final int TILE_LAND_END = 42;
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Offset of north current in tile set index */
-    private static final int TILE_NORTH = 0;
+    private static final int TILE_NORTH_EAST = 4;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST = 5;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST_SOUTH = 6;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH = 7;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH_WEST = 11;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST = 12;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST_NORTH = 13;
     /** Offset of north current in tile set index */
-    private static final int TILE_NORTH_EAST = 3;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST = 4;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST_SOUTH = 5;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH = 6;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH_WEST = 7;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST = 8;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST_NORTH = 9;
+    private static final int TILE_NORTH = 14;
+    /** Index of the representation of default current in tile set texture */
+    private static final int TILE_CURRENT_DIVISION = 7;
     /** layer of land */
     private static final int LAYER_LAND = 0;
     /** layer of environment */
@@ -93,7 +97,9 @@ public class LevelModel {
     private static final int LAYER_COL = 2;
     /** layer of enemies */
     private static final int LAYER_ENE = 3;
-    private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
+    /** layer of enemies */
+    private static final int LAYER_SIREN = 4;
+
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -447,12 +453,14 @@ public class LevelModel {
         JsonValue collectables = layers.get(LAYER_COL);
         JsonValue enemies = layers.get(LAYER_ENE);
         JsonValue land = layers.get(LAYER_LAND);
+        JsonValue sirenLayer = layers.get(LAYER_SIREN);
         for(JsonValue layer : layers){
             if(layer.getString("name").equals("Environment")){ environment = layer;}
             else if(layer.getString("name").equals("Collectable")){ collectables = layer;}
             else if(layer.getString("name").equals("Enemy")){ enemies = layer;}
             else if(layer.getString("name").equals("Land")){ land = layer;}
-            else { System.out.println("Un-parse-able information: layer name not recognized.");}
+            else if(layer.getString("name").equals("Siren")){ sirenLayer = layer;}
+            else { System.out.println("Un-parse-able information: layer name not recognized." + layer.getString("name"));}
         }
 
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
@@ -471,6 +479,23 @@ public class LevelModel {
                 populateEnemiesRaftField();
             }
         }
+
+        populateSiren(sirenLayer.get("objects"));
+    }
+
+    /** Populate the new created siren layer */
+    private void populateSiren(JsonValue objects) {
+        for(JsonValue obj : objects){
+            JsonValue properties = obj.get("properties");
+            int id = properties.get(0).getInt("value");
+            boolean isStart = properties.get(1).getBoolean("value");
+            float x = obj.getFloat("x") / 50f;
+            float y = obj.getFloat("y") / 50f;
+            // TODO: add siren is not finished
+//            if(isStart){
+//                addEnemy((int)x, (int)y, 2);
+//            }
+        }
     }
 
     /** This is a temporary function that help all enemies target the raft */
@@ -487,17 +512,10 @@ public class LevelModel {
     private void populateEnemies(int row, int col, int tile_int) {
         if (tile_int == TILE_DEFAULT) { return; }
         else if (tile_int == TILE_START) { addRaft(row, col); return; }
-        else {
-            for(int i = 0; i < TILE_ENEMY.length; i++){
-                if(tile_int == TILE_ENEMY[i]){
-                    addEnemy(row, col, i);
-                    return;
-                }
-            }
-        }
+        else if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, 0); return; }
+        else if (tile_int == TILE_ENEMY_HYDRA){ addEnemy(row, col, 2); return; }
         // This function should never reach here.
-        System.out.println("Un-parse-able information detected in enemy layer.");
-        addEnemy(row, col, 0);
+        System.out.println("Un-parse-able information detected in enemy layer:" + tile_int);
     }
 
     /** This is the level editor JSON parser that populate the collectable layer
@@ -506,14 +524,15 @@ public class LevelModel {
      * @param tile_int whether this tile is a wood or treasure */
     private void populateCollect(int row, int col, int tile_int) {
         if(tile_int == TILE_DEFAULT){ return; }
-        else if(tile_int == TILE_TREASURE[0]){ addTreasure(row, col); return; }
-        else if (tile_int == TILE_TREASURE[1]){ addTreasure(row, col); return; }
-        else if(tile_int > TILE_WOOD_OFFSET){
+        if(tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
+        if(tile_int == TILE_STAR - 1){ addWood(row, col, 20); return; }
+        if(tile_int == TILE_STAR - 2){ addWood(row, col, 15); return; }
+        if(tile_int > TILE_WOOD_OFFSET && tile_int < TILE_STAR){
             addWood(row, col, tile_int - TILE_WOOD_OFFSET);
             return;
         }
         // This function should never reach here.
-        System.out.println("Un-parse-able information detected in collectable layer.");
+        System.out.println("Un-parse-able information detected in collectable layer:" + tile_int);
         addWood(row, col, 1);
     }
 
@@ -525,10 +544,11 @@ public class LevelModel {
         currentField.field[col][row] = ZERO_VECTOR_2;
         if(tile_int == TILE_DEFAULT){ return; }
         else if(tile_int == TILE_GOAL){ addGoal(row, col); return; }
-        for (int j : TILE_ROCK) {
-            if (tile_int == j) { addRock(row, col, 0); return; }
-        }
-        addCurrent(row, col, compute_direction(tile_int % TILE_CURRENT_DIVISION), compute_magnitude(tile_int));
+        else if(tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
+        else if(tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
+        else if(tile_int >= TILE_WOOD_OFFSET)
+        { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
+        addCurrent(row, col, compute_direction(tile_int));
     }
 
     /** This is the level editor JSON parser that populate the environment layer
@@ -537,15 +557,18 @@ public class LevelModel {
      * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateLand(int row, int col, int tile_int) {
         if(tile_int == TILE_DEFAULT){ return; }
-        addRock(row, col, tile_int);
+        if(tile_int == TILE_LAND_END){ return; }
+        if(tile_int <= TILE_LAND_OFFSET || tile_int > TILE_LAND_END)
+        { System.out.println("Un-parse-able information detected in land layer:" + tile_int); return; }
+        addRock(row, col, tile_int - TILE_LAND_OFFSET);
     }
 
-    /** Compute the magnitude of the current base on the level json input
-     * @param tile_int level json input indicating object type
-     * @return the magnitude of the current */
-    private int compute_magnitude(int tile_int) {
-        if(tile_int < 1 || tile_int > 60) { return 1; }
-        return (tile_int - TILE_CURRENT_OFFSET) / TILE_CURRENT_DIVISION; }
+//    /** Compute the magnitude of the current base on the level json input
+//     * @param tile_int level json input indicating object type
+//     * @return the magnitude of the current */
+//    private int compute_magnitude(int tile_int) {
+//        if(tile_int < 1 || tile_int > 60) { return 1; }
+//        return (tile_int - TILE_CURRENT_OFFSET) / TILE_CURRENT_DIVISION; }
 
     /** Compute the direction of the current base on the level json input
      * @param i level json input
@@ -569,7 +592,7 @@ public class LevelModel {
     /** Add Rock Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position
-     * @param tile_int 0 if stand-alone, 1-16 if texture alas */
+     * @param tile_int 0 if stand-alone, 1-16 if texture alas, -1 for sharp */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp, false);
@@ -642,10 +665,10 @@ public class LevelModel {
      * @param row the row gird position
      * @param col the column grid position
      * @param direction the direction */
-    private void addCurrent(int row, int col, Current.Direction direction, int magnitude) {
+    private void addCurrent(int row, int col, Current.Direction direction) {
         // TODO: the current object collision no longer needed, but texture is needed
         computePosition(col, row);
-        Current this_current = new Current(compute_temp, direction, magnitude);
+        Current this_current = new Current(compute_temp, direction);
         this_current.setTexture(currentTexture);
 
         // Initialize the current field, used for current vector field
