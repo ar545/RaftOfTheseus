@@ -119,15 +119,18 @@ void oldMain() {
 
 
 uniform vec4 shadow_color = vec4( 0.038, 0.105, 0.648, 1.0 );
-uniform float tile_factor = 1.0;
-uniform float aspect_ratio = 1.6;
+uniform float tile_factor = 1.0;//0.25;
+uniform float aspect_ratio = 1.0;//1.6;
+
 uniform sampler2D texture_offset_uv; // set externally
 uniform vec2 texture_offset_scale = vec2(1, 0.5);
 uniform float texture_offset_height = 0.04;
 uniform float texture_offset_time_scale = 0.03;
-uniform float sine_time_scale = 3.0;
-uniform vec2 sine_offset_scale = vec2(0.4, 1.4);
-uniform float sine_wave_size = 0.06;
+
+uniform float sine_time_scale = 0.8;//3.0
+uniform vec2 sine_offset_scale = vec2(0.8, 0.6);
+uniform float sine_wave_size = 0.18;//0.06
+uniform float water_height_scale = 0.15;//0.2
 
 uniform sampler2D TEXTURE;
 uniform sampler2D NORMAL_TEXTURE;
@@ -143,7 +146,8 @@ void main() {
     vec2 offset_texture_uv_with_height = offset_texture_uv * texture_offset_height;
     vec2 texture_based_offset = offset_texture_uv_with_height * 2.0 - 1.0;
 
-    vec2 adjusted_uv = UV * tile_factor;
+//    vec2 adjusted_uv = UV * tile_factor;
+    vec2 adjusted_uv = UV;
     adjusted_uv.x *= 1.0/u_inverseFlowmapSize.x;// added this line
     adjusted_uv.y *= 1.0/u_inverseFlowmapSize.y;// added this line
     adjusted_uv.y *= aspect_ratio;
@@ -153,10 +157,12 @@ void main() {
     adjusted_uv.y += cos(TIME * sine_time_scale + (adjusted_uv.x + adjusted_uv.y) * sine_offset_scale.y) * sine_wave_size;
 
     float sine_wave_height = sin(TIME * sine_time_scale + (adjusted_uv.x + adjusted_uv.y) * sine_offset_scale.y);
-    float water_height = ( sine_wave_height + offset_texture_uv.g ) * 0.5;
+    float water_height = ( sine_wave_height + offset_texture_uv.g ) * water_height_scale;
+
+    adjusted_uv *= tile_factor;// added this line
 
     //	gl_FragColor = vec4(vec2(offset_texture_uv), 0.0, 1.0);
-    gl_FragColor = mix(texture2D(u_texture, adjusted_uv), shadow_color, water_height * 0.4);
+    gl_FragColor = mix(texture2D(u_texture, adjusted_uv), shadow_color, water_height);
     //	gl_FragColor = vec4(vec2(adjusted_uv), 0.0, 1.0);
     // TODO figure out how to do normal mapping in GLSL
 //    NORMALMAP = texture2D(NORMAL_TEXTURE, adjusted_uv / 5.0).rgb;
