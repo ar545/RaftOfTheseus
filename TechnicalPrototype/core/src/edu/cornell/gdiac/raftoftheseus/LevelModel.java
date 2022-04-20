@@ -346,12 +346,8 @@ public class LevelModel {
         addQueue = null;
         bounds = null;
         world  = null;
-
-        light.remove();
-        if (rayhandler != null) {
-            rayhandler.dispose();
-            rayhandler = null;
-        }
+        if (light != null) { light.remove(); light = null; }
+        if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
 
     /**
@@ -367,11 +363,8 @@ public class LevelModel {
         if (world != null)
             world.dispose();
         world = new World(NO_GRAVITY,false);
-        light.remove();
-        if (rayhandler != null) {
-            rayhandler.dispose();
-            rayhandler = null;
-        }
+        if (light != null) { light.remove(); light = null; }
+        if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
 
     /** Load the level representing by the parameter level_int.
@@ -713,21 +706,22 @@ public class LevelModel {
     Vector2 lightTranslation() {
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)Gdx.graphics.getWidth()/2, (float)Gdx.graphics.getHeight()/2);
-        translation.scl(0.09f);
+        translation.scl(0.003f * cols(), 0.003f * rows());
+        // 0.09 = 30 * 0.003; 0.045 = 15 * 0.003
         translation.sub(getPlayer().getPosition());
 
          // "Capped Camera": bound x and y within walls
         Rectangle wallBounds = wallBounds();
-        translation.x = Math.min(translation.x, - wallBounds.x + 0.03f * canvas.getWidth());
-        translation.x = Math.max(translation.x, canvas.getWidth() * 0.06f - wallBounds.width);
-        translation.y = Math.min(translation.y, - wallBounds.y + 0.03f * canvas.getHeight());
-        translation.y = Math.max(translation.y, canvas.getHeight() * 0.06f - wallBounds.height);
+        translation.x = Math.min(translation.x, - wallBounds.x + 0.0015f * cols() * canvas.getWidth() - 0.015f * canvas.getWidth());
+        translation.x = Math.max(translation.x, canvas.getWidth() * 0.0015f * cols() - wallBounds.width + 0.015f * canvas.getWidth());
+        translation.y = Math.min(translation.y, - wallBounds.y + 0.0015f * rows() * canvas.getHeight() - 0.015f * canvas.getHeight());
+        translation.y = Math.max(translation.y, canvas.getHeight() * 0.0015f * rows() - wallBounds.height + 0.015f * canvas.getHeight());
 
         // "Scaled Camera": adjust x and y scale
-        float x_diff = 0.045f * canvas.getWidth() - (getPlayer().getPosition().x + translation.x);
-        float y_diff = 0.045f * canvas.getHeight() - (getPlayer().getPosition().y + translation.y);
-        if( x_diff != 0 ){ translation.x -= x_diff * 2f; }
-        if( y_diff != 0 ){ translation.y -= y_diff * 2f; }
+        float x_diff = 0.0015f * cols() * canvas.getWidth() - (getPlayer().getPosition().x + translation.x);
+        float y_diff = 0.0015f * rows() * canvas.getHeight() - (getPlayer().getPosition().y + translation.y);
+        if( x_diff != 0 ){ translation.x -= x_diff * ((cols() / 10f) - 1); }
+        if( y_diff != 0 ){ translation.y -= y_diff * ((rows() / 10f) - 1); }
         return translation;
     }
 
