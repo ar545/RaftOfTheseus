@@ -2,12 +2,17 @@ package edu.cornell.gdiac.raftoftheseus.model.projectile;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Projectile extends GameObject {
+
+    private JsonValue spear;
+    private JsonValue note;
+    private  JsonValue boulder;
 
     /**
      * @param objParams the "spear" child in "object_settings.json"
@@ -16,11 +21,11 @@ public class Projectile extends GameObject {
         SPEED = objParams.getFloat(0);
         DAMAGE = objParams.getFloat(1);
         TEXTURE_SCALE = objParams.getFloat(2);
-        RANGE_FLY = objParams.getLong(3);
-        RANGE_FALL = objParams.getLong(4);
+        RANGE_FLY = objParams.getInt(3);
+        RANGE_FALL = objParams.getInt(4);
     }
 
-    /** Scaling factor the speed of a spear. */
+    // SPEAR
     public static float SPEED;
     /** Health cost for creating a spear. */
     public static float DAMAGE;
@@ -29,8 +34,21 @@ public class Projectile extends GameObject {
     private static float LENGTH = 1f;
     private static float WIDTH = 0.1f;
     /** Range of a spear. */
-    private static long RANGE_FLY;
-    private static long RANGE_FALL;
+    private static int RANGE_FLY;
+    private static int RANGE_FALL;
+
+    // Note
+    /** Scaling factor the speed of a spear. */
+    public static float NOTE_SPEED;
+    /** Health cost for creating a spear. */
+    public static float NOTE_DAMAGE;
+    /** Size of a spear. */
+    public static float NOTE_TEXTURE_SCALE;
+    private static float NOTE_LENGTH;
+    private static float NOTE_WIDTH;
+    /** Range of a spear. */
+    private static int NOTE_RANGE_FLY;
+    private static int NOTE_RANGE_FALL;
 
     /** Original projectile position. */
     private Vector2 originalPos;
@@ -42,7 +60,7 @@ public class Projectile extends GameObject {
             physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
             physicsObject.getFilterData().maskBits = MASK_PLAYER_BULLET;
         } else if(s.equals("note")){
-            physicsObject = new WheelObstacle(WIDTH);
+            physicsObject = new WheelObstacle(NOTE_WIDTH);
             physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY_BULLET;
             physicsObject.getFilterData().maskBits = MASK_ENEMY_BULLET;
         }
@@ -69,25 +87,16 @@ public class Projectile extends GameObject {
         }
     }
 
-    /**
-     * @return how far this spear has traveled.
-     */
+    /** @return how far this spear has traveled. */
     public float getDistTraveled(){
         return this.getPosition().cpy().sub(originalPos).len();
     }
-
-    /**
-     * @return whether the projectile is still flying at max speed
-     */
+    /** @return whether the projectile is still flying at max speed. */
     public boolean inFlyDistance(){
         return getDistTraveled() < RANGE_FLY;
     }
-
-    /**
-     * @return whether the projectile should be destroyed
-     */
+    /** @return whether the projectile should be destroyed. */
     public boolean outMaxDistance(){
         return getDistTraveled() > RANGE_FALL;
     }
-
 }

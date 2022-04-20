@@ -1,7 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
 import box2dLight.RayHandler;
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -130,7 +129,7 @@ public class LevelModel {
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Shark> enemies = new PooledList<>();
-    private PooledList<Hydra> hydras = new PooledList<>();
+//    private PooledList<Hydra> hydras = new PooledList<>();
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
@@ -193,6 +192,8 @@ public class LevelModel {
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
     public PooledList<Shark> getEnemies() { return enemies; }
+    /** get the list of sirens in the world */
+    public PooledList<Siren> getSirens() { return sirens; }
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -211,10 +212,6 @@ public class LevelModel {
     public float[] getWallVertices() { return polygonVertices; }
     /** Constructor call for this singleton class */
     public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
-
-    /* TODO: getter for new enemy lists */
-    public PooledList<Hydra> getHydras() { return hydras; }
-    public PooledList<Siren> getSirens() { return sirens; }
 
 
     /**
@@ -320,12 +317,12 @@ public class LevelModel {
     }
 
     // TODO Create enemy super class to reduce redundant code.
-    protected void addHydraObject(Hydra obj) {
-        assert inBounds(obj) : "Object is not in bounds";
-        objects.add(obj);
-        obj.activatePhysics(world);
-        hydras.add(obj);
-    }
+//    protected void addHydraObject(Hydra obj) {
+//        assert inBounds(obj) : "Object is not in bounds";
+//        objects.add(obj);
+//        obj.activatePhysics(world);
+//        hydras.add(obj);
+//    }
 
     protected void addSirenObject(Siren obj) {
         assert inBounds(obj) : "Object is not in bounds";
@@ -613,10 +610,10 @@ public class LevelModel {
                 addEnemyObject(this_shark);
                 break;
             case 1: // Hydras
-                Hydra th = new Hydra(compute_temp, null);
-                th.setTexture(enemyTexture);
-                addHydraObject(th);
-                break;
+//                Hydra th = new Hydra(compute_temp, null);
+//                th.setTexture(enemyTexture);
+//                addHydraObject(th);
+//                break;
             case 2: // Sirens
 //                Siren ts = new Siren(compute_temp, null);
 //                ts.setTexture(enemyTexture);
