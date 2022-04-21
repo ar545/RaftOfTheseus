@@ -11,6 +11,7 @@ varying vec2 v_texCoords;
 uniform sampler2D u_texture;
 uniform sampler2D u_normalTexture;
 uniform sampler2D u_flowMap;
+uniform sampler2D u_surfMap;
 
 uniform vec2 u_flowmapSize;
 uniform vec2 u_inverseFlowmapSize;
@@ -48,6 +49,42 @@ uniform float sine_wave_size = 0.18;//0.06
 // water reflection calculations:
 const float camera_angle = 0.74*(PI*0.5); // angle to the vertical, i.e. 0 is looking straight down, pi/2 is looking totally horizontal
 const vec3 incoming_ray = vec3(0.0, sin(camera_angle), -cos(camera_angle)); // a ray pointing from the "camera" towards the scene
+
+float sampleSurfMap(vec2 uv) {
+    int res = 2;
+    uv = (uv + vec2(0.5, 0.5)) * (u_inverseFlowmapSize / res);
+    return texture2D(u_surfMap, vec2(uv.x, 1.0-uv.y)).r;
+}
+
+float getSurfMapValue() {
+    int res = 2; // must match value in LevelModel.recalculateSurfMap // TODO: make this an imported uniform
+
+    vec2 uv_pixels = v_texCoords * u_flowmapSize * res;
+    vec2 bottomLeft = floor(uv_pixels - vec2(0.5,0.5)); // pixel coordinates of pixel in flowmap to the bottom-left of flowUV
+
+    float s00 = sampleSurfMap(bottomLeft);
+    float s01 = sampleSurfMap(bottomLeft + vec2(0.0,1.0));
+    float s10 = sampleSurfMap(bottomLeft + vec2(1.0,0.0));
+    float s11 = sampleSurfMap(bottomLeft + vec2(1.0,1.0));
+
+    vec2 smerp = uv_pixels - (bottomLeft + vec2(0.5, 0.5));
+    //    smerp = smerp*smerp*(3.0 - 2.0*smerp);
+    //    smerp = smerp*smerp*(3.0 - 2.0*smerp);
+    //    smerp = smoothstep(0.5-current_blend, 0.5+current_blend, smerp);
+    float s0 = mix(s00, s01, smerp.y);
+    float s1 = mix(s10, s11, smerp.y);
+    float sCombined = mix(s0, s1, smerp.x);
+    return sCombined;
+}
+
+float getSurf() {
+    float s = getSurfMapValue(); // 0...1, where 0 is close to terrain and 1 is far from terrain
+    float surf_freq = 20.0;
+    float surf_time_scale = 2.5;
+    float surf_range = 0.3; // distances outside this range won't show up
+    s = min(1.0, s / surf_range);
+    return (1.0-s)*(1.0+s*sin(-surf_time_scale*u_time+surf_freq*s));
+}
 
 /*
 Returns (x,y) where:
@@ -117,7 +154,7 @@ vec3 combinedWaterColor(vec2 uv, vec2 uv_adjustment, vec2 normal_adjustment) {
     vec4 wave_1 = mix(wave01, wave11, smerp.x);
     vec4 waterCombined = mix(wave_0, wave_1, smerp.y);
 
-    float height = waterCombined.x;//0...1
+    float height = waterCombined.x + 1.0*getSurf();//0...1
     float speed = waterCombined.y;//0...1
     vec2 normal = waterCombined.zw;//-1...1
 
@@ -146,5 +183,7 @@ void main() {
     vec2 normal_adjustment = sine_wave_gradient;
     vec2 uv_adjustment = sine_wave_offset;
 
-    gl_FragColor = vec4(combinedWaterColor(uv, uv_adjustment, normal_adjustment), 1.0);
+    vec4 C = vec4(combinedWaterColor(uv, uv_adjustment, normal_adjustment), 1.0);
+    gl_FragColor = C;
+//    gl_FragColor = mix(vec4(vec3(getSurfMapValue()), 1.0), C, 0.01);
 }

@@ -426,6 +426,7 @@ public class GameCanvas {
 		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
 		// pass textures (as indices)
 		shaderProgram.setUniformi("u_flowMap", 1);
+		shaderProgram.setUniformi("u_surfMap", 2);
 		shaderProgram.setUniformf("u_flowmapSize", levelSize.x, levelSize.y);
 		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
 //		shaderProgram.setUniformi("TEXTURE", 2); // waterDiffuse
@@ -436,16 +437,18 @@ public class GameCanvas {
 		shaderProgram.setUniformf("u_time", time);
 	}
 
-	public void setFlowMap(Texture flowMap) {
+	public void setDataMaps(Texture flowMap, Texture surfMap) {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
 		flowMap.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+		surfMap.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
 	}
 
 	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset) {
-		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
-		waterDiffuse.bind();
+//		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+//		waterDiffuse.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE3);
 		waterNormal.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
