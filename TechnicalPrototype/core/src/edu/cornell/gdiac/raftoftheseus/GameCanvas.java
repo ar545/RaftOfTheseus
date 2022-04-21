@@ -429,7 +429,7 @@ public class GameCanvas {
 		shaderProgram.setUniformf("u_flowmapSize", levelSize.x, levelSize.y);
 		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
 //		shaderProgram.setUniformi("TEXTURE", 2); // waterDiffuse
-//		shaderProgram.setUniformi("NORMAL_TEXTURE", 3); // u_waterNormal
+		shaderProgram.setUniformi("u_normalTexture", 3); // u_waterNormal
 		shaderProgram.setUniformi("texture_offset_uv", 4); // waterUVOffset
 //		shaderProgram.setUniformi("u_waterLight", 5);
 		// pass time
