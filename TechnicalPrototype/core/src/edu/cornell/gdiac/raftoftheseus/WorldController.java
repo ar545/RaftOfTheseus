@@ -552,9 +552,7 @@ public class WorldController implements Screen, ContactListener {
         waterNormal.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         Texture waterUVOffset = directory.getEntry("water_uv_offset", Texture.class);
         waterUVOffset.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        Texture waterLight = directory.getEntry("water_light", Texture.class);
-//        waterLight.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset, waterLight);
+        canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/

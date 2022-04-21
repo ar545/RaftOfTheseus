@@ -35,7 +35,6 @@
       "water_diffuse":     "shaders/worley.png",
       "water_normal":     "shaders/worley_normal.png",
       "water_uv_offset":     "shaders/water_uv_offset.png",
-      "water_light":     "shaders/water_light.png",
       "white_bar":     "images/UI_HealthBar_Filled.png",
       "grey_bar":     "images/UI_HealthBar.png",
       "star":     "images/star.png",

@@ -16,7 +16,7 @@ uniform vec2 u_flowmapSize;
 uniform vec2 u_inverseFlowmapSize;
 
 // Scrolling speed for the currents flow.
-float waveSpeed = 0.5;
+float waveSpeed = 2.0;
 float current_blend = 0.2;//0...0.5
 
 uniform float u_time;
@@ -46,7 +46,7 @@ uniform float sine_wave_size = 0.18;//0.06
 //uniform float water_height_scale = 0.15;//0.2
 
 // water reflection calculations:
-const float camera_angle = 0.7*(PI*0.5); // angle to the vertical, i.e. 0 is looking straight down, pi/2 is looking totally horizontal
+const float camera_angle = 0.74*(PI*0.5); // angle to the vertical, i.e. 0 is looking straight down, pi/2 is looking totally horizontal
 const vec3 incoming_ray = vec3(0.0, sin(camera_angle), -cos(camera_angle)); // a ray pointing from the "camera" towards the scene
 
 /*
@@ -65,17 +65,20 @@ vec4 waterInfo(vec2 uv, vec2 gridPoint) {
     // Subtract the flow direction scaled by time to make the wave pattern scroll this way.
     vec2 offsetUV = uv - flowVector * u_time * waveSpeed + vec2(-u_time*0.05);
 
+    // displacement
+    vec2 base_uv_offset = offsetUV * texture_offset_scale;
+    base_uv_offset += u_time * texture_offset_time_scale;
+    vec2 offset_texture_uv = texture2D(texture_offset_uv, base_uv_offset).rg * 2.0 - 1.0;
+    vec2 texture_based_offset = offset_texture_uv * texture_offset_height;
+    offsetUV += texture_based_offset;
+
     offsetUV.y *= aspect_ratio;
     offsetUV *= tile_factor;
     float height = texture2D(u_texture, offsetUV).b;
     float speed = dot(flowVector, flowVector); // actually speed squared, but it doesn't matter
     vec3 normal = texture2D(u_normalTexture, offsetUV).rgb * 2.0 - 1.0;
-    vec2 normal_xy = normal.xy/normal.z;
-    return vec4(height, speed, normal);
-}
-
-float foo(float x, float x0) {
-    return clamp(((x-x0)/step_smooth + 1.0)*0.5, 0.0, 1.0);
+    vec2 normal_xy = normal.xy/normal.z + texture_based_offset;
+    return vec4(height, speed, normal_xy);
 }
 
 vec3 colorFromHeight(float height, vec2 normal_xy, vec2 normal_adjustment_xy) {
@@ -86,9 +89,9 @@ vec3 colorFromHeight(float height, vec2 normal_xy, vec2 normal_adjustment_xy) {
     // proportion of light power reflected from sky into camera (using Schlick's Approximation), assuming diffuse lighting only (eg. cloudy sky, no sun):
     float reflection = 0.02 + 0.98*pow(1.0-cos_ang, 5.0);
     float value = mix(height, reflection, 1-height*height);
-    float th1 = foo(value, thresh_low);
-    float th2 = foo(value, thresh_mid);
-    float th3 = foo(value, thresh_high);
+    float th1 = step(thresh_low, value);
+    float th2 = step(thresh_mid, value);
+    float th3 = step(thresh_high, value);
     return color_deep*(1.0-th1) + color_sky*(th1-th2) + color_crest*(th2-th3) + color_foam*(th3);
 //    return (normal+1.0)*0.5;
 //    return vec3(reflection);
@@ -128,25 +131,20 @@ vec3 combinedWaterColor(vec2 uv, vec2 uv_adjustment, vec2 normal_adjustment) {
 void main() {
     vec2 uv = v_texCoords * u_flowmapSize; // UV coordinates of this pixel in the unscaled texture, between 0 and level size
 
-    vec2 base_uv_offset = uv * texture_offset_scale;
-    base_uv_offset += u_time * texture_offset_time_scale;
+//    vec2 base_uv_offset = uv * texture_offset_scale;
+//    base_uv_offset += u_time * texture_offset_time_scale;
 
-    vec2 offset_texture_uv = texture2D(texture_offset_uv, base_uv_offset).rg * 2.0 - 1.0;
-    vec2 texture_based_offset = offset_texture_uv * texture_offset_height;
+//    vec2 offset_texture_uv = texture2D(texture_offset_uv, base_uv_offset).rg * 2.0 - 1.0;
+//    vec2 texture_based_offset = offset_texture_uv * texture_offset_height;
 
     float arg = -u_time * sine_time_scale + dot(uv, sine_wave_velocity);
     float sine_wave = sin(arg) * sine_wave_size;
     vec2 sine_wave_gradient = cos(arg) * sine_wave_velocity * sine_wave_size;
     vec2 sine_wave_offset = vec2(0.0, sine_wave);
-    vec2 normal_adjustment = texture_based_offset + sine_wave_gradient;
-    vec2 uv_adjustment = texture_based_offset + sine_wave_offset;
+//    vec2 normal_adjustment = texture_based_offset + sine_wave_gradient;
+//    vec2 uv_adjustment = texture_based_offset + sine_wave_offset;
+    vec2 normal_adjustment = sine_wave_gradient;
+    vec2 uv_adjustment = sine_wave_offset;
 
-//    float sine_wave_height = dot(sine_wave_offset, sine_wave_velocity);
-//    float water_height = ( sine_wave_height + offset_texture_uv.g ) * water_height_scale;
-
-    vec4 c = vec4(combinedWaterColor(uv, uv_adjustment, normal_adjustment), 1.0);
-    gl_FragColor = c;
-    //	gl_FragColor = vec4(vec2(offset_texture_uv), 0.0, 1.0);
-//    gl_FragColor = mix(c, shadow_color, water_height);
-    //	gl_FragColor = vec4(vec2(adjusted_uv), 0.0, 1.0);
+    gl_FragColor = vec4(combinedWaterColor(uv, uv_adjustment, normal_adjustment), 1.0);
 }

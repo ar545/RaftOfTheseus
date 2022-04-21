@@ -443,15 +443,13 @@ public class GameCanvas {
 		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
 	}
 
-	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset, Texture waterLight) {
+	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset) {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
 		waterDiffuse.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE3);
 		waterNormal.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
 		waterUVOffset.bind();
-		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE5);
-		waterLight.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 	}
 
