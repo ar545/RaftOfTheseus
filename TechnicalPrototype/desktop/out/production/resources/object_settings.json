@@ -1,0 +1,68 @@
+{
+  "world" : {
+    "exit count" : 1000,
+    "use shaders" : true,
+    "world step" : 60.0,
+    "world velocity" : 6,
+    "world posit" : 2
+  },
+  "siren" : {
+    "idle time" : 500,
+    "singing time" : 3000,
+    "attack range": 200,
+    "attack damage" : 40,
+    "proximity" : 1,
+    "fly speed" : 0.0001
+  },
+  "hydra" : {
+    "hitting range" : 200,
+    "hitting damage" : 50,
+    "firing range" : 1500.0,
+    "bullet damage" : 30,
+    "stun time" : 500,
+    "cool down" : 1500,
+    "size" : 10
+  },
+  "shark" : {
+    "damage per frame" : 0,
+    "chase distance" : 12,
+    "wander speed" : 1.5,
+    "chase speed" : 2.0,
+    "enrage speed" : 8.0,
+    "damage" : -25,
+    "protect range" : 5,
+    "search range" : 30
+  },
+  "spear": {
+    "speed scale" : 25.0,
+    "health cost" : -5.0,
+    "spear size" : 2,
+    "spear range fly" :  10.0,
+    "spear range fall" : 11.0
+  },
+  "note" : {
+    "speed scale" : 25.0,
+    "health cost" : -15.0,
+    "size" : 2,
+    "range fly" :  10.0,
+    "range fall" : 11.0,
+    "force" : 5
+  },
+  "rock": {
+    "width": 3,
+    "height": 3,
+    "damage": 10
+  },
+  "terrain": {
+  },
+  "raft" : {
+    "move cost" : 2,
+    "with current" : 0.45,
+    "against current" : 1.75,
+    "max health" : 200,
+    "initial health" : 60,
+    "damping" : 5,
+    "thrust" : 0.3,
+    "max speed" : 10
+  }
+}
