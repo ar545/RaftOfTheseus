@@ -990,12 +990,15 @@ public class LevelModel {
     /** Precondition & post-condition: the game canvas is open
      * @param health the health percentage for the player */
     private void drawHealthBar(float health, Vector2 player_position) {
+        int width_offset = (int)(colorBar.getWidth() * 0.07f);
         Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
-        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
+        TextureRegion RatioBar = new TextureRegion(colorBar, width_offset, 0,
+                (int)(colorBar.getWidth() * (health * 0.86f) + width_offset), colorBar.getHeight());
         float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
         float y_origin = (player_position.y + 20);
-        canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
-        if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
+        canvas.draw(greyBar, Color.WHITE, x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        if(health >= 0)
+        {canvas.draw(RatioBar, c,x_origin + width_offset, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
     }
 
     /** This function calculate the correct health bar color
