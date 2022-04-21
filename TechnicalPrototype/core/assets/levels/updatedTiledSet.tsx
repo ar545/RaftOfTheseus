@@ -4,38 +4,57 @@
  <tile id="0" type="Raft"/>
  <tile id="1" type="Siren"/>
  <tile id="2" type="Enemy"/>
+ <tile id="3" type="Current"/>
+ <tile id="4" type="Current"/>
+ <tile id="5" type="Current"/>
+ <tile id="6" type="Current"/>
+ <tile id="7" type="Rock"/>
+ <tile id="9" type="Goal"/>
+ <tile id="10" type="Current"/>
+ <tile id="11" type="Current"/>
+ <tile id="12" type="Current"/>
+ <tile id="13" type="Current"/>
+ <tile id="14" type="Treasure"/>
+ <tile id="15" type="Wood"/>
+ <tile id="16" type="Wood"/>
+ <tile id="17" type="Wood"/>
+ <tile id="18" type="Wood"/>
+ <tile id="19" type="Wood"/>
+ <tile id="20" type="Wood"/>
+ <tile id="21" type="Wood"/>
+ <tile id="22" type="Wood"/>
+ <tile id="23" type="Wood"/>
+ <tile id="24" type="Wood"/>
+ <tile id="25" type="Wood"/>
+ <tile id="26" type="Wood"/>
+ <tile id="27" type="Rock"/>
+ <tile id="28" type="Rock"/>
+ <tile id="29" type="Rock"/>
+ <tile id="30" type="Rock"/>
+ <tile id="31" type="Rock"/>
+ <tile id="32" type="Rock"/>
+ <tile id="33" type="Rock"/>
+ <tile id="34" type="Rock"/>
+ <tile id="35" type="Rock"/>
+ <tile id="36" type="Rock"/>
+ <tile id="37" type="Rock"/>
+ <tile id="38" type="Rock"/>
+ <tile id="39" type="Rock"/>
+ <tile id="40" type="Rock"/>
  <wangsets>
   <wangset name="Land Set" type="corner" tile="28">
    <wangcolor name="Land" color="#ff0000" tile="34" probability="1"/>
    <wangcolor name="Sea" color="#00ff00" tile="41" probability="1"/>
-   <wangtile tileid="0" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="1" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="2" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="3" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="4" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="5" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="6" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="7" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="8" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="9" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="10" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="11" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="12" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="13" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="14" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="15" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="16" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="17" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="18" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="19" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="20" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="21" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="22" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="23" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="24" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="25" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="26" wangid="0,2,0,2,0,2,0,2"/>
-   <wangtile tileid="27" wangid="0,1,0,1,0,1,0,1"/>
    <wangtile tileid="28" wangid="0,2,0,1,0,2,0,2"/>
    <wangtile tileid="29" wangid="0,2,0,2,0,1,0,2"/>
    <wangtile tileid="30" wangid="0,1,0,2,0,1,0,1"/>
