@@ -102,6 +102,7 @@
     "object_settings" : "object_settings.json",
     "screen_settings" : "screen_settings.json",
     "input_settings" : "input_settings.json",
+    "lights" : "light_settings.json",
     "level:0" : "levels/level0.json",
     "level:1" : "levels/level1.json",
     "level:2" : "levels/level2.json",

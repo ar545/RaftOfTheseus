@@ -1,0 +1,95 @@
+[
+    {
+        "color": "#ff151fdc",
+        "name": "Current",
+        "properties": [
+            {
+                "name": "Direction",
+                "type": "string",
+                "value": ""
+            },
+            {
+                "name": "Magnitude",
+                "type": "int",
+                "value": 0
+            }
+        ]
+    },
+    {
+        "color": "#ffa4030e",
+        "name": "Enemy",
+        "properties": [
+            {
+                "name": "Type",
+                "type": "int",
+                "value": 0
+            },
+            {
+                "name": "location1_x",
+                "type": "float",
+                "value": 100
+            },
+            {
+                "name": "location1_y",
+                "type": "float",
+                "value": 50
+            }
+        ]
+    },
+    {
+        "color": "#ff06a40c",
+        "name": "Goal",
+        "properties": [
+        ]
+    },
+    {
+        "color": "#ffa47a10",
+        "name": "Raft",
+        "properties": [
+        ]
+    },
+    {
+        "color": "#ff242425",
+        "name": "Rock",
+        "properties": [
+        ]
+    },
+    {
+        "color": "#ffa0a0a4",
+        "name": "Siren",
+        "properties": [
+            {
+                "name": "ID",
+                "type": "int",
+                "value": 0
+            },
+            {
+                "name": "isStart",
+                "type": "bool",
+                "value": false
+            }
+        ]
+    },
+    {
+        "color": "#ff9ca40c",
+        "name": "Treasure",
+        "properties": [
+        ]
+    },
+    {
+        "color": "#ffa46038",
+        "name": "Wood",
+        "properties": [
+            {
+                "name": "Tens of Value",
+                "type": "int",
+                "value": 0
+            },
+            {
+                "name": "Value",
+                "type": "int",
+                "value": 0
+            }
+        ]
+    }
+]

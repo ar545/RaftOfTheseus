@@ -1,10 +1,13 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
+import box2dLight.RayHandler;
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.math.Affine2;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Rectangle;
@@ -12,11 +15,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.lights.PointSource;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
-//import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
+
+import java.util.HashMap;
 
 public class LevelModel {
 
@@ -28,13 +33,15 @@ public class LevelModel {
     /** Pixels per Box2D unit */
     private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** Default boundary width and height of a single grid in Box2d units */
-    private static final float DEFAULT_BOUNDARY = 3.0f;
+    private static final float DEFAULT_BOUNDARY = 1.0f;
     /** Default num of rows in the map (y, height) */
     private static final int DEFAULT_GRID_ROW = 8;
     /** Default num of columns in the map (x, width) */
     private static final int DEFAULT_GRID_COL = 10;
+    /** a final vector 2 with both x and y as 0 */
+    private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
     /** Top-down game with no gravity */
-    protected static final Vector2 NO_GRAVITY = new Vector2(0f ,0f );
+    protected static final Vector2 NO_GRAVITY = ZERO_VECTOR_2;
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
 
@@ -43,51 +50,50 @@ public class LevelModel {
     private static final int TILE_DEFAULT = 0;
     /** Index of the representation of start in tile set texture */
     private static final int TILE_START = 1;
+    /** Index of the representation of enemy in tile set texture */
+    private static final int TILE_ENEMY_SIREN = 2;
+    /** Index of the representation of enemy in tile set texture */
+    private static final int TILE_ENEMY_SHARK = 3;
+    /** Index of the representation of rock in tile set texture */
+    private static final int TILE_ROCK_ALONE = 8;
+    /** Index of the representation of rock in tile set texture */
+    private static final int TILE_ROCK_SHARP = 9;
     /** Index of the representation of goal in tile set texture */
-    private static final int TILE_GOAL = 2;
-    /** Index of the representation of rock in tile set texture */
-    private static final int[] TILE_ROCK = {11, 12, 21, 22};
-    /** Index of the representation of rock in tile set texture */
-    private static final int TILE_ROCK_DEFAULT = TILE_ROCK[0];
-    /** Index of the representation of enemy in tile set texture */
-    private static final int[] TILE_ENEMY = {31, 32, 41, 42};
-    /** Index of the representation of enemy in tile set texture */
-    private static final int TILE_ENEMY_DEFAULT = TILE_ENEMY[0];
-    /** Index of the representation of default treasure in tile set texture */
-    private static final int[] TILE_TREASURE = {51, 52};
-    /** Index of the representation of default treasure in tile set texture */
-    private static final int TILE_TREASURE_DEFAULT = TILE_TREASURE[0];
+    private static final int TILE_GOAL = 10;
+    /** Index of the representation of treasure in tile set texture */
+    private static final int TILE_TREASURE = 15;
     /** Index of the representation of default wood in tile set texture */
-    private static final int TILE_WOOD_OFFSET = 60;
+    private static final int TILE_WOOD_OFFSET = 15;
+    /** Index of the representation of place-holder in tile set texture */
+    private static final int TILE_PLANT = 28;
     /** Index of the representation of default current in tile set texture */
-    private static final int TILE_CURRENT_DIVISION = 10;
+    private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
-    private static final int TILE_CURRENT_OFFSET = -10;
+    private static final int TILE_SEA = 42;
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Offset of north current in tile set index */
-    private static final int TILE_NORTH = 0;
+    private static final int TILE_NORTH_EAST = 4;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST = 5;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST_SOUTH = 6;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH = 7;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH_WEST = 11;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST = 12;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST_NORTH = 13;
     /** Offset of north current in tile set index */
-    private static final int TILE_NORTH_EAST = 3;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST = 4;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST_SOUTH = 5;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH = 6;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH_WEST = 7;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST = 8;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST_NORTH = 9;
-    /** layer of environment */
+    private static final int TILE_NORTH = 14;
+    /** layer of environment and land */
     private static final int LAYER_ENV = 0;
-    /** layer of collectables */
+    /** layer of collectables and shark */
     private static final int LAYER_COL = 1;
-    /** layer of enemies */
-    private static final int LAYER_ENE = 2;
-    private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
+    /** layer of siren */
+    private static final int LAYER_SIREN = 2;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -99,7 +105,7 @@ public class LevelModel {
     /** The vertices of the wall */
     private float[] polygonVertices;
     /** Reference to the game assets directory */
-    private AssetDirectory directory;
+    private AssetDirectory directory; // TODO: is this reference needed at all?
     /** Reference to the game canvas. */
     private GameCanvas canvas;
     /** The read-in level data */
@@ -108,8 +114,6 @@ public class LevelModel {
     public World world;
     /** The boundary of the world */
     private Rectangle bounds;
-    /** The world scale */
-    protected Vector2 scale = new Vector2(1, 1);
     /** The map size in grid */
     protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
     /** Vector 2 holding the temp position vector for the game object to create */
@@ -124,6 +128,12 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
+    /** The light source of this level */
+    private PointSource light;
+    /** The rayhandler for storing lights, and drawing them (SIGH) */
+    protected RayHandler rayhandler;
+    /** The camera defining the RayHandler view; scale is in physics coordinates */
+    protected OrthographicCamera raycamera;
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -156,6 +166,8 @@ public class LevelModel {
     protected Texture colorBar;
     /** The texture for the health bar background */
     protected TextureRegion greyBar;
+    /** Json information for light settings */
+    private JsonValue lightSettings;
 
     /** Transform from Box2D coordinates to screen coordinates */
     private Affine2 cameraTransform;
@@ -165,6 +177,8 @@ public class LevelModel {
     private GameObject[][] obstacles;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
+    /** Constructor call for this singleton class */
+    public LevelModel(){}
     /** get the reference to the player avatar */
     public Raft getPlayer() { return raft; }
     /** get a reference to the goal */
@@ -173,26 +187,27 @@ public class LevelModel {
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
     public PooledList<Shark> getEnemies() { return enemies; }
-//    public PooledList<Hydra> getHydras() { return hydras; }
+    /** get the list of sirens in the world */
     public PooledList<Siren> getSirens() { return sirens; }
-    /***/
+    /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
     public void setDirectory(AssetDirectory directory) { this.directory = directory; }
+    /** @return the bounds of this world in rectangle */
+    public Rectangle bounds() {return bounds;}
+    /** @return the currents */
+    public GameObject[][] obstacles() {return obstacles;}
+    /** The number of columns in this map-grid */
+    public int cols(){ return map_size.x; }
+    /** The number of rows in this map-grid */
+    public int rows(){ return map_size.y; }
+    /** Getter for how long each tile is **/
+    public float getTileSize() { return GRID_SIZE; }
     /** Get boundary wall vertices */
     public float[] getWallVertices() { return polygonVertices; }
-    /** Get boundary wall drawscale */
-//    public Vector2 getWallDrawscale() { return this_wall.getDrawScale(); }
     /** Constructor call for this singleton class */
     public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
 
-    public int cols(){
-        return map_size.x;
-    }
-
-    public int rows(){
-        return map_size.y;
-    }
 
     /**
      * Returns true if the object is in bounds.
@@ -206,29 +221,17 @@ public class LevelModel {
         return horiz && vert;
     }
 
+    /** @return if the given coordinate on grid is in bound. */
     public boolean inBounds(int col, int row) {
         boolean vert = (0<=row && row<rows());
         boolean horiz = (0<=col && col<cols());
         return horiz && vert;
     }
 
-
-    /** @return the bounds of this world in rectangle */
-    public Rectangle bounds() {
-        return bounds;
-    }
-
-    /** @return the currents */
-    public GameObject[][] obstacles() {
-        return obstacles;
-    }
-
     /** @return the height and width of bounds only
      * width: GRID_SIZE.x * map_size.x
      * height: GRID_SIZE.y * map_size.y */
-    public Vector2 boundsVector2(){
-        return new Vector2(bounds.width, bounds.height);
-    }
+    public Vector2 boundsVector2(){ return new Vector2(bounds.width, bounds.height); }
 
     /** @return the height and width of bounds only
      * x = y = - DEFAULT_BOUNDARY;
@@ -236,7 +239,7 @@ public class LevelModel {
      * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
     public Rectangle wallBounds(){
         return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - DEFAULT_BOUNDARY,
-                bounds.width + DEFAULT_BOUNDARY, bounds.height + DEFAULT_BOUNDARY);
+                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2 * DEFAULT_BOUNDARY);
     }
 
     /** Adds a physics object in to the insertion queue.
@@ -273,10 +276,6 @@ public class LevelModel {
         enemies.add(obj);
     }
 
-    /** Getter for how long each tile is **/
-    public float getTileSize() {
-        return GRID_SIZE;
-    }
 
     /**
      * Returns the board cell index for a screen position.
@@ -343,8 +342,9 @@ public class LevelModel {
         objects = null;
         addQueue = null;
         bounds = null;
-        scale  = null;
         world  = null;
+        if (light != null) { light.remove(); light = null; }
+        if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
 
     /**
@@ -360,7 +360,8 @@ public class LevelModel {
         if (world != null)
             world.dispose();
         world = new World(NO_GRAVITY,false);
-
+        if (light != null) { light.remove(); light = null; }
+        if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
 
     /** Load the level representing by the parameter level_int.
@@ -401,7 +402,7 @@ public class LevelModel {
      * Notice that the walls are not included in this boundary, i.e. all walls are out of bounds
      * To include the walls in the bounds, expand the size of rectangle by DEFAULT_BOUNDARY on each side */
     private void setBound() {
-        this.bounds = new Rectangle(0,0,GRID_SIZE * map_size.x ,GRID_SIZE * map_size.y );
+        this.bounds = new Rectangle(0,0,GRID_SIZE * cols() ,GRID_SIZE * rows() );
     }
 
     /**
@@ -442,16 +443,21 @@ public class LevelModel {
         JsonValue layers = level_data.get("layers");
         JsonValue environment = layers.get(LAYER_ENV);
         JsonValue collectables = layers.get(LAYER_COL);
-        JsonValue enemies = layers.get(LAYER_ENE);
+        JsonValue sirenLayer = layers.get(LAYER_SIREN);
+        for(JsonValue layer : layers){
+            if(layer.getString("name").equals("Environment")){ environment = layer;}
+            else if(layer.getString("name").equals("Collectable")){ collectables = layer;}
+            else if(layer.getString("name").equals("Siren")){ sirenLayer = layer;}
+            else { System.out.println("Un-parse-able information: layer name not recognized." + layer.getString("name"));}
+        }
 
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
-        for(int row_reversed = 0; row_reversed < map_size.y; row_reversed ++){
-            int row = map_size.y - row_reversed - 1;
-            for(int col = 0; col < map_size.x; col ++){
-                int index = row_reversed * map_size.x + col;
+        for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
+            int row = rows() - row_reversed - 1;
+            for(int col = 0; col < cols(); col ++){
+                int index = row_reversed * cols() + col;
                 populateEnv(row, col, environment.get("data").getInt(index));
                 populateCollect(row, col, collectables.get("data").getInt(index));
-                populateEnemies(row, col, enemies.get("data").getInt(index));
                 // TODO: if we populate the raft field before instantiating enemies,
                 //  we can properly instantiate instead of putting null for target raft field
                 //  see the Enemy this_enemy = new Enemy(compute_temp, null);
@@ -459,7 +465,42 @@ public class LevelModel {
                 populateEnemiesRaftField();
             }
         }
+
+        populateSiren(sirenLayer.get("objects"));
     }
+
+    /** Populate the new created siren layer. This is the level editor JSON parser that populate the enemy layer
+     * @param objects the list of sirens */
+    private void populateSiren(JsonValue objects) {
+        HashMap<Integer, Vector2> existingPositions = new HashMap<>();
+        for(JsonValue obj : objects){
+            JsonValue properties = obj.get("properties");
+            int id = 0;
+            boolean isStart = false;
+            if(properties != null){
+                for(JsonValue property : properties){
+                    if(property.getString("name").equals("ID")){
+                        id = property.getInt("value");
+                    }else if(property.getString("name").equals("isStart")){
+                        isStart = property.getBoolean("value"); // always true
+                    }
+                }
+            }
+            Vector2 position = new Vector2(obj.getFloat("x") / 50f, obj.getFloat("y") / 50f);
+
+            // Now, add this siren by finding another copy of it
+            if(existingPositions.containsKey(id)){
+                Vector2 altPosition = existingPositions.remove(id);
+                if(isStart){ addSiren(position, altPosition); }else{ addSiren(altPosition, position); }
+            }else{
+                existingPositions.put(id, position);
+            }
+        }
+        existingPositions.clear();
+    }
+
+    // TODO: add siren is not finished
+    private void addSiren(Vector2 startPosition, Vector2 endPosition) {}
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
@@ -468,40 +509,23 @@ public class LevelModel {
         }
     }
 
-    /** This is the level editor JSON parser that populate the enemy layer
-     * @param row the row the enemy is in the world
-     * @param col the column the enemy is in the world
-     * @param tile_int whether this tile is an emery or the player */
-    private void populateEnemies(int row, int col, int tile_int) {
-        if (tile_int == TILE_DEFAULT) { return; }
-        else if (tile_int == TILE_START) { addRaft(row, col); return; }
-        else {
-            for(int i = 0; i < TILE_ENEMY.length; i++){
-                if(tile_int == TILE_ENEMY[i]){
-                    addEnemy(row, col, i);
-                    return;
-                }
-            }
-        }
-        // This function should never reach here.
-        System.out.println("Un-parse-able information detected in enemy layer.");
-        addEnemy(row, col, 0);
-    }
-
     /** This is the level editor JSON parser that populate the collectable layer
      * @param row the row the collectable is in the world
      * @param col the column the collectable is in the world
      * @param tile_int whether this tile is a wood or treasure */
     private void populateCollect(int row, int col, int tile_int) {
-        if(tile_int == TILE_DEFAULT){ return; }
-        else if(tile_int == TILE_TREASURE[0]){ addTreasure(row, col); return; }
-        else if (tile_int == TILE_TREASURE[1]){ addTreasure(row, col); return; }
-        else if(tile_int > TILE_WOOD_OFFSET){
+        if (tile_int == TILE_DEFAULT){ return; }
+        if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
+        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, 0); return; }
+        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, 2); return; }
+        if (tile_int == TILE_PLANT - 1){ addWood(row, col, 20); return; }
+        if (tile_int == TILE_PLANT - 2){ addWood(row, col, 15); return; }
+        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_PLANT){
             addWood(row, col, tile_int - TILE_WOOD_OFFSET);
             return;
         }
         // This function should never reach here.
-        System.out.println("Un-parse-able information detected in collectable layer.");
+        System.out.println("Un-parse-able information detected in collectable layer:" + tile_int);
         addWood(row, col, 1);
     }
 
@@ -511,20 +535,18 @@ public class LevelModel {
      * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateEnv(int row, int col, int tile_int) {
         currentField.field[col][row] = ZERO_VECTOR_2;
-        if(tile_int == TILE_DEFAULT){ return; }
-        else if(tile_int == TILE_GOAL){ addGoal(row, col); return; }
-        for (int j : TILE_ROCK) {
-            if (tile_int == j) { addRock(row, col); return; }
+        if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
+        if (tile_int == TILE_START) { addRaft(row, col); return; }
+        if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
+        if (tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
+        if (tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
+        if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){
+            addRock(row, col, tile_int - TILE_LAND_OFFSET); return;
         }
-        addCurrent(row, col, compute_direction(tile_int % TILE_CURRENT_DIVISION), compute_magnitude(tile_int));
+        if (tile_int >= TILE_WOOD_OFFSET)
+        { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
+        addCurrent(row, col, compute_direction(tile_int));
     }
-
-    /** Compute the magnitude of the current base on the level json input
-     * @param tile_int level json input indicating object type
-     * @return the magnitude of the current */
-    private int compute_magnitude(int tile_int) {
-        if(tile_int < 1 || tile_int > 60) { return 1; }
-        return (tile_int - TILE_CURRENT_OFFSET) / TILE_CURRENT_DIVISION; }
 
     /** Compute the direction of the current base on the level json input
      * @param i level json input
@@ -543,14 +565,16 @@ public class LevelModel {
         }
     }
 
+    /*=*=*=*=*=*=*=*=*=* Level population: add objects *=*=*=*=*=*=*=*=*=*/
+
     /** Add Rock Objects to the world, using the Json value for goal.
      * @param row the row gird position
-     * @param col the column grid position */
-    private void addRock(int row, int col) {
+     * @param col the column grid position
+     * @param tile_int 0 if stand-alone, 1-16 if texture alas, -1 for sharp */
+    private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp, false);
-        this_rock.setTexture(rockTexture);
-//        System.out.println(map_size);
+        this_rock.setTexture(rockTexture); // TODO: new land texture if tile_int != 0
         obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
@@ -601,17 +625,6 @@ public class LevelModel {
         goal = this_goal;
     }
 
-    /** Add Raft Objects to the world, using the Json value for raft
-     * @param row the row gird position
-     * @param col the column grid position */
-    private void addRaft(int row, int col) {
-        computePosition(col, row);
-        Raft this_raft = new Raft(compute_temp);
-        this_raft.setTexture(raftTexture);
-        addObject(this_raft);
-        raft = this_raft;
-    }
-
     /** Add wood Objects to the world, using the Json value for goal
      * @param row the row gird position
      * @param col the column grid position
@@ -630,10 +643,10 @@ public class LevelModel {
      * @param row the row gird position
      * @param col the column grid position
      * @param direction the direction */
-    private void addCurrent(int row, int col, Current.Direction direction, int magnitude) {
+    private void addCurrent(int row, int col, Current.Direction direction) {
         // TODO: the current object collision no longer needed, but texture is needed
         computePosition(col, row);
-        Current this_current = new Current(compute_temp, direction, magnitude);
+        Current this_current = new Current(compute_temp, direction);
         this_current.setTexture(currentTexture);
 
         // Initialize the current field, used for current vector field
@@ -654,6 +667,63 @@ public class LevelModel {
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE;
     }
 
+    /** Add Raft Objects to the world, using the Json value for raft
+     * @param row the row gird position
+     * @param col the column grid position */
+    private void addRaft(int row, int col) {
+        computePosition(col, row);
+        Raft this_raft = new Raft(compute_temp);
+        this_raft.setTexture(raftTexture);
+        addObject(this_raft);
+        raft = this_raft;
+        prepareLights(this_raft);
+    }
+
+    /** Prepare the box2d light settings once raft is ready */
+    private void prepareLights(Raft r){
+        initLighting(lightSettings.get("init")); // Box2d lights initialization
+        light = createPointLights(lightSettings.get("point")); // Box2d lights information
+        attachLights(r);
+    }
+
+    /** Update the light effect of the world */
+    public void updateLights(){ if (rayhandler != null) { rayhandler.update(); } }
+
+    /** Render the shadow effects. This function should be called after all objects are drawn,
+     * but before any health-bar, map, or de-bug information is drawn.
+     * Precondition and Post-condition: canvas is closed */
+    public void renderLights(){ if (rayhandler != null) {
+        Vector2 lightTrans = lightTranslation();
+        light.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, light.getDirection());
+        rayhandler.render();
+    } }
+
+    /** This calculates the box2d light position translation according to the screen (canvas) size,
+     *  the player position, and the pixel per unit scale.
+     * @return a Vector2 representing the translation that texture will go through */
+    Vector2 lightTranslation() {
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 translation = new Vector2((float)canvas.getWidth(), (float)canvas.getHeight());
+        translation.scl(0.0015f * cols(), 0.0015f * rows()); // 0.0015 = 0.03 * 0.1 * 1/2
+        translation.sub(getPlayer().getPosition());
+
+         // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = wallBounds();
+        translation.x = Math.min(translation.x, canvas.getWidth() * (0.0015f * cols() - 0.015f) - wallBounds.x);
+        translation.x = Math.max(translation.x, canvas.getWidth() * (0.0015f * cols() + 0.015f) - wallBounds.width);
+        translation.y = Math.min(translation.y, canvas.getHeight() * (0.0015f * rows() - 0.015f) - wallBounds.y);
+        translation.y = Math.max(translation.y, canvas.getHeight() * (0.0015f * rows() + 0.015f) - wallBounds.height);
+
+        // "Scaled Camera": adjust x and y scale
+        float x_diff = 0.0015f * cols() * canvas.getWidth() - (getPlayer().getPosition().x + translation.x);
+        float y_diff = 0.0015f * rows() * canvas.getHeight() - (getPlayer().getPosition().y + translation.y);
+        if( x_diff != 0 ){ translation.x -= x_diff * ((cols() / 10f) - 1); }
+        if( y_diff != 0 ){ translation.y -= y_diff * ((rows() / 10f) - 1); }
+        return translation;
+    }
+
+    /*=*=*=*=*=*=*=*=*=* Texture assets and box2d lighting *=*=*=*=*=*=*=*=*=*/
+
     /** This gather the assets required for initializing the objects
      * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
@@ -672,7 +742,78 @@ public class LevelModel {
         blueTexture = directory.getEntry("blue_texture", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
+        lightSettings = directory.getEntry("lights", JsonValue.class);
     }
+
+    /**
+     * Creates the points lights for the level
+     *
+     * Point lights show light in all direction.  We treat them differently from cone
+     * lights because they have different defining attributes.  However, all lights are
+     * added to the lights array.  This allows us to cycle through both the point lights
+     * and the cone lights with activateNextLight().
+     *
+     * All lights are deactivated initially.  We only want one active light at a time.
+     *
+     * @param  lightJson	the JSON tree defining the list of point lights
+     */
+    private PointSource createPointLights(JsonValue lightJson) {
+        float[] color = lightJson.get("color").asFloatArray();
+        float[] pos = lightJson.get("pos").asFloatArray();
+        float dist  = lightJson.getFloat("distance");
+        int rays = lightJson.getInt("rays");
+
+        PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
+        point.setColor(color[0],color[1],color[2],color[3]);
+        point.setSoft(lightJson.getBoolean("soft"));
+
+        // Create a filter to exclude see through items
+        Filter f = new Filter();
+        f.maskBits = (short) lightJson.getInt("excludeBits");
+        point.setContactFilter(f);
+        point.setActive(true); // TURN ON NOW
+        return point;
+    }
+
+    /**
+     * Creates the ambient lighting for the level
+     *
+     * This is the amount of lighting that the level has without any light sources.
+     * However, if activeLight is -1, this will be ignored and the level will be
+     * completely visible.
+     *
+     * @param  lightJson	the JSON tree defining the light
+     */
+    private void initLighting(JsonValue lightJson) {
+        raycamera = new OrthographicCamera(bounds.width, bounds.height);
+        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
+        raycamera.update();
+
+        RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
+        RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
+        rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height);
+        rayhandler.setCombinedMatrix(raycamera);
+
+        float[] color = lightJson.get("color").asFloatArray();
+        rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
+        int blur = lightJson.getInt("blur");
+        rayhandler.setBlur(blur > 0);
+        rayhandler.setBlurNum(blur);
+    }
+
+    /**
+     * Attaches all lights to the avatar.
+     * Lights are offset form the center of the avatar according to the initial position.
+     * By default, a light ignores the body.  This means that putting the light inside
+     * of these bodies fixtures will not block the light.  However, if a light source is
+     * offset outside the bodies fixtures, then they will cast a shadow.
+     * The activeLight is set to be the first element of lights, assuming it is not empty.
+     */
+    public void attachLights(Raft avatar) {
+        light.attachToBody(avatar.physicsObject.getBody(), light.getX(), light.getY(), light.getDirection());
+    }
+
+    /*=*=*=*=*=*=*=*=*=* New-added current and wood methods *=*=*=*=*=*=*=*=*=*/
 
     /** Add wood Objects to random location in the world */
     public void addRandomWood() {
@@ -682,7 +823,7 @@ public class LevelModel {
     }
 
     private Texture recalculateFlowMap() {
-        Pixmap pix = new Pixmap(map_size.x, map_size.y,  Pixmap.Format.RGBA8888);
+        Pixmap pix = new Pixmap(cols(), rows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
         for (GameObject o : getObjects()) {
@@ -856,7 +997,7 @@ public class LevelModel {
 
     /** This function calculates the moving camera linear transformation according to the screen (canvas) size,
      * boundary of the world with walls, the player position, and the pixel per unit scale.
-     * @return an affine2 representing the affine transformation that texture will go through */
+     * Update the "cameraTransform" with an affine transformation that texture will go through */
     public void updateCameraTransform() {
         Affine2 a = new Affine2().setToScaling(PIXELS_PER_UNIT, PIXELS_PER_UNIT);
 
@@ -872,4 +1013,5 @@ public class LevelModel {
         translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * PIXELS_PER_UNIT);
         cameraTransform = a.preTranslate(translation);
     }
+
 }
