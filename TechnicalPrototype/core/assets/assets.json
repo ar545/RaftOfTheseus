@@ -32,7 +32,7 @@
       "bullet": "images/Obj_Spear_Aerial.png",
       "current": "images/current_square.png",
       "enemy":     "images/Obj_Shark_Combine.png",
-      "water_diffuse":     "shaders/water_diffuse.png",
+      "water_diffuse":     "shaders/water_diffuse_bw_3.png",
       "water_normal":     "shaders/water_normal.png",
       "water_uv_offset":     "shaders/water_uv_offset.png",
       "water_light":     "shaders/water_light.png",

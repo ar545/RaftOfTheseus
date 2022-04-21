@@ -425,7 +425,8 @@ public class GameCanvas {
 		objToWorldMat.setAsAffine(transform);
 		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
 		// pass textures (as indices)
-//		shaderProgram.setUniformi("u_flowMap", 1);
+		shaderProgram.setUniformi("u_flowMap", 1);
+		shaderProgram.setUniformf("u_flowmapSize", levelSize.x, levelSize.y);
 		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
 //		shaderProgram.setUniformi("TEXTURE", 2); // waterDiffuse
 //		shaderProgram.setUniformi("NORMAL_TEXTURE", 3); // u_waterNormal
