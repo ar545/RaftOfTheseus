@@ -240,8 +240,8 @@ public class LevelModel {
      * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
      * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
     public Rectangle wallBounds(){
-        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - DEFAULT_BOUNDARY,
-                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2 * DEFAULT_BOUNDARY);
+        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - 0.2f * DEFAULT_BOUNDARY,
+                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2.8f * DEFAULT_BOUNDARY);
     }
 
     /** Adds a physics object in to the insertion queue.
@@ -955,13 +955,18 @@ public class LevelModel {
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(boolean useShader, float time) {
         if (useShader) canvas.useShader(time);
+        Rectangle rectangle = wallBounds();
+        float x_bottom_left = rectangle.x;
+        float y_bottom_left = rectangle.y;
         float pixel = 1;
-        float x_scale = boundsVector2().x * pixel;
-        float y_scale = boundsVector2().y * pixel;
+        float x_scale = (rectangle.width - rectangle.x) * pixel;
+        float y_scale = (rectangle.height - rectangle.y) * pixel;
+//        float x_scale = boundsVector2().x * pixel;
+//        float y_scale = boundsVector2().y * pixel;
         if (!useShader)
-            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
+            canvas.draw(gameBackground, Color.WHITE, x_bottom_left, y_bottom_left,  x_scale, y_scale);
         else
-            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
+            canvas.draw(blueTexture, Color.WHITE, x_bottom_left, y_bottom_left,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
         if (useShader)
             canvas.stopUsingShader();
     }
