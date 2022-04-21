@@ -150,6 +150,8 @@ public class LevelModel {
     private TextureRegion treasureTexture;
     /** Texture for all rock, as they look the same */
     private TextureRegion rockTexture;
+    /** Texture for all the plant which has the same hit-box as the rock */
+    private TextureRegion plantTexture;
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Texture for current placeholder: texture atlas in future */
@@ -548,6 +550,7 @@ public class LevelModel {
         if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
         if (tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
         if (tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
+        if (tile_int == TILE_PLANT){ addRock(row, col, -2); return; }
         if (tile_int >= TILE_LAND_OFFSET && tile_int < TILE_SEA){
             addRock(row, col, tile_int - TILE_LAND_OFFSET); return;
         }
@@ -583,6 +586,7 @@ public class LevelModel {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp, (tile_int == -1));
         this_rock.setTexture(rockTexture); // TODO: new land texture if tile_int != 0
+        if(tile_int == -2){this_rock.setTexture(plantTexture);}
         obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
@@ -745,6 +749,7 @@ public class LevelModel {
         doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         rockTexture = new TextureRegion(directory.getEntry("rock", Texture.class));
+        plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
         treasureTexture = new TextureRegion(directory.getEntry("treasure", Texture.class));
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
@@ -997,8 +1002,20 @@ public class LevelModel {
         float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
         float y_origin = (player_position.y + 20);
         canvas.draw(greyBar, Color.WHITE, x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        if(health >= 0)
-        {canvas.draw(RatioBar, c,x_origin + width_offset, y_origin, RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
+        if(health >= 0) {canvas.draw(RatioBar, c,x_origin + width_offset, y_origin,
+                RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
+//        drawTriangle();
+    }
+
+    /** radio health bar */
+    void drawTriangle(){
+        float[] fa = new float[15];
+        fa[8] = 20;
+        fa[5] = (float) colorBar.getWidth()/2;
+        fa[14] = 20;
+        fa[11] = colorBar.getHeight();
+        fa[2] = fa[7] = fa[12] = Color.WHITE_FLOAT_BITS;
+        canvas.drawTriangle(colorBar, fa);
     }
 
     /** This function calculate the correct health bar color

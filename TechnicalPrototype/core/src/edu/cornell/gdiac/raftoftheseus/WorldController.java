@@ -895,6 +895,7 @@ public class WorldController implements Screen, ContactListener {
      * @param g wood, enemies, treasure, or projectiles
      */
     private void ResolveRaftCollision(Raft r, GameObject g){
+        if(g.isDestroyed()) {return;}
         if(g.getType() == GameObject.ObjectType.WOOD){
             // update player health
             r.addHealth(((Wood) g).getWood());

@@ -1238,4 +1238,12 @@ public class GameCanvas {
 		local.scale(sx,sy);
 		local.translate(-ox,-oy);
 	}
+
+	public void drawTriangle(Texture texture, float[] polygonVertices){
+		short[] polygonTriangles = new short[3];
+		for(short i = 0; i < polygonTriangles.length; i++){
+			polygonTriangles[i] = i;
+		}
+		spriteBatch.draw(texture, polygonVertices, 0 ,3, polygonTriangles, 0, 1);
+	}
 }
