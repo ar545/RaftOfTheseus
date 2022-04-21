@@ -118,13 +118,15 @@ public class LevelModel {
     protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
     /** Vector 2 holding the temp position vector for the game object to create */
     private Vector2 compute_temp = new Vector2(0, 0);
+    /** Vector 2 holding the temp position vector for the siren to jump into */
+    private Vector2 siren_compute_temp = new Vector2(0, 0);
     /** All the objects in the world. */
     private PooledList<GameObject> objects  = new PooledList<>();
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Shark> enemies = new PooledList<>();
-//    private PooledList<Hydra> hydras = new PooledList<>();
+    /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
@@ -269,7 +271,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addEnemyObject(Shark obj) {
+    protected void addSharkObject(Shark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -319,11 +321,12 @@ public class LevelModel {
 //        hydras.add(obj);
 //    }
 
-    protected void addSirenObject(Siren obj) {
-        assert inBounds(obj) : "Object is not in bounds";
-        objects.add(obj);
-        obj.activatePhysics(world);
-        sirens.add(obj);
+    /** add siren to the world */
+    protected void addSirenObject(Siren this_siren) {
+        assert inBounds(this_siren) : "Object is not in bounds";
+        objects.add(this_siren);
+        this_siren.activatePhysics(world);
+        sirens.add(this_siren);
     }
 
 
@@ -499,8 +502,13 @@ public class LevelModel {
         existingPositions.clear();
     }
 
-    // TODO: add siren is not finished
-    private void addSiren(Vector2 startPosition, Vector2 endPosition) {}
+    /** Add siren to this game world */
+    private void addSiren(Vector2 startGridPos, Vector2 endGridPos) {
+        computeSirenPosition(startGridPos.x, endGridPos.x, startGridPos.y, endGridPos.y);
+        Siren this_siren = new Siren(compute_temp, siren_compute_temp, raft);
+        this_siren.setTexture(enemyTexture);
+        addSirenObject(this_siren);
+    }
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
@@ -516,8 +524,8 @@ public class LevelModel {
     private void populateCollect(int row, int col, int tile_int) {
         if (tile_int == TILE_DEFAULT){ return; }
         if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
-        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, 0); return; }
-        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, 2); return; }
+        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
+        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, false); return; }
         if (tile_int == TILE_PLANT - 1){ addWood(row, col, 20); return; }
         if (tile_int == TILE_PLANT - 2){ addWood(row, col, 15); return; }
         if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_PLANT){
@@ -540,7 +548,7 @@ public class LevelModel {
         if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
         if (tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
         if (tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
-        if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){
+        if (tile_int >= TILE_LAND_OFFSET && tile_int < TILE_SEA){
             addRock(row, col, tile_int - TILE_LAND_OFFSET); return;
         }
         if (tile_int >= TILE_WOOD_OFFSET)
@@ -573,7 +581,7 @@ public class LevelModel {
      * @param tile_int 0 if stand-alone, 1-16 if texture alas, -1 for sharp */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp, false);
+        Rock this_rock = new Rock(compute_temp, (tile_int == -1));
         this_rock.setTexture(rockTexture); // TODO: new land texture if tile_int != 0
         obstacles[col][row] = this_rock;
         addObject(this_rock);
@@ -582,24 +590,16 @@ public class LevelModel {
     /** Add Enemy Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position */
-    private void addEnemy(int row, int col, int enemy_type) {
+    private void addEnemy(int row, int col, boolean is_shark) {
         computePosition(col, row);
-        switch(enemy_type) {
-            case 0: // Sharks
-                Shark this_shark = new Shark(compute_temp, null, this);
-                this_shark.setTexture(enemyTexture);
-                addEnemyObject(this_shark);
-                break;
-            case 1: // Hydras
-//                Hydra th = new Hydra(compute_temp, null);
-//                th.setTexture(enemyTexture);
-//                addHydraObject(th);
-//                break;
-            case 2: // Sirens
-//                Siren ts = new Siren(compute_temp, null);
-//                ts.setTexture(enemyTexture);
-//                addSirenObject(ts);
-                break;
+        if(is_shark){
+            Shark this_shark = new Shark(compute_temp, null, this);
+            this_shark.setTexture(enemyTexture);
+            addSharkObject(this_shark);
+        }else{
+            Siren ts = new Siren(compute_temp, compute_temp, raft);
+            ts.setTexture(enemyTexture);
+            addSirenObject(ts);
         }
     }
 
@@ -665,6 +665,19 @@ public class LevelModel {
     private void computePosition(int x_col, int y_row){
         compute_temp.x = ((float) x_col + 0.5f) * GRID_SIZE;
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE;
+    }
+
+    /** Compute the position of the object in the world given the grid location.
+     * Result stored in compute_temp.
+     * @param x1 the x grid value of start position
+     * @param x2 the y grid value of end position
+     * @param y1 the y grid value of start position
+     * @param y2 the y grid value of end position */
+    private void computeSirenPosition(float x1, float x2, float y1, float y2){
+        compute_temp.x = (x1 + 0.5f) * GRID_SIZE;
+        compute_temp.y = (y1 + 0.5f) * GRID_SIZE;
+        siren_compute_temp.x = (x2 + 0.5f) * GRID_SIZE;
+        siren_compute_temp.y = (y2 + 0.5f) * GRID_SIZE;
     }
 
     /** Add Raft Objects to the world, using the Json value for raft
