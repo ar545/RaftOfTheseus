@@ -250,14 +250,13 @@ public class WorldController implements Screen, ContactListener {
         float timeSince = time - raftSampleLastTime;
         float timeInterval = 0.15f;
         if(timeSince > timeInterval) {
-            System.out.println("new sample");
             // add a new sample and discard the oldest one
             raftSampleLastTime = time;
             Vector2 pos = levelModel.getPlayer().getPosition().scl(1.0f/levelModel.getTileSize());
-            // TODO figure out why speed is inaccurate when on currents?
-//            float speed = levelModel.getPlayer().getLinearVelocity().len() * (1.0f/levelModel.getTileSize());
-            Vector2 lastPos = new Vector2(raftSamplePositionsXY[0], raftSamplePositionsXY[1]);
-            float speed = lastPos.sub(pos).len()/timeInterval; // approximate speed
+            // TODO figure out why speed is inaccurate when on currents? or don't, it might look better this way
+            float speed = levelModel.getPlayer().getLinearVelocity().len() * (1.0f/levelModel.getTileSize());
+//            Vector2 lastPos = new Vector2(raftSamplePositionsXY[0], raftSamplePositionsXY[1]);
+//            float speed = lastPos.sub(pos).len()/timeInterval; // approximate speed
             for(int i = raftSampleSpeeds.length-1; i >= 1; i--) {
                 raftSampleSpeeds[i] = raftSampleSpeeds[i-1];
                 raftSamplePositionsXY[2*i] = raftSamplePositionsXY[2*(i-1)];

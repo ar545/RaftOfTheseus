@@ -62,13 +62,21 @@ uniform float time_since_last_sample;
 const float wake_wavelet_wavelength = 0.75; // wavelength of circle wavelets emanating from samples, in tile units
 const float wake_wavelet_freq = 2.0/wake_wavelet_wavelength;
 
-float wavelet(float x) {
-    x *= wake_wavelet_freq;
-    return sin(PI*x)/(1.0+x*x)*1.2141111968; // scaling factor to bring it into the range [-1, 1]
+/* returns the height of the wavelet function at val, and its derivative (wrt. val), as (x, y).
+   The wavelet function is W(x) = sin(pi*f*x)/(1+(f*x)^2)*s, where f is wake_wavelet_freq, and s is a constant scalar.
+*/
+vec2 wavelet(float val) {
+    float scaling = 1.2141111968; // scaling factor to bring height into the range [-1, 1]
+    val *= wake_wavelet_freq;
+    float denom = (1.0 + val*val);
+    float height = sin(PI*val)/denom * scaling;
+    float deriv = (PI*cos(PI*val)*scaling - 2.0*val*height)/denom * wake_wavelet_freq;
+    return vec2(height, deriv);
 }
 
-float wake_contributed_from_sample(int sample_id, vec2 at_position) {
+vec3 wake_contributed_from_sample(int sample_id, vec2 at_position) {
     vec2 delta = at_position - raft_sample_positions[sample_id];
+    delta.y *= aspect_ratio;
     float dist = sqrt(dot(delta, delta));
 
 //    float sample_age = raft_sample_ages[sample_id];
@@ -78,17 +86,30 @@ float wake_contributed_from_sample(int sample_id, vec2 at_position) {
 
 //    float R = raft_sample_R[sample_id];
     float sample_speed = raft_sample_speeds[sample_id];
-    float R = sample_age * sample_speed * 0.33333;
-    return wavelet(dist - R) * age_decay * clamp(sample_speed, 0.0, 1.0);
+    float R = sample_age * sample_speed * 0.33333; // Kelvin Wake Pattern approximating identity
+
+    float slowness_factor = clamp(sample_speed, 0.0, 1.0);
+    slowness_factor *= slowness_factor;
+
+    // wavelet function
+    vec2 wav = wavelet(dist - R);
+    float height = wav.x;
+    float deriv = wav.y;
+
+    // gradient
+    vec2 gradient = delta * deriv / dist;
+
+    // package result into a single vector, containing height and gradient information
+    vec3 HGV = vec3(height, gradient);
+
+    return HGV * age_decay * slowness_factor;
 }
 
-float total_wake(vec2 at_position) {
-    float tot = 0.0;
+vec3 total_wake(vec2 at_position) {
+    vec3 tot = vec3(0.0);
     for(int i = 0; i < raft_sample_number; i++) {
         tot += wake_contributed_from_sample(i, at_position);
     }
-    tot = max(0.0, tot);
-    tot *= tot;
     return tot;
 }
 
@@ -196,17 +217,19 @@ vec3 combinedWaterColor(vec2 uv, vec2 uv_adjustment, vec2 normal_adjustment) {
     smerp = smoothstep(0.5-current_blend, 0.5+current_blend, smerp);
     vec4 wave_0 = mix(wave00, wave10, smerp.x);
     vec4 wave_1 = mix(wave01, wave11, smerp.x);
-    vec4 waterCombined = mix(wave_0, wave_1, smerp.y);
+    vec4 waterCombined_HSGV = mix(wave_0, wave_1, smerp.y);
 
-    float height = waterCombined.x + 1.0*getSurf() + 0.3*total_wake(vec2(uv.x, u_flowmapSize.y - uv.y));//0...1
-    float speed = waterCombined.y;//0...1
-    vec2 normal = waterCombined.zw;//-1...1
+    vec3 wake_HGV = 0.05*total_wake(vec2(uv.x, u_flowmapSize.y - uv.y));
+
+    float height = waterCombined_HSGV.x + 1.0*getSurf() + wake_HGV.x;//0...1
+    float speed = waterCombined_HSGV.y;//0...1
+    vec2 gradient = waterCombined_HSGV.zw + wake_HGV.yz;//-1...1
 
     // increase "height" by "speed" to make currents more visible
     height = min(height/(1.01-speed*0.5), mix(height, 1.0, speed));
-    normal *= speed + 0.5;
+    gradient *= speed + 0.5;
 
-    return colorFromHeight(height, normal, normal_adjustment);
+    return colorFromHeight(height, gradient, normal_adjustment);
 }
 
 void main() {
