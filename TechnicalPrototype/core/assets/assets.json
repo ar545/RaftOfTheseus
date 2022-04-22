@@ -40,6 +40,7 @@
       "white_bar":     "images/UI_HealthBar_Filled.png",
       "grey_bar":     "images/UI_HealthBar.png",
       "star":     "images/star.png",
+      "plant":     "images/plant.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
