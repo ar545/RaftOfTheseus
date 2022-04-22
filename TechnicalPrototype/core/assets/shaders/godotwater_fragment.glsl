@@ -50,6 +50,50 @@ uniform float sine_wave_size = 0.18;//0.06
 const float camera_angle = 0.74*(PI*0.5); // angle to the vertical, i.e. 0 is looking straight down, pi/2 is looking totally horizontal
 const vec3 incoming_ray = vec3(0.0, sin(camera_angle), -cos(camera_angle)); // a ray pointing from the "camera" towards the scene
 
+// raft position and velocity sampling, for wake calculation
+const int raft_sample_number = 8; // number of samples which are tracked (older samples are discarded)
+uniform float raft_sample_period = 0.15;// interval between sample times, in seconds
+uniform vec2 raft_sample_positions[raft_sample_number]; // raft position, in tile units, at each sample time
+uniform float raft_sample_speeds[raft_sample_number]; // raft speed, in tile units per second, at each sample time
+//uniform float raft_sample_ages[raft_sample_number]; // age of this sample (i.e. time since it reflected the present state of the raft), in seconds
+uniform float time_since_last_sample;
+//uniform float raft_sample_R[raft_sample_number]; // radius of circle wave emanating from this sample.
+// We use R = age*speed/3, so that the wave pattern matches the Kelvin Wake Pattern when the raft moves with a constant velocity.
+const float wake_wavelet_wavelength = 0.75; // wavelength of circle wavelets emanating from samples, in tile units
+const float wake_wavelet_freq = 2.0/wake_wavelet_wavelength;
+
+float wavelet(float x) {
+    x *= wake_wavelet_freq;
+    return sin(PI*x)/(1.0+x*x)*1.2141111968; // scaling factor to bring it into the range [-1, 1]
+}
+
+float wake_contributed_from_sample(int sample_id, vec2 at_position) {
+    vec2 delta = at_position - raft_sample_positions[sample_id];
+    float dist = sqrt(dot(delta, delta));
+
+//    float sample_age = raft_sample_ages[sample_id];
+    float sample_age = time_since_last_sample + sample_id * raft_sample_period;
+    float age_proportion = sample_age / (raft_sample_period * raft_sample_number);
+    float age_decay = clamp(5.0*(1.0 - age_proportion), 0.0, 1.0);
+
+//    float R = raft_sample_R[sample_id];
+    float sample_speed = raft_sample_speeds[sample_id];
+    float R = sample_age * sample_speed * 0.33333;
+    return wavelet(dist - R) * age_decay * clamp(sample_speed, 0.0, 1.0);
+}
+
+float total_wake(vec2 at_position) {
+    float tot = 0.0;
+    for(int i = 0; i < raft_sample_number; i++) {
+        tot += wake_contributed_from_sample(i, at_position);
+    }
+    tot = max(0.0, tot);
+    tot *= tot;
+    return tot;
+}
+
+
+
 float sampleSurfMap(vec2 uv) {
     int res = 2;
     uv = (uv + vec2(0.5, 0.5)) * (u_inverseFlowmapSize / res);
@@ -154,7 +198,7 @@ vec3 combinedWaterColor(vec2 uv, vec2 uv_adjustment, vec2 normal_adjustment) {
     vec4 wave_1 = mix(wave01, wave11, smerp.x);
     vec4 waterCombined = mix(wave_0, wave_1, smerp.y);
 
-    float height = waterCombined.x + 1.0*getSurf();//0...1
+    float height = waterCombined.x + 1.0*getSurf() + 0.3*total_wake(vec2(uv.x, u_flowmapSize.y - uv.y));//0...1
     float speed = waterCombined.y;//0...1
     vec2 normal = waterCombined.zw;//-1...1
 
@@ -185,5 +229,5 @@ void main() {
 
     vec4 C = vec4(combinedWaterColor(uv, uv_adjustment, normal_adjustment), 1.0);
     gl_FragColor = C;
-//    gl_FragColor = mix(vec4(vec3(getSurfMapValue()), 1.0), C, 0.01);
+//    gl_FragColor = mix(vec4(vec3(), 1.0), C, 0.01);
 }

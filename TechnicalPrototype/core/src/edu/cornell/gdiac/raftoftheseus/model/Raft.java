@@ -207,11 +207,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /* STEERING */
 
     @Override
-    public Vector2 getLinearVelocity() {
-        throw new RuntimeException("use physicsObject.getLinearVelocity() instead. This method only exists because Raft implements Steerable, which it won't in the future.");
-    }
-
-    @Override
     public float getAngularVelocity() {
         return 0;
     }

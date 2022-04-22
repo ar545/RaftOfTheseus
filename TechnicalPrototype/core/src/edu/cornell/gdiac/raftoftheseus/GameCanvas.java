@@ -110,8 +110,12 @@ public class GameCanvas {
 	/** Cache object to handle raw textures */
 	private TextureRegion holder;
 
+	/** data used for shader */
 	private ShaderProgram shaderProgram;
 	private Vector2 levelSize = new Vector2(0,0);
+	private float[] raftSamplePositionsXY = new float[16];
+	private float[] raftSampleSpeeds = new float[8];
+	private float raftSampleTime = 0.0f;
 	public final boolean shaderCanBeUsed;
 
 	/**
@@ -429,12 +433,15 @@ public class GameCanvas {
 		shaderProgram.setUniformi("u_surfMap", 2);
 		shaderProgram.setUniformf("u_flowmapSize", levelSize.x, levelSize.y);
 		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
-//		shaderProgram.setUniformi("TEXTURE", 2); // waterDiffuse
+
 		shaderProgram.setUniformi("u_normalTexture", 3); // u_waterNormal
 		shaderProgram.setUniformi("texture_offset_uv", 4); // waterUVOffset
-//		shaderProgram.setUniformi("u_waterLight", 5);
 		// pass time
 		shaderProgram.setUniformf("u_time", time);
+		// pass in raft position/speed samples
+		shaderProgram.setUniform2fv("raft_sample_positions", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
+		shaderProgram.setUniform1fv("raft_sample_speeds", raftSampleSpeeds, 0, raftSampleSpeeds.length);
+		shaderProgram.setUniformf("time_since_last_sample", raftSampleTime);
 	}
 
 	public void setDataMaps(Texture flowMap, Texture surfMap) {
@@ -454,6 +461,15 @@ public class GameCanvas {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
 		waterUVOffset.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
+	}
+
+	public void setRaftSamples(float[] raftSamplePositionsXY, float[] raftSampleSpeeds) {
+		this.raftSamplePositionsXY = raftSamplePositionsXY;
+		this.raftSampleSpeeds = raftSampleSpeeds;
+	}
+
+	public void setRaftSampleTime(float raftSampleTime) {
+		this.raftSampleTime = raftSampleTime;
 	}
 
 	public void stopUsingShader() {
