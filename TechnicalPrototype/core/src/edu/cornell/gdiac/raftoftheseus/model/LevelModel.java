@@ -160,10 +160,10 @@ public class LevelModel {
     private TextureRegion spearTexture;
     /** Texture for map background */
     protected Texture mapBackground;
-    /** Texture for game background */
-    protected Texture gameBackground;
-    /** Texture for game background when using shader */
-    protected Texture blueTexture;
+//    /** Texture for game background */
+//    protected Texture gameBackground;
+    /** Texture for water */
+    protected Texture waterTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
     /** The texture for the colored health bar */
@@ -398,8 +398,9 @@ public class LevelModel {
 
         // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
-        if (USE_SHADER_FOR_WATER)
-            canvas.setFlowMap(recalculateFlowMap());
+        if (USE_SHADER_FOR_WATER) {
+            canvas.setDataMaps(recalculateFlowMap(), recalculateSurfMap());
+        }
     }
 
     /** Calculate the world bounds base on the grid map. Set the physical boundary of the level and the world.
@@ -756,8 +757,9 @@ public class LevelModel {
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = new TextureRegion(directory.getEntry("bullet", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
-        gameBackground = directory.getEntry("background", Texture.class);
-        blueTexture = directory.getEntry("blue_texture", Texture.class);
+//        gameBackground = directory.getEntry("background", Texture.class);
+//        blueTexture = directory.getEntry("blue_texture", Texture.class);
+        waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         lightSettings = directory.getEntry("lights", JsonValue.class);
@@ -841,6 +843,12 @@ public class LevelModel {
         addQueuedObject(this_wood);
     }
 
+    /**
+     Creates a texture with the same pixel dimensions as the level's dimensions in tiles.
+     Each pixel's R and G values represent the X and Y components of the current vector at the corresponding tile.
+     These components are scaled so that the range [-1.0, 1.0] maps linearly to [0, 255].
+     The B and A values of the texture are unused.
+     */
     private Texture recalculateFlowMap() {
         Pixmap pix = new Pixmap(cols(), rows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
@@ -850,14 +858,76 @@ public class LevelModel {
                 Current c = (Current)o;
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
-                // TODO figure out a *good* way to represent current magnitude in the shader.
-                Vector2 d = c.getDirectionVector().nor(); // length independent of magnitude
+                Vector2 d = c.getDirectionVector().scl(0.05f); // length dependent on magnitude (assumes maximum magnitude 20)
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
             }
         }
         Texture t = new Texture(pix);
+        t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
+        return t;
+    }
+
+    /**
+     * Creates a texture with pixel dimensions which are [res] times the size of the level in tiles.
+     * Groups of res x res pixels map to their corresponding tile in the level.
+     * Each pixel's R value represents the "rough average" distance to the nearest shore, across all points in the area
+     * of the level covered by that pixel. This can be approximate, because the texture is interpolated later.
+     * Distances are clamped to the range [0, 1] in tile space, and mapped to pixel values [0, 255]. A distance of 0
+     * means the pixel is inside terrain. A distance of 1 means the pixel is at least 1 tile away from the nearest
+     * terrain, so no surf is added.
+     * The G, B, and A values of the texture are unused.
+     */
+    private Texture recalculateSurfMap() {
+        int res = 2;
+        Pixmap pix = new Pixmap(res*map_size.x, res*map_size.y,  Pixmap.Format.RGBA8888);
+        pix.setColor(1.0f, 0.5f, 0.5f, 1.0f); // R = 1 = no terrain nearby
+        pix.fill();
+        for (GameObject o : getObjects()) {
+            if (o.getType() == GameObject.ObjectType.ROCK) {
+                Rock r = (Rock)o;
+                Vector2 pos = r.getPosition(); // in box2d units (3 per tile)
+                pos.scl(1.0f/GRID_SIZE); // in tiles
+                // rock position, in tiles:
+                int rx = (int)pos.x;
+                int ry = (int)pos.y;
+                // rock center, in tile coords:
+                float cx = rx + 0.5f;
+                float cy = ry + 0.5f;
+
+                // iterate through neighboring tiles (but don't go OOB)
+                for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x-1, rx+1); tx++) {
+                    for (int ty = Math.max(0, ry-1); ty <= Math.min(map_size.y-1, ry+1); ty++) {
+                        // iterate through the pixels covering that tile
+                        for (int px = tx*res; px < (tx+1)*res; px ++) {
+                            for (int py = ty*res; py < (ty+1)*res; py ++) {
+                                // center of pixel, in tile coords
+                                float x = (px+0.5f)/res;
+                                float y = (py+0.5f)/res;
+                                // nearest point in the rock to (x, y)
+                                float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
+                                float ny = Math.min(Math.max(cy-0.5f, y), cy+0.5f);
+                                // distance from pixel to nearest point in rock
+                                float dx = x - nx;
+                                float dy = y - ny;
+                                float d = (float)Math.sqrt(dx*dx + dy*dy); // could be substituted with max-norm distance;
+//                                float d = Math.max(Math.abs(dx), Math.abs(dy));
+                                d = Math.min(1.0f, d); // clamp to 1
+                                // if this distance is smaller than what's already in the texture, replace it
+                                float d_old = (pix.getPixel(px, py) >>> 24)/255.0f; // red value only
+                                d = Math.min(d, d_old);
+
+                                pix.setColor(d, 0.5f, 0.5f, 1.0f);
+                                pix.drawPixel(px, py);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Texture t = new Texture(pix);
+        t.setAnisotropicFilter(1.0f);
         t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         return t;
     }
@@ -962,21 +1032,13 @@ public class LevelModel {
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(boolean useShader, float time) {
-        if (useShader) canvas.useShader(time);
-        Rectangle rectangle = wallBounds();
-        float x_bottom_left = rectangle.x;
-        float y_bottom_left = rectangle.y;
-        float pixel = 1;
-        float x_scale = (rectangle.width - rectangle.x) * pixel;
-        float y_scale = (rectangle.height - rectangle.y) * pixel;
-//        float x_scale = boundsVector2().x * pixel;
-//        float y_scale = boundsVector2().y * pixel;
-        if (!useShader)
-            canvas.draw(gameBackground, Color.WHITE, x_bottom_left, y_bottom_left,  x_scale, y_scale);
-        else
-            canvas.draw(blueTexture, Color.WHITE, x_bottom_left, y_bottom_left,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
-        if (useShader)
+        // TODO: fill in the edges of the level, but don't mess up the scaling on everything in the shader
+        if (useShader) {
+            canvas.useShader(time);
+            canvas.draw(waterTexture, Color.WHITE, 0,  0, bounds.width, bounds.height);
             canvas.stopUsingShader();
+        } else
+            canvas.draw(waterTexture, Color.BLUE, 0,  0, bounds.width, bounds.height);
     }
 
     /**
