@@ -15,13 +15,13 @@ public class Siren extends GameObject {
      * @param objParams the JsonValue with heading "siren".
      */
     public static void setConstants(JsonValue objParams){
-        IDLE_TIME = objParams.getLong("idle time", 500L);
-        SINGING_TIME = objParams.getLong("singing time", 3000L);
-        SINGING_RANGE = objParams.getFloat("attack range", 1000f);
-        ATTACK_RANGE = objParams.getFloat("attack range", 200f);
-        ATTACK_DAMAGE = objParams.getFloat("attack damage", 40f);
-        PROXIMITY = objParams.getFloat("proximity", 1f);
-        FLY_SPEED = objParams.getFloat("fly speed", 0.0001f);
+        IDLE_TIME = objParams.getLong("idle time");
+        SINGING_TIME = objParams.getLong("singing time");
+        SINGING_RANGE = objParams.getFloat("attack range");
+        ATTACK_RANGE = objParams.getFloat("attack range");
+        ATTACK_DAMAGE = objParams.getFloat("attack damage");
+        PROXIMITY = objParams.getFloat("proximity");
+        FLY_SPEED = objParams.getFloat("fly speed");
     }
 
     /** The player for targeting. */
