@@ -262,6 +262,7 @@ public class WorldController implements Screen, ContactListener {
             // add a new sample and discard the oldest one
             raftSampleLastTime = time;
             Vector2 pos = levelModel.getPlayer().getPosition().scl(1.0f/levelModel.getTileSize());
+            pos.add(1, 1); // offset due to extra grid added in water map
             // TODO figure out why speed is inaccurate when on currents? or don't, it might look better this way
             float speed = levelModel.getPlayer().getLinearVelocity().len() * (1.0f/levelModel.getTileSize());
 //            Vector2 lastPos = new Vector2(raftSamplePositionsXY[0], raftSamplePositionsXY[1]);
@@ -1069,8 +1070,9 @@ public class WorldController implements Screen, ContactListener {
 
         // Reset player position history
         for(int i = 0; i < raftSampleSpeeds.length; i++) {
-            raftSamplePositionsXY[2*i] = levelModel.getPlayer().getPosition().x * (1.0f/levelModel.getTileSize());
-            raftSamplePositionsXY[2*i+1] = levelModel.getPlayer().getPosition().y * (1.0f/levelModel.getTileSize());
+            // each added 1 for offset due to extra grid added in the water map
+            raftSamplePositionsXY[2*i] = levelModel.getPlayer().getPosition().x * (1.0f/levelModel.getTileSize()) + 1;
+            raftSamplePositionsXY[2*i+1] = levelModel.getPlayer().getPosition().y * (1.0f/levelModel.getTileSize()) + 1;
             raftSampleSpeeds[i] = 0.0f;
             raftSampleLastTime = (System.currentTimeMillis() - startTime)/1000.0f;
 
