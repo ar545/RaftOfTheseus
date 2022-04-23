@@ -1032,13 +1032,13 @@ public class LevelModel {
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(boolean useShader, float time) {
-        // TODO: fill in the edges of the level, but don't mess up the scaling on everything in the shader
+        Rectangle wb = wallBounds(); // TODO: invisible border: don't mess up the scaling on everything in the shader
         if (useShader) {
             canvas.useShader(time);
-            canvas.draw(waterTexture, Color.WHITE, 0,  0, bounds.width, bounds.height);
+            canvas.draw(waterTexture, Color.WHITE, wb.x,  wb.y, wb.width - wb.x, wb.height - wb.y);
             canvas.stopUsingShader();
         } else
-            canvas.draw(waterTexture, Color.BLUE, 0,  0, bounds.width, bounds.height);
+            canvas.draw(waterTexture, Color.BLUE, wb.x,  wb.y, wb.width - wb.x, wb.height - wb.y);
     }
 
     /**
