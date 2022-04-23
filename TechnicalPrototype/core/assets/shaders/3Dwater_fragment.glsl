@@ -70,14 +70,10 @@ uniform sampler2D normal_texture; // represents 3D contours of texture wave
 uniform sampler2D surf_map; // a map of how close the shoreline is at any point
 uniform sampler2D flow_map; // a map of the current direction and magnitude at any point
 uniform sampler2D texture_offset_uv; // displacement map for texture-based displacements
-uniform float surf_map_res = 2; // ratio of surf_map dimensions to level dimensions in tiles
-
+uniform float surf_map_res = 2.0; // ratio of surf_map dimensions to level dimensions in tiles
 
 // color palette
-uniform vec3 color_foam = vec3(160.0/255.0, 215.0/255.0, 236.0/255.0);
-uniform vec3 color_crest = vec3(98.0/255.0, 157.0/255.0, 227.0/255.0);
-uniform vec3 color_sky = vec3(55.0/255.0, 97.0/255.0, 197.0/255.0);
-uniform vec3 color_deep = vec3(36.0/255.0, 58.0/255.0, 186.0/255.0);
+uniform vec3 colors[4];
 
 // raft position and speed samples
 uniform vec2 wake_samples_pos[wake_samples_number]; // raft position, in tile units, at each sample time
@@ -91,7 +87,7 @@ vec3 color_from_value(float value) {
     float th1 = step(thresh_low, value); // using step() instead of smoothstep() to display discrete color bands
     float th2 = step(thresh_mid, value);
     float th3 = step(thresh_high, value);
-    return color_deep*(1.0-th1) + color_sky*(th1-th2) + color_crest*(th2-th3) + color_foam*(th3);
+    return colors[3]*(1.0-th1) + colors[2]*(th1-th2) + colors[1]*(th2-th3) + colors[0]*(th3);
 }
 
 /* Combines water height and water reflection amount into one value. */
@@ -103,7 +99,7 @@ float value_from_h_and_r(float height, float reflection) {
  Note that if b is close to 1 and a is close to 0 mod 2*PI, then Newton's Method will fail, creating visual artifacts. */
 float solve_equation(float a, float b) {
     float x = a; // initial guess x = a
-    x -= (b*sin(x)-x+a)/(b*cos(x)-1); // first iteration of Newton's Method
+    x -= (b*sin(x)-x+a)/(b*cos(x)-1.0); // first iteration of Newton's Method
     // x -= (b*sin(x)-x+a)/(b*cos(x)-1); // second iteration of Newton's Method (unnecessary if |b| <= 1/3)
     return x;
 }
@@ -165,7 +161,7 @@ vec3 find_water_intersect_point(vec2 coords) {
     float w = solve_equation(a, b);
     // calculate z
     float z = big_wave_amplitude * (w-a)/b; // (w-a)/b is faster than calling sin(w)
-    if (b == 0) { // can't use the above shortcut because it's 0/0, so we have to use sin(w)
+    if (b == 0.0) { // can't use the above shortcut because it's 0/0, so we have to use sin(w)
         z = big_wave_amplitude * sin(w);
     }
     float y = camera_slope * z + root_uv.y;

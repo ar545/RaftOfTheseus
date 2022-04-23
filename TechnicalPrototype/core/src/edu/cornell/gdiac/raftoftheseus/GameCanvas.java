@@ -116,6 +116,7 @@ public class GameCanvas {
 	private float[] raftSamplePositionsXY = new float[16];
 	private float[] raftSampleSpeeds = new float[8];
 	private float raftSampleTime = 0.0f;
+	private float[] shaderColors;
 	public final boolean shaderCanBeUsed;
 
 	/**
@@ -431,6 +432,7 @@ public class GameCanvas {
 		// pass other stuff
 		shaderProgram.setUniformf("time", time);
 		shaderProgram.setUniformf("level_size", levelSize.x, levelSize.y);
+		shaderProgram.setUniform3fv("colors", shaderColors, 0, shaderColors.length);
 		// pass in raft position/speed samples
 		shaderProgram.setUniform2fv("wake_samples_pos", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
 		shaderProgram.setUniform1fv("wake_samples_speed", raftSampleSpeeds, 0, raftSampleSpeeds.length);
@@ -454,6 +456,10 @@ public class GameCanvas {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
 		waterUVOffset.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
+	}
+
+	public void setShaderColors(float[] shaderColors) {
+		this.shaderColors = shaderColors;
 	}
 
 	public void setRaftSamples(float[] raftSamplePositionsXY, float[] raftSampleSpeeds) {

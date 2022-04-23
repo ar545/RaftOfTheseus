@@ -873,7 +873,10 @@ public class LevelModel {
         float pixel = 1;
         float x_scale = boundsVector2().x * pixel;
         float y_scale = boundsVector2().y * pixel;
-        canvas.draw(waterTexture, Color.WHITE, 0, 0,  x_scale, y_scale);
+        if (useShader)
+            canvas.draw(waterTexture, Color.WHITE, 0, 0,  x_scale, y_scale);
+        else
+            canvas.draw(waterTexture, Color.BLUE, 0, 0,  x_scale, y_scale);
         if (useShader)
             canvas.stopUsingShader();
     }

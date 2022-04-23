@@ -27,6 +27,7 @@ import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
@@ -53,6 +54,7 @@ public class WorldController implements Screen, ContactListener {
         WORLD_STEP = 1/world.getFloat("world step", 60f);
         WORLD_VELOCITY = world.getInt("world velocity", 6);
         WORLD_POSIT = world.getInt("world posit", 2);
+        shaderData = objParams.get("shader");
     }
 
     // CONSTANTS
@@ -66,6 +68,8 @@ public class WorldController implements Screen, ContactListener {
     public static int WORLD_POSIT;
     /** Scale for the health bar */
     private static final float HEALTH_BAR_SCALE = 0.6f;
+
+    private static JsonValue shaderData;
 
     // FIELDS
     // CANVAS AND OBJECT LIST
@@ -1076,6 +1080,20 @@ public class WorldController implements Screen, ContactListener {
             canvas.setRaftSamples(raftSamplePositionsXY, raftSampleSpeeds);
             canvas.setRaftSampleTime(0.0f);
         }
+
+        // update shader color palette
+        String pref_palette = level_int < 3 ? "colors_light" :
+                              level_int < 6 ? "colors_natural" :
+                              "colors_purple";
+        String[] shaderColorStrings = shaderData.get(pref_palette).asStringArray();
+        float[] shaderColors = new float[3*shaderColorStrings.length];
+        for (int i = 0; i < shaderColorStrings.length; i ++) {
+            Color c = Color.valueOf(shaderColorStrings[i]+"00");
+            shaderColors[3*i+0] = c.r;
+            shaderColors[3*i+1] = c.g;
+            shaderColors[3*i+2] = c.b;
+        }
+        canvas.setShaderColors(shaderColors);
     }
 
     /**

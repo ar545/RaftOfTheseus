@@ -165,7 +165,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     }
 
     /** @return whether the player health is below zero */
-    public boolean isDead() { return false;}//health < 0f; }
+    public boolean isDead() { return health < 0f; }
 
     /** How far the raft could travel with its current health, in game units, assuming they don't use currents or drift */
     public float getPotentialDistance() {
