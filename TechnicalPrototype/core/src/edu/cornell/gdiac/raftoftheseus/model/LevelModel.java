@@ -205,6 +205,10 @@ public class LevelModel {
     public int cols(){ return map_size.x; }
     /** The number of rows in this map-grid */
     public int rows(){ return map_size.y; }
+    /** The number of columns in this map-grid */
+    public int extraCols(){ return map_size.x + 2; }
+    /** The number of rows in this map-grid */
+    public int extraRows(){ return map_size.y + 2; }
     /** Getter for how long each tile is **/
     public float getTileSize() { return GRID_SIZE; }
     /** Get boundary wall vertices */
@@ -244,6 +248,15 @@ public class LevelModel {
     public Rectangle wallBounds(){
         return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - 0.2f * DEFAULT_BOUNDARY,
                 bounds.width + DEFAULT_BOUNDARY, bounds.height + 2.8f * DEFAULT_BOUNDARY);
+    }
+
+    /** @return the height and width of bounds only
+     * x = y = - DEFAULT_BOUNDARY;
+     * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
+     * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
+    public Rectangle extraGrid(){
+        return new Rectangle(bounds.x - GRID_SIZE, bounds.y - GRID_SIZE,
+                bounds.width + 2 * GRID_SIZE, bounds.height + 2 * GRID_SIZE);
     }
 
     /** Adds a physics object in to the insertion queue.
@@ -850,7 +863,7 @@ public class LevelModel {
      The B and A values of the texture are unused.
      */
     private Texture recalculateFlowMap() {
-        Pixmap pix = new Pixmap(cols(), rows(),  Pixmap.Format.RGBA8888);
+        Pixmap pix = new Pixmap(extraCols(), extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
         for (GameObject o : getObjects()) {
@@ -858,6 +871,7 @@ public class LevelModel {
                 Current c = (Current)o;
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
+                p.add(1, 1); // offset one tile
                 Vector2 d = c.getDirectionVector().scl(0.05f); // length dependent on magnitude (assumes maximum magnitude 20)
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
@@ -881,7 +895,7 @@ public class LevelModel {
      */
     private Texture recalculateSurfMap() {
         int res = 2;
-        Pixmap pix = new Pixmap(res*map_size.x, res*map_size.y,  Pixmap.Format.RGBA8888);
+        Pixmap pix = new Pixmap(res*extraCols(), res*extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(1.0f, 0.5f, 0.5f, 1.0f); // R = 1 = no terrain nearby
         pix.fill();
         for (GameObject o : getObjects()) {
@@ -889,6 +903,7 @@ public class LevelModel {
                 Rock r = (Rock)o;
                 Vector2 pos = r.getPosition(); // in box2d units (3 per tile)
                 pos.scl(1.0f/GRID_SIZE); // in tiles
+                pos.add(1, 1); // offset one tile
                 // rock position, in tiles:
                 int rx = (int)pos.x;
                 int ry = (int)pos.y;
@@ -1032,13 +1047,13 @@ public class LevelModel {
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(boolean useShader, float time) {
-        Rectangle wb = wallBounds(); // TODO: invisible border: don't mess up the scaling on everything in the shader
+        Rectangle eg = extraGrid(); // TODO: invisible border: don't mess up the scaling on everything in the shader
         if (useShader) {
             canvas.useShader(time);
-            canvas.draw(waterTexture, Color.WHITE, wb.x,  wb.y, wb.width - wb.x, wb.height - wb.y);
+            canvas.draw(waterTexture, Color.WHITE, eg.x,  eg.y, eg.width, eg.height);
             canvas.stopUsingShader();
         } else
-            canvas.draw(waterTexture, Color.BLUE, wb.x,  wb.y, wb.width - wb.x, wb.height - wb.y);
+            canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
     /**
