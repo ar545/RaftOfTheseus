@@ -122,4 +122,7 @@ public class PointSource extends PointLight implements LightSource {
 		collisions.maskBits = maskBits;
 		super.setContactFilter(collisions);
 	}
+
+	/** Sets light distance; MIN value capped to 0.1f meter; Actual recalculations will be done only on update() cal */
+	public void setDistance(float dist){ super.setDistance(dist); }
 }

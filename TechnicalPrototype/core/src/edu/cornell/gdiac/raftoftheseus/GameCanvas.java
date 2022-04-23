@@ -18,13 +18,13 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.g3d.particles.influencers.ColorInfluencer;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.*;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import edu.cornell.gdiac.raftoftheseus.model.CutTexture;
 
 /**
  * Primary view class for the game, abstracting the basic graphics calls.
@@ -110,8 +110,13 @@ public class GameCanvas {
 	/** Cache object to handle raw textures */
 	private TextureRegion holder;
 
+	/** data used for shader */
 	private ShaderProgram shaderProgram;
 	private Vector2 levelSize = new Vector2(0,0);
+	private float[] raftSamplePositionsXY = new float[16];
+	private float[] raftSampleSpeeds = new float[8];
+	private float raftSampleTime = 0.0f;
+	private float[] shaderColors;
 	public final boolean shaderCanBeUsed;
 
 	/**
@@ -140,8 +145,8 @@ public class GameCanvas {
 		vertex = new Vector2();
 
 		try {
-			String vertexShader = Gdx.files.internal("shaders/wavy_vertex.glsl").readString();
-			String fragmentShader = Gdx.files.internal("shaders/wavy_fragment.glsl").readString();
+			String vertexShader = Gdx.files.internal("shaders/3Dwater_vertex.glsl").readString();
+			String fragmentShader = Gdx.files.internal("shaders/3Dwater_fragment.glsl").readString();
 			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
 		} catch (GdxRuntimeException e) {
 			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
@@ -419,30 +424,51 @@ public class GameCanvas {
 	public void useShader(float time) {
 		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
 		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
-		Affine2 transform = new Affine2();
-		transform.setToScaling(1/3.0f,1/3.0f);// TODO this should use LevelModel's number for how many Box2d units are in a tile, instead of hardcoding
-		Matrix4 objToWorldMat = new Matrix4();
-		objToWorldMat.setAsAffine(transform);
-		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
 		// pass textures (as indices)
-		shaderProgram.setUniformi("u_flowMap", 1);
-		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
-		shaderProgram.setUniformi("u_waveTexture", 2);
-		// pass time
-		shaderProgram.setUniformf("u_time", time);
+		shaderProgram.setUniformi("flow_map", 1);
+		shaderProgram.setUniformi("surf_map", 2);
+		shaderProgram.setUniformi("normal_texture", 3);
+		shaderProgram.setUniformi("texture_offset_uv", 4); // waterUVOffset
+		// pass other stuff
+		shaderProgram.setUniformf("time", time);
+		shaderProgram.setUniformf("level_size", levelSize.x, levelSize.y);
+		shaderProgram.setUniform3fv("colors", shaderColors, 0, shaderColors.length);
+		// pass in raft position/speed samples
+		shaderProgram.setUniform2fv("wake_samples_pos", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
+		shaderProgram.setUniform1fv("wake_samples_speed", raftSampleSpeeds, 0, raftSampleSpeeds.length);
+		shaderProgram.setUniformf("wake_sample_latency", raftSampleTime);
 	}
 
-	public void setFlowMap(Texture flowMap) {
+	public void setDataMaps(Texture flowMap, Texture surfMap) {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
 		flowMap.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+		surfMap.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 		levelSize.set(flowMap.getWidth(), flowMap.getHeight());
 	}
 
-	public void setWaterTexture(Texture waterTexture) {
-		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
-		waterTexture.bind();
+	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset) {
+//		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
+//		waterDiffuse.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE3);
+		waterNormal.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
+		waterUVOffset.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
+	}
+
+	public void setShaderColors(float[] shaderColors) {
+		this.shaderColors = shaderColors;
+	}
+
+	public void setRaftSamples(float[] raftSamplePositionsXY, float[] raftSampleSpeeds) {
+		this.raftSamplePositionsXY = raftSamplePositionsXY;
+		this.raftSampleSpeeds = raftSampleSpeeds;
+	}
+
+	public void setRaftSampleTime(float raftSampleTime) {
+		this.raftSampleTime = raftSampleTime;
 	}
 
 	public void stopUsingShader() {
@@ -1238,4 +1264,34 @@ public class GameCanvas {
 		local.scale(sx,sy);
 		local.translate(-ox,-oy);
 	}
+
+	/*=*=* Radial Health Bar BEGIN *=*=*/
+	CutTexture radialHealth;
+
+	/** Set the texture for the radial health bar */
+	public void setRadialHealth(Texture texture){
+		radialHealth = new CutTexture(texture);
+	}
+
+	/** Draw the radial health bar, given health and player position */
+	public void drawRadialHealth(Vector2 position, float health){
+		// set position
+		radialHealth.position.set(position);
+		// cut according to health
+		radialHealth.update(health);
+		// render
+		radialHealth.render(spriteBatch);
+	}
+
+	/** Draw the linear health bar, given health and player position */
+	public void drawLinearHealth(float health, Vector2 player_position, Texture colorBar) {
+		int width_offset = (int)(colorBar.getWidth() * 0.07f);
+		Color c = new Color(radialHealth.makeColor((float)1/3, health),
+				radialHealth.makeColor((float)2/3, health), 0.2f, 1);
+		TextureRegion RatioBar = new TextureRegion(colorBar, width_offset, 0,
+				(int)(colorBar.getWidth() * (health * 0.86f) + width_offset), colorBar.getHeight());
+		if(health >= 0) {draw(RatioBar, c,(player_position.x - 100) + width_offset,
+				(player_position.y + 20), RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
+	}
+	/*=*=* Radial Health Bar END *=*=*/
 }

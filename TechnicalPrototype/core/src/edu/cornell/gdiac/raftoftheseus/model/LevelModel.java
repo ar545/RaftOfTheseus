@@ -118,13 +118,15 @@ public class LevelModel {
     protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
     /** Vector 2 holding the temp position vector for the game object to create */
     private Vector2 compute_temp = new Vector2(0, 0);
+    /** Vector 2 holding the temp position vector for the siren to jump into */
+    private Vector2 siren_compute_temp = new Vector2(0, 0);
     /** All the objects in the world. */
     private PooledList<GameObject> objects  = new PooledList<>();
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Shark> enemies = new PooledList<>();
-//    private PooledList<Hydra> hydras = new PooledList<>();
+    /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
@@ -148,6 +150,8 @@ public class LevelModel {
     private TextureRegion treasureTexture;
     /** Texture for all rock, as they look the same */
     private TextureRegion rockTexture;
+    /** Texture for all the plant which has the same hit-box as the rock */
+    private TextureRegion plantTexture;
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Texture for current placeholder: texture atlas in future */
@@ -156,10 +160,10 @@ public class LevelModel {
     private TextureRegion spearTexture;
     /** Texture for map background */
     protected Texture mapBackground;
-    /** Texture for game background */
-    protected Texture gameBackground;
-    /** Texture for game background when using shader */
-    protected Texture blueTexture;
+//    /** Texture for game background */
+//    protected Texture gameBackground;
+    /** Texture for water */
+    protected Texture waterTexture;
     /** Texture for wall */
     private TextureRegion earthTile;
     /** The texture for the colored health bar */
@@ -201,6 +205,10 @@ public class LevelModel {
     public int cols(){ return map_size.x; }
     /** The number of rows in this map-grid */
     public int rows(){ return map_size.y; }
+    /** The number of columns in this map-grid */
+    public int extraCols(){ return map_size.x + 2; }
+    /** The number of rows in this map-grid */
+    public int extraRows(){ return map_size.y + 2; }
     /** Getter for how long each tile is **/
     public float getTileSize() { return GRID_SIZE; }
     /** Get boundary wall vertices */
@@ -238,8 +246,17 @@ public class LevelModel {
      * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
      * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
     public Rectangle wallBounds(){
-        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - DEFAULT_BOUNDARY,
-                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2 * DEFAULT_BOUNDARY);
+        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - 0.2f * DEFAULT_BOUNDARY,
+                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2.8f * DEFAULT_BOUNDARY);
+    }
+
+    /** @return the height and width of bounds only
+     * x = y = - DEFAULT_BOUNDARY;
+     * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
+     * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
+    public Rectangle extraGrid(){
+        return new Rectangle(bounds.x - GRID_SIZE, bounds.y - GRID_SIZE,
+                bounds.width + 2 * GRID_SIZE, bounds.height + 2 * GRID_SIZE);
     }
 
     /** Adds a physics object in to the insertion queue.
@@ -269,7 +286,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addEnemyObject(Shark obj) {
+    protected void addSharkObject(Shark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -319,11 +336,12 @@ public class LevelModel {
 //        hydras.add(obj);
 //    }
 
-    protected void addSirenObject(Siren obj) {
-        assert inBounds(obj) : "Object is not in bounds";
-        objects.add(obj);
-        obj.activatePhysics(world);
-        sirens.add(obj);
+    /** add siren to the world */
+    protected void addSirenObject(Siren this_siren) {
+        assert inBounds(this_siren) : "Object is not in bounds";
+        objects.add(this_siren);
+        this_siren.activatePhysics(world);
+        sirens.add(this_siren);
     }
 
 
@@ -393,8 +411,9 @@ public class LevelModel {
 
         // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
-        if (USE_SHADER_FOR_WATER)
-            canvas.setFlowMap(recalculateFlowMap());
+        if (USE_SHADER_FOR_WATER) {
+            canvas.setDataMaps(recalculateFlowMap(), recalculateSurfMap());
+        }
     }
 
     /** Calculate the world bounds base on the grid map. Set the physical boundary of the level and the world.
@@ -499,8 +518,13 @@ public class LevelModel {
         existingPositions.clear();
     }
 
-    // TODO: add siren is not finished
-    private void addSiren(Vector2 startPosition, Vector2 endPosition) {}
+    /** Add siren to this game world */
+    private void addSiren(Vector2 startGridPos, Vector2 endGridPos) {
+        computeSirenPosition(startGridPos.x, endGridPos.x, startGridPos.y, endGridPos.y);
+        Siren this_siren = new Siren(compute_temp, siren_compute_temp, raft);
+        this_siren.setTexture(enemyTexture);
+        addSirenObject(this_siren);
+    }
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
@@ -516,8 +540,8 @@ public class LevelModel {
     private void populateCollect(int row, int col, int tile_int) {
         if (tile_int == TILE_DEFAULT){ return; }
         if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
-        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, 0); return; }
-        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, 2); return; }
+        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
+        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, false); return; }
         if (tile_int == TILE_PLANT - 1){ addWood(row, col, 20); return; }
         if (tile_int == TILE_PLANT - 2){ addWood(row, col, 15); return; }
         if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_PLANT){
@@ -540,7 +564,8 @@ public class LevelModel {
         if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
         if (tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
         if (tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
-        if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){
+        if (tile_int == TILE_PLANT){ addRock(row, col, -2); return; }
+        if (tile_int >= TILE_LAND_OFFSET && tile_int < TILE_SEA){
             addRock(row, col, tile_int - TILE_LAND_OFFSET); return;
         }
         if (tile_int >= TILE_WOOD_OFFSET)
@@ -573,8 +598,9 @@ public class LevelModel {
      * @param tile_int 0 if stand-alone, 1-16 if texture alas, -1 for sharp */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp, false);
+        Rock this_rock = new Rock(compute_temp, (tile_int == -1));
         this_rock.setTexture(rockTexture); // TODO: new land texture if tile_int != 0
+        if(tile_int == -2){this_rock.setTexture(plantTexture);}
         obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
@@ -582,24 +608,16 @@ public class LevelModel {
     /** Add Enemy Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position */
-    private void addEnemy(int row, int col, int enemy_type) {
+    private void addEnemy(int row, int col, boolean is_shark) {
         computePosition(col, row);
-        switch(enemy_type) {
-            case 0: // Sharks
-                Shark this_shark = new Shark(compute_temp, null, this);
-                this_shark.setTexture(enemyTexture);
-                addEnemyObject(this_shark);
-                break;
-            case 1: // Hydras
-//                Hydra th = new Hydra(compute_temp, null);
-//                th.setTexture(enemyTexture);
-//                addHydraObject(th);
-//                break;
-            case 2: // Sirens
-//                Siren ts = new Siren(compute_temp, null);
-//                ts.setTexture(enemyTexture);
-//                addSirenObject(ts);
-                break;
+        if(is_shark){
+            Shark this_shark = new Shark(compute_temp, null, this);
+            this_shark.setTexture(enemyTexture);
+            addSharkObject(this_shark);
+        }else{
+            Siren ts = new Siren(compute_temp, compute_temp, raft);
+            ts.setTexture(enemyTexture);
+            addSirenObject(ts);
         }
     }
 
@@ -667,6 +685,19 @@ public class LevelModel {
         compute_temp.y = ((float) y_row + 0.5f) * GRID_SIZE;
     }
 
+    /** Compute the position of the object in the world given the grid location.
+     * Result stored in compute_temp.
+     * @param x1 the x grid value of start position
+     * @param x2 the y grid value of end position
+     * @param y1 the y grid value of start position
+     * @param y2 the y grid value of end position */
+    private void computeSirenPosition(float x1, float x2, float y1, float y2){
+        compute_temp.x = (x1 + 0.5f) * GRID_SIZE;
+        compute_temp.y = (y1 + 0.5f) * GRID_SIZE;
+        siren_compute_temp.x = (x2 + 0.5f) * GRID_SIZE;
+        siren_compute_temp.y = (y2 + 0.5f) * GRID_SIZE;
+    }
+
     /** Add Raft Objects to the world, using the Json value for raft
      * @param row the row gird position
      * @param col the column grid position */
@@ -732,17 +763,20 @@ public class LevelModel {
         doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         rockTexture = new TextureRegion(directory.getEntry("rock", Texture.class));
+        plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
         treasureTexture = new TextureRegion(directory.getEntry("treasure", Texture.class));
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = new TextureRegion(directory.getEntry("bullet", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
-        gameBackground = directory.getEntry("background", Texture.class);
-        blueTexture = directory.getEntry("blue_texture", Texture.class);
+//        gameBackground = directory.getEntry("background", Texture.class);
+//        blueTexture = directory.getEntry("blue_texture", Texture.class);
+        waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         lightSettings = directory.getEntry("lights", JsonValue.class);
+        canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
     }
 
     /**
@@ -822,8 +856,14 @@ public class LevelModel {
         addQueuedObject(this_wood);
     }
 
+    /**
+     Creates a texture with the same pixel dimensions as the level's dimensions in tiles.
+     Each pixel's R and G values represent the X and Y components of the current vector at the corresponding tile.
+     These components are scaled so that the range [-1.0, 1.0] maps linearly to [0, 255].
+     The B and A values of the texture are unused.
+     */
     private Texture recalculateFlowMap() {
-        Pixmap pix = new Pixmap(cols(), rows(),  Pixmap.Format.RGBA8888);
+        Pixmap pix = new Pixmap(extraCols(), extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
         for (GameObject o : getObjects()) {
@@ -831,14 +871,78 @@ public class LevelModel {
                 Current c = (Current)o;
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
-                // TODO figure out a *good* way to represent current magnitude in the shader.
-                Vector2 d = c.getDirectionVector().nor(); // length independent of magnitude
+                p.add(1, 1); // offset one tile
+                Vector2 d = c.getDirectionVector().scl(0.05f); // length dependent on magnitude (assumes maximum magnitude 20)
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
             }
         }
         Texture t = new Texture(pix);
+        t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
+        return t;
+    }
+
+    /**
+     * Creates a texture with pixel dimensions which are [res] times the size of the level in tiles.
+     * Groups of res x res pixels map to their corresponding tile in the level.
+     * Each pixel's R value represents the "rough average" distance to the nearest shore, across all points in the area
+     * of the level covered by that pixel. This can be approximate, because the texture is interpolated later.
+     * Distances are clamped to the range [0, 1] in tile space, and mapped to pixel values [0, 255]. A distance of 0
+     * means the pixel is inside terrain. A distance of 1 means the pixel is at least 1 tile away from the nearest
+     * terrain, so no surf is added.
+     * The G, B, and A values of the texture are unused.
+     */
+    private Texture recalculateSurfMap() {
+        int res = 2;
+        Pixmap pix = new Pixmap(res*extraCols(), res*extraRows(),  Pixmap.Format.RGBA8888);
+        pix.setColor(1.0f, 0.5f, 0.5f, 1.0f); // R = 1 = no terrain nearby
+        pix.fill();
+        for (GameObject o : getObjects()) {
+            if (o.getType() == GameObject.ObjectType.ROCK) {
+                Rock r = (Rock)o;
+                Vector2 pos = r.getPosition(); // in box2d units (3 per tile)
+                pos.scl(1.0f/GRID_SIZE); // in tiles
+                pos.add(1, 1); // offset one tile
+                // rock position, in tiles:
+                int rx = (int)pos.x;
+                int ry = (int)pos.y;
+                // rock center, in tile coords:
+                float cx = rx + 0.5f;
+                float cy = ry + 0.5f;
+
+                // iterate through neighboring tiles (but don't go OOB)
+                for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x-1, rx+1); tx++) {
+                    for (int ty = Math.max(0, ry-1); ty <= Math.min(map_size.y-1, ry+1); ty++) {
+                        // iterate through the pixels covering that tile
+                        for (int px = tx*res; px < (tx+1)*res; px ++) {
+                            for (int py = ty*res; py < (ty+1)*res; py ++) {
+                                // center of pixel, in tile coords
+                                float x = (px+0.5f)/res;
+                                float y = (py+0.5f)/res;
+                                // nearest point in the rock to (x, y)
+                                float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
+                                float ny = Math.min(Math.max(cy-0.5f, y), cy+0.5f);
+                                // distance from pixel to nearest point in rock
+                                float dx = x - nx;
+                                float dy = y - ny;
+                                float d = (float)Math.sqrt(dx*dx + dy*dy); // could be substituted with max-norm distance;
+//                                float d = Math.max(Math.abs(dx), Math.abs(dy));
+                                d = Math.min(1.0f, d); // clamp to 1
+                                // if this distance is smaller than what's already in the texture, replace it
+                                float d_old = (pix.getPixel(px, py) >>> 24)/255.0f; // red value only
+                                d = Math.min(d, d_old);
+
+                                pix.setColor(d, 0.5f, 0.5f, 1.0f);
+                                pix.drawPixel(px, py);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Texture t = new Texture(pix);
+        t.setAnisotropicFilter(1.0f);
         t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         return t;
     }
@@ -905,6 +1009,8 @@ public class LevelModel {
         // draw a circle showing how far the player can move before they die
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        float d = getPlayer().getPotentialDistance() * 6;
+        light.setDistance(d);
     }
 
     public void drawMap(){
@@ -941,16 +1047,13 @@ public class LevelModel {
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(boolean useShader, float time) {
-        if (useShader) canvas.useShader(time);
-        float pixel = 1;
-        float x_scale = boundsVector2().x * pixel;
-        float y_scale = boundsVector2().y * pixel;
-        if (!useShader)
-            canvas.draw(gameBackground, Color.WHITE, 0, 0,  x_scale, y_scale);
-        else
-            canvas.draw(blueTexture, Color.WHITE, 0, 0,  x_scale, y_scale);// blueTexture may be replaced with some better-looking tiles
-        if (useShader)
+        Rectangle eg = extraGrid(); // TODO: invisible border: don't mess up the scaling on everything in the shader
+        if (useShader) {
+            canvas.useShader(time);
+            canvas.draw(waterTexture, Color.WHITE, eg.x,  eg.y, eg.width, eg.height);
             canvas.stopUsingShader();
+        } else
+            canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
     /**
@@ -971,21 +1074,19 @@ public class LevelModel {
 
     /** Precondition & post-condition: the game canvas is open
      * @param health the health percentage for the player */
-    private void drawHealthBar(float health, Vector2 player_position) {
-        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
-        TextureRegion RatioBar = new TextureRegion(colorBar, (int)(colorBar.getWidth() * health), colorBar.getHeight());
-        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
-        float y_origin = (player_position.y + 20);
-        canvas.draw(greyBar,Color.WHITE,x_origin,y_origin,greyBar.getRegionWidth(),greyBar.getRegionHeight());
-        if(health >= 0){canvas.draw(RatioBar,c,x_origin,y_origin,RatioBar.getRegionWidth(),RatioBar.getRegionHeight());}
+    private void drawLinearHealthBar(float health, Vector2 player_position) {
+        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
+                greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.drawLinearHealth(health, player_position, colorBar);
     }
 
-    /** This function calculate the correct health bar color
-     * @param median for red color the median should be 1/3 and 2/3 for green color
-     * @param health the health percentage for the player
-     * @return the rgb code representing the red or green color
-     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
-    private float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
+    /** Precondition & post-condition: the game canvas is open
+     * @param health the health percentage for the player */
+    private void drawHealthBar(float health, Vector2 player_position) {
+        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
+                greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 26), health);
+    }
 
     public void drawDebug() {
         canvas.beginDebug(cameraTransform);

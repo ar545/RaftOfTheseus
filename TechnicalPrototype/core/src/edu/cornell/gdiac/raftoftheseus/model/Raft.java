@@ -157,13 +157,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
     /** Reduce player health based on distance traveled and movement cost. */
     public void applyMoveCost(float dt) {
-        if (!movementInput.isZero()) {
-            float L = physicsObject.getLinearVelocity().len();
-            if (L > 0.15) { // L < 0.15 could be from moving into a wall, so we ignore it
-                // base movement cost (no current)
-                health -= MOVE_COST * L * dt;
-            }
-        }
+        float L = physicsObject.getLinearVelocity().len();
+        health -= MOVE_COST * L * dt; // base movement cost (no current)
     }
 
     /** @return whether the player health is below zero */
@@ -214,11 +209,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     }
 
     /* STEERING */
-
-    @Override
-    public Vector2 getLinearVelocity() {
-        throw new RuntimeException("use physicsObject.getLinearVelocity() instead. This method only exists because Raft implements Steerable, which it won't in the future.");
-    }
 
     @Override
     public float getAngularVelocity() {
