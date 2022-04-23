@@ -136,6 +136,8 @@ public class LevelModel {
     protected RayHandler rayhandler;
     /** The camera defining the RayHandler view; scale is in physics coordinates */
     protected OrthographicCamera raycamera;
+    /** what light effect to show the player */
+    private int light_effect = 0;
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -921,11 +923,7 @@ public class LevelModel {
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
         canvas.end();
 
-        // draw a circle showing how far the player can move before they die
-        float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-        float d = getPlayer().getPotentialDistance() * 6;
-        light.setDistance(d);
+        setLightAndCircle(playerPosOnScreen);
     }
 
     public void drawMap(){
@@ -1038,4 +1036,25 @@ public class LevelModel {
         cameraTransform = a.preTranslate(translation);
     }
 
+    /** change the level light effect, for testing purposes only */
+    public void change() {
+        light_effect ++;
+        if(light_effect == 4){light_effect = 0; raft.addHealth(100);} // for testing purposes
+    }
+
+    public void setLightAndCircle(Vector2 playerPosOnScreen){
+        if(light_effect == 0){
+            // draw a circle showing how far the player can move before they die
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            float d = getPlayer().getPotentialDistance() * 6;
+            light.setDistance(d);
+        }else if(light_effect == 1){
+            // draw a circle showing how far the player can move before they die
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            float d = getPlayer().getPotentialDistance() * 6;
+            light.setDistance(d);
+        }
+    }
 }

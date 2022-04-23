@@ -17,6 +17,7 @@
     "left" : "Left",
     "right" : "Right",
     "tab" : "Tab",
+    "test" : "T",
     "pause": "P",
     "revert" : "C",
     "rotate left" : "J",

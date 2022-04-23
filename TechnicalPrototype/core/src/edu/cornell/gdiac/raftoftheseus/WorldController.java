@@ -67,8 +67,6 @@ public class WorldController implements Screen, ContactListener {
     public static int WORLD_VELOCITY;
     /** Number of position iterations for the constraint solvers */
     public static int WORLD_POSIT;
-    /** Scale for the health bar */
-    private static final float HEALTH_BAR_SCALE = 0.6f;
 
     // FIELDS
     // CANVAS AND OBJECT LIST
@@ -668,6 +666,9 @@ public class WorldController implements Screen, ContactListener {
         // update forces for enemies, players, objects
         player.applyInputForce();
         resolveEnemies(dt);
+
+        // update light choice
+        if(ic.didChange()){ levelModel.change(); }
     }
 
     /** get enemies take actions according to their AI */
