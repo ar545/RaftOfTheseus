@@ -30,6 +30,7 @@ import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
+
 import java.util.Iterator;
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
 
@@ -56,6 +57,7 @@ public class WorldController implements Screen, ContactListener {
         WORLD_STEP = 1/world.getFloat("world step", 60f);
         WORLD_VELOCITY = world.getInt("world velocity", 6);
         WORLD_POSIT = world.getInt("world posit", 2);
+        shaderData = objParams.get("shader");
     }
 
     // CONSTANTS
@@ -67,6 +69,8 @@ public class WorldController implements Screen, ContactListener {
     public static int WORLD_VELOCITY;
     /** Number of position iterations for the constraint solvers */
     public static int WORLD_POSIT;
+
+    private static JsonValue shaderData;
 
     // FIELDS
     // CANVAS AND OBJECT LIST
@@ -135,6 +139,11 @@ public class WorldController implements Screen, ContactListener {
     private boolean exitPressed;
 
     private final long startTime;
+
+    // SHADER STUFF
+    private float[] raftSamplePositionsXY = new float[16];
+    private float[] raftSampleSpeeds = new float[8];
+    private float raftSampleLastTime = 0.0f;
 
     /**
      * Creates a new game world
@@ -211,6 +220,9 @@ public class WorldController implements Screen, ContactListener {
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
         levelModel.getPlayer().setAnimationFrame(time); // TODO don't hardcode number of frames in animation
 
+        // Update raft samples (for displaying the wake in the shader) before drawing water
+        updateRaftWakeSamples();
+
         // Draw the level
         levelModel.updateCameraTransform();
         levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f);
@@ -237,6 +249,34 @@ public class WorldController implements Screen, ContactListener {
             }
             SfxController.getInstance().fadeMusic();
             drawTransition();
+        }
+    }
+
+    private void updateRaftWakeSamples() {
+        float time = (System.currentTimeMillis() - startTime)/1000.0f;
+        float timeSince = time - raftSampleLastTime;
+        float timeInterval = 0.15f;
+        if(timeSince > timeInterval) {
+            // add a new sample and discard the oldest one
+            raftSampleLastTime = time;
+            Vector2 pos = levelModel.getPlayer().getPosition().scl(1.0f/levelModel.getTileSize());
+            // TODO figure out why speed is inaccurate when on currents? or don't, it might look better this way
+            float speed = levelModel.getPlayer().getLinearVelocity().len() * (1.0f/levelModel.getTileSize());
+//            Vector2 lastPos = new Vector2(raftSamplePositionsXY[0], raftSamplePositionsXY[1]);
+//            float speed = lastPos.sub(pos).len()/timeInterval; // approximate speed
+            for(int i = raftSampleSpeeds.length-1; i >= 1; i--) {
+                raftSampleSpeeds[i] = raftSampleSpeeds[i-1];
+                raftSamplePositionsXY[2*i] = raftSamplePositionsXY[2*(i-1)];
+                raftSamplePositionsXY[2*i+1] = raftSamplePositionsXY[2*(i-1)+1];
+            }
+            raftSampleSpeeds[0] = speed;
+            raftSamplePositionsXY[0] = pos.x;
+            raftSamplePositionsXY[1] = pos.y;
+
+            canvas.setRaftSamples(raftSamplePositionsXY, raftSampleSpeeds);
+            canvas.setRaftSampleTime(0.0f);
+        } else {
+            canvas.setRaftSampleTime(timeSince);
         }
     }
 
@@ -550,9 +590,13 @@ public class WorldController implements Screen, ContactListener {
         levelModel.gatherAssets(directory);
         this.directory = directory;
 
-        Texture waterTexture = directory.getEntry("water_texture", Texture.class);
-        waterTexture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        canvas.setWaterTexture(waterTexture);
+        Texture waterDiffuse = directory.getEntry("water_diffuse", Texture.class);
+        waterDiffuse.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        Texture waterNormal = directory.getEntry("water_normal", Texture.class);
+        waterNormal.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        Texture waterUVOffset = directory.getEntry("water_uv_offset", Texture.class);
+        waterUVOffset.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
+        canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -1023,6 +1067,31 @@ public class WorldController implements Screen, ContactListener {
         // Reset Soundcontroller
         SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SfxController.getInstance().startLevelMusic();
+
+        // Reset player position history
+        for(int i = 0; i < raftSampleSpeeds.length; i++) {
+            raftSamplePositionsXY[2*i] = levelModel.getPlayer().getPosition().x * (1.0f/levelModel.getTileSize());
+            raftSamplePositionsXY[2*i+1] = levelModel.getPlayer().getPosition().y * (1.0f/levelModel.getTileSize());
+            raftSampleSpeeds[i] = 0.0f;
+            raftSampleLastTime = (System.currentTimeMillis() - startTime)/1000.0f;
+
+            canvas.setRaftSamples(raftSamplePositionsXY, raftSampleSpeeds);
+            canvas.setRaftSampleTime(0.0f);
+        }
+
+        // update shader color palette
+        String pref_palette = level_int < 3 ? "colors_light" :
+                              level_int < 6 ? "colors_natural" :
+                              "colors_purple";
+        String[] shaderColorStrings = shaderData.get(pref_palette).asStringArray();
+        float[] shaderColors = new float[3*shaderColorStrings.length];
+        for (int i = 0; i < shaderColorStrings.length; i ++) {
+            Color c = Color.valueOf(shaderColorStrings[i]+"00");
+            shaderColors[3*i+0] = c.r;
+            shaderColors[3*i+1] = c.g;
+            shaderColors[3*i+2] = c.b;
+        }
+        canvas.setShaderColors(shaderColors);
     }
 
     /**

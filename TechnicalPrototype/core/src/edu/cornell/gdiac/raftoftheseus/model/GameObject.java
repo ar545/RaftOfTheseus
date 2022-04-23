@@ -89,6 +89,10 @@ public abstract class GameObject {
         physicsObject.setPosition(position);
     }
 
+    public Vector2 getLinearVelocity() {
+        return physicsObject.getLinearVelocity();
+    }
+
     public float getX() {
         return physicsObject.getX();
     }

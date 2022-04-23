@@ -64,5 +64,25 @@
     "damping" : 5,
     "thrust" : 0.3,
     "max speed" : 10
+  },
+  "shader" : {
+    "colors_natural" : [
+      "a0d6ec",
+      "629de3",
+      "3761c5",
+      "243aba"
+    ],
+    "colors_purple" : [
+      "976ad4",
+      "7541ba",
+      "5b27a1",
+      "471687"
+    ],
+    "colors_light" : [
+      "ccf7ff",
+      "76d2e3",
+      "49a8ba",
+      "318899"
+    ]
   }
 }
