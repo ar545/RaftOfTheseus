@@ -39,6 +39,7 @@
       "water_texture":     "images/water_texture.png",
       "white_bar":     "images/UI_HealthBar_Filled.png",
       "grey_bar":     "images/UI_HealthBar.png",
+      "radial_bar" : "images/radial_bar_filled.png",
       "star":     "images/star.png",
       "plant":     "images/plant.png",
       "progress": {

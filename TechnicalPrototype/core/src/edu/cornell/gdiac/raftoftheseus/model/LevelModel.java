@@ -761,6 +761,7 @@ public class LevelModel {
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         lightSettings = directory.getEntry("lights", JsonValue.class);
+        canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
     }
 
     /**
@@ -994,36 +995,19 @@ public class LevelModel {
 
     /** Precondition & post-condition: the game canvas is open
      * @param health the health percentage for the player */
+    private void drawLinearHealthBar(float health, Vector2 player_position) {
+        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
+                greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.drawLinearHealth(health, player_position, colorBar);
+    }
+
+    /** Precondition & post-condition: the game canvas is open
+     * @param health the health percentage for the player */
     private void drawHealthBar(float health, Vector2 player_position) {
-        int width_offset = (int)(colorBar.getWidth() * 0.07f);
-        Color c = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
-        TextureRegion RatioBar = new TextureRegion(colorBar, width_offset, 0,
-                (int)(colorBar.getWidth() * (health * 0.86f) + width_offset), colorBar.getHeight());
-        float x_origin = (player_position.x - greyBar.getRegionWidth()/2f);
-        float y_origin = (player_position.y + 20);
-        canvas.draw(greyBar, Color.WHITE, x_origin, y_origin, greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        if(health >= 0) {canvas.draw(RatioBar, c,x_origin + width_offset, y_origin,
-                RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
-//        drawTriangle();
+        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
+                greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 26), health);
     }
-
-    /** radio health bar */
-    void drawTriangle(){
-        float[] fa = new float[15];
-        fa[8] = 20;
-        fa[5] = (float) colorBar.getWidth()/2;
-        fa[14] = 20;
-        fa[11] = colorBar.getHeight();
-        fa[2] = fa[7] = fa[12] = Color.WHITE_FLOAT_BITS;
-        canvas.drawTriangle(colorBar, fa);
-    }
-
-    /** This function calculate the correct health bar color
-     * @param median for red color the median should be 1/3 and 2/3 for green color
-     * @param health the health percentage for the player
-     * @return the rgb code representing the red or green color
-     * old color function: Color c = new Color(Math.min(1, 2 - health * 2), Math.min(health * 2f, 1), 0, 1);*/
-    private float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
 
     public void drawDebug() {
         canvas.beginDebug(cameraTransform);
