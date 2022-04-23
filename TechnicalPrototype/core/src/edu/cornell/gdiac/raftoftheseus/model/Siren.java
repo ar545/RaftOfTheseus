@@ -69,6 +69,7 @@ public class Siren extends GameObject {
         location2.set(position2);
         direction1.set(position2.sub(position1).scl(FLY_SPEED));
         direction2.set(position1.sub(position2).scl(FLY_SPEED));
+        moveVector.set(0.0f, 0.0f);
         this.targetRaft = targetRaft;
         stateMachine = new DefaultStateMachine<Siren, SirenState>(this, SirenState.IDLE);
     }
@@ -78,7 +79,7 @@ public class Siren extends GameObject {
      * @param dt the time increment
      */
     public void update(float dt) {
-        physicsObject.getBody().setLinearVelocity(moveVector);
+        physicsObject.setLinearVelocity(moveVector);
         stateMachine.update();
     }
     /** @return this Siren's FSM */
@@ -102,8 +103,8 @@ public class Siren extends GameObject {
      * @param direction1 whether to go with the direction1 vector.
      */
     public void setMoveVector(boolean direction1) {
-        if(direction1) this.moveVector = this.direction1;
-        else this.moveVector = this.direction2;
+        if(direction1) this.moveVector.set(this.direction1);
+        else this.moveVector.set(this.direction2);
     }
     /** Set the move vector to zero so the Siren comes to a rest. */
     public void stopMove(){ this.moveVector.setZero(); }
