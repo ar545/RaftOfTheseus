@@ -713,7 +713,7 @@ public class WorldController implements Screen, ContactListener {
         resolveEnemies(dt);
 
         // update light choice
-        if(ic.didChange()){ levelModel.change(); }
+        if(ic.didChange()){ levelModel.change(debug); }
     }
 
     /** get enemies take actions according to their AI */

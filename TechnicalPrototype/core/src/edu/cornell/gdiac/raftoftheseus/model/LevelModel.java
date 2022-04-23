@@ -1114,24 +1114,26 @@ public class LevelModel {
     }
 
     /** change the level light effect, for testing purposes only */
-    public void change() {
+    public void change(boolean debug) {
         light_effect ++;
-        if(light_effect == 4){light_effect = 0; raft.addHealth(100);} // for testing purposes
+        if( light_effect == 3 ){ light_effect = 0; if(debug) { raft.addHealth(160); } } // for testing purposes
     }
 
+    /** draw a circle showing how far the player can move before they die */
     public void setLightAndCircle(Vector2 playerPosOnScreen){
-        if(light_effect == 0){
-            // draw a circle showing how far the player can move before they die
+        if(light_effect == 0){ // health light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
             float d = getPlayer().getPotentialDistance() * 6;
             light.setDistance(d);
-        }else if(light_effect == 1){
-            // draw a circle showing how far the player can move before they die
-            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        }else if(light_effect == 1){ // health light and constant circle
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, 380);
             float d = getPlayer().getPotentialDistance() * 6;
             light.setDistance(d);
+        }else if(light_effect == 2){ // constant light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            light.setDistance(60);
         }
     }
 }
