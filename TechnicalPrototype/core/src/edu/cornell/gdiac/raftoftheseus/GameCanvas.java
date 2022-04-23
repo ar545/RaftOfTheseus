@@ -144,8 +144,8 @@ public class GameCanvas {
 		vertex = new Vector2();
 
 		try {
-			String vertexShader = Gdx.files.internal("shaders/godotwater_vertex.glsl").readString();
-			String fragmentShader = Gdx.files.internal("shaders/godotwater_fragment.glsl").readString();
+			String vertexShader = Gdx.files.internal("shaders/3Dwater_vertex.glsl").readString();
+			String fragmentShader = Gdx.files.internal("shaders/3Dwater_fragment.glsl").readString();
 			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
 		} catch (GdxRuntimeException e) {
 			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
@@ -423,25 +423,18 @@ public class GameCanvas {
 	public void useShader(float time) {
 		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
 		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
-		Affine2 transform = new Affine2();
-		transform.setToScaling(1/3.0f,1/3.0f);// TODO this should use LevelModel's number for how many Box2d units are in a tile, instead of hardcoding
-		Matrix4 objToWorldMat = new Matrix4();
-		objToWorldMat.setAsAffine(transform);
-		shaderProgram.setUniformMatrix("u_objToWorldMat", objToWorldMat);
 		// pass textures (as indices)
-		shaderProgram.setUniformi("u_flowMap", 1);
-		shaderProgram.setUniformi("u_surfMap", 2);
-		shaderProgram.setUniformf("u_flowmapSize", levelSize.x, levelSize.y);
-		shaderProgram.setUniformf("u_inverseFlowmapSize", 1.0f/levelSize.x, 1.0f/levelSize.y);
-
-		shaderProgram.setUniformi("u_normalTexture", 3); // u_waterNormal
+		shaderProgram.setUniformi("flow_map", 1);
+		shaderProgram.setUniformi("surf_map", 2);
+		shaderProgram.setUniformi("normal_texture", 3);
 		shaderProgram.setUniformi("texture_offset_uv", 4); // waterUVOffset
-		// pass time
-		shaderProgram.setUniformf("u_time", time);
+		// pass other stuff
+		shaderProgram.setUniformf("time", time);
+		shaderProgram.setUniformf("level_size", levelSize.x, levelSize.y);
 		// pass in raft position/speed samples
-		shaderProgram.setUniform2fv("raft_sample_positions", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
-		shaderProgram.setUniform1fv("raft_sample_speeds", raftSampleSpeeds, 0, raftSampleSpeeds.length);
-		shaderProgram.setUniformf("time_since_last_sample", raftSampleTime);
+		shaderProgram.setUniform2fv("wake_samples_pos", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
+		shaderProgram.setUniform1fv("wake_samples_speed", raftSampleSpeeds, 0, raftSampleSpeeds.length);
+		shaderProgram.setUniformf("wake_sample_latency", raftSampleTime);
 	}
 
 	public void setDataMaps(Texture flowMap, Texture surfMap) {
