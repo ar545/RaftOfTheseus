@@ -924,6 +924,8 @@ public class LevelModel {
         // draw a circle showing how far the player can move before they die
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        float d = getPlayer().getPotentialDistance() * 6;
+        light.setDistance(d);
     }
 
     public void drawMap(){
