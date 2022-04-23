@@ -206,7 +206,7 @@ public class InputController {
 	/** @return true if the tab button was pressed for changing what is selected on a screen. */
 	public boolean didTab() { return tabPressed && !tabPrevious; }
 	/** @return true if the change control scheme button was pressed. */
-	private boolean didChange() { return changePressed && !changePrevious; }
+	public boolean didChange() { return changePressed && !changePrevious; }
 	/** @return true if the "right" direction button was pressed for keyboard control of settings. */
 	public boolean didRight() { return rightPressed; }
 	/** @return true if the "left" direction button was pressed for keyboard control of settings. */
@@ -260,8 +260,7 @@ public class InputController {
 		pausePressed = Gdx.input.isKeyPressed(mappings.get("pause"));
 
 		// Player action keys
-//		changePressed = Gdx.input.isKeyPressed(mappings.get("change controls"));
-		changePressed = false;
+		changePressed = Gdx.input.isKeyPressed(mappings.get("test")); //		changePressed = false;
 		tabPressed = Gdx.input.isKeyPressed(mappings.get("tab"));
 		sprintPressed = Gdx.input.isKeyPressed(mappings.get("sprint"));
 
