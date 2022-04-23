@@ -149,13 +149,17 @@ public class LevelModel {
     /** Texture for all treasures */
     private TextureRegion treasureTexture;
     /** Texture for all rock, as they look the same */
-    private TextureRegion rockTexture;
+    private TextureRegion regularRockTexture;
+    /** Texture for all rock, as they look the same */
+    private TextureRegion sharpRockTexture;
     /** Texture for all the plant which has the same hit-box as the rock */
     private TextureRegion plantTexture;
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Texture for current placeholder: texture atlas in future */
     private FilmStrip enemyTexture;
+    /** Texture for the Sirens */
+    private FilmStrip sirenTexture;
     /** Texture for spear */
     private TextureRegion spearTexture;
     /** Texture for map background */
@@ -343,8 +347,6 @@ public class LevelModel {
         this_siren.activatePhysics(world);
         sirens.add(this_siren);
     }
-
-
 
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
@@ -599,7 +601,7 @@ public class LevelModel {
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp, (tile_int == -1));
-        this_rock.setTexture(rockTexture); // TODO: new land texture if tile_int != 0
+        this_rock.setTexture(regularRockTexture); // TODO: new land texture if tile_int != 0
         if(tile_int == -2){this_rock.setTexture(plantTexture);}
         obstacles[col][row] = this_rock;
         addObject(this_rock);
@@ -616,7 +618,7 @@ public class LevelModel {
             addSharkObject(this_shark);
         }else{
             Siren ts = new Siren(compute_temp, compute_temp, raft);
-            ts.setTexture(enemyTexture);
+            ts.setTexture(sirenTexture);
             addSirenObject(ts);
         }
     }
@@ -762,11 +764,13 @@ public class LevelModel {
         woodTexture = new TextureRegion(directory.getEntry("wood", Texture.class));
         doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
-        rockTexture = new TextureRegion(directory.getEntry("rock", Texture.class));
+        regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
+        sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
         plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
         treasureTexture = new TextureRegion(directory.getEntry("treasure", Texture.class));
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
+        sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 4);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = new TextureRegion(directory.getEntry("bullet", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
