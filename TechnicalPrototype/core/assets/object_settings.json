@@ -17,8 +17,20 @@
     "cool down" : 2000,
     "texture scale": 1.5,
     "idle animation speed" : 0.2,
+    "singing animation speed" : 0.2,
     "take off animation speed" : 0.25,
-    "flying animation speed" : 0.2
+    "landing animation speed" : 0.1,
+    "flying animation speed" : 0.2,
+    "idle frames" : 4,
+    "singing frames" : 4,
+    "take off frames" : 3,
+    "landing frames" : 3,
+    "flying frames" : 2,
+    "idle start frame" : 0,
+    "singing start frame" : 5,
+    "take off start frame" : 10,
+    "landing start frame" : 10,
+    "flying start frame" : 15
   },
   "hydra" : {
     "hitting range" : 200,
@@ -58,7 +70,7 @@
   "rock": {
     "width": 3,
     "height": 3,
-    "damage": 10
+    "damage": -15
   },
   "terrain": {
   },
@@ -70,7 +82,20 @@
     "initial health" : 60,
     "damping" : 5,
     "thrust" : 0.3,
-    "max speed" : 10
+    "max speed" : 10,
+    "width" : 2.8,
+    "height" : 1.3,
+    "sensor size" : 1.45,
+    "texture scale" : 1.5,
+    "idle animation speed" : 15,
+    "shooting animation speed" : 15,
+    "rotation animation speed" : 10,
+    "idle frames" : 19,
+    "shooting frames" : 19,
+    "rotation frames" : 10,
+    "idle starting frame" : 0,
+    "shooting starting frame" : 0,
+    "rotation starting frame" : 0
   },
   "shader" : {
     "colors_natural" : [

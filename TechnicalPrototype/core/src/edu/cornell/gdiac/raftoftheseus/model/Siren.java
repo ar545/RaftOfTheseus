@@ -27,8 +27,20 @@ public class Siren extends GameObject {
         STUN_TIME = objParams.getLong("stun time");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
         IDLE_AS = objParams.getFloat("idle animation speed");
+        SINGING_AS = objParams.getFloat("singing animation speed");
         TAKE_OFF_AS = objParams.getFloat("take off animation speed");
+        LANDING_AS = objParams.getFloat("landing animation speed");
         FLYING_AS = objParams.getFloat("flying animation speed");
+        IDLE_FRAMES = objParams.getInt("idle frames");
+        SINGING_FRAMES = objParams.getInt("singing frames");
+        TAKE_OFF_FRAMES = objParams.getInt("take off frames");
+        LANDING_FRAMES = objParams.getInt("landing frames");
+        FLYING_FRAMES = objParams.getInt("flying frames");
+        IDLE_SF = objParams.getInt("idle start frame");
+        SINGING_SF = objParams.getInt("singing start frame");
+        TAKE_OFF_SF = objParams.getInt("take off start frame");
+        LANDING_SF = objParams.getInt("landing start frame");
+        FLYING_SF = objParams.getInt("flying start frame");
     }
 
     /** The player for targeting. */
@@ -54,7 +66,7 @@ public class Siren extends GameObject {
     private boolean hasAttacked;
     private boolean animationDone;
     /** Constants that determine time in each state for range of attack. */
-    private static float PROXIMITY = 0.001f;
+    private static float PROXIMITY;
     private static long IDLE_TIME;
     private static long SINGING_TIME;
     private static float ATTACK_RANGE;
@@ -64,8 +76,20 @@ public class Siren extends GameObject {
     private static long STUN_TIME;
     private static float TEXTURE_SCALE;
     private static float IDLE_AS;
+    private static float SINGING_AS;
     private static float TAKE_OFF_AS;
+    private static float LANDING_AS;
     private static float FLYING_AS;
+    private static int IDLE_FRAMES;
+    private static int SINGING_FRAMES;
+    private static int TAKE_OFF_FRAMES;
+    private static int LANDING_FRAMES;
+    private static int FLYING_FRAMES;
+    private static int IDLE_SF;
+    private static int SINGING_SF;
+    private static int TAKE_OFF_SF;
+    private static int LANDING_SF;
+    private static int FLYING_SF;
     /**
      * Constructor for the Siren.
      * @param position1 The starting position of the Siren.
@@ -229,16 +253,6 @@ public class Siren extends GameObject {
         return false;
     }
 
-    // 0-3 Idle
-    private static int IDLE_FRAMES = 4;
-    // 5-8 Singing
-    private static int SINGING_FRAMES = 4;
-    // 10-12 Take Off
-    private static int TAKE_OFF_FRAMES = 3;
-    // 12-10 Landing
-    // 15-16 Flying
-    private static int FLYING_FRAMES = 2;
-
     /**
      * Method to set animation based on the time elapsed in the game.
      * @param dt the current time in the game.
@@ -249,19 +263,19 @@ public class Siren extends GameObject {
         System.out.println(stateMachine.getCurrentState());
         switch(stateMachine.getCurrentState()){
             case IDLE:
-                setFrame(IDLE_AS, IDLE_FRAMES, 0, false);
-                break;
-            case LANDING:
-                setAnimationDone(setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, true));
-                break;
-            case TAKEOFF:
-                setAnimationDone(setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, false));
-                break;
-            case FLYING:
-                setFrame(FLYING_AS, FLYING_FRAMES, 15, true);
+                setFrame(IDLE_AS, IDLE_FRAMES, IDLE_SF, false);
                 break;
             case SINGING:
-                setFrame(IDLE_AS, SINGING_FRAMES, 5, false);
+                setFrame(SINGING_AS, SINGING_FRAMES, SINGING_SF, false);
+                break;
+            case LANDING:
+                setAnimationDone(setFrame(LANDING_AS, LANDING_FRAMES, LANDING_SF, true));
+                break;
+            case TAKEOFF:
+                setAnimationDone(setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, TAKE_OFF_SF, false));
+                break;
+            case FLYING:
+                setFrame(FLYING_AS, FLYING_FRAMES, FLYING_SF, true);
                 break;
             case STUNNED:
                 break;
@@ -270,11 +284,11 @@ public class Siren extends GameObject {
 
     /**
      * Sets the frame of the animation based on the FSM and time given.
-     * @param animationSpeed
-     * @param frames
-     * @param start
-     * @param reverse
-     * @return
+     * @param animationSpeed how many seconds should pass between each frame.
+     * @param frames the number of frames this animation has.
+     * @param start which frame in the FilmStrip the animation starts on.
+     * @param reverse whether the animation should be drawn backwards.
+     * @return whether it has reached the last animation image.
      */
     private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
         if (timeElapsed > animationSpeed){
@@ -289,10 +303,17 @@ public class Siren extends GameObject {
     float timeElapsed = 0;
     int frame = 0;
 
+    /**
+     * Method to reset the frameCount to 0 to ensure the next animation
+     */
     public void resetFrame(){
         frameCount = 0;
     }
 
+    /**
+     * Set the appropriate image frame first before drawing the Siren.
+     * @param canvas Drawing context
+     */
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(frame);

@@ -11,8 +11,24 @@ public enum SirenState implements State<Siren> {
         public void update (Siren entity){
             entity.setTimeStamp();
             if(entity.isPastIdleCooldown()) {
-                entity.resetTimeStamp();
                 entity.getStateMachine().changeState(SINGING);
+            }
+        }
+    },
+    SINGING() {
+        @Override
+        public void update (Siren entity){
+            entity.setTimeStamp();
+            if(entity.isDoneSinging()) {
+                entity.resetAttackStamp();
+                entity.resetTimeStamp();
+                if(entity.fromFirstLocation()){
+                    entity.setMoveVector(true);
+                } else if(entity.fromSecondLocation()){
+                    entity.setMoveVector(false);
+                }
+                entity.scaleMoveVector(false);
+                entity.getStateMachine().changeState(TAKEOFF);
             }
         }
     },
@@ -37,31 +53,19 @@ public enum SirenState implements State<Siren> {
         @Override
         public void update (Siren entity){
             if(entity.nearLanding()){
-                if(entity.fromFirstLocation()){
-                    entity.setFromSecondLocation();
-                } else {
-                    entity.setFromFirstLocation();
-                }
-                entity.stopMove();
                 entity.getStateMachine().changeState(LANDING);
             }
         }
-    },
-    SINGING() {
+
         @Override
-        public void update (Siren entity){
-            entity.setTimeStamp();
-            if(entity.isDoneSinging()) {
-                entity.resetAttackStamp();
-                entity.resetTimeStamp();
-                if(entity.fromFirstLocation()){
-                    entity.setMoveVector(true);
-                } else if(entity.fromSecondLocation()){
-                    entity.setMoveVector(false);
-                }
-                entity.scaleMoveVector(false);
-                entity.getStateMachine().changeState(TAKEOFF);
+        public void exit (Siren entity){
+            if(entity.fromFirstLocation()){
+                entity.setFromSecondLocation();
+            } else {
+                entity.setFromFirstLocation();
             }
+            entity.stopMove();
+            entity.resetFrame();
         }
     },
     STUNNED(){
@@ -82,6 +86,7 @@ public enum SirenState implements State<Siren> {
 
     @Override
     public void exit(Siren entity) {
+        entity.resetTimeStamp();
         entity.resetFrame();
     }
 

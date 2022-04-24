@@ -2,6 +2,11 @@ package edu.cornell.gdiac.raftoftheseus.singleton;
 
 import com.badlogic.gdx.audio.Music;
 
+/**
+ * Wrapper class to allow control of music dynamics based on an FSM.
+ * Postcondition: When the thread stops running, the music will either be at the maximum volume or minimum
+ * and doneFade = true;
+ */
 public class DynamicMusic implements Runnable {
     // the music
     private Music music;
@@ -22,23 +27,38 @@ public class DynamicMusic implements Runnable {
     }
 
     /**
-     * @param fadeIn Whether this music should fade in or not
+     * Fade in this music.
+     * Changes the looping boolean and starts the new thread if necessary.
      */
-    public void setFadeIn(boolean fadeIn) {
-        this.fadeIn = fadeIn;
+    public void FadeIn() {
+        this.fadeIn = true;
+        if(doneFade){
+            start();
+        }
+    }
+
+    /**
+     * Fade out this music.
+     * Changes the looping boolean and starts the new thread if necessary.
+     */
+    public void FadeOut(){
+        this.fadeIn = false;
+        if(doneFade){
+            start();
+        }
     }
 
     /**
      * @return Whether this music is done fading or not.
      */
-    public boolean getDoneFade(){
+    public boolean isDoneFade(){
         return doneFade;
     }
 
     /**
      * Method to start the thread to fade in or out the music.
      */
-    public void start(){
+    private void start(){
         doneFade = false;
         t = new Thread(this, index);
         t.start();
@@ -56,7 +76,7 @@ public class DynamicMusic implements Runnable {
     }
 
     /**
-     * Fades in this music file.
+     * Fades in this music file while it can still increase its volume.
      */
     private void fadeIn(){
         long timeStamp = System.currentTimeMillis();
@@ -75,7 +95,7 @@ public class DynamicMusic implements Runnable {
     }
 
     /**
-     * Fades out this music file.
+     * Fades out this music file while it can still decrease its volume.
      */
     private void fadeOut(){
         long timeStamp = System.currentTimeMillis();
@@ -113,6 +133,12 @@ public class DynamicMusic implements Runnable {
 
     /** To stop the thread when changing screens. */
     public void stopThread() { exit = true; }
+
+    /** To reset the thread to allow running. */
+    public void resetThread() { exit = false; }
+
+    /** To access the music file to allow playing */
+    public Music getMusic(){ return music; }
 
     /** To print out the volume for debugging. */
     public void print(String name){ System.out.println(name + " " + " volume: " + music.getVolume()); }

@@ -4,6 +4,7 @@ import com.badlogic.gdx.ai.steer.Steerable;
 import com.badlogic.gdx.ai.steer.SteeringAcceleration;
 import com.badlogic.gdx.ai.steer.SteeringBehavior;
 import com.badlogic.gdx.ai.utils.Location;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
@@ -31,6 +32,14 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         DAMPING = objParams.getFloat("damping");
         THRUST = objParams.getFloat("thrust");
         MAX_SPEED = objParams.getFloat("max speed");
+        OBJ_WIDTH = objParams.getFloat("width");
+        OBJ_HEIGHT = objParams.getFloat("height");
+        SENSOR_RADIUS = objParams.getFloat("sensor size");
+        TEXTURE_SCALE = objParams.getFloat("texture scale");
+        IDLE_AS = objParams.getFloat("idle animation speed");
+        SHOOTING_AS = objParams.getFloat("shooting animation speed");
+        IDLE_F = objParams.getInt("idle frames");
+        SHOOTING_F = objParams.getInt("shooting frames");
     }
 
     // CONSTANTS
@@ -66,21 +75,30 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private final Vector2 forceCache = new Vector2();
     /** Raft sail sound id */
     private long sailSound;
+    private static float OBJ_WIDTH;
+    private static float OBJ_HEIGHT;
+    private static float SENSOR_RADIUS;
 
     // ANIMATION
+    private static TextureRegion shooting;
     /** How much to enlarge the raft. */
-    private static float TEXTURE_SCALE = 1.5f;
+    private static float TEXTURE_SCALE;
     /** The animation speed for the raft. */
-    private static float ANIMATION_SPEED = 15f;
+    private static float IDLE_AS;
+    private static float SHOOTING_AS;
     /** The number of frames for this animation. */
-    private static int FRAMES = 19;
+    private static int IDLE_F;
+    private static int SHOOTING_F;
+    /** Which frame to start on the filmstrip with this animation. */
+    private static int IDLE_SF;
+    private static int SHOOTING_SF;
 
     // METHODS
     /** Constructor for Raft object
      * @param position: position of raft
      */
     public Raft(Vector2 position) {
-        physicsObject = new CapsuleObstacle(2.8f, 1.3f);
+        physicsObject = new CapsuleObstacle(OBJ_WIDTH, OBJ_HEIGHT);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER;
@@ -88,7 +106,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         this.health = INITIAL_PLAYER_HEALTH;
         this.star = 0;
 
-        interactionSensor = new WheelObstacle(1.45f);
+        interactionSensor = new WheelObstacle(SENSOR_RADIUS);
         interactionSensor.setSensor(true);
         interactionSensor.setBodyType(BodyDef.BodyType.DynamicBody);
         interactionSensor.getFilterData().categoryBits = CATEGORY_PLAYER_SENSOR;
@@ -215,6 +233,9 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         return health / MOVE_COST;
     }
 
+    /**
+     * Realign the raft so that the bottom of it is at the bottom of the capsule object.
+     */
     @Override
     protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
@@ -228,9 +249,9 @@ public class Raft extends GameObject implements Steerable<Vector2> {
      */
     public void setAnimationFrame(float time) {
         // Get frame number
-        int frame = (int)(time * ANIMATION_SPEED);
+        int frame = (int)(time * IDLE_AS);
         // Find frame
-        ((FilmStrip)texture).setFrame(frame % FRAMES);
+        ((FilmStrip)texture).setFrame(frame % IDLE_F);
     }
 
     // MUSIC

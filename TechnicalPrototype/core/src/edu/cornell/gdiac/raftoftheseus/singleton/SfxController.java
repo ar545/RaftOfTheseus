@@ -266,7 +266,7 @@ public class SfxController {
         return checkMusic(name).getVolume();
     }
 
-    /**
+     /**
      * Plays a music file at specified volume with reference index.
      * Precondition: volume > 0 and < musicVolume
      * @param index
