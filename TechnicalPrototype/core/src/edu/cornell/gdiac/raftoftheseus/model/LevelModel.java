@@ -736,16 +736,41 @@ public class LevelModel {
         rayhandler.render();
     } }
 
-    /** This calculates the box2d light position translation according to the screen (canvas) size,
+    /** This calculates the box-2d light position translation according to the screen (canvas) size,
      *  the player position, and the pixel per unit scale.
      * @return a Vector2 representing the translation that texture will go through */
     Vector2 lightTranslation() {
+        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
+        Vector2 mapCenter = new Vector2(cols(), rows()).scl(GRID_SIZE).scl(0.5f); // center-of-map coordination
+        Vector2 translation = new Vector2(mapCenter); // except for capped camera, light always at center of map
+        translation.sub(getPlayer().getPosition());
+
+         // "Capped Camera": bound x and y within walls
+        Rectangle wallBounds = wallBounds();
+        float half = (GRID_SIZE / GRID_PIXELS) * 0.5f; // 0.015f is the size of half-screen transformed into b2d coordinates
+        translation.x = Math.min(translation.x, mapCenter.x + canvas.getWidth() * (-half) - wallBounds.x);
+        translation.x = Math.max(translation.x, mapCenter.x + canvas.getWidth() * (half) - wallBounds.width);
+        translation.y = Math.min(translation.y, mapCenter.y + canvas.getHeight() * (-half) - wallBounds.y);
+        translation.y = Math.max(translation.y, mapCenter.y + canvas.getHeight() * (half) - wallBounds.height);
+
+        // "Scaled Camera": adjust x and y scale
+        float x_diff = mapCenter.x - (getPlayer().getPosition().x + translation.x);
+        float y_diff = mapCenter.y - (getPlayer().getPosition().y + translation.y);
+        if( x_diff != 0 ){ translation.x -= x_diff * ((mapCenter.x / (canvas.getWidth() * half)) - 1); } // 1280 * 0.03 * 0.5 = 19.2 (2.34)
+        if( y_diff != 0 ){ translation.y -= y_diff * ((mapCenter.y / (canvas.getWidth() * half)) - 1); } // 720 * 0.03 * 0.5 = 10.8 (4.16)
+        return translation;
+    }
+
+    /** This calculates the box2d light position translation according to the screen (canvas) size,
+     *  the player position, and the pixel per unit scale.
+     * @return a Vector2 representing the translation that texture will go through */
+    Vector2 lightTranslation2() {
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)canvas.getWidth(), (float)canvas.getHeight());
         translation.scl(0.0015f * cols(), 0.0015f * rows()); // 0.0015 = 0.03 * 0.1 * 1/2
         translation.sub(getPlayer().getPosition());
 
-         // "Capped Camera": bound x and y within walls
+        // "Capped Camera": bound x and y within walls
         Rectangle wallBounds = wallBounds();
         translation.x = Math.min(translation.x, canvas.getWidth() * (0.0015f * cols() - 0.015f) - wallBounds.x);
         translation.x = Math.max(translation.x, canvas.getWidth() * (0.0015f * cols() + 0.015f) - wallBounds.width);
@@ -1164,7 +1189,7 @@ public class LevelModel {
         }else if(light_effect == 2){ // constant light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(60);
+            light.setDistance(40);
         }
     }
 }
