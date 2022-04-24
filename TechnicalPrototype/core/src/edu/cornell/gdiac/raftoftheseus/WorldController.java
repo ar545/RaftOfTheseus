@@ -307,13 +307,13 @@ public class WorldController implements Screen, ContactListener {
             table.setBackground(skin.getDrawable("pause_background"));
 
             TextButton resumeButton = new TextButton("RESUME", skin);
-            resumeButton.getLabel().setFontScale(0.4f);
+            resumeButton.getLabel().setFontScale(0.35f);
             resumeButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
-                    resumeButton.getLabel().setColor(Color.GOLD);
+                    resumeButton.getLabel().setColor(Color.LIGHT_GRAY);
                 }
 
                 @Override
@@ -329,17 +329,17 @@ public class WorldController implements Screen, ContactListener {
                     pausePressed = false;
                 }
             });
-            table.add(resumeButton);
+            table.add(resumeButton).padTop(-20);
             table.row();
 
             TextButton restartButton = new TextButton("RESTART", skin);
-            restartButton.getLabel().setFontScale(0.4f);
+            restartButton.getLabel().setFontScale(0.35f);
             restartButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
-                    restartButton.getLabel().setColor(Color.GOLD);
+                    restartButton.getLabel().setColor(Color.LIGHT_GRAY);
                 }
 
                 @Override
@@ -359,14 +359,14 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton settingsButton = new TextButton("SETTINGS", skin);
-            settingsButton.getLabel().setFontScale(0.4f);
+            settingsButton.getLabel().setFontScale(0.35f);
             table.add(settingsButton);
             settingsButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
-                    settingsButton.getLabel().setColor(Color.GOLD);
+                    settingsButton.getLabel().setColor(Color.LIGHT_GRAY);
                 }
 
                 @Override
@@ -386,14 +386,14 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.4f);
+            exitButton.getLabel().setFontScale(0.35f);
             exitButton.getLabel().setColor(Color.GOLD);
             exitButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
-                    exitButton.getLabel().setColor(Color.GRAY);
+                    exitButton.getLabel().setColor(Color.LIGHT_GRAY);
                 }
 
                 @Override
@@ -440,14 +440,14 @@ public class WorldController implements Screen, ContactListener {
 
         Table part1 = new Table();
         TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", skin);
-        mainButton.getLabel().setFontScale(0.5f);
+        mainButton.getLabel().setFontScale(0.4f);
         float buttonWidth =  mainButton.getWidth();
         mainButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
-                mainButton.getLabel().setColor(Color.GOLD);
+                mainButton.getLabel().setColor(Color.LIGHT_GRAY);
             }
 
             @Override
@@ -467,7 +467,7 @@ public class WorldController implements Screen, ContactListener {
                 }
             }
         });
-        part1.add(mainButton).expandX().align(Align.center);
+        part1.add(mainButton).expandX().align(Align.center).padTop(10);
         table.add(part1);
         table.row();
 
@@ -475,13 +475,13 @@ public class WorldController implements Screen, ContactListener {
         part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
             TextButton replayButton = new TextButton("REPLAY", skin);
-            replayButton.getLabel().setFontScale(0.4f);
+            replayButton.getLabel().setFontScale(0.35f);
             replayButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                     if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                     super.enter(event, x, y, pointer, fromActor);
-                    replayButton.getLabel().setColor(Color.GOLD);
+                    replayButton.getLabel().setColor(Color.LIGHT_GRAY);
                 }
 
                 @Override
@@ -501,13 +501,13 @@ public class WorldController implements Screen, ContactListener {
         }
 
         TextButton settingsButton = new TextButton("SETTINGS", skin);
-        settingsButton.getLabel().setFontScale(0.4f);
+        settingsButton.getLabel().setFontScale(0.35f);
         settingsButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
-                settingsButton.getLabel().setColor(Color.GOLD);
+                settingsButton.getLabel().setColor(Color.LIGHT_GRAY);
             }
 
             @Override
@@ -526,7 +526,7 @@ public class WorldController implements Screen, ContactListener {
         part2.add(settingsButton).expandX();
 
         TextButton exitButton = new TextButton("EXIT", skin);
-        exitButton.getLabel().setFontScale(0.4f);
+        exitButton.getLabel().setFontScale(0.35f);
         exitButton.getLabel().setColor(Color.GOLD);
         exitButton.addListener(new ClickListener() {
             @Override
