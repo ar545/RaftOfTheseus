@@ -26,7 +26,8 @@ public abstract class GameObject {
         TREASURE,
         SPEAR,
         HYDRA,
-        SIREN
+        SIREN,
+        NOTE
     }
 
     /** Collision filtering categories */

@@ -23,7 +23,6 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
-import edu.cornell.gdiac.raftoftheseus.model.projectile.Projectile;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 //import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
@@ -46,7 +45,7 @@ public class WorldController implements Screen, ContactListener {
     public static void setConstants(JsonValue objParams){
 //        EXIT_QUIT = objParams.getInt("exit quit", 0);
         Raft.setConstants(objParams.get("raft"));
-        Projectile.setConstants(objParams.get("spear"));
+        Spear.setConstants(objParams.get("spear"));
         Note.setConstants(objParams.get("note"));
         Shark.setConstants(objParams.get("shark"));
 //        Hydra.setConstants(objParams.get("hydra"));
@@ -767,7 +766,7 @@ public class WorldController implements Screen, ContactListener {
             PooledList<GameObject>.Entry entry = iterator.next();
             GameObject obj = entry.getValue();
             if(obj.getType() == GameObject.ObjectType.SPEAR) {
-                if(levelModel.checkSpear((Spear) obj)) SfxController.getInstance().playSFX("spear_splash");
+                if(levelModel.checkProjectile((Spear) obj)) SfxController.getInstance().playSFX("spear_splash");
             }
             if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);

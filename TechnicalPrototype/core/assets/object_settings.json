@@ -12,9 +12,10 @@
     "attack range": 6,
     "attack damage" : -20,
     "proximity" : 1,
-    "fly speed" : 0.5,
+    "fly speed" : 0.25,
     "stun time" : 500,
-    "cool down" : 1000
+    "cool down" : 1000,
+    "texture scale": 1.2
   },
   "hydra" : {
     "hitting range" : 200,
@@ -38,9 +39,9 @@
   "spear": {
     "speed scale" : 25.0,
     "health cost" : -5.0,
-    "spear size" : 2,
-    "spear range fly" :  10.0,
-    "spear range fall" : 11.0
+    "size" : 2,
+    "range fly" :  10.0,
+    "range fall" : 11.0
   },
   "note" : {
     "speed scale" : 25.0,

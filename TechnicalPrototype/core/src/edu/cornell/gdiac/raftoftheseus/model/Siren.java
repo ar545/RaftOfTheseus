@@ -24,6 +24,7 @@ public class Siren extends GameObject {
         FLY_SPEED = objParams.getFloat("fly speed");
         COOL_DOWN = objParams.getLong("cool down");
         STUN_TIME = objParams.getLong("stun time");
+        TEXTURE_SCALE = objParams.getFloat("texture scale");
     }
 
     /** The player for targeting. */
@@ -42,6 +43,8 @@ public class Siren extends GameObject {
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
+    private long attackStamp = 0L;
+    private boolean attackStamped = false;
     /** Whether this Siren has just attacked the player. */
     private boolean isHit = false;
     private boolean hasAttacked;
@@ -55,6 +58,7 @@ public class Siren extends GameObject {
     private static float FLY_SPEED;
     private static long COOL_DOWN;
     private static long STUN_TIME;
+    private static float TEXTURE_SCALE;
 
     /**
      * Constructor for the Siren.
@@ -78,6 +82,13 @@ public class Siren extends GameObject {
         stateMachine = new DefaultStateMachine<Siren, SirenState>(this, SirenState.IDLE);
     }
 
+    @Override
+    protected void setTextureTransform() {
+        float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
+        textureScale = new Vector2(w, w);
+        textureOffset = new Vector2(0,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+    }
+
     /**
      * Method to switch the state of the FSM when applicable.
      * @param dt the time increment
@@ -91,13 +102,6 @@ public class Siren extends GameObject {
     /** @return this Siren's ObjectType for collision. */
     public GameObject.ObjectType getType() {
         return GameObject.ObjectType.SIREN;
-    }
-    /**
-     * Set this Siren's target
-     * @param targetRaft the player
-     */
-    public void setTargetRaft(Raft targetRaft) {
-        this.targetRaft = targetRaft;
     }
 
     // Setting movement
@@ -115,7 +119,7 @@ public class Siren extends GameObject {
 
     // Time
 
-    /** Method to start recording time. */
+    /** Method to start recording time for transitioning between states. */
     public void setTimeStamp(){
         if(!timeStamped) {
             timeStamp = TimeUtils.millis();
@@ -124,18 +128,31 @@ public class Siren extends GameObject {
     }
     /** Method to allow a new time stamp. */
     public void resetTimeStamp(){ timeStamped = false; }
-    /** Whether this Siren has elapsed its idling time. */
+    /** Method to start recording time between firing */
+    public void setAttackStamp(){
+        if(!attackStamped){
+            attackStamp = TimeUtils.millis();
+            attackStamped = true;
+        }
+    }
+    /** Method to allow a new time stamp. */
+    public void resetAttackStamp(){ attackStamped = false; }
+
+    // Cool downs
+
+    /** @return Whether this Siren has elapsed its idling time. */
     public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
-    /** Whether this Siren has elapsed its singing time. */
+    /** @return Whether this Siren has elapsed its singing time. */
     public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
+    /** @return Whether this Siren can fire again. */
     public boolean cooldownElapsed(){
-        return TimeUtils.timeSinceMillis(timeStamp) > COOL_DOWN;
+        return TimeUtils.timeSinceMillis(attackStamp) > COOL_DOWN;
     }
-    public boolean stunElapsed(){
-        return TimeUtils.timeSinceMillis(timeStamp) > STUN_TIME;
-    }
+    /** @return Whether this Siren is not stunned anymore. */
+    public boolean stunElapsed(){ return TimeUtils.timeSinceMillis(timeStamp) > STUN_TIME; }
 
     // Changing location
+
     /** @return whether Siren is flying from its spawn location. */
     public boolean fromFirstLocation(){ return fromLocation1; }
     /** @return whether the Siren is flying from its secondary location. */

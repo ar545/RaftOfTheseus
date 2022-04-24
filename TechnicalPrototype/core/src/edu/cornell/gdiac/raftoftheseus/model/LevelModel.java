@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.lights.PointSource;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
@@ -164,6 +165,8 @@ public class LevelModel {
     private FilmStrip sirenTexture;
     /** Texture for spear */
     private TextureRegion spearTexture;
+    /** Texture for note */
+    private TextureRegion noteTexture;
     /** Texture for map background */
     protected Texture mapBackground;
 //    /** Texture for game background */
@@ -526,7 +529,7 @@ public class LevelModel {
     private void addSiren(Vector2 startGridPos, Vector2 endGridPos) {
         computeSirenPosition(startGridPos.x, endGridPos.x, startGridPos.y, endGridPos.y);
         Siren this_siren = new Siren(compute_temp, siren_compute_temp, raft);
-        this_siren.setTexture(enemyTexture);
+        this_siren.setTexture(sirenTexture);
         addSirenObject(this_siren);
     }
 
@@ -772,9 +775,10 @@ public class LevelModel {
         treasureTexture = new TextureRegion(directory.getEntry("treasure", Texture.class));
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
-        sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 4);
+        sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 5);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
-        spearTexture = new TextureRegion(directory.getEntry("bullet", Texture.class));
+        spearTexture = new TextureRegion(directory.getEntry("spear", Texture.class));
+        noteTexture = new TextureRegion(directory.getEntry("note", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
 //        gameBackground = directory.getEntry("background", Texture.class);
 //        blueTexture = directory.getEntry("blue_texture", Texture.class);
@@ -972,7 +976,7 @@ public class LevelModel {
         currentField.updateCurrentEffects(raft);
     }
 
-    // BULLET MANIPULATION
+    // PROJECTILE MANIPULATION
 
     /**
      * Add a new bullet to the world based on clicked point.
@@ -981,20 +985,43 @@ public class LevelModel {
     public void createSpear(Vector2 firelocation) {
         Vector2 facing = firelocation.sub(raft.getPosition()).nor();
         Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
-        Spear bullet = new Spear(raft.getPosition(), facing, raft_speed);
-        bullet.setTexture(spearTexture);
-        addQueuedObject(bullet);
+        Spear s = new Spear(raft.getPosition(), facing, raft_speed);
+        s.setTexture(spearTexture);
+        addQueuedObject(s);
     }
 
     /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
      * @param s the spear to check for in range */
-    public boolean checkSpear(Spear s){
+    public boolean checkProjectile(Spear s){
         if(s.outMaxDistance()){
            s.setDestroyed(true);
            return true;
         }
         return false;
     }
+
+    /**
+     * Create a new Note when a Siren is firing at a player in range.
+     * @param pos the siren location which fired this note.
+     * @param dir the direction towards to player.
+     */
+    public void createNote(Vector2 pos, Vector2 dir){
+        Note n = new Note(pos, dir);
+        n.setTexture(noteTexture);
+        addQueuedObject(n);
+    }
+
+    /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
+     * @param n the spear to check for in range */
+    public boolean checkProjectile(Note n){
+        if(n.outMaxDistance()){
+            n.setDestroyed(true);
+            return true;
+        }
+        return false;
+    }
+
+    // DRAWING
 
     public void draw(float time) {
         if (!canvas.shaderCanBeUsed)

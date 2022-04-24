@@ -10,65 +10,11 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Projectile extends GameObject {
 
-    private JsonValue spear;
-    private JsonValue note;
-    private  JsonValue boulder;
-
-    /**
-     * @param objParams the "spear" child in "object_settings.json"
-     */
-    public static void setConstants(JsonValue objParams){
-        SPEED = objParams.getFloat(0);
-        DAMAGE = objParams.getFloat(1);
-        TEXTURE_SCALE = objParams.getFloat(2);
-        RANGE_FLY = objParams.getInt(3);
-        RANGE_FALL = objParams.getInt(4);
-    }
-
-    // SPEAR
-    public static float SPEED;
-    /** Health cost for creating a spear. */
-    public static float DAMAGE;
-    /** Size of a spear. */
-    public static float TEXTURE_SCALE;
-    private static float LENGTH = 1f;
-    private static float WIDTH = 0.1f;
-    /** Range of a spear. */
-    private static int RANGE_FLY;
-    private static int RANGE_FALL;
-
-    // Note
-    /** Scaling factor the speed of a spear. */
-    public static float NOTE_SPEED;
-    /** Health cost for creating a spear. */
-    public static float NOTE_DAMAGE;
-    /** Size of a spear. */
-    public static float NOTE_TEXTURE_SCALE;
-    private static float NOTE_LENGTH;
-    private static float NOTE_WIDTH;
-    /** Range of a spear. */
-    private static int NOTE_RANGE_FLY;
-    private static int NOTE_RANGE_FALL;
-
     /** Original projectile position. */
     private Vector2 originalPos;
 
-    public Projectile(Vector2 pos, String s){
+    public Projectile(Vector2 pos){
         originalPos = pos;
-        if(s.equals("spear")) {
-            physicsObject = new BoxObstacle(WIDTH, LENGTH);
-            physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
-            physicsObject.getFilterData().maskBits = MASK_PLAYER_BULLET;
-        } else if(s.equals("note")){
-            physicsObject = new WheelObstacle(NOTE_WIDTH);
-            physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY_BULLET;
-            physicsObject.getFilterData().maskBits = MASK_ENEMY_BULLET;
-        }
-        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
-        physicsObject.setFriction(0);
-        physicsObject.setRestitution(0);
-        physicsObject.setLinearDamping(0);
-        setPosition(pos);
     }
 
     @Override
@@ -76,15 +22,14 @@ public class Projectile extends GameObject {
         return null;
     }
 
-    /**
-     * Applying drag to slow the projectile down. Depends on how far the spear has traveled.
-     */
-    @Override
-    public void update(float delta) {
-        super.update(delta);
-        if(inFlyDistance()) {
-            physicsObject.getBody().applyForce(physicsObject.getLinearVelocity().scl(-2f), getPosition(), true);
-        }
+    /** Set attributes of physics body after declaration. */
+    public void setBody(Vector2 speed){
+        physicsObject.setLinearVelocity(speed);
+        physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
+        physicsObject.setFriction(0);
+        physicsObject.setRestitution(0);
+        physicsObject.setLinearDamping(0);
+        setPosition(originalPos);
     }
 
     /** @return how far this spear has traveled. */
@@ -92,11 +37,17 @@ public class Projectile extends GameObject {
         return this.getPosition().cpy().sub(originalPos).len();
     }
     /** @return whether the projectile is still flying at max speed. */
-    public boolean inFlyDistance(){
-        return getDistTraveled() < RANGE_FLY;
-    }
+    public boolean inFlyDistance(float RANGE_FLY){ return getDistTraveled() < RANGE_FLY; }
     /** @return whether the projectile should be destroyed. */
-    public boolean outMaxDistance(){
+    public boolean outMaxDistance(float RANGE_FALL){
         return getDistTraveled() > RANGE_FALL;
+    }
+
+    /** Update projectile based on its range. */
+    public void update(float delta, float RANGE_FLY) {
+        super.update(delta);
+        if(inFlyDistance(RANGE_FLY)) {
+            physicsObject.getBody().applyForce(physicsObject.getLinearVelocity().scl(-2f), getPosition(), true);
+        }
     }
 }
