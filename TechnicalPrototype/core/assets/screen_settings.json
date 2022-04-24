@@ -12,8 +12,8 @@
   "screen" : {
   "standard width" : 800,
   "standard height" : 700,
-  "column number" : 4,
-  "column padding" : 25
+  "column number" : 5,
+  "column padding" : 40
   },
   "level count" : 9
 }
