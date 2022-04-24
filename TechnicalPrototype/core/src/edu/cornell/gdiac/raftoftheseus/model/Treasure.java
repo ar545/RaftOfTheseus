@@ -14,7 +14,6 @@ public class Treasure extends GameObject {
         physicsObject = new WheelObstacle(1.45f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
-        physicsObject.setSensor(true);
         physicsObject.getFilterData().categoryBits = CATEGORY_NON_PUSHABLE;
         physicsObject.getFilterData().maskBits = MASK_TREASURE;
 
