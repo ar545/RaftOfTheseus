@@ -30,7 +30,6 @@ public class Wood extends GameObject {
         physicsObject = new WheelObstacle(1.25f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
-        physicsObject.setSensor(true);
         physicsObject.getFilterData().categoryBits = CATEGORY_PUSHABLE;
         physicsObject.getFilterData().maskBits = MASK_WOOD;
 

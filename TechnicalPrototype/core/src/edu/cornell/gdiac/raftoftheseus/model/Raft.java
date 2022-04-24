@@ -8,7 +8,10 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 /**
@@ -39,6 +42,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float AGAINST_CURRENT;
 
     // ATTRIBUTES
+    /** A physics object used for collisions with interactable objects which shouldn't push the player (wood, goal, etc) */
+    private SimpleObstacle interactionSensor;
     /** The player's movement input */
     private Vector2 movementInput = new Vector2(0f,0f);
     /** The health of the raft. This must be >=0. */
@@ -82,6 +87,12 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         physicsObject.getFilterData().maskBits = MASK_PLAYER;
         this.health = INITIAL_PLAYER_HEALTH;
         this.star = 0;
+
+        interactionSensor = new WheelObstacle(1.45f);
+        interactionSensor.setSensor(true);
+        interactionSensor.setBodyType(BodyDef.BodyType.DynamicBody);
+        interactionSensor.getFilterData().categoryBits = CATEGORY_PLAYER_SENSOR;
+        interactionSensor.getFilterData().maskBits = MASK_PLAYER_SENSOR;
     }
 
     /**
@@ -93,6 +104,34 @@ public class Raft extends GameObject implements Steerable<Vector2> {
      */
     public ObjectType getType() {
         return ObjectType.RAFT;
+    }
+
+    @Override
+    public void deactivatePhysics(World world) {
+        super.deactivatePhysics(world);
+        interactionSensor.deactivatePhysics(world);
+        // TODO: save level star
+        star = 0; // Clear level star
+    }
+
+    @Override
+    public void activatePhysics(World world) {
+        super.activatePhysics(world);
+        interactionSensor.activatePhysics(world);
+        interactionSensor.getBody().setUserData(this);
+    }
+
+    @Override
+    public void drawDebug(GameCanvas canvas) {
+        super.drawDebug(canvas);
+        interactionSensor.drawDebug(canvas);
+    }
+
+    @Override
+    public void update(float dt) {
+        super.update(dt);
+        interactionSensor.setPosition(physicsObject.getPosition());
+        interactionSensor.update(dt);
     }
 
     /** Returns the player movement input. */
@@ -206,13 +245,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         long temp = sailSound;
         sailSound = -1;
         return temp;
-    }
-
-    @Override
-    public void deactivatePhysics(World world){
-        // TODO: save level star
-        star = 0; // Clear level star
-        super.deactivatePhysics(world);
     }
 
     /* STEERING */
