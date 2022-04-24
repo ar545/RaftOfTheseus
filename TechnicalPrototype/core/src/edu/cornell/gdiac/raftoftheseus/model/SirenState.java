@@ -47,6 +47,7 @@ public enum SirenState implements State<Siren> {
         public void update (Siren entity){
             entity.setTimeStamp();
             if(entity.isDoneSinging()) {
+                entity.resetAttackStamp();
                 entity.getStateMachine().changeState(TAKEOFF);
             }
         }

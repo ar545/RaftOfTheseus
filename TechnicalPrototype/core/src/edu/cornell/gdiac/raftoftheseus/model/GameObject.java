@@ -1,7 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
@@ -45,7 +44,7 @@ public abstract class GameObject {
     protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN;
     protected final static short MASK_ENEMY = CATEGORY_PLAYER | CATEGORY_PLAYER_BULLET | CATEGORY_CURRENT
             | CATEGORY_TERRAIN | CATEGORY_PUSHABLE;
-    protected final static short MASK_ENEMY_BULLET = CATEGORY_PLAYER | CATEGORY_TERRAIN;
+    protected final static short MASK_NOTE = CATEGORY_PLAYER;
     protected final static short MASK_CURRENT = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PUSHABLE;
     protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PLAYER_BULLET
             | CATEGORY_ENEMY_BULLET | CATEGORY_PUSHABLE;

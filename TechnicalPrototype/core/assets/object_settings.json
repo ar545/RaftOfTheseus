@@ -9,13 +9,16 @@
   "siren" : {
     "idle time" : 500,
     "singing time" : 3000,
-    "attack range": 6,
+    "attack range": 15,
     "attack damage" : -20,
     "proximity" : 1,
     "fly speed" : 0.25,
     "stun time" : 500,
-    "cool down" : 1000,
-    "texture scale": 1.2
+    "cool down" : 2000,
+    "texture scale": 1.2,
+    "idle animation speed" : 5,
+    "take off animation speed" : 10,
+    "flying animation speed" : 5
   },
   "hydra" : {
     "hitting range" : 200,
@@ -38,18 +41,19 @@
   },
   "spear": {
     "speed scale" : 25.0,
-    "health cost" : -5.0,
+    "health cost" : -15.0,
     "size" : 2,
     "range fly" :  10.0,
     "range fall" : 11.0
   },
   "note" : {
-    "speed scale" : 25.0,
+    "speed scale" : 10.0,
     "health cost" : -15.0,
-    "size" : 2,
+    "texture scale" : 2,
     "range fly" :  10.0,
     "range fall" : 11.0,
-    "force" : 5
+    "force" : 10,
+    "width" : 1
   },
   "rock": {
     "width": 3,

@@ -217,7 +217,10 @@ public class WorldController implements Screen, ContactListener {
 
         // update animations
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
-        levelModel.getPlayer().setAnimationFrame(time); // TODO don't hardcode number of frames in animation
+        levelModel.getPlayer().setAnimationFrame(time);
+        for(Siren s : levelModel.getSirens()){
+            s.setAnimationFrame(time);
+        }
 
         // Update raft samples (for displaying the wake in the shader) before drawing water
         updateRaftWakeSamples();
@@ -733,7 +736,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.update(dt);
             if(s.willAttack()){
-                levelModel.getPlayer().addHealth(s.getAttackDamage());
+                levelModel.createNote(s.getPosition(), levelModel.getPlayer().getPosition().cpy().sub(s.getPosition()).nor());
             }
         }
     }
@@ -767,6 +770,8 @@ public class WorldController implements Screen, ContactListener {
             GameObject obj = entry.getValue();
             if(obj.getType() == GameObject.ObjectType.SPEAR) {
                 if(levelModel.checkProjectile((Spear) obj)) SfxController.getInstance().playSFX("spear_splash");
+            } else if (obj.getType() == GameObject.ObjectType.NOTE) {
+                levelModel.checkProjectile((Note) obj);
             }
             if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);
@@ -963,6 +968,10 @@ public class WorldController implements Screen, ContactListener {
             if (!complete && !failed) setComplete(true);
         } else if(g.getType() == GameObject.ObjectType.ROCK){
             if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
+        } else if(g.getType() == GameObject.ObjectType.NOTE){
+            r.applyProjectileForce(((Note) g).getForce());
+            r.addHealth(Note.DAMAGE);
+            g.setDestroyed(true);
         }
     }
 

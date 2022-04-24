@@ -67,7 +67,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float TEXTURE_SCALE = 1.5f;
     /** The animation speed for the raft. */
     private static float ANIMATION_SPEED = 15f;
-    /** The number of frames for this animation + 1. */
+    /** The number of frames for this animation. */
     private static int FRAMES = 19;
 
     // METHODS
@@ -139,13 +139,11 @@ public class Raft extends GameObject implements Steerable<Vector2> {
 
     /** Getter and setters for health */
     public float getHealthRatio() { return health / MAXIMUM_PLAYER_HEALTH; }
-
     public void setHealth(float newHealth) {
         health = Math.max(0, newHealth);
     }
-
-    public void addHealth(float wood) {
-        health = Math.min(health + wood, MAXIMUM_PLAYER_HEALTH);
+    public void addHealth(float dh) {
+        health = Math.min(health + dh, MAXIMUM_PLAYER_HEALTH);
     }
 
 
@@ -159,6 +157,15 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     public void applyMoveCost(float dt) {
         float L = physicsObject.getLinearVelocity().len();
         health -= MOVE_COST * L * dt; // base movement cost (no current)
+    }
+
+    /**
+     * Apply projectile force
+     * @param force the force applied
+     */
+    public void applyProjectileForce(Vector2 force){
+        forceCache.set(force);
+        physicsObject.getBody().applyForce(forceCache, getPosition(), true);
     }
 
     /** @return whether the player health is below zero */

@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.model.unused.HydraState;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
 public class Siren extends GameObject {
 
@@ -25,6 +26,9 @@ public class Siren extends GameObject {
         COOL_DOWN = objParams.getLong("cool down");
         STUN_TIME = objParams.getLong("stun time");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
+        IDLE_AS = objParams.getInt("idle animation speed");
+        TAKE_OFF_AS = objParams.getInt("take off animation speed");
+        FLYING_AS = objParams.getInt("flying animation speed");
     }
 
     /** The player for targeting. */
@@ -48,6 +52,7 @@ public class Siren extends GameObject {
     /** Whether this Siren has just attacked the player. */
     private boolean isHit = false;
     private boolean hasAttacked;
+    private boolean animationDone;
     /** Constants that determine time in each state for range of attack. */
     private static float PROXIMITY = 1f;
     private static long IDLE_TIME;
@@ -59,6 +64,9 @@ public class Siren extends GameObject {
     private static long COOL_DOWN;
     private static long STUN_TIME;
     private static float TEXTURE_SCALE;
+    private static int IDLE_AS;
+    private static int TAKE_OFF_AS;
+    private static int FLYING_AS;
 
     /**
      * Constructor for the Siren.
@@ -182,7 +190,11 @@ public class Siren extends GameObject {
      *  Resets
      */
     public boolean willAttack(){
-        hasAttacked = stateMachine.isInState(SirenState.SINGING) && inAttackRange();
+        hasAttacked = stateMachine.isInState(SirenState.SINGING) && inAttackRange() && cooldownElapsed();
+        if(hasAttacked) {
+            resetAttackStamp();
+            setAttackStamp();
+        }
         return hasAttacked;
     }
 
@@ -198,4 +210,58 @@ public class Siren extends GameObject {
         }
     }
 
+    // Animation
+    public void setAnimationDone(boolean done){ animationDone = done;}
+    public boolean isAnimationDone(){
+        if(animationDone) {
+            setAnimationDone(false);
+            return true;
+        }
+        return false;
+    }
+
+    // 0-3 Idle
+    private static int IDLE_FRAMES = 4;
+    // 5-8 Singing
+    private static int SINGING_FRAMES = 4;
+    // 10-12 Take Off
+    private static int TAKE_OFF_FRAMES = 3;
+    // 12-10 Landing
+    // 15-16 Flying
+    private static int FLYING_FRAMES = 2;
+
+    /**
+     * Method to set animation based on the time elapsed in the game.
+     * @param time the current time in the game.
+     */
+    public void setAnimationFrame(float time) {
+        // Get frame number
+        if(stateMachine.isInState(SirenState.IDLE)) {
+            setFrame(time, IDLE_AS, IDLE_FRAMES, 0, false);
+        } else if(stateMachine.isInState(SirenState.SINGING)) {
+            setFrame(time, IDLE_AS, SINGING_FRAMES, 5, false);
+        } else if(stateMachine.isInState(SirenState.TAKEOFF)){
+            setAnimationDone(setFrame(time, TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, false));
+        } else if (stateMachine.isInState(SirenState.LANDING)){
+            setAnimationDone(setFrame(time, TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, true));
+        } else if(stateMachine.isInState(SirenState.FLYING)){
+            setFrame(time, FLYING_AS, FLYING_FRAMES, 15, true);
+        }
+    }
+
+    /**
+     *
+     * @param time
+     * @param animationSpeed
+     * @param frames
+     * @param start
+     * @param reverse
+     * @return
+     */
+    private boolean setFrame(float time, int animationSpeed, int frames, int start, boolean reverse){
+        int timeFrame = (int) (time * animationSpeed);
+        int frame = start + (reverse ? (frames - 1) - timeFrame % frames : timeFrame % frames);
+        ((FilmStrip) texture).setFrame(frame);
+        return reverse ? frame == 0 : frame == frames - 1;
+    }
 }
