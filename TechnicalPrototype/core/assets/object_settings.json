@@ -16,7 +16,7 @@
     "take off speed" : 1.2,
     "stun time" : 500,
     "cool down" : 2000,
-    "texture scale": 1.5,
+    "texture scale": 1.0,
     "idle animation speed" : 0.2,
     "singing animation speed" : 0.2,
     "take off animation speed" : 0.25,

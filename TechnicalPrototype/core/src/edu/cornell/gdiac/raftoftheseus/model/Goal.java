@@ -10,7 +10,7 @@ public class Goal extends GameObject {
     }
 
     public Goal(Vector2 position) {
-        physicsObject = new WheelObstacle(1.45f);
+        physicsObject = new WheelObstacle(2.9f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_NON_PUSHABLE;

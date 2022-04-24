@@ -605,8 +605,11 @@ public class LevelModel {
      * @param tile_int 0 if stand-alone, 1-16 if texture alas, -1 for sharp */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp, (tile_int == -1));
-        this_rock.setTexture(regularRockTexture); // TODO: new land texture if tile_int != 0
+        Rock this_rock = new Rock(compute_temp, (tile_int == -1)); // TODO: new land texture if tile_int != 0
+        if (tile_int == -1)
+            this_rock.setTexture(sharpRockTexture);
+        else
+            this_rock.setTexture(regularRockTexture);
         if(tile_int == -2){this_rock.setTexture(plantTexture);}
         obstacles[col][row] = this_rock;
         addObject(this_rock);

@@ -240,7 +240,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(0,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+        textureOffset = new Vector2(0.25f,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+        // 0.25 offset because the texture is off-center horizontally
     }
 
     /**
