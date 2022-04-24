@@ -11,34 +11,39 @@ public enum SirenState implements State<Siren> {
         public void update (Siren entity){
             entity.setTimeStamp();
             if(entity.isPastIdleCooldown()) {
-                entity.getStateMachine().changeState(SINGING);
                 entity.resetTimeStamp();
+                entity.getStateMachine().changeState(SINGING);
             }
         }
     },
     LANDING(){
         @Override
         public void update (Siren entity){
-            entity.getStateMachine().changeState(IDLE);
-            entity.stopMove();
+            if(entity.isAnimationDone()) {
+                entity.getStateMachine().changeState(IDLE);
+            }
         }
     },
     TAKEOFF(){
         @Override
         public void update (Siren entity){
-            changeToFlying(entity);
+            if(entity.isAnimationDone()) {
+                entity.scaleMoveVector(true);
+                entity.getStateMachine().changeState(FLYING);
+            }
         }
     },
     FLYING() {
         @Override
         public void update (Siren entity){
             if(entity.nearLanding()){
+                if(entity.fromFirstLocation()){
+                    entity.setFromSecondLocation();
+                } else {
+                    entity.setFromFirstLocation();
+                }
+                entity.stopMove();
                 entity.getStateMachine().changeState(LANDING);
-            }
-            else if(entity.fromFirstLocation()){
-                entity.setMoveVector(true);
-            } else if(entity.fromSecondLocation()){
-                entity.setMoveVector(false);
             }
         }
     },
@@ -48,6 +53,13 @@ public enum SirenState implements State<Siren> {
             entity.setTimeStamp();
             if(entity.isDoneSinging()) {
                 entity.resetAttackStamp();
+                entity.resetTimeStamp();
+                if(entity.fromFirstLocation()){
+                    entity.setMoveVector(true);
+                } else if(entity.fromSecondLocation()){
+                    entity.setMoveVector(false);
+                }
+                entity.scaleMoveVector(false);
                 entity.getStateMachine().changeState(TAKEOFF);
             }
         }
@@ -63,16 +75,6 @@ public enum SirenState implements State<Siren> {
         }
     };
 
-    private static void changeToFlying(Siren entity){
-        if(entity.fromFirstLocation()){
-            entity.setFromSecondLocation();
-        } else {
-            entity.setFromFirstLocation();
-        }
-        entity.getStateMachine().changeState(FLYING);
-        entity.resetTimeStamp();
-    }
-
     @Override
     public void enter(Siren entity) {
 
@@ -80,7 +82,7 @@ public enum SirenState implements State<Siren> {
 
     @Override
     public void exit(Siren entity) {
-
+        entity.resetFrame();
     }
 
     @Override

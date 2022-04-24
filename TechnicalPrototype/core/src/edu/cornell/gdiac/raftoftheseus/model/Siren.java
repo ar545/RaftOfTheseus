@@ -6,7 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
-import edu.cornell.gdiac.raftoftheseus.model.unused.HydraState;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
@@ -20,15 +20,15 @@ public class Siren extends GameObject {
         IDLE_TIME = objParams.getLong("idle time");
         SINGING_TIME = objParams.getLong("singing time");
         ATTACK_RANGE = objParams.getFloat("attack range");
-        ATTACK_DAMAGE = objParams.getFloat("attack damage");
         PROXIMITY = objParams.getFloat("proximity");
         FLY_SPEED = objParams.getFloat("fly speed");
+        TAKE_OFF_SPEED = objParams.getFloat("take off speed");
         COOL_DOWN = objParams.getLong("cool down");
         STUN_TIME = objParams.getLong("stun time");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
-        IDLE_AS = objParams.getInt("idle animation speed");
-        TAKE_OFF_AS = objParams.getInt("take off animation speed");
-        FLYING_AS = objParams.getInt("flying animation speed");
+        IDLE_AS = objParams.getFloat("idle animation speed");
+        TAKE_OFF_AS = objParams.getFloat("take off animation speed");
+        FLYING_AS = objParams.getFloat("flying animation speed");
     }
 
     /** The player for targeting. */
@@ -54,20 +54,18 @@ public class Siren extends GameObject {
     private boolean hasAttacked;
     private boolean animationDone;
     /** Constants that determine time in each state for range of attack. */
-    private static float PROXIMITY = 1f;
+    private static float PROXIMITY = 0.001f;
     private static long IDLE_TIME;
     private static long SINGING_TIME;
-    private static Vector2 SINGING_FORCE;
     private static float ATTACK_RANGE;
-    private static float ATTACK_DAMAGE;
+    private static float TAKE_OFF_SPEED;
     private static float FLY_SPEED;
     private static long COOL_DOWN;
     private static long STUN_TIME;
     private static float TEXTURE_SCALE;
-    private static int IDLE_AS;
-    private static int TAKE_OFF_AS;
-    private static int FLYING_AS;
-
+    private static float IDLE_AS;
+    private static float TAKE_OFF_AS;
+    private static float FLYING_AS;
     /**
      * Constructor for the Siren.
      * @param position1 The starting position of the Siren.
@@ -83,11 +81,11 @@ public class Siren extends GameObject {
 
         location1.set(position1);
         location2.set(position2);
-        direction1.set(position2.cpy().sub(position1).scl(FLY_SPEED));
-        direction2.set(position1.cpy().sub(position2).scl(FLY_SPEED));
+        direction1.set(position2.cpy().sub(position1).nor());
+        direction2.set(position1.cpy().sub(position2).nor());
         moveVector.set(0.0f, 0.0f);
         this.targetRaft = targetRaft;
-        stateMachine = new DefaultStateMachine<Siren, SirenState>(this, SirenState.IDLE);
+        stateMachine = new DefaultStateMachine<>(this, SirenState.IDLE);
     }
 
     @Override
@@ -124,6 +122,16 @@ public class Siren extends GameObject {
     }
     /** Set the move vector to zero so the Siren comes to a rest. */
     public void stopMove(){ this.moveVector.setZero(); }
+
+    /**
+     * Method to change the size of the moveVector after first normalizing it.
+     * @param isFlying
+     */
+    public void scaleMoveVector(boolean isFlying){
+        if(isFlying) moveVector.nor().scl(FLY_SPEED);
+        else moveVector.nor().scl(TAKE_OFF_SPEED);
+    }
+
 
     // Time
 
@@ -173,10 +181,12 @@ public class Siren extends GameObject {
     public boolean nearLanding(){
         float dist;
         if(fromLocation1){
-            dist = getPosition().sub(location2).len();
+            dist = getPosition().cpy().sub(location2).len();
         } else {
-            dist = getPosition().sub(location1).len();
+            dist = getPosition().cpy().sub(location1).len();
         }
+//        System.out.println(dist);
+//        System.out.println(dist < PROXIMITY);
         return dist < PROXIMITY;
     }
 
@@ -190,7 +200,7 @@ public class Siren extends GameObject {
      *  Resets
      */
     public boolean willAttack(){
-        hasAttacked = stateMachine.isInState(SirenState.SINGING) && inAttackRange() && cooldownElapsed();
+        hasAttacked = stateMachine.getCurrentState() == SirenState.SINGING && inAttackRange() && cooldownElapsed();
         if(hasAttacked) {
             resetAttackStamp();
             setAttackStamp();
@@ -199,13 +209,12 @@ public class Siren extends GameObject {
     }
 
     /** Get how much damage is done to the player. */
-    public static float getAttackDamage(){ return ATTACK_DAMAGE; }
-    public Vector2 getTargetDirection() { return getPosition().sub(targetRaft.getPosition()).nor(); }
+    public Vector2 getTargetDirection() { return targetRaft.getPosition().cpy().sub(getPosition()).nor(); }
 
     // Stunned
     public boolean isHit(){ return isHit; }
     public void setHit(boolean h){
-        if (!stateMachine.isInState(SirenState.STUNNED)){
+        if (!(stateMachine.getCurrentState() == SirenState.STUNNED)){
             isHit = h;
         }
     }
@@ -232,36 +241,61 @@ public class Siren extends GameObject {
 
     /**
      * Method to set animation based on the time elapsed in the game.
-     * @param time the current time in the game.
+     * @param dt the current time in the game.
      */
-    public void setAnimationFrame(float time) {
+    public void setAnimationFrame(float dt) {
         // Get frame number
-        if(stateMachine.isInState(SirenState.IDLE)) {
-            setFrame(time, IDLE_AS, IDLE_FRAMES, 0, false);
-        } else if(stateMachine.isInState(SirenState.SINGING)) {
-            setFrame(time, IDLE_AS, SINGING_FRAMES, 5, false);
-        } else if(stateMachine.isInState(SirenState.TAKEOFF)){
-            setAnimationDone(setFrame(time, TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, false));
-        } else if (stateMachine.isInState(SirenState.LANDING)){
-            setAnimationDone(setFrame(time, TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, true));
-        } else if(stateMachine.isInState(SirenState.FLYING)){
-            setFrame(time, FLYING_AS, FLYING_FRAMES, 15, true);
+        timeElapsed += dt;
+        System.out.println(stateMachine.getCurrentState());
+        switch(stateMachine.getCurrentState()){
+            case IDLE:
+                setFrame(IDLE_AS, IDLE_FRAMES, 0, false);
+                break;
+            case LANDING:
+                setAnimationDone(setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, true));
+                break;
+            case TAKEOFF:
+                setAnimationDone(setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, 10, false));
+                break;
+            case FLYING:
+                setFrame(FLYING_AS, FLYING_FRAMES, 15, true);
+                break;
+            case SINGING:
+                setFrame(IDLE_AS, SINGING_FRAMES, 5, false);
+                break;
+            case STUNNED:
+                break;
         }
     }
 
     /**
-     *
-     * @param time
+     * Sets the frame of the animation based on the FSM and time given.
      * @param animationSpeed
      * @param frames
      * @param start
      * @param reverse
      * @return
      */
-    private boolean setFrame(float time, int animationSpeed, int frames, int start, boolean reverse){
-        int timeFrame = (int) (time * animationSpeed);
-        int frame = start + (reverse ? (frames - 1) - timeFrame % frames : timeFrame % frames);
+    private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
+        if (timeElapsed > animationSpeed){
+            timeElapsed = 0;
+            frameCount += 1;
+        }
+        frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
+        return reverse ? frame == start : frame == frames - 1 + start;
+    }
+
+    int frameCount = 0;
+    float timeElapsed = 0;
+    int frame = 0;
+
+    public void resetFrame(){
+        frameCount = 0;
+    }
+
+    @Override
+    public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(frame);
-        return reverse ? frame == 0 : frame == frames - 1;
+        super.draw(canvas);
     }
 }

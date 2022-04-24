@@ -7,18 +7,18 @@
     "world posit" : 2
   },
   "siren" : {
-    "idle time" : 500,
-    "singing time" : 3000,
+    "idle time" : 1000,
+    "singing time" : 5000,
     "attack range": 15,
-    "attack damage" : -20,
-    "proximity" : 1,
-    "fly speed" : 0.25,
+    "proximity" : 0.1,
+    "fly speed" : 6,
+    "take off speed" : 1.2,
     "stun time" : 500,
     "cool down" : 2000,
     "texture scale": 1.5,
-    "idle animation speed" : 5,
-    "take off animation speed" : 10,
-    "flying animation speed" : 5
+    "idle animation speed" : 0.2,
+    "take off animation speed" : 0.25,
+    "flying animation speed" : 0.2
   },
   "hydra" : {
     "hitting range" : 200,

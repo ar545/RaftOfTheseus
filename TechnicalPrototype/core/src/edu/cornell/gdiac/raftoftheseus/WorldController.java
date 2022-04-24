@@ -219,7 +219,7 @@ public class WorldController implements Screen, ContactListener {
         float time = (System.currentTimeMillis() - startTime)/1000.0f;
         levelModel.getPlayer().setAnimationFrame(time);
         for(Siren s : levelModel.getSirens()){
-            s.setAnimationFrame(time);
+            s.setAnimationFrame(dt);
         }
 
         // Update raft samples (for displaying the wake in the shader) before drawing water
@@ -736,7 +736,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.update(dt);
             if(s.willAttack()){
-                levelModel.createNote(s.getPosition(), levelModel.getPlayer().getPosition().cpy().sub(s.getPosition()).nor());
+                levelModel.createNote(s.getPosition().cpy(), s.getTargetDirection());
             }
         }
     }
