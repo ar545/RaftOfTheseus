@@ -22,7 +22,7 @@ public class CutTexture
     /** The vertices representing the cut texture */
     public float[] vertices = new float[VERTEX_PER_RECTANGLE * FLOAT_PER_VERTEX];
     /** How far in time do we retrace the health */
-    private static final int retracing_health_size = 5;
+    private static final int retracing_health_size = 20;
     /** health history */
     private float[] retracing_health = new float[retracing_health_size];
     /** pointer to the retracing array, where to read from and write to, and move the pointer forward */
@@ -112,16 +112,16 @@ public class CutTexture
     /** Sequence of health bar drawing */
     public void updateAndDraw(Vector2 position, float health, PolygonSpriteBatch spriteBatch) {
         // set position
-        position.set(position);
+        this.position.set(position);
         // make color (red - green transition color)
         Color color = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
-//        float retrace_health = retraceHealth(health);
-//        if(retrace_health > health){
-//           // cut according to retrace_health
-//           update(retrace_health, Color.BLUE);
-//           // render to retrace health
-//           render(spriteBatch);
-//        }
+        float retrace_health = retraceHealth(health);
+        if(retrace_health > health){
+           // cut according to retrace_health
+           update(retrace_health, Color.BLUE);
+           // render to retrace health
+           render(spriteBatch);
+        }
         // cut according to real-time health
         update(health, color);
         // render real-time health
