@@ -136,6 +136,8 @@ public class LevelModel {
     protected RayHandler rayhandler;
     /** The camera defining the RayHandler view; scale is in physics coordinates */
     protected OrthographicCamera raycamera;
+    /** what light effect to show the player */
+    private int light_effect = 0;
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -1010,11 +1012,7 @@ public class LevelModel {
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
         canvas.end();
 
-        // draw a circle showing how far the player can move before they die
-        float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-        float d = getPlayer().getPotentialDistance() * 6;
-        light.setDistance(d);
+        setLightAndCircle(playerPosOnScreen);
     }
 
     public void drawMap(){
@@ -1119,4 +1117,27 @@ public class LevelModel {
         cameraTransform = a.preTranslate(translation);
     }
 
+    /** change the level light effect, for testing purposes only */
+    public void change(boolean debug) {
+        light_effect ++;
+        if( light_effect == 3 ){ light_effect = 0; if(debug) { raft.addHealth(160); } } // for testing purposes
+    }
+
+    /** draw a circle showing how far the player can move before they die */
+    public void setLightAndCircle(Vector2 playerPosOnScreen){
+        if(light_effect == 0){ // health light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            float d = getPlayer().getPotentialDistance() * 6;
+            light.setDistance(d);
+        }else if(light_effect == 1){ // health light and constant circle
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, 380);
+            float d = getPlayer().getPotentialDistance() * 6;
+            light.setDistance(d);
+        }else if(light_effect == 2){ // constant light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            light.setDistance(60);
+        }
+    }
 }
