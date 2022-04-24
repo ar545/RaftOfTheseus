@@ -10,6 +10,7 @@
     "idle time" : 1000,
     "singing time" : 5000,
     "attack range": 15,
+    "hearing range" : 15,
     "proximity" : 0.1,
     "fly speed" : 6,
     "take off speed" : 1.2,

@@ -20,6 +20,7 @@ public class Siren extends GameObject {
         IDLE_TIME = objParams.getLong("idle time");
         SINGING_TIME = objParams.getLong("singing time");
         ATTACK_RANGE = objParams.getFloat("attack range");
+        HEAR_RANGE = objParams.getFloat("hearing range");
         PROXIMITY = objParams.getFloat("proximity");
         FLY_SPEED = objParams.getFloat("fly speed");
         TAKE_OFF_SPEED = objParams.getFloat("take off speed");
@@ -70,6 +71,7 @@ public class Siren extends GameObject {
     private static long IDLE_TIME;
     private static long SINGING_TIME;
     private static float ATTACK_RANGE;
+    private static float HEAR_RANGE;
     private static float TAKE_OFF_SPEED;
     private static float FLY_SPEED;
     private static long COOL_DOWN;
@@ -215,6 +217,10 @@ public class Siren extends GameObject {
     }
 
     // Attacking player
+
+    public boolean canHear(){
+        return targetRaft.getPosition().cpy().sub(getPosition()).len() < HEAR_RANGE && stateMachine.isInState(SirenState.SINGING);
+    }
 
     /** @return whether the player is in attack range of this Siren. */
     public boolean inAttackRange(){

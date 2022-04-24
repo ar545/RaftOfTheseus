@@ -4,6 +4,7 @@ import com.badlogic.gdx.audio.Music;
 
 /**
  * Wrapper class to allow control of music dynamics based on an FSM.
+ *
  * Postcondition: When the thread stops running, the music will either be at the maximum volume or minimum
  * and doneFade = true;
  */
@@ -12,9 +13,12 @@ public class DynamicMusic implements Runnable {
     private Music music;
     // identifiers
     private String index;
-    // booleans
+
+    /** Whether this music is in the process or has already faded in/out. */
     private boolean fadeIn;
+    /** Whether this music is done fading in or out. */
     private boolean doneFade;
+    /** Whether to stop this thread. */
     private boolean exit;
     Thread t;
 
@@ -89,8 +93,8 @@ public class DynamicMusic implements Runnable {
         }
         // Fade is finished only if exit is not called and fadeIn is still true
         if(!canIncrease(percentage, maxVolume) && canFadeIn()){
-            doneFade = true;
             music.setVolume(maxVolume);
+            doneFade = true;
         }
     }
 
@@ -130,6 +134,9 @@ public class DynamicMusic implements Runnable {
     private boolean canDecrease(float percentage, float maxVolume, float minVolume){
         return (1 - percentage) * maxVolume >= minVolume;
     }
+
+    /** To check what state this Dynamic music is in. */
+    public boolean isFadeIn(){ return fadeIn; }
 
     /** To stop the thread when changing screens. */
     public void stopThread() { exit = true; }

@@ -21,15 +21,10 @@ public class MusicController {
     private AssetDirectory directory;
     /** The singleton instance of the input controller */
     private static MusicController theController = null;
-    /** Whether a music trade is in progress. */
-    private enum MusicState {
-        SAFE,
-        DANGER,
-        COMPLETE
-    }
-    private MusicState STATE;
     /** Whether the player was in danger */
     private boolean wasInDanger = false;
+    /** Whether the level is complete. */
+    private boolean levelComplete = true;
 
     /**
      * Constructor for MusicController
@@ -37,7 +32,6 @@ public class MusicController {
     public MusicController(){
         musicPresets = new ArrayMap<>();
         music = new ArrayMap<>();
-        STATE = MusicState.SAFE;
     }
 
     /**
@@ -45,7 +39,6 @@ public class MusicController {
      * @param directory
      */
     public void gatherAssets(AssetDirectory directory) {
-        getInstance();
         this.directory = directory;
         // Settings values
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
@@ -78,11 +71,8 @@ public class MusicController {
      */
     public void setMasterMusicVolume(float musicVolume) {
         this.musicVolume = musicVolume;
-        switch(STATE){
-            case SAFE:
-                setMusicVolume(musicVolume,"safe");
-            case DANGER:
-                setMusicVolume(musicVolume, "siren", "shark");
+        for(String s : music.keys()) {
+            if(music.get(s).isFadeIn())  setMusicVolume(musicVolume,s);
         }
     }
 
@@ -109,7 +99,6 @@ public class MusicController {
      * @param musicPreset is the JsonValue that contains text references to all sounds
      */
     public void setMusicPreset(int musicPreset){
-        STATE = MusicState.SAFE;
         if (this.musicPreset != musicPreset){
             this.musicPreset = musicPreset;
             setMusic();
@@ -138,7 +127,8 @@ public class MusicController {
     }
 
     /**
-     * @param pos
+     * Step music position at pos
+     * @param pos the new position to start.
      */
     private void setMusicLocation(String index, float pos){
         music.get(index).getMusic().setPosition(pos);
@@ -169,24 +159,51 @@ public class MusicController {
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
     public void startMusic(){
-        STATE = MusicState.SAFE;
-        setMusicVolume(0, "danger", "explore", "background");
-        playMusic("danger", 0);
+        setMusicVolume(0, "enemy", "siren", "explore");
+        playMusic("enemy", 0);
+        playMusic("siren", 0);
         playMusic("explore");
-        playMusic("background");
     }
 
     /**
      * Fades out both explore and danger music in separate threads.
      */
     public void completeMusic(){
-        if(STATE != MusicState.COMPLETE) {
-            STATE = MusicState.COMPLETE;
+        if(!levelComplete) {
+            levelComplete = true;
             for(DynamicMusic dm : music.values()){
                 dm.FadeOut();
             }
         }
     }
+
+    /** Updates the Music based on booleans */
+    public void updateMusic(boolean shark, boolean siren){
+        if(levelComplete) return;
+        if(siren){
+            if(!music.get("enemy").isFadeIn()){
+                music.get("enemy").FadeIn();
+            }
+            if(!music.get("siren").isFadeIn()){
+                music.get("siren").FadeIn();
+            }
+        } else if (!siren){
+            if(music.get("siren").isFadeIn()){
+                music.get("siren").FadeOut();
+            }
+        }
+        if(shark){
+            if(!music.get("enemy").isFadeIn()){
+                music.get("enemy").FadeIn();
+            }
+        }
+        if(!shark && !siren){
+            if(music.get("enemy").isFadeIn()){
+                music.get("enemy").FadeOut();
+            }
+        }
+    }
+
 
     private void haltThreads(){
         for(DynamicMusic dm : music.values()){

@@ -26,6 +26,7 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 //import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
+import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
@@ -781,37 +782,63 @@ public class WorldController implements Screen, ContactListener {
                 obj.update(dt);
             }
         }
-        resolveMusic(player);
+        resolveMusic();
+        resolveSFX(player);
     }
 
-    // TODO: where should this field belong?
-    private boolean wasInDanger = false;
-    private boolean wasMoving = false;
+    private boolean useThread = false;
+    private boolean sharkWas = false;
+    private boolean sirenWas = false;
 
     /** Update the level themed music according the game status */
-    private void resolveMusic(Raft player) {
-        boolean nowInDanger = false;
+    private void resolveMusic() {
+        // Get danger
+        boolean sharkNow = false;
+        boolean sirenNow = false;
         for(SharkController ai : controls){
             if(ai.isAlive() && ai.getState() == Shark.enemyState.ENRAGE){
-                nowInDanger = true;
+                sharkNow = true;
                 break;
             }
         }
-        if(!wasInDanger && nowInDanger){
-            SfxController.getInstance().tradeMusic(false);
+        for(Siren s : levelModel.getSirens()){
+            if(s.canHear()){
+                sirenNow = true;
+                break;
+            }
         }
-        if(wasInDanger && !nowInDanger){
-            SfxController.getInstance().tradeMusic(true);
-        }
-        SfxController.getInstance().updateMusic();
-        wasInDanger = nowInDanger;
 
-        boolean nowMoving = player.isMoving();
-        if(!wasMoving && nowMoving){
-            player.setSailSound(SfxController.getInstance().playSFX("raft_sail_wind", true));
+        // Update music
+        if(useThread) {
+            MusicController.getInstance().updateMusic(sharkNow, sirenNow);
+        } else {
+            boolean wasInDanger = sharkWas || sirenWas;
+            boolean nowInDanger = sharkNow || sirenNow;
+            if(!wasInDanger && nowInDanger){
+                SfxController.getInstance().tradeMusic(false);
+            }
+            if(wasInDanger && !nowInDanger){
+                SfxController.getInstance().tradeMusic(true);
+            }
+            SfxController.getInstance().updateMusic();
+        }
+        sirenWas = sirenNow;
+        sharkWas = sharkNow;
+    }
+
+    private boolean wasMoving = false;
+
+    /**
+     * Start and stop sail sounds if necessary.
+     * @param player
+     */
+    private void resolveSFX(Raft player){
+        // Update raft sail sounds
+        if(!wasMoving && player.isMoving()){
+            SfxController.getInstance().playSFX("raft_sail_wind", true);
             wasMoving = true;
         } else if(wasMoving && !player.isMoving()){
-            SfxController.getInstance().stopSFX("raft_sail_wind", player.getSailSound());
+            SfxController.getInstance().stopSFX("raft_sail_wind");
             SfxController.getInstance().playSFX("raft_sail_down");
             wasMoving = false;
         }

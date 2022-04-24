@@ -245,8 +245,8 @@ public class SfxController {
      * @param name The name of the sound.
      * @param id The id of the instance
      */
-    public void stopSFX(String name, long id){
-        sfx.get(name).stop(id);
+    public void stopSFX(String name){
+        sfx.get(name).stop();
     }
 
     /**
