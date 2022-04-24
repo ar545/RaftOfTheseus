@@ -73,7 +73,7 @@ public class Siren extends GameObject {
      * @param targetRaft The player to target.
      */
     public Siren(Vector2 position1, Vector2 position2, Raft targetRaft) {
-        physicsObject = new WheelObstacle(1.2f);
+        physicsObject = new WheelObstacle(0.9f);
         setPosition(position1);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;

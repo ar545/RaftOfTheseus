@@ -39,6 +39,13 @@ public class Rock extends GameObject {
         this.sharp = sharp;
     }
 
+    @Override
+    protected void setTextureTransform() {
+        float w = getWidth() / texture.getRegionWidth();
+        textureScale = new Vector2(w, w);
+        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+    }
+
     /** @return Whether this rock is sharp or not. */
     public boolean isSharp() { return sharp; }
 
