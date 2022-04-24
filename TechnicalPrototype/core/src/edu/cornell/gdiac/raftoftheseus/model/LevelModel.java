@@ -756,32 +756,8 @@ public class LevelModel {
         // "Scaled Camera": adjust x and y scale
         float x_diff = mapCenter.x - (getPlayer().getPosition().x + translation.x);
         float y_diff = mapCenter.y - (getPlayer().getPosition().y + translation.y);
-        if( x_diff != 0 ){ translation.x -= x_diff * ((mapCenter.x / (canvas.getWidth() * half)) - 1); } // 1280 * 0.03 * 0.5 = 19.2 (2.34)
-        if( y_diff != 0 ){ translation.y -= y_diff * ((mapCenter.y / (canvas.getWidth() * half)) - 1); } // 720 * 0.03 * 0.5 = 10.8 (4.16)
-        return translation;
-    }
-
-    /** This calculates the box2d light position translation according to the screen (canvas) size,
-     *  the player position, and the pixel per unit scale.
-     * @return a Vector2 representing the translation that texture will go through */
-    Vector2 lightTranslation2() {
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 translation = new Vector2((float)canvas.getWidth(), (float)canvas.getHeight());
-        translation.scl(0.0015f * cols(), 0.0015f * rows()); // 0.0015 = 0.03 * 0.1 * 1/2
-        translation.sub(getPlayer().getPosition());
-
-        // "Capped Camera": bound x and y within walls
-        Rectangle wallBounds = wallBounds();
-        translation.x = Math.min(translation.x, canvas.getWidth() * (0.0015f * cols() - 0.015f) - wallBounds.x);
-        translation.x = Math.max(translation.x, canvas.getWidth() * (0.0015f * cols() + 0.015f) - wallBounds.width);
-        translation.y = Math.min(translation.y, canvas.getHeight() * (0.0015f * rows() - 0.015f) - wallBounds.y);
-        translation.y = Math.max(translation.y, canvas.getHeight() * (0.0015f * rows() + 0.015f) - wallBounds.height);
-
-        // "Scaled Camera": adjust x and y scale
-        float x_diff = 0.0015f * cols() * canvas.getWidth() - (getPlayer().getPosition().x + translation.x);
-        float y_diff = 0.0015f * rows() * canvas.getHeight() - (getPlayer().getPosition().y + translation.y);
-        if( x_diff != 0 ){ translation.x -= x_diff * ((cols() / 10f) - 1); }
-        if( y_diff != 0 ){ translation.y -= y_diff * ((rows() / 10f) - 1); }
+        if( x_diff != 0 ){ translation.x -= x_diff * ((mapCenter.x / (canvas.getWidth() * half)) - 1); }
+        if( y_diff != 0 ){ translation.y -= y_diff * ((mapCenter.y / (canvas.getWidth() * half)) - 1); }
         return translation;
     }
 
