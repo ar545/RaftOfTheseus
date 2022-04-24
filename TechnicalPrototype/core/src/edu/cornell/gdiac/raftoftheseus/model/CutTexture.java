@@ -21,6 +21,12 @@ public class CutTexture
     public Texture texture;
     /** The vertices representing the cut texture */
     public float[] vertices = new float[VERTEX_PER_RECTANGLE * FLOAT_PER_VERTEX];
+    /** How far in time do we retrace the health */
+    private static final int retracing_health_size = 5;
+    /** health history */
+    private float[] retracing_health = new float[retracing_health_size];
+    /** pointer to the retracing array, where to read from and write to, and move the pointer forward */
+    int retracing_index = 0;
     /** Constructor call with known texture */
     public CutTexture(Texture texture){ position.setZero(); this.texture = texture; }
 
@@ -33,9 +39,9 @@ public class CutTexture
 
     /** update the vertices according to the angle to cut the texture, and update the texture with selected color
      * @param health the health to draw the cut texture */
-    public void update(float health) {
+    public void update(float health, Color color) {
         float angle = (1-health) * FULL_DEGREE; // float representing the cut angle, 180 as dead, 0 as full health
-        Color color = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
+
         Vector2 d = (new Vector2(1.0f, 0.0f)).rotateDeg(angle);
         Vector2 c = new Vector2(0.5f, 0.5f);
         Vector2 la = (new Vector2(d)).scl( 1.0f).add(c);
@@ -101,6 +107,36 @@ public class CutTexture
      * @param batch the reference to the canvas sprite batch */
     public void render(PolygonSpriteBatch batch) {
         batch.draw(texture, vertices, 0, FLOAT_PER_VERTEX * VERTEX_PER_RECTANGLE);
+    }
+
+    /** Sequence of health bar drawing */
+    public void updateAndDraw(Vector2 position, float health, PolygonSpriteBatch spriteBatch) {
+        // set position
+        position.set(position);
+        // make color (red - green transition color)
+        Color color = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
+//        float retrace_health = retraceHealth(health);
+//        if(retrace_health > health){
+//           // cut according to retrace_health
+//           update(retrace_health, Color.BLUE);
+//           // render to retrace health
+//           render(spriteBatch);
+//        }
+        // cut according to real-time health
+        update(health, color);
+        // render real-time health
+        render(spriteBatch);
+    }
+
+    /** find the health "retracing_health_size" screens ago */
+    private float retraceHealth(float health) {
+        float result = retracing_health[retracing_index];
+        retracing_health[retracing_index] = health;
+        retracing_index ++;
+        if(retracing_index >= retracing_health_size){
+            retracing_index = 0;
+        }
+        return result;
     }
 
     public static class VertexAngle {

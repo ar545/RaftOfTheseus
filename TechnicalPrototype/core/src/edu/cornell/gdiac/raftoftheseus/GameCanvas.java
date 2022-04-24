@@ -1274,14 +1274,7 @@ public class GameCanvas {
 	}
 
 	/** Draw the radial health bar, given health and player position */
-	public void drawRadialHealth(Vector2 position, float health){
-		// set position
-		radialHealth.position.set(position);
-		// cut according to health
-		radialHealth.update(health);
-		// render
-		radialHealth.render(spriteBatch);
-	}
+	public void drawRadialHealth(Vector2 position, float health){ radialHealth.updateAndDraw(position, health, spriteBatch); }
 
 	/** Draw the linear health bar, given health and player position */
 	public void drawLinearHealth(float health, Vector2 player_position, Texture colorBar) {
