@@ -9,10 +9,12 @@
   "siren" : {
     "idle time" : 500,
     "singing time" : 3000,
-    "attack range": 200,
-    "attack damage" : 40,
+    "attack range": 6,
+    "attack damage" : -20,
     "proximity" : 1,
-    "fly speed" : 0.0001
+    "fly speed" : 0.5,
+    "stun time" : 500,
+    "cool down" : 1000
   },
   "hydra" : {
     "hitting range" : 200,

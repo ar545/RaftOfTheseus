@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
+import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 
 public enum SirenState implements State<Siren> {
 
@@ -44,22 +45,19 @@ public enum SirenState implements State<Siren> {
     SINGING() {
         @Override
         public void update (Siren entity){
-            if(entity.inAttackRange()){
-                entity.getStateMachine().changeState(ATTACKING);
-            } else {
-                entity.setTimeStamp();
-                if(entity.isDoneSinging()) {
-                    entity.getStateMachine().changeState(TAKEOFF);
-                }
+            entity.setTimeStamp();
+            if(entity.isDoneSinging()) {
+                entity.getStateMachine().changeState(TAKEOFF);
             }
         }
     },
-    ATTACKING() {
+    STUNNED(){
         @Override
-        public void update (Siren entity){
-            if(entity.hasAttacked()){
-                entity.resetHasAttacked();
-                SirenState.changeToFlying(entity);
+        public void update(Siren entity) {
+            entity.setTimeStamp();
+            if(entity.stunElapsed()){
+                entity.resetTimeStamp();
+                entity.getStateMachine().changeState(SINGING);
             }
         }
     };

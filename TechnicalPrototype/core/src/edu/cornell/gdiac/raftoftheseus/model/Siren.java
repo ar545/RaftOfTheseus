@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
+import edu.cornell.gdiac.raftoftheseus.model.unused.HydraState;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Siren extends GameObject {
@@ -17,11 +18,12 @@ public class Siren extends GameObject {
     public static void setConstants(JsonValue objParams){
         IDLE_TIME = objParams.getLong("idle time");
         SINGING_TIME = objParams.getLong("singing time");
-        SINGING_RANGE = objParams.getFloat("attack range");
         ATTACK_RANGE = objParams.getFloat("attack range");
         ATTACK_DAMAGE = objParams.getFloat("attack damage");
         PROXIMITY = objParams.getFloat("proximity");
         FLY_SPEED = objParams.getFloat("fly speed");
+        COOL_DOWN = objParams.getLong("cool down");
+        STUN_TIME = objParams.getLong("stun time");
     }
 
     /** The player for targeting. */
@@ -41,16 +43,18 @@ public class Siren extends GameObject {
     private long timeStamp = 0L;
     private boolean timeStamped = false;
     /** Whether this Siren has just attacked the player. */
+    private boolean isHit = false;
     private boolean hasAttacked;
     /** Constants that determine time in each state for range of attack. */
     private static float PROXIMITY = 1f;
     private static long IDLE_TIME;
     private static long SINGING_TIME;
-    private static float SINGING_RANGE;
     private static Vector2 SINGING_FORCE;
     private static float ATTACK_RANGE;
     private static float ATTACK_DAMAGE;
     private static float FLY_SPEED;
+    private static long COOL_DOWN;
+    private static long STUN_TIME;
 
     /**
      * Constructor for the Siren.
@@ -67,8 +71,8 @@ public class Siren extends GameObject {
 
         location1.set(position1);
         location2.set(position2);
-        direction1.set(position2.sub(position1).scl(FLY_SPEED));
-        direction2.set(position1.sub(position2).scl(FLY_SPEED));
+        direction1.set(position2.cpy().sub(position1).scl(FLY_SPEED));
+        direction2.set(position1.cpy().sub(position2).scl(FLY_SPEED));
         moveVector.set(0.0f, 0.0f);
         this.targetRaft = targetRaft;
         stateMachine = new DefaultStateMachine<Siren, SirenState>(this, SirenState.IDLE);
@@ -124,6 +128,12 @@ public class Siren extends GameObject {
     public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
     /** Whether this Siren has elapsed its singing time. */
     public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
+    public boolean cooldownElapsed(){
+        return TimeUtils.timeSinceMillis(timeStamp) > COOL_DOWN;
+    }
+    public boolean stunElapsed(){
+        return TimeUtils.timeSinceMillis(timeStamp) > STUN_TIME;
+    }
 
     // Changing location
     /** @return whether Siren is flying from its spawn location. */
@@ -149,20 +159,26 @@ public class Siren extends GameObject {
 
     /** @return whether the player is in attack range of this Siren. */
     public boolean inAttackRange(){
-        return targetRaft.getPosition().sub(getPosition()).len() < ATTACK_RANGE;
+        return targetRaft.getPosition().cpy().sub(getPosition()).len() < ATTACK_RANGE;
     }
     /** @return whether the player is in range and the Siren is attack mode.
      *  Resets
      */
     public boolean willAttack(){
-        hasAttacked = stateMachine.isInState(SirenState.ATTACKING) && inAttackRange();
+        hasAttacked = stateMachine.isInState(SirenState.SINGING) && inAttackRange();
         return hasAttacked;
     }
-    /** @return whether the Siren has just attacked. */
-    public boolean hasAttacked(){ return hasAttacked; }
-    /** Reset hasAttacked. */
-    public void resetHasAttacked(){ hasAttacked = false; }
+
     /** Get how much damage is done to the player. */
     public static float getAttackDamage(){ return ATTACK_DAMAGE; }
+    public Vector2 getTargetDirection() { return getPosition().sub(targetRaft.getPosition()).nor(); }
+
+    // Stunned
+    public boolean isHit(){ return isHit; }
+    public void setHit(boolean h){
+        if (!stateMachine.isInState(SirenState.STUNNED)){
+            isHit = h;
+        }
+    }
 
 }

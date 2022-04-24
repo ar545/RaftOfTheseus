@@ -754,7 +754,7 @@ public class WorldController implements Screen, ContactListener {
         // update player health based on movement and distance, then check if dead
         Raft player = levelModel.getPlayer();
         player.applyMoveCost(dt);
-        if(player.isDead() && !complete && !failed){
+        if(player.isDead() && !complete && !failed && !debug){
             setFailure(true);
         }
 
