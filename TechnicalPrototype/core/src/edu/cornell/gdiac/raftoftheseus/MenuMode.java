@@ -168,8 +168,6 @@ public class MenuMode implements Screen {
      * Draw the status of this player mode.
      */
     private void draw() {
-//        colPadding = ((canvas.getWidth() - 2 * PADDING_X - NUM_COLS * levelButtons[0].getWidth()) / (NUM_COLS - 1));
-
         canvas.begin();
         canvas.clear();
 
@@ -330,7 +328,7 @@ public class MenuMode implements Screen {
                 });
 
                 //Add buttons to table
-                menuTable.add(startButton).padTop(450).expandX().align(Align.left).padLeft(100);
+                menuTable.add(startButton).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
                 menuTable.add(levelsButton).expandX().align(Align.left).padLeft(100);
                 menuTable.row();
@@ -341,7 +339,7 @@ public class MenuMode implements Screen {
             case LEVEL_SELECT:
                 Table part1 = new Table();
                 part1.align(Align.left);
-                part1.add(menuButton).expandX().align(Align.left).padRight(830).padTop(10);
+                part1.add(menuButton).expandX().align(Align.left).padRight(1100).padTop(10);
                 part1.row();
                 menuTable.add(part1);
                 menuTable.row();
@@ -350,7 +348,6 @@ public class MenuMode implements Screen {
                 Label levelSelectLabel = new Label("SELECT A LEVEL", skin);
                 levelSelectLabel.setFontScale(0.6f);
                 part2.add(levelSelectLabel).expandX().align(Align.center);
-                part2.row();
                 menuTable.add(part2);
                 menuTable.row();
 
@@ -399,15 +396,15 @@ public class MenuMode implements Screen {
                 break;
             case CREDITS:
                 Table creditsPart1 = new Table();
-                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(830).padTop(10);
+                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(1100).padTop(10);
                 menuTable.add(creditsPart1);
                 menuTable.row();
 
                 Table creditsPart2 = new Table();
                 Label creditsLabel = new Label("CREDITS", skin);
-                creditsLabel.setFontScale(0.6f);
+                creditsLabel.setFontScale(0.5f);
                 creditsPart2.add(creditsLabel).expandX().align(Align.center);
-                menuTable.add(creditsPart2);
+                menuTable.add(creditsPart2).padTop(-50);
                 menuTable.row();
 
                 Table creditsPart3 = new Table();
@@ -415,7 +412,7 @@ public class MenuMode implements Screen {
 
                 Table creditsPart3Left = new Table();
                 Label programmersLabel = new Label("PROGRAMMER", skin);
-                programmersLabel.setFontScale(0.38f);
+                programmersLabel.setFontScale(0.35f);
                 creditsPart3Left.add(programmersLabel).expandX().align(Align.center);
                 creditsPart3Left.row();
 

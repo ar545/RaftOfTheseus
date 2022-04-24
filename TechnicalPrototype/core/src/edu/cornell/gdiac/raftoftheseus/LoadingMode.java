@@ -61,8 +61,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	
 	/** Background texture for start-up */
 	private Texture background;
-	/** Play button to display when done */
-	private Texture playButton;
 	/** Music to play during loading. */
 	/** Texture atlas to support a progress bar */
 	private Texture statusBar;
@@ -117,8 +115,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 	/** Current progress (0 to 1) of the asset manager */
 	private float progress;
-	/** The current state of the play button */
-	private int   pressState;
+	/** Whether loading is done */
+	private boolean loadingComplete;
 	/** The amount of time to devote to loading assets (as opposed to on screen hints, etc.) */
 	private int   budget;
 	/** Whether or not this player mode is still active */
@@ -157,9 +155,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 *
 	 * @return true if the player is ready to go
 	 */
-	public boolean isReady() {
-		return pressState == 2;
-	}
+	public boolean isReady() { return loadingComplete == true; }
 
 	/**
 	 * Returns the asset directory produced by this loading screen
@@ -208,7 +204,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		internal.finishLoading();
 
 		// Load the next two images immediately.
-		playButton = null;
 		background = internal.getEntry( "background", Texture.class );
 		background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
 		statusBar = internal.getEntry( "progress", Texture.class );
@@ -224,7 +219,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 		// No progress so far.
 		progress = 0;
-		pressState = 0;
+		loadingComplete = false;
 
 		Gdx.input.setInputProcessor( this );
 
@@ -260,13 +255,11 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * @param delta Number of seconds since last animation frame
 	 */
 	private void update(float delta) {
-		if (playButton == null) {
-			assets.update(budget);
-			this.progress = assets.getProgress();
-			if (progress >= 1.0f) {
-				this.progress = 1.0f;
-				playButton = internal.getEntry("play",Texture.class);
-			}
+		assets.update(budget);
+		this.progress = assets.getProgress();
+		if (progress >= 1.0f) {
+			this.progress = 1.0f;
+			loadingComplete = true;
 		}
 	}
 
@@ -280,12 +273,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	private void draw() {
 		canvas.begin();
 		canvas.drawBackground(background, true);
-		if (playButton == null) {
+		if (!loadingComplete) {
 			drawProgress(canvas);
-		} else {
-			Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
-			canvas.draw(playButton, tint, playButton.getWidth()/2, playButton.getHeight()/2, 
-						centerX, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
 		}
 		canvas.end();
 	}
@@ -363,7 +352,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * also paused before it is destroyed.
 	 */
 	public void pause() {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -373,7 +361,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * This is usually when it regains focus.
 	 */
 	public void resume() {
-		// TODO Auto-generated method stub
 
 	}
 	
@@ -415,23 +402,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * @param pointer the button or touch finger number
 	 * @return whether to hand the event to other listeners. 
 	 */
-	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if (playButton == null || pressState == 2) {
-			return true;
-		}
-		
-		// Flip to match graphics coordinates
-		screenY = heightY-screenY;
-
-		// TODO: Fix scaling
-		// Play button is a circle.
-		float radius = BUTTON_SCALE*scale*playButton.getWidth()/2.0f;
-		float dist = (screenX-centerX)*(screenX-centerX)+(screenY-centerY)*(screenY-centerY);
-		if (dist < radius*radius) {
-			pressState = 1;
-		}
-		return false;
-	}
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) { return true; }
 	
 	/** 
 	 * Called when a finger was lifted or a mouse button was released.
@@ -444,13 +415,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * @param pointer the button or touch finger number
 	 * @return whether to hand the event to other listeners. 
 	 */	
-	public boolean touchUp(int screenX, int screenY, int pointer, int button) { 
-		if (pressState == 1) {
-			pressState = 2;
-			return false;
-		}
-		return true;
-	}
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) { return true; }
 	
 	/** 
 	 * Called when a button on the Controller was pressed. 
@@ -463,16 +428,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * @param buttonCode The button pressed
 	 * @return whether to hand the event to other listeners. 
 	 */
-	public boolean buttonDown (Controller controller, int buttonCode) {
-		if (pressState == 0) {
-			ControllerMapping mapping = controller.getMapping();
-			if (mapping != null && buttonCode == mapping.buttonStart ) {
-				pressState = 1;
-				return false;
-			}
-		}
-		return true;
-	}
+	public boolean buttonDown (Controller controller, int buttonCode) { return true; }
 	
 	/** 
 	 * Called when a button on the Controller was released. 
@@ -485,16 +441,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * @param buttonCode The button pressed
 	 * @return whether to hand the event to other listeners. 
 	 */
-	public boolean buttonUp (Controller controller, int buttonCode) {
-		if (pressState == 1) {
-			ControllerMapping mapping = controller.getMapping();
-			if (mapping != null && buttonCode == mapping.buttonStart ) {
-				pressState = 2;
-				return false;
-			}
-		}
-		return true;
-	}
+	public boolean buttonUp (Controller controller, int buttonCode) { return true; }
 	
 	// UNSUPPORTED METHODS FROM InputProcessor
 
