@@ -967,7 +967,7 @@ public class WorldController implements Screen, ContactListener {
             // Check player win
             if (!complete && !failed) setComplete(true);
         } else if(g.getType() == GameObject.ObjectType.ROCK){
-            if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
+            if(((Rock) g).isSharp()) r.addHealth(-Rock.getDAMAGE());
         } else if(g.getType() == GameObject.ObjectType.NOTE){
             r.applyProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);
