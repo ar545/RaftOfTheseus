@@ -269,10 +269,11 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         } else if (frame >= IDLE_SF && isFire){
             frameCount = 0;
             timeElapsed = 0;
+            frame = SHOOTING_SF;
         } else if (frame < IDLE_SF && isFire){
             setCanFire(setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false));
         } else if (frame < IDLE_SF && !isFire){
-            frameCount += 20;
+            frame += 20;
             timeElapsed = 0;
         } else {
             throw new RuntimeException("Raft has reached illegal state.");

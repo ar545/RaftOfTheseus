@@ -284,8 +284,8 @@ public class InputController {
 
 		// TODO add rotational aiming
 
-		mapPressed = Gdx.input.isButtonJustPressed(mappings.get("map")) || Gdx.input.isKeyPressed(mappings.get("map"));
-		firePressed = Gdx.input.isButtonJustPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fire"));
+		mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
+		firePressed = Gdx.input.isButtonPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fire"));
 		if (firePressed) {
 			fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 		}
