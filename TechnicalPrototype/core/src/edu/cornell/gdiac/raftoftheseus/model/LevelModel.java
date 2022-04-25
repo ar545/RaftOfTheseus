@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
 import box2dLight.RayHandler;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -183,6 +184,8 @@ public class LevelModel {
     protected Texture colorBar;
     /** The texture for the health bar background */
     protected TextureRegion greyBar;
+    /** The texture for the aiming reticle */
+    private TextureRegion reticleTexture;
     /** Json information for light settings */
     private JsonValue lightSettings;
 
@@ -797,6 +800,7 @@ public class LevelModel {
         waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
+        reticleTexture = new TextureRegion(directory.getEntry("reticle", Texture.class));
         lightSettings = directory.getEntry("lights", JsonValue.class);
         canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
@@ -1045,12 +1049,13 @@ public class LevelModel {
         drawObjects(USE_SHADER_FOR_WATER);
         canvas.end();
 
-        // reset camera transform (because health bar isn't in game units)
+        // reset camera transform for other player-centered texture (because health bar isn't in game units)
         canvas.begin();
-        Vector2 playerPosOnScreen = getPlayer().getPosition();
+        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
         drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time);
+        drawReticle();
         canvas.end();
 
         setLightAndCircle(playerPosOnScreen);
@@ -1133,11 +1138,31 @@ public class LevelModel {
     }
 
     /** draw the fuel sign if the health is below a certain level */
-    private void drawFuel(float health, Vector2 player_position, float time){
-        if(health < 0.2 && health > 0) {
-            int health_int = Math.max(1, (int) (health * 50) * (int) (health * 50)) ;
-            if(((int) (time * 100) / health_int) % 2 == 0){canvas.draw(fuelTexture, player_position.x - 50, player_position.y);}
+    private void drawFuel(float health, Vector2 player_position, float time) {
+        if (health < 0.2 && health > 0) {
+            int health_int = Math.max(1, (int) (health * 50) * (int) (health * 50));
+            if (((int) (time * 100) / health_int) % 2 == 0) {
+                canvas.draw(fuelTexture, player_position.x - 50, player_position.y);
+            }
         }
+    }
+
+    private void drawReticle() {
+        int mouseX = Gdx.input.getX();
+        int mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+        Vector2 mouseGamePos = new Vector2(mouseX, mouseY);
+        getCameraTransform().inv().applyTo(mouseGamePos);
+        mouseGamePos.sub(getPlayer().getPosition());
+        mouseGamePos.scl(Math.min(Spear.getSpearRange(),  mouseGamePos.len()) / mouseGamePos.len());
+        mouseGamePos.add(getPlayer().getPosition());
+        getCameraTransform().applyTo(mouseGamePos);
+
+        float modifiedX = mouseGamePos.x;
+        float modifiedY = mouseGamePos.y;
+
+        canvas.draw(reticleTexture, Color.WHITE, reticleTexture.getRegionWidth()*0.5f, reticleTexture.getRegionHeight()*0.5f,
+                modifiedX, modifiedY, reticleTexture.getRegionWidth(), reticleTexture.getRegionHeight());
     }
 
     public void drawDebug() {

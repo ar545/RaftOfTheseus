@@ -35,6 +35,10 @@ public class Spear extends Projectile {
     @Override
     public ObjectType getType() { return ObjectType.SPEAR; }
 
+    public static float getSpearRange() {
+        return (float)RANGE_FALL;
+    }
+
     /**
      * Constructor for the Spear.
      */
