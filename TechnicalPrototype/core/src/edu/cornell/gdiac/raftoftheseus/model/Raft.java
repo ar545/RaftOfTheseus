@@ -74,6 +74,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float THRUST;
     /** The maximum character speed allowed */
     private static float MAX_SPEED;
+    private static float MIN_SPEED = 0.01f;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
     /** Size constants */
@@ -159,7 +160,11 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** Returns the player movement input. */
     protected Vector2 getMovementInput() { return movementInput; }
 
-    public boolean isMoving() { return !physicsObject.getLinearVelocity().isZero() || !movementInput.isZero(); }
+    public boolean isMoving() {
+        boolean isDrifting = physicsObject.getLinearVelocity().len() > MIN_SPEED;
+        boolean isRowing = !movementInput.isZero();
+        return isDrifting || isRowing;
+    }
 
     /** Sets the player movement input. */
     public void setMovementInput(Vector2 value) { movementInput.set(value); }

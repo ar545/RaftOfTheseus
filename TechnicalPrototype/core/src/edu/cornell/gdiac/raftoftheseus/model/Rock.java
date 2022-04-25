@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 public class Rock extends GameObject {
 
@@ -12,12 +13,14 @@ public class Rock extends GameObject {
      * @param objParams is the "rock" child of object_settings.json
      */
     public static void setConstants(JsonValue objParams){
-        WIDTH = objParams.getFloat(0);
-        HEIGHT = objParams.getFloat(1);
-        DAMAGE = objParams.getFloat(2);
+        WIDTH = objParams.getFloat("width");
+        HEIGHT = objParams.getFloat("height");
+        DAMAGE = objParams.getFloat("damage");
+        RADIUS = objParams.getFloat("radius");
     }
 
     // Constants
+    private static float RADIUS;
     private static float WIDTH;
     private static float HEIGHT;
     private static float DAMAGE;
@@ -32,7 +35,8 @@ public class Rock extends GameObject {
     /** Constructor for rock */
     public Rock(Vector2 position, boolean sharp) {
         physicsObject = new BoxObstacle(WIDTH, HEIGHT);
-        setPosition(position);
+//        physicsObject = new WheelObstacle(RADIUS);
+        setPosition(position.add(0, HEIGHT/3));
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
         physicsObject.getFilterData().maskBits = MASK_TERRAIN;
@@ -41,9 +45,9 @@ public class Rock extends GameObject {
 
     @Override
     protected void setTextureTransform() {
-        float w = getWidth() / texture.getRegionWidth();
+        float w = WIDTH / texture.getRegionWidth();
         textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - HEIGHT)/2f);
     }
 
     /** @return Whether this rock is sharp or not. */

@@ -1094,11 +1094,12 @@ public class LevelModel {
      * @param useShader
      */
     public void drawObjects(boolean useShader){
+        raft.draw(canvas);
         for(GameObject obj : getObjects()) {
             if (!useShader || obj.getType() != GameObject.ObjectType.CURRENT) {
                 if (obj.getType() == GameObject.ObjectType.SHARK) {
                     obj.draw(canvas, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
-                } else {
+                } else if(obj.getType() != GameObject.ObjectType.RAFT) {
                     obj.draw(canvas);
                 }
             }
