@@ -65,7 +65,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** The star of the level. This must be >=0. */
     private int star;
     /** Whether the raft is actively firing */
-    private boolean isFire;
+    private boolean isCharging;
     private boolean canFire;
     /** The amount to slow the character down, while they aren't moving */
     private static float DAMPING;
@@ -111,7 +111,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         interactionSensor.setBodyType(BodyDef.BodyType.DynamicBody);
         interactionSensor.getFilterData().categoryBits = CATEGORY_PLAYER_SENSOR;
         interactionSensor.getFilterData().maskBits = MASK_PLAYER_SENSOR;
-        isFire = false;
+        isCharging = false;
         canFire = false;
     }
 
@@ -172,8 +172,9 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     }
     public void setCanFire(boolean cf) { canFire = cf; }
 
-    /** @param fire whether to set the player to actively firing */
-    public void setFire(boolean fire) { this.isFire = fire; }
+    /** @param charging whether to set the player to actively firing */
+    public void setCharging(boolean charging) { this.isCharging = charging; }
+    public boolean isCharging() { return isCharging; }
 
     /**
      * Applies the force to the body
@@ -257,6 +258,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     int frameCount = 0;
     float timeElapsed = 0;
     int frame = IDLE_SF;
+    boolean wasFire = false;
 
     /**
      * Method to set animation based on the time elapsed in the game.
@@ -264,15 +266,21 @@ public class Raft extends GameObject implements Steerable<Vector2> {
      */
     public void setAnimationFrame(float dt) {
         timeElapsed += dt;
-        if(frame >= IDLE_SF && !isFire){
+        if(frame >= IDLE_SF && !isCharging){
             setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
-        } else if (frame >= IDLE_SF && isFire){
+        } else if (frame >= IDLE_SF && isCharging){
             frameCount = 0;
             timeElapsed = 0;
             frame = SHOOTING_SF;
-        } else if (frame < IDLE_SF && isFire){
-            setCanFire(setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false));
-        } else if (frame < IDLE_SF && !isFire){
+        } else if (frame < IDLE_SF && isCharging){
+            if(isFrame(SHOOTING_F, SHOOTING_SF, true)) wasFire = false;
+            setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false);
+            boolean fireFrame = isFrame(SHOOTING_F, SHOOTING_SF, false);
+            if(!wasFire && fireFrame){
+                setCanFire(true);
+                wasFire = true;
+            }
+        } else if (frame < IDLE_SF && !isCharging){
             frame += 20;
             timeElapsed = 0;
         } else {
@@ -288,13 +296,23 @@ public class Raft extends GameObject implements Steerable<Vector2> {
      * @param reverse whether the animation should be drawn backwards.
      * @return whether it has reached the last animation image.
      */
-    private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
+    private void setFrame(float animationSpeed, int frames, int start, boolean reverse){
         if (timeElapsed > animationSpeed){
             timeElapsed = 0;
             frameCount += 1;
             frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
         }
-        return reverse ? frame == start : frame == frames - 1 + start;
+    }
+
+    /**
+     * Checks whether or not the current frame is the starting or ending frame.
+     * @param frames
+     * @param start
+     * @param begin
+     * @return whether the current frame is the start or end frame.
+     */
+    private boolean isFrame(int frames, int start, boolean begin){
+        return begin ? frame == start : frame == frames - 1 + start;
     }
 
     @Override

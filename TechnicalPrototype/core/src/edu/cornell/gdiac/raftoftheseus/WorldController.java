@@ -698,7 +698,7 @@ public class WorldController implements Screen, ContactListener {
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
-        player.setFire(ic.didFire());
+        player.setCharging(ic.didFire());
 //        System.out.println(ic.didFire());
 
         // Add a bullet if we fire
