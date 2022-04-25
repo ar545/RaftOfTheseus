@@ -1,8 +1,8 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -80,20 +80,19 @@ public class WorldController implements Screen, ContactListener {
     private ScreenListener listener;
     /** Reference to the game assets directory */
     private AssetDirectory directory;
+    /** Game level save data */
+    private static JsonValue saveData;
 
     // UI Elements
     private Stage stage;
     private Table table;
     private Skin skin;
-    private InputMultiplexer plexer;
 
-    //TEXTURE
+    // TEXTURE
     /** The texture for the star */
     protected TextureRegion star;
     /** The texture for the exit condition */
     protected Texture bullet_texture;
-    /** The font for giving messages to the player */
-    protected BitmapFont displayFont;
     /** Texture for pause screen */
     protected Texture pauseBackground;
     /** Texture for failed level */
@@ -168,7 +167,6 @@ public class WorldController implements Screen, ContactListener {
         this.stage = new Stage();
         this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         this.table = new Table();
-        this.plexer = new InputMultiplexer();
         enemySight = new EnemyRayCast();
         startTime = System.currentTimeMillis();
         pauseBuilt = false;
@@ -249,9 +247,20 @@ public class WorldController implements Screen, ContactListener {
                 SfxController.getInstance().playSFX("level_complete");
                 SfxController.getInstance().setLevelComplete();
                 wasComplete = true;
+                saveGame();
             }
             SfxController.getInstance().fadeMusic();
             drawTransition();
+        }
+    }
+
+    private void saveGame() {
+        saveData.get("level_data").get(level_id).get("complete").set(true);
+        // if the treasure available in the level is 0, the player gets 3 stars for completing
+        int score = levelModel.getTreasureCount() > 0 ? playerScore : 3;
+        saveData.get("level_data").get(level_id).get("score").set(score, Integer.toString(score));
+        if (level_id + 1 < NUM_LEVELS) {
+            saveData.get("level_data").get(level_id + 1).get("unlocked").set(true);
         }
     }
 
@@ -901,6 +910,9 @@ public class WorldController implements Screen, ContactListener {
         active = false;
     }
 
+    /** Sets the save data */
+    public void setSaveData(JsonValue saveData) { this.saveData = saveData; }
+
     /**
      * Sets the ScreenListener for this mode
      *
@@ -909,7 +921,6 @@ public class WorldController implements Screen, ContactListener {
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
     }
-
 
     /*=*=*=*=*=*=*=*=*=* Physics *=*=*=*=*=*=*=*=*=*/
     /**
@@ -1091,7 +1102,6 @@ public class WorldController implements Screen, ContactListener {
         prepareEnemy();
         stage.clear();
         table.clear();
-        plexer.clear();
         playerScore = 0;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         transitionBuilt = false;

@@ -320,7 +320,6 @@ public class SfxController {
      */
     public void startLevelMusic(){
         if (musicPresets == null) throw new NullPointerException("Constructor not called.");
-        System.out.println("start was called");
         STATE = MusicState.SAFE;
         setMusicVolume(0, "danger", "explore", "background");
         playMusic("danger", 0);
@@ -328,7 +327,6 @@ public class SfxController {
         playMusic("background");
         level_complete = false;
     }
-
 
     // TODO DYNAMIC MUSIC
 
