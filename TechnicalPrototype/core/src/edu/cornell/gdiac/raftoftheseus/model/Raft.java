@@ -298,6 +298,9 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         } else {
             throw new RuntimeException("Raft has reached illegal state.");
         }
+        // flip texture based on movement
+        float flip = getLinearVelocity().x < 0 ? -1 : 1;
+        textureScale.x = flip * Math.abs(textureScale.y);
     }
 
     /**

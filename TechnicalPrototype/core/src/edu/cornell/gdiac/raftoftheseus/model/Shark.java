@@ -467,6 +467,9 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
         } else {
             setFrame(ATTACK_AS, ATTACK_F, ATTACK_SF, false);
         }
+        // flip texture based on movement
+        float flip = getLinearVelocity().x > 0 ? -1 : 1;
+        textureScale.x = flip * Math.abs(textureScale.y);
     }
 
     /**
