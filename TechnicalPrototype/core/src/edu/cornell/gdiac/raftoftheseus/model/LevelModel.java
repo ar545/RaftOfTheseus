@@ -175,8 +175,10 @@ public class LevelModel {
 //    protected Texture gameBackground;
     /** Texture for water */
     protected Texture waterTexture;
-    /** Texture for wall */
+    /** Texture for wall */ // TODO: no longer needed
     private TextureRegion earthTile;
+    /** Texture for fuel */
+    private TextureRegion fuelTexture;
     /** The texture for the colored health bar */
     protected Texture colorBar;
     /** The texture for the health bar background */
@@ -797,6 +799,7 @@ public class LevelModel {
         colorBar  = directory.getEntry( "white_bar", Texture.class );
         lightSettings = directory.getEntry("lights", JsonValue.class);
         canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
+        fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
     }
 
     /**
@@ -1047,6 +1050,7 @@ public class LevelModel {
         Vector2 playerPosOnScreen = getPlayer().getPosition();
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
+        drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time);
         canvas.end();
 
         setLightAndCircle(playerPosOnScreen);
@@ -1126,6 +1130,14 @@ public class LevelModel {
         canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
                 greyBar.getRegionWidth(), greyBar.getRegionHeight());
         canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 26), health);
+    }
+
+    /** draw the fuel sign if the health is below a certain level */
+    private void drawFuel(float health, Vector2 player_position, float time){
+        if(health < 0.2 && health > 0) {
+            int health_int = Math.max(1, (int) (health * 50) * (int) (health * 50)) ;
+            if(((int) (time * 100) / health_int) % 2 == 0){canvas.draw(fuelTexture, player_position.x - 50, player_position.y);}
+        }
     }
 
     public void drawDebug() {

@@ -47,6 +47,7 @@
       "radial_bar" : "images/radial_bar_filled.png",
       "star":     "images/star.png",
       "plant":     "images/plant.png",
+      "fuel": "images/fuel.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
