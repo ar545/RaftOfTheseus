@@ -71,7 +71,7 @@
   },
   "rock": {
     "width": 3,
-    "height": 2,
+    "height": 3,
     "damage": -15,
     "radius": 0.8
   },
