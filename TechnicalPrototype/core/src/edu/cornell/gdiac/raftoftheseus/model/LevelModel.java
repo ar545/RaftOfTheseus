@@ -115,6 +115,8 @@ public class LevelModel {
     public World world;
     /** The boundary of the world */
     private Rectangle bounds;
+    /** The amount of treasure in the level */
+    private int treasureCount;
     /** The map size in grid */
     protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
     /** Vector 2 holding the temp position vector for the game object to create */
@@ -222,6 +224,8 @@ public class LevelModel {
     public float getTileSize() { return GRID_SIZE; }
     /** Get boundary wall vertices */
     public float[] getWallVertices() { return polygonVertices; }
+    /** Get treasure count for the level */
+    public int getTreasureCount() { return treasureCount; }
     /** Constructor call for this singleton class */
     public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
 
@@ -395,6 +399,7 @@ public class LevelModel {
      *
      * @param level_int an integer representing the level selection, i.e. which json file to read from. */
     public void loadLevel(int level_int, JsonValue level_data){
+        treasureCount = 0;
         if(level_int != LEVEL_RESTART_CODE && level_data != null){
             // Load in new level
             this.level_data = level_data;
@@ -640,6 +645,7 @@ public class LevelModel {
         this_treasure.setTexture(treasureTexture);
         obstacles[col][row] = this_treasure;
         addObject(this_treasure);
+        treasureCount++;
     }
 
     /** Add Goal Objects to the world, using the Json value for goal.

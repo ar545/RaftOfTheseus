@@ -1,0 +1,92 @@
+{
+  "debug": false,
+  "level_data": [
+    {
+      "name": "Level 0",
+      "level": 0,
+      "path": "levels/level0.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": true
+    },
+    {
+      "name": "Level 1",
+      "level": 1,
+      "path": "levels/level1.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 2",
+      "level": 2,
+      "path": "levels/level2.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 3",
+      "level": 3,
+      "path": "levels/level3.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 3",
+      "level": 3,
+      "path": "levels/level3.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 4",
+      "level": 4,
+      "path": "levels/level4.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 5",
+      "level": 5,
+      "path": "levels/level5.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },  {
+      "name": "Level 6",
+      "level": 6,
+      "path": "levels/level6.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 7",
+      "level": 7,
+      "path": "levels/level7.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 8",
+      "level": 8,
+      "path": "levels/level8.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 0",
+      "level": 0,
+      "path": "levels/level0.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    }
+  ]
+}

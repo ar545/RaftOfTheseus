@@ -33,6 +33,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.utils.JsonReader;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.Controllers;
@@ -58,6 +60,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	private AssetDirectory internal;
 	/** The actual assets to be loaded */
 	private AssetDirectory assets;
+	/** The save game data to be laoded */
+	private JsonValue saveGameData;
 	
 	/** Background texture for start-up */
 	private Texture background;
@@ -171,13 +175,21 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	}
 
 	/**
+	 * Returns the save game data
+	 *
+	 * @return the save game data
+	 *  */
+	public JsonValue getSaveGameData() { return saveGameData; }
+
+	/**
 	 * Creates a LoadingMode with the default budget, size and position.
 	 *
-	 * @param file  	The asset directory to load in the background
-	 * @param canvas 	The game canvas to draw to
+	 * @param assetsFile	The asset directory to load in the background
+	 * @param saveFile 		The save game file
+	 * @param canvas 		The game canvas to draw to
 	 */
-	public LoadingMode(String file, GameCanvas canvas) {
-		this(file, canvas, DEFAULT_BUDGET);
+	public LoadingMode(String assetsFile, String saveFile, GameCanvas canvas) {
+		this(assetsFile, saveFile, canvas, DEFAULT_BUDGET);
 	}
 
 	/**
@@ -188,11 +200,12 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 * frame is ~16 milliseconds. So if the budget is 10, you have 6 milliseconds to 
 	 * do something else.  This is how game companies animate their loading screens.
 	 *
-	 * @param file  	The asset directory to load in the background
-	 * @param canvas 	The game canvas to draw to
-	 * @param millis The loading budget in milliseconds
+	 * @param assetsFile 	The asset directory to load in the background
+	 * @param saveFile      The save game data to load
+	 * @param canvas 		The game canvas to draw to
+	 * @param millis 		The loading budget in milliseconds
 	 */
-	public LoadingMode(String file, GameCanvas canvas, int millis) {
+	public LoadingMode(String assetsFile, String saveFile, GameCanvas canvas, int millis) {
 		this.canvas  = canvas;
 		budget = millis;
 		// Compute the dimensions from the canvas
@@ -232,8 +245,10 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		SfxController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
 
 		// Start loading the real assets
-		assets = new AssetDirectory( file );
+		assets = new AssetDirectory( assetsFile );
 		assets.loadAssets();
+		JsonReader jsonReader = new JsonReader();
+		saveGameData = jsonReader.parse(Gdx.files.internal(saveFile));
 		active = true;
 	}
 	

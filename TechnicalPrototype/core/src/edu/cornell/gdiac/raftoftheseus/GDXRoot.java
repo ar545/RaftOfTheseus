@@ -39,6 +39,8 @@ import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListener {
 	/** AssetManager to load game assets (textures, sounds, etc.) */
 	AssetDirectory directory;
+	/** Save game data */
+	JsonValue saveData;
 	/** Drawing context to display graphics (VIEW CLASS) */
 	private GameCanvas canvas;
 	/** Player mode for the asset loading screen (CONTROLLER CLASS) */
@@ -85,7 +87,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	public void create() {
 		canvas  = new GameCanvas();
-		loading = new LoadingMode("assets.json",canvas,1);
+		loading = new LoadingMode("assets.json", "save_data.json", canvas,1);
 		menu = new MenuMode(canvas);
 		playing = new WorldController(canvas);
 		settings = new SettingsMode(canvas);
@@ -142,9 +144,11 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	public void exitScreen(Screen screen, int exitCode) {
 		if (screen == loading) {
 			directory = loading.getAssets();
+			saveData = loading.getSaveGameData();
 			setConstants();
 			populateScreens();
 			setMenuScreen(false);
+			menu.setSaveData(saveData);
 			loading.dispose();
 			loading = null;
 		}
@@ -235,6 +239,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		this.currentLevel = currentLevel;
 		playing.setLevel(this.currentLevel);
 		setPlayScreen();
+		playing.setSaveData(saveData);
 	}
 
 	/**

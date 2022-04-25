@@ -43,16 +43,18 @@ public class MenuMode implements Screen {
     private Texture menuBackground;
     /** Background texture for credits */
     private Texture seaBackground;
-    /** Texture for levels */
-    private Texture levelButtonImage;
+    /** Textures for level buttons */
+    private Texture[] levelButtonImages;
     /** Texture for the levels to select. */
     private TextButton[] levelButtons;
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+    /** Game level save data */
+    private static JsonValue saveData;
 
-    // Load from "screen" in "obj parameters"
+    /** Loads constants from screen */
     public static void setConstants(JsonValue objParams){
         STANDARD_WIDTH = objParams.getInt(0);
         STANDARD_HEIGHT = objParams.getInt(1);
@@ -60,6 +62,7 @@ public class MenuMode implements Screen {
         colPadding = objParams.getInt("column padding", 25);
         LEVEL_COUNT = objParams.getInt("level count", 9);
     }
+
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH;
     /** Standard window height (for scaling) */
@@ -104,7 +107,6 @@ public class MenuMode implements Screen {
         selectedLevel = 0;
         settingsPressed = false;
         playPressed = false;
-
         currentScreen = MenuScreen.TITLE;
     }
 
@@ -116,7 +118,11 @@ public class MenuMode implements Screen {
     public void populate(AssetDirectory directory) {
         menuBackground = directory.getEntry("menu_background", Texture.class);
         seaBackground = directory.getEntry("sea_background", Texture.class);
-        levelButtonImage = directory.getEntry("level", Texture.class);
+        levelButtonImages = new Texture[5];
+        for (int i = 0; i < 4; i++) {
+            levelButtonImages[i] = directory.getEntry("level_star_" + i, Texture.class);
+        }
+        levelButtonImages[4] = directory.getEntry("level_locked", Texture.class);
     }
 
     /**
@@ -127,6 +133,9 @@ public class MenuMode implements Screen {
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
     }
+
+    /** Sets the save data */
+    public void setSaveData(JsonValue saveData) { this.saveData = saveData; }
 
     /**
      * Returns the level selected by the player
@@ -354,15 +363,30 @@ public class MenuMode implements Screen {
                 Table part3 = new Table();
 
                 // Create buttons
-                TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(new TextureRegion(levelButtonImage));
-                TextButtonStyle buttonStyle = new TextButtonStyle();
-                buttonStyle.up = buttonDrawable;
-                buttonStyle.down = buttonDrawable.tint(Color.GRAY);
-                buttonStyle.font = skin.getFont("default-font");
+                TextureRegionDrawable[] buttonDrawables = new TextureRegionDrawable[4];
+                TextButtonStyle[] buttonStyles = new TextButtonStyle[4];
+                for (int i = 0; i < 4; i++) {
+                    buttonDrawables[i] = new TextureRegionDrawable(new TextureRegion(levelButtonImages[i]));
+                    buttonStyles[i] = new TextButtonStyle();
+                    buttonStyles[i].up = buttonDrawables[i];
+                    buttonStyles[i].down = buttonDrawables[i].tint(Color.GRAY);
+                    buttonStyles[i].font = skin.getFont("default-font");
+                }
+
+                TextButtonStyle lockButtonStyle = new TextButtonStyle();
+                TextureRegionDrawable lockButtonDrawable =  new TextureRegionDrawable(new TextureRegion(levelButtonImages[4]));
+                lockButtonStyle.up = lockButtonDrawable;
+                lockButtonStyle.down = lockButtonDrawable;
+                lockButtonStyle.font = skin.getFont("default-font");
+
                 levelButtons = new TextButton[LEVEL_COUNT];
 
                 for (int i = 0; i < LEVEL_COUNT; i ++) {
-                    levelButtons[i] = new TextButton(String.valueOf(i), buttonStyle);
+                    JsonValue levelData = saveData.get("level_data").get(i);
+                    int score = levelData.get("score").asInt();
+                    boolean debug = saveData.get("debug").asBoolean();
+                    boolean unlocked = levelData.get("unlocked").asBoolean();
+                    levelButtons[i] = new TextButton(String.valueOf(i), debug || unlocked ? buttonStyles[score] : lockButtonStyle);
                     TextButton currentButton = levelButtons[i];
                     currentButton.getLabel().setFontScale(0.5f);
                     int finalI = i;
@@ -371,7 +395,9 @@ public class MenuMode implements Screen {
                         public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                             if(pointer == -1) SfxController.getInstance().playSFX("button_island");
                             super.enter(event, x, y, pointer, fromActor);
-                            currentButton.setColor(Color.LIGHT_GRAY);
+                            if (debug || unlocked) {
+                                currentButton.setColor(Color.LIGHT_GRAY);
+                            }
                         }
 
                         @Override
@@ -382,8 +408,11 @@ public class MenuMode implements Screen {
 
                         @Override
                         public void clicked(InputEvent event, float x, float y) {
-                            SfxController.getInstance().playSFX("raft_sail_open");
-                            selectlevel(finalI);
+                            if (debug || unlocked) {
+                                currentButton.setColor(Color.LIGHT_GRAY);
+                                SfxController.getInstance().playSFX("raft_sail_open");
+                                selectlevel(finalI);
+                            }
                         }
                     });
                     //Add button to table
