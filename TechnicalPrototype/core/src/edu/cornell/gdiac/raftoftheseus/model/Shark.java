@@ -17,9 +17,6 @@ import java.util.Random;
 public class Shark extends GameObject {
     Random rand = new Random();
 
-    private FilmStrip texture;
-    public int animationFrame = 2;
-
     private class PathfindingTile implements Comparable<PathfindingTile> {
         /** x,y of this tile **/
         public int[] position;
@@ -407,24 +404,96 @@ private void addIfLegal(Queue<PathfindingTile> q, int[] position, int[] moveDire
         moveVector.scl(impulseMagnitude);
     }
 
-    public void setTexture(FilmStrip value) {
-        texture = value;
-        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
+    /* DISPLAY AND ANIMATION */
 
-        float w = getWidth() / texture.getRegionWidth()*1.50f;
+    // ANIMATION
+    private static float HORIZONTAL_OFFSET = 0.0f;
+    /** How much to enlarge the shark. */
+    private static float TEXTURE_SCALE = 1.50f;
+    /** The animation speed for the shark. */
+    private static float IDLE_AS = 0.05f;
+    private static float ATTACK_AS = 0.05f;
+    /** The number of frames for this animation. */
+    private static int IDLE_F = 9;
+    private static int ATTACK_F = 7;
+    /** Which frame to start on the filmstrip with this animation. */
+    private static int IDLE_SF = 8;
+    private static int ATTACK_SF = 0;
+
+    // The value to increment once the animation time has passed. Used to calculate which frame should be used.
+    private int frameCount = 0;
+    // The amount of time elapsed, used for checking whether to increment frameCount.
+    private float timeElapsed = 0;
+    // Which frame should be set for drawing this game cycle.
+    private int frame = IDLE_SF;
+    // whether the shark was enraged in the last animation frame
+    private boolean wasEnraged = false;
+
+    /**
+     * Realign the shark sprite so that the bottom of it is at the bottom of the physics object.
+     */
+    @Override
+    protected void setTextureTransform() {
+        float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
-        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionWidth()/2.0f);
+        textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
     }
 
-    public void draw(GameCanvas canvas) {
-        draw(canvas, Color.WHITE);
+    /**
+     * Set the filmstrip frame before call the super draw method.
+     * @param canvas Drawing context
+     */
+    @Override
+    public void draw(GameCanvas canvas, Color color){
+        ((FilmStrip) texture).setFrame(frame);
+        super.draw(canvas, color);
     }
 
-    public void draw(GameCanvas canvas, Color color) {
-        if (texture != null) {
-            texture.setFrame(animationFrame);
-            canvas.draw(texture, color, origin.x, origin.y, getX(), getY(),
-                    getAngle(), textureScale.x, textureScale.y);
+    /**
+     * Method to set animation based on the time elapsed in the game.
+     * @param dt the current time in the game.
+     */
+    public void setAnimationFrame(float dt) {
+        timeElapsed += dt;
+        if (isEnraged() != wasEnraged) {
+            // animation changed, set frame to 0
+            frameCount = 0;
+            timeElapsed = 0;
+            wasEnraged = isEnraged();
+        }
+        // update animation frame
+        if(!isEnraged()) { // not attacking
+            setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
+        } else {
+            setFrame(ATTACK_AS, ATTACK_F, ATTACK_SF, false);
         }
     }
+
+    /**
+     * Sets the frame of the animation based on the FSM and time given.
+     * @param animationSpeed how many seconds should pass between each frame.
+     * @param frames the number of frames this animation has.
+     * @param start which frame in the FilmStrip the animation starts on.
+     * @param reverse whether the animation should be drawn backwards.
+     * @return whether it has reached the last animation image.
+     */
+    private void setFrame(float animationSpeed, int frames, int start, boolean reverse){
+        if (timeElapsed > animationSpeed){
+            timeElapsed = 0;
+            frameCount += 1;
+            frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
+        }
+    }
+
+    /**
+     * Checks whether the current frame is the starting or ending frame.
+     * @param frames the amount of frames for the given animation.
+     * @param start the starting index.
+     * @param begin whether to check for the starting or ending index.
+     * @return whether the current frame is the start or end frame.
+     */
+//    private boolean isFrame(int frames, int start, boolean begin){
+//        return begin ? frame == start : frame == frames - 1 + start;
+//    }
+
 }

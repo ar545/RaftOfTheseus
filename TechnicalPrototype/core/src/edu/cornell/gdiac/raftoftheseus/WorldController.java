@@ -219,6 +219,9 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
         }
+        for(Shark s : levelModel.getEnemies()){
+            s.setAnimationFrame(dt);
+        }
 
         // Update raft samples (for displaying the wake in the shader) before drawing water
         updateRaftWakeSamples();
