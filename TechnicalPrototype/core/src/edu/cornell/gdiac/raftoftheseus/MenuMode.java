@@ -207,6 +207,7 @@ public class MenuMode implements Screen {
             } else if ((isReady() && listener != null) || playPressed) {
                 resetPressedState();
                 resetPlayState();
+                currentScreen = MenuScreen.TITLE;
                 listener.exitScreen(this, 0);
             }
         }
