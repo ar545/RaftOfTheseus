@@ -162,20 +162,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** Sets the player movement input. */
     public void setMovementInput(Vector2 value) { movementInput.set(value); }
 
-    /** @return whether the player is actively firing */
-    public boolean canFire() {
-        if(canFire) {
-            canFire = false;
-            return true;
-        }
-        return false;
-    }
-    public void setCanFire(boolean cf) { canFire = cf; }
-
-    /** @param charging whether to set the player to actively firing */
-    public void setCharging(boolean charging) { this.isCharging = charging; }
-    public boolean isCharging() { return isCharging; }
-
     /**
      * Applies the force to the body
      *
@@ -259,6 +245,28 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     float timeElapsed = 0;
     int frame = IDLE_SF;
     boolean wasFire = false;
+    boolean justFired = false;
+
+    /** @return whether the player is actively firing */
+    public void setCanFire(boolean cf) { canFire = cf; }
+    public boolean canFire() {
+        if(canFire) {
+            justFired = true;
+            setCanFire(false);
+            return true;
+        }
+        return false; }
+    public boolean justFired() {
+        if(justFired) {
+            justFired = false;
+            return true;
+        }
+        return false;
+    }
+
+    /** @param charging whether to set the player to actively firing */
+    public void setCharging(boolean charging) { this.isCharging = charging; }
+    public boolean isCharging() { return isCharging; }
 
     /**
      * Method to set animation based on the time elapsed in the game.

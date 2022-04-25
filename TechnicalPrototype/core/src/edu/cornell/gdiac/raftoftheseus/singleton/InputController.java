@@ -201,7 +201,7 @@ public class InputController {
 	/** @return true if the map button was pressed. */
 	public boolean didMap() { return mapPressed && !mapPrevious; }
 	/** @return true if the fire button was pressed. */
-	public boolean didFire() { return firePressed; }
+	public boolean didCharge() { return firePressed; }
 	/** @return true if the tab button was pressed for changing what is selected on a screen. */
 	public boolean didTab() { return tabPressed && !tabPrevious; }
 	/** @return true if the change control scheme button was pressed. */

@@ -690,6 +690,8 @@ public class WorldController implements Screen, ContactListener {
         return true;
     }
 
+    private boolean wasCharging = false;
+
     /** The core gameplay loop of this world. This method is called after input is read, but before collisions
      * are resolved. The very last thing that it should do is apply forces to the appropriate objects.
      * @param dt	Number of seconds since last animation frame */
@@ -698,8 +700,14 @@ public class WorldController implements Screen, ContactListener {
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
-        player.setCharging(ic.didFire());
-//        System.out.println(ic.didFire());
+        player.setCharging(ic.didCharge());
+        if(!wasCharging && player.isCharging() || player.justFired() && player.isCharging()){
+            wasCharging = true;
+            SfxController.getInstance().playSFX("spear_charge");
+        } else if (wasCharging && !player.isCharging()){
+            wasCharging = false;
+            SfxController.getInstance().stopSFX("spear_charge");
+        }
 
         // Add a bullet if we fire
         if (player.canFire()) {
