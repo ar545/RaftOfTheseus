@@ -41,6 +41,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         SHOOTING_F = objParams.getInt("shooting frames");
         IDLE_SF = objParams.getInt("idle starting frame");
         SHOOTING_SF = objParams.getInt("shooting starting frame");
+        HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
     }
 
     // CONSTANTS
@@ -81,6 +82,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float SENSOR_RADIUS;
 
     // ANIMATION
+    private static float HORIZONTAL_OFFSET;
     /** How much to enlarge the raft. */
     private static float TEXTURE_SCALE;
     /** The animation speed for the raft. */
@@ -229,33 +231,29 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         return health / MOVE_COST;
     }
 
-    /**
-     * Realign the raft so that the bottom of it is at the bottom of the capsule object.
-     */
-    @Override
-    protected void setTextureTransform() {
-        float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
-        textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(0.25f,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
-        // 0.25 offset because the texture is off-center horizontally
-    }
+    // The value to increment once the animation time has passed. Used to calculate which frame should be used.
+    private int frameCount = 0;
+    // The amount of time elapsed, used for checking whether to increment frameCount.
+    private float timeElapsed = 0;
+    // Which frame should be set for drawing this game cycle.
+    private int frame = IDLE_SF;
+    // To check whether the player fired for setting canFire and spear creation.
+    private boolean wasFire = false;
+    // To check whether the player fired for sound playing after the fact.
+    private boolean justFired = false;
 
-
-    int frameCount = 0;
-    float timeElapsed = 0;
-    int frame = IDLE_SF;
-    boolean wasFire = false;
-    boolean justFired = false;
-
-    /** @return whether the player is actively firing */
+    /** Set whether the playe rhas reached the end of the animation cycle. */
     public void setCanFire(boolean cf) { canFire = cf; }
+    /** @return whether the player has reached the end of the firing animation cycle. */
     public boolean canFire() {
         if(canFire) {
             justFired = true;
             setCanFire(false);
             return true;
         }
-        return false; }
+        return false;
+    }
+    /** @return whether the player has justFired to communicate with sound. */
     public boolean justFired() {
         if(justFired) {
             justFired = false;
@@ -264,8 +262,9 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         return false;
     }
 
-    /** @param charging whether to set the player to actively firing */
+    /** @param charging whether to set the player to actively charging */
     public void setCharging(boolean charging) { this.isCharging = charging; }
+    /** @return whether player is actively charging. */
     public boolean isCharging() { return isCharging; }
 
     /**
@@ -313,16 +312,31 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     }
 
     /**
-     * Checks whether or not the current frame is the starting or ending frame.
-     * @param frames
-     * @param start
-     * @param begin
+     * Checks whether the current frame is the starting or ending frame.
+     * @param frames the amount of frames for the given animation.
+     * @param start the starting index.
+     * @param begin whether to check for the starting or ending index.
      * @return whether the current frame is the start or end frame.
      */
     private boolean isFrame(int frames, int start, boolean begin){
         return begin ? frame == start : frame == frames - 1 + start;
     }
 
+    /**
+     * Realign the raft so that the bottom of it is at the bottom of the capsule object.
+     */
+    @Override
+    protected void setTextureTransform() {
+        float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
+        textureScale = new Vector2(w, w);
+        textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+        // 0.25 offset because the texture is off-center horizontally
+    }
+
+    /**
+     * Set the filmstrip frame before call the super draw method.
+     * @param canvas Drawing context
+     */
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(frame);
