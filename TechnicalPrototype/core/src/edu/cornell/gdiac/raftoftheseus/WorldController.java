@@ -217,8 +217,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.clear();
 
         // update animations
-        float time = (System.currentTimeMillis() - startTime)/1000.0f;
-        levelModel.getPlayer().setAnimationFrame(time);
+        levelModel.getPlayer().setAnimationFrame(dt);
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
         }
@@ -702,7 +701,7 @@ public class WorldController implements Screen, ContactListener {
         player.setFire(ic.didFire());
 
         // Add a bullet if we fire
-        if (player.isFire()) {
+        if (player.canFire()) {
             // find the nearest enemy to player
             Vector2 firePixel = ic.getFireDirection();
             levelModel.getCameraTransform().inv().applyTo(firePixel);
@@ -994,7 +993,7 @@ public class WorldController implements Screen, ContactListener {
             // Check player win
             if (!complete && !failed) setComplete(true);
         } else if(g.getType() == GameObject.ObjectType.ROCK){
-            if(((Rock) g).isSharp()) r.addHealth(-Rock.getDAMAGE());
+            if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
         } else if(g.getType() == GameObject.ObjectType.NOTE){
             r.applyProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);

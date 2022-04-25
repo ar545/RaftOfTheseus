@@ -27,6 +27,7 @@ public class Siren extends GameObject {
         COOL_DOWN = objParams.getLong("cool down");
         STUN_TIME = objParams.getLong("stun time");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
+        RADIUS = objParams.getFloat("radius");
         IDLE_AS = objParams.getFloat("idle animation speed");
         SINGING_AS = objParams.getFloat("singing animation speed");
         TAKE_OFF_AS = objParams.getFloat("take off animation speed");
@@ -77,6 +78,7 @@ public class Siren extends GameObject {
     private static long COOL_DOWN;
     private static long STUN_TIME;
     private static float TEXTURE_SCALE;
+    private static float RADIUS;
     private static float IDLE_AS;
     private static float SINGING_AS;
     private static float TAKE_OFF_AS;
@@ -99,7 +101,7 @@ public class Siren extends GameObject {
      * @param targetRaft The player to target.
      */
     public Siren(Vector2 position1, Vector2 position2, Raft targetRaft) {
-        physicsObject = new WheelObstacle(0.9f);
+        physicsObject = new WheelObstacle(RADIUS);
         setPosition(position1);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
@@ -118,7 +120,7 @@ public class Siren extends GameObject {
     protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(0,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+        textureOffset = new Vector2();
     }
 
     /**
@@ -266,7 +268,7 @@ public class Siren extends GameObject {
     public void setAnimationFrame(float dt) {
         // Get frame number
         timeElapsed += dt;
-        System.out.println(stateMachine.getCurrentState());
+//        System.out.println(stateMachine.getCurrentState());
         switch(stateMachine.getCurrentState()){
             case IDLE:
                 setFrame(IDLE_AS, IDLE_FRAMES, IDLE_SF, false);
@@ -300,8 +302,8 @@ public class Siren extends GameObject {
         if (timeElapsed > animationSpeed){
             timeElapsed = 0;
             frameCount += 1;
+            frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
         }
-        frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
         return reverse ? frame == start : frame == frames - 1 + start;
     }
 

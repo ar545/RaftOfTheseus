@@ -74,7 +74,6 @@ public class InputController {
 	private boolean mapPrevious;
 	/** Whether the fire button was pressed. */
 	private boolean firePressed;
-	private boolean firePrevious;
 	/** Whether the tab button was pressed for selection. */
 	private boolean tabPressed;
 	private boolean tabPrevious;
@@ -202,7 +201,7 @@ public class InputController {
 	/** @return true if the map button was pressed. */
 	public boolean didMap() { return mapPressed && !mapPrevious; }
 	/** @return true if the fire button was pressed. */
-	public boolean didFire() { return firePressed && !firePrevious; }
+	public boolean didFire() { return firePressed; }
 	/** @return true if the tab button was pressed for changing what is selected on a screen. */
 	public boolean didTab() { return tabPressed && !tabPrevious; }
 	/** @return true if the change control scheme button was pressed. */
@@ -238,7 +237,6 @@ public class InputController {
 		nextPrevious = nextPressed;
 		prevPrevious = prevPressed;
 		mapPrevious = mapPressed;
-		firePrevious = firePressed;
 		debugPrevious  = debugPressed;
 		exitPrevious = exitPressed;
 		pausePrevious = pausePressed;

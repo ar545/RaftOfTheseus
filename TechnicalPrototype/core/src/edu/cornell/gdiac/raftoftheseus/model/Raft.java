@@ -4,7 +4,6 @@ import com.badlogic.gdx.ai.steer.Steerable;
 import com.badlogic.gdx.ai.steer.SteeringAcceleration;
 import com.badlogic.gdx.ai.steer.SteeringBehavior;
 import com.badlogic.gdx.ai.utils.Location;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
@@ -40,6 +39,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         SHOOTING_AS = objParams.getFloat("shooting animation speed");
         IDLE_F = objParams.getInt("idle frames");
         SHOOTING_F = objParams.getInt("shooting frames");
+        IDLE_SF = objParams.getInt("idle starting frame");
+        SHOOTING_SF = objParams.getInt("shooting starting frame");
     }
 
     // CONSTANTS
@@ -64,7 +65,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** The star of the level. This must be >=0. */
     private int star;
     /** Whether the raft is actively firing */
-    private boolean fire;
+    private boolean isFire;
+    private boolean canFire;
     /** The amount to slow the character down, while they aren't moving */
     private static float DAMPING;
     /** The amount to accelerate the character */
@@ -73,14 +75,12 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float MAX_SPEED;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
-    /** Raft sail sound id */
-    private long sailSound;
+    /** Size constants */
     private static float OBJ_WIDTH;
     private static float OBJ_HEIGHT;
     private static float SENSOR_RADIUS;
 
     // ANIMATION
-    private static TextureRegion shooting;
     /** How much to enlarge the raft. */
     private static float TEXTURE_SCALE;
     /** The animation speed for the raft. */
@@ -111,6 +111,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         interactionSensor.setBodyType(BodyDef.BodyType.DynamicBody);
         interactionSensor.getFilterData().categoryBits = CATEGORY_PLAYER_SENSOR;
         interactionSensor.getFilterData().maskBits = MASK_PLAYER_SENSOR;
+        isFire = false;
+        canFire = false;
     }
 
     /**
@@ -161,10 +163,17 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     public void setMovementInput(Vector2 value) { movementInput.set(value); }
 
     /** @return whether the player is actively firing */
-    public boolean isFire() { return fire; }
+    public boolean canFire() {
+        if(canFire) {
+            canFire = false;
+            return true;
+        }
+        return false;
+    }
+    public void setCanFire(boolean cf) { canFire = cf; }
 
     /** @param fire whether to set the player to actively firing */
-    public void setFire(boolean fire) { this.fire = fire; }
+    public void setFire(boolean fire) { this.isFire = fire; }
 
     /**
      * Applies the force to the body
@@ -244,30 +253,55 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         // 0.25 offset because the texture is off-center horizontally
     }
 
+
+    int frameCount = 0;
+    float timeElapsed = 0;
+    int frame = IDLE_SF;
+
     /**
      * Method to set animation based on the time elapsed in the game.
-     * @param time the current time in the game.
+     * @param dt the current time in the game.
      */
-    public void setAnimationFrame(float time) {
-        // Get frame number
-        int frame = (int)(time * IDLE_AS);
-        // Find frame
-        ((FilmStrip)texture).setFrame(frame % IDLE_F);
+    public void setAnimationFrame(float dt) {
+        timeElapsed += dt;
+        if(frame >= IDLE_SF && !isFire){
+            setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
+        } else if (frame >= IDLE_SF && isFire){
+            frameCount = 0;
+            timeElapsed = 0;
+        } else if (frame < IDLE_SF && isFire){
+            setCanFire(setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false));
+        } else if (frame < IDLE_SF && !isFire){
+            frameCount += 20;
+            timeElapsed = 0;
+        } else {
+            throw new RuntimeException("Raft has reached illegal state.");
+        }
     }
 
-    // MUSIC
-
-    /** @param id the id of the sail moving sound. */
-    public void setSailSound(long id){
-        sailSound = id;
+    /**
+     * Sets the frame of the animation based on the FSM and time given.
+     * @param animationSpeed how many seconds should pass between each frame.
+     * @param frames the number of frames this animation has.
+     * @param start which frame in the FilmStrip the animation starts on.
+     * @param reverse whether the animation should be drawn backwards.
+     * @return whether it has reached the last animation image.
+     */
+    private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
+        if (timeElapsed > animationSpeed){
+            timeElapsed = 0;
+            frameCount += 1;
+            frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
+        }
+        return reverse ? frame == start : frame == frames - 1 + start;
     }
 
-    /** @return the current sail sound and reset the id. */
-    public long getSailSound(){
-        long temp = sailSound;
-        sailSound = -1;
-        return temp;
+    @Override
+    public void draw(GameCanvas canvas){
+        ((FilmStrip) texture).setFrame(frame);
+        super.draw(canvas);
     }
+
 
     /* STEERING */
 

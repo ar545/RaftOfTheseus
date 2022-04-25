@@ -769,7 +769,7 @@ public class LevelModel {
     /** This gather the assets required for initializing the objects
      * @param directory the asset directory */
     public void gatherAssets(AssetDirectory directory) {
-        raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 4, 5, 19);// TODO: use data-driven design for rows/cols/size
+        raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 8, 5, 40);// TODO: use data-driven design for rows/cols/size
         woodTexture = new TextureRegion(directory.getEntry("wood", Texture.class));
         doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
