@@ -55,12 +55,12 @@ public class MenuMode implements Screen {
     private static JsonValue saveData;
 
     /** Loads constants from screen */
-    public static void setConstants(JsonValue objParams){
+    public static void setConstants(JsonValue objParams, int numLevels){
         STANDARD_WIDTH = objParams.getInt(0);
         STANDARD_HEIGHT = objParams.getInt(1);
         NUM_COLS = objParams.getInt(2);
         colPadding = objParams.getInt("column padding", 25);
-        LEVEL_COUNT = objParams.getInt("level count", 9);
+        LEVEL_COUNT = numLevels;
     }
 
     /** Standard window size (for scaling) */
