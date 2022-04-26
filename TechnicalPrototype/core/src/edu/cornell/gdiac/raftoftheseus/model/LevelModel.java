@@ -23,6 +23,7 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class LevelModel {
@@ -1062,8 +1063,8 @@ public class LevelModel {
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
         canvas.begin(cameraTransform);
-        drawWater(USE_SHADER_FOR_WATER, time);
-        drawObjects(USE_SHADER_FOR_WATER);
+        drawWater(time);
+        drawObjects();
         canvas.end();
 
         // reset camera transform for other player-centered texture (because health bar isn't in game units)
@@ -1111,9 +1112,9 @@ public class LevelModel {
     /**
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
-    public void drawWater(boolean useShader, float time) {
+    public void drawWater(float time) {
         Rectangle eg = extraGrid(); // TODO: invisible border: don't mess up the scaling on everything in the shader
-        if (useShader) {
+        if (USE_SHADER_FOR_WATER) {
             canvas.useShader(time);
             canvas.draw(waterTexture, Color.WHITE, eg.x,  eg.y, eg.width, eg.height);
             canvas.stopUsingShader();
@@ -1121,19 +1122,21 @@ public class LevelModel {
             canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
+    private static class renderOrderComparator implements Comparator<GameObject>{
+        public int compare(GameObject a, GameObject b) {
+            return (int)Math.signum(b.getY() - a.getY());
+        }
+    }
+
     /**
      *
-     * @param useShader
      */
-    public void drawObjects(boolean useShader){
-        raft.draw(canvas);
+    public void drawObjects(){
+        getObjects().sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
+        // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
         for(GameObject obj : getObjects()) {
-            if (!useShader || obj.getType() != GameObject.ObjectType.CURRENT) {
-                if (obj.getType() == GameObject.ObjectType.SHARK) {
-                    obj.draw(canvas);//, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
-                } else if(obj.getType() != GameObject.ObjectType.RAFT) {
-                    obj.draw(canvas);
-                }
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) { // don't draw currents with the shader on
+                obj.draw(canvas);
             }
         }
     }
