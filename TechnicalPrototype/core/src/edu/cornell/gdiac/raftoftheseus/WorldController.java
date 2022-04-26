@@ -91,8 +91,12 @@ public class WorldController implements Screen, ContactListener {
     // TEXTURE
     /** The texture for the star */
     protected TextureRegion star;
-    /** The texture for the exit condition */
-    protected Texture bullet_texture;
+    /** The hint image for movement and exit/reset controls */
+    protected TextureRegion hintMovement;
+    /** The hint image for firing controls */
+    protected TextureRegion hintAttack;
+    /** The hint image for map controls */
+    protected TextureRegion hintMap;
     /** Texture for pause screen */
     protected Texture pauseBackground;
     /** Texture for failed level */
@@ -234,6 +238,9 @@ public class WorldController implements Screen, ContactListener {
         // draw stars
         drawStar(levelModel.getPlayer().getStar());
 
+        // draw control hints
+        drawControlHints();
+
         // draw interfaces
         if (debug) {
             levelModel.drawDebug();
@@ -253,6 +260,28 @@ public class WorldController implements Screen, ContactListener {
             }
             SfxController.getInstance().fadeMusic();
             drawTransition();
+        }
+    }
+
+    private void drawControlHints() {
+        TextureRegion hint = null;
+        switch(level_id) {
+            case(0):
+                hint = hintMovement;
+                break;
+            case(1):
+                hint = hintAttack;
+                break;
+            case(2):
+                hint = hintMap;
+                break;
+            default:
+                // draw nothing
+        }
+        if (hint != null) {
+            canvas.begin();
+            canvas.draw(hint, Color.WHITE, hint.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hint.getRegionWidth(), hint.getRegionHeight());
+            canvas.end();
         }
     }
 
@@ -591,20 +620,19 @@ public class WorldController implements Screen, ContactListener {
      * @param directory	Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
-        // Allocate the tiles
+        // UI things
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         pauseBackground = directory.getEntry("pause_background", Texture.class);
-        bullet_texture = directory.getEntry( "bullet", Texture.class );
         failedBackground = directory.getEntry("failed_background", Texture.class);
         successBackgrounds = new Texture[4];
         for (int i = 0; i < 4; i++) {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
+        hintAttack = new TextureRegion(directory.getEntry( "hint_attack", Texture.class ));
+        hintMovement = new TextureRegion(directory.getEntry( "hint_movement", Texture.class ));
+        hintMap = new TextureRegion(directory.getEntry( "hint_map", Texture.class ));
 
-        levelModel.setDirectory(directory);
-        levelModel.gatherAssets(directory);
-        this.directory = directory;
-
+        // shader things
         Texture waterDiffuse = directory.getEntry("water_diffuse", Texture.class);
         waterDiffuse.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         Texture waterNormal = directory.getEntry("water_normal", Texture.class);
@@ -612,6 +640,12 @@ public class WorldController implements Screen, ContactListener {
         Texture waterUVOffset = directory.getEntry("water_uv_offset", Texture.class);
         waterUVOffset.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset);
+
+        // level model assets
+        levelModel.setDirectory(directory);
+        levelModel.gatherAssets(directory);
+        this.directory = directory;
+
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/

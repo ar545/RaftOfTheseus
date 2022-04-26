@@ -23,6 +23,7 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
+import java.util.Comparator;
 import java.util.HashMap;
 
 public class LevelModel {
@@ -96,6 +97,7 @@ public class LevelModel {
     private static final int LAYER_COL = 1;
     /** layer of siren */
     private static final int LAYER_SIREN = 2;
+    private static final int TERRAIN_TYPES = 13;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -172,12 +174,14 @@ public class LevelModel {
     private TextureRegion noteTexture;
     /** Texture for map background */
     protected Texture mapBackground;
-//    /** Texture for game background */
-//    protected Texture gameBackground;
+    /** an array of texture region representing the terrain */
+    protected TextureRegion[] terrain;
     /** Texture for water */
     protected Texture waterTexture;
-    /** Texture for wall */
+    /** Texture for wall */ // TODO: no longer needed
     private TextureRegion earthTile;
+    /** Texture for fuel */
+    private TextureRegion fuelTexture;
     /** The texture for the colored health bar */
     protected Texture colorBar;
     /** The texture for the health bar background */
@@ -614,11 +618,10 @@ public class LevelModel {
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp, (tile_int == -1)); // TODO: new land texture if tile_int != 0
-        if (tile_int == -1)
-            this_rock.setTexture(sharpRockTexture);
-        else
-            this_rock.setTexture(regularRockTexture);
-        if(tile_int == -2){this_rock.setTexture(plantTexture);}
+        if (tile_int == -2) { this_rock.setTexture(plantTexture); }
+        if (tile_int == -1) { this_rock.setTexture(sharpRockTexture); }
+        else if (tile_int == 0) { this_rock.setTexture(regularRockTexture); }
+        else { this_rock.setTexture(terrain[tile_int - 1]); }
         obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
@@ -793,7 +796,6 @@ public class LevelModel {
         spearTexture = new TextureRegion(directory.getEntry("spear", Texture.class));
         noteTexture = new TextureRegion(directory.getEntry("note", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
-//        gameBackground = directory.getEntry("background", Texture.class);
 //        blueTexture = directory.getEntry("blue_texture", Texture.class);
         waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
@@ -801,6 +803,16 @@ public class LevelModel {
         reticleTexture = new TextureRegion(directory.getEntry("reticle", Texture.class));
         lightSettings = directory.getEntry("lights", JsonValue.class);
         canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
+        fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
+        gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
+    }
+
+    private void gatherTerrainAssets(Texture terrainTexture) {
+        terrain = new TextureRegion[TERRAIN_TYPES];
+        int width = terrainTexture.getWidth() / TERRAIN_TYPES;
+        for(int i = 0; i < TERRAIN_TYPES; i++){
+            terrain[i] = new TextureRegion(terrainTexture, width * i + 1, 0, width - 2, terrainTexture.getHeight());
+        }
     }
 
     /**
@@ -918,14 +930,16 @@ public class LevelModel {
      * The G, B, and A values of the texture are unused.
      */
     private Texture recalculateSurfMap() {
-        int res = 2;
+        int res = 5;
+        float sqrt2 = 1.414f; // for 3/4 perspective
         Pixmap pix = new Pixmap(res*extraCols(), res*extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(1.0f, 1.0f, 0.5f, 1.0f); // R = 1 = no terrain nearby
         pix.fill();
         for (GameObject o : getObjects()) {
-            if (o.getType() == GameObject.ObjectType.ROCK) {
-                Rock r = (Rock)o;
-                Vector2 pos = r.getPosition(); // in box2d units (3 per tile)
+            GameObject.ObjectType oType = o.getType();
+            if (oType == GameObject.ObjectType.ROCK || oType == GameObject.ObjectType.GOAL) {
+                boolean isRock = (oType == GameObject.ObjectType.ROCK);
+                Vector2 pos = o.getPosition(); // in box2d units (3 per tile)
                 pos.scl(1.0f/GRID_SIZE); // in tiles
                 pos.add(1, 1); // offset one tile
                 // rock position, in tiles:
@@ -934,25 +948,31 @@ public class LevelModel {
                 // rock center, in tile coords:
                 float cx = rx + 0.5f;
                 float cy = ry + 0.5f;
+                // rock radius
+                float rockRadius = isRock ? 0.6f : 0.97f;
 
                 // iterate through neighboring tiles (but don't go OOB)
-                for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x-1, rx+1); tx++) {
-                    for (int ty = Math.max(0, ry-1); ty <= Math.min(map_size.y-1, ry+1); ty++) {
+                for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x+1, rx+1); tx++) {
+                    for (int ty = Math.max(0, ry-1); ty <= Math.min(map_size.y+1, ry+1); ty++) {
                         // iterate through the pixels covering that tile
                         for (int px = tx*res; px < (tx+1)*res; px ++) {
                             for (int py = ty*res; py < (ty+1)*res; py ++) {
                                 // center of pixel, in tile coords
                                 float x = (px+0.5f)/res;
                                 float y = (py+0.5f)/res;
+                                /*
                                 // nearest point in the rock to (x, y)
                                 float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
                                 float ny = Math.min(Math.max(cy-0.5f, y), cy+0.5f);
                                 // distance from pixel to nearest point in rock
                                 float dx = x - nx;
                                 float dy = y - ny;
-                                dy /= 0.7f; // for 3/4 perspective
-                                float d = (float)Math.sqrt(dx*dx + dy*dy); // could be substituted with max-norm distance;
-//                                float d = Math.max(Math.abs(dx), Math.abs(dy));
+                                dy *= sqrt2;
+                                 */
+                                float dx = x - cx;
+                                float dy = (y - cy)*sqrt2;
+                                float d = (float)Math.sqrt(dx*dx+dy*dy);
+                                d = Math.max(0.0f, d - rockRadius);
                                 d = Math.min(1.0f, d); // clamp to 1
                                 // if this distance is smaller than what's already in the texture, replace it
                                 float d_old = (pix.getPixel(px, py) >>> 24)/255.0f; // red value only
@@ -967,7 +987,7 @@ public class LevelModel {
             }
         }
         Texture t = new Texture(pix);
-        t.setAnisotropicFilter(1.0f);
+//        t.setAnisotropicFilter(1.0f);
         t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         return t;
     }
@@ -1043,15 +1063,16 @@ public class LevelModel {
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
         canvas.begin(cameraTransform);
-        drawWater(USE_SHADER_FOR_WATER, time);
-        drawObjects(USE_SHADER_FOR_WATER);
+        drawWater(time);
+        drawObjects();
         canvas.end();
 
-        // reset camera transform (because health bar isn't in game units)
+        // reset camera transform for other player-centered texture (because health bar isn't in game units)
         canvas.begin();
         Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
+        drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time);
         drawReticle();
         canvas.end();
 
@@ -1075,14 +1096,14 @@ public class LevelModel {
         mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
 
         canvas.begin(mapTransform);
-        canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
+        canvas.draw(mapBackground, Color.WHITE, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
                 bounds().width/2, bounds().height/2, 0.0f,
                 bounds().width/mapBackground.getWidth(), bounds().height/mapBackground.getHeight());
         for(GameObject obj : getObjects()) {
             GameObject.ObjectType type = obj.getType();
-            if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.SHARK
-                    && type != GameObject.ObjectType.WOOD) {
-                obj.draw(canvas);
+            if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.ROCK
+                    || type == GameObject.ObjectType.GOAL) {
+                obj.draw(canvas, Color.valueOf("a08962"));
             }
         }
         canvas.end();
@@ -1091,9 +1112,9 @@ public class LevelModel {
     /**
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
-    public void drawWater(boolean useShader, float time) {
+    public void drawWater(float time) {
         Rectangle eg = extraGrid(); // TODO: invisible border: don't mess up the scaling on everything in the shader
-        if (useShader) {
+        if (USE_SHADER_FOR_WATER) {
             canvas.useShader(time);
             canvas.draw(waterTexture, Color.WHITE, eg.x,  eg.y, eg.width, eg.height);
             canvas.stopUsingShader();
@@ -1101,19 +1122,21 @@ public class LevelModel {
             canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
+    private static class renderOrderComparator implements Comparator<GameObject>{
+        public int compare(GameObject a, GameObject b) {
+            return (int)Math.signum(b.getY() - a.getY());
+        }
+    }
+
     /**
      *
-     * @param useShader
      */
-    public void drawObjects(boolean useShader){
-        raft.draw(canvas);
+    public void drawObjects(){
+        getObjects().sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
+        // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
         for(GameObject obj : getObjects()) {
-            if (!useShader || obj.getType() != GameObject.ObjectType.CURRENT) {
-                if (obj.getType() == GameObject.ObjectType.SHARK) {
-                    obj.draw(canvas);//, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
-                } else if(obj.getType() != GameObject.ObjectType.RAFT) {
-                    obj.draw(canvas);
-                }
+            if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) { // don't draw currents with the shader on
+                obj.draw(canvas);
             }
         }
     }
@@ -1132,6 +1155,16 @@ public class LevelModel {
         canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
                 greyBar.getRegionWidth(), greyBar.getRegionHeight());
         canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 26), health);
+    }
+
+    /** draw the fuel sign if the health is below a certain level */
+    private void drawFuel(float health, Vector2 player_position, float time) {
+        if (health < 0.2 && health > 0) {
+            int health_int = Math.max(1, (int) (health * 50) * (int) (health * 50));
+            if (((int) (time * 100) / health_int) % 2 == 0) {
+                canvas.draw(fuelTexture, player_position.x - 50, player_position.y);
+            }
+        }
     }
 
     private void drawReticle() {
@@ -1187,19 +1220,19 @@ public class LevelModel {
 
     /** draw a circle showing how far the player can move before they die */
     public void setLightAndCircle(Vector2 playerPosOnScreen){
-        if(light_effect == 0){ // health light and health circle
+        if(light_effect == 0){ // constant light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            light.setDistance(60);
+        }else if(light_effect == 1){ // per-level light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            light.setDistance(30);
+        }else if(light_effect == 2){ // health light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
             float d = getPlayer().getPotentialDistance() * 6;
             light.setDistance(d);
-        }else if(light_effect == 1){ // health light and constant circle
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, 380);
-            float d = getPlayer().getPotentialDistance() * 6;
-            light.setDistance(d);
-        }else if(light_effect == 2){ // constant light and health circle
-            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(40);
         }
     }
 }
