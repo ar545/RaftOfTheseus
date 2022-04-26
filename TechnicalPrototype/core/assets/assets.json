@@ -100,11 +100,11 @@
     "button_enter" : "sounds/Sfx_Button_MainMenuEnter.ogg",
     "button_click" : "sounds/Sfx_Button_MainMenuClick.ogg",
     "map_open" : "sounds/Sfx_Map_Opening.ogg",
-    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg"
+    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg",
+    "calm_ocean" : "sounds/Sfx_CalmOcean.ogg"
   },
   "music" : {
       "m": "music/Msc_Menu_RoTTheme.ogg",
-      "b1": "music/Msc_Background_CalmOcean.ogg",
       "e1": "music/Msc_Explore_Longing.ogg",
       "d1": "music/Msc_Danger_Longing.ogg",
     "e2": "music/Msc_Explore_Flow.ogg",

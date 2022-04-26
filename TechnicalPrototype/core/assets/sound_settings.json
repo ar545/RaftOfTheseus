@@ -24,6 +24,7 @@
     "button_enter" : "sounds/Sfx_Button_MainMenuEnter.ogg",
     "button_click" : "sounds/Sfx_Button_MainMenuClick.ogg",
     "map_open" : "sounds/Sfx_Map_Opening.ogg",
-    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg"
+    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg",
+    "calm_ocean" : "sounds/Sfx_CalmOcean.ogg"
   }
 }

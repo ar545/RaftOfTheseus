@@ -303,32 +303,39 @@ public class SfxController {
     }
 
     /**
-     * For looping menu music only.
-     * @param name
+     * Loop music at a given volume
+     * @param name index
+     * @param vol volume
      */
-    public void loopMusic(String name){
+    private void loopMusic(String name, float vol){
         Music m = music.get(name);
         m.play();
         m.setLooping(true);
-        m.setVolume(musicVolume);
-        music.put(name, m);
+        m.setVolume(vol);
+    }
+
+    /**
+     * Loop music at standard volume
+     * @param name
+     */
+    private void loopMusic(String name){
+        loopMusic(name, musicVolume);
     }
 
     public void startMenuMusic(){
         setMusicPreset(0);
-        loopMusic("background");
+        loopMusic("menu");
     }
 
     /**
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
     public void startLevelMusic(){
-        if (musicPresets == null) throw new NullPointerException("Constructor not called.");
         STATE = MusicState.SAFE;
-        setMusicVolume(0, "danger", "explore", "background");
-        playMusic("danger", 0);
-        playMusic("explore");
-        playMusic("background");
+        setMusicVolume(0, "danger", "explore");
+        playSFX("calm_ocean", true);
+        loopMusic("danger", 0);
+        loopMusic("explore");
         level_complete = false;
     }
 
