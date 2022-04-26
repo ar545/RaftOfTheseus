@@ -634,7 +634,7 @@ public class LevelModel {
             addSharkObject(this_shark);
         }else{
             Siren ts = new Siren(compute_temp, compute_temp, raft);
-            ts.setTexture(new TextureRegion(sirenTexture));
+            ts.setTexture(sirenTexture);
             addSirenObject(ts);
         }
     }

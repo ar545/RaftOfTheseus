@@ -125,6 +125,11 @@
     "level:5" : "levels/level5.json",
     "level:6" : "levels/level6.json",
     "level:7" : "levels/level7.json",
-    "level:8" : "levels/level8.json"
+    "level:8" : "levels/level8.json",
+    "level:9" : "levels/MapTutorial.json",
+    "level:10" : "levels/StarTutorial.json",
+    "level:11" : "levels/SirenEasy.json",
+    "level:12" : "levels/SirenMedium.json",
+    "level:13" : "levels/SirenHard.json"
   }
 }
