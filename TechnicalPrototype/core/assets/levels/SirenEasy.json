@@ -66,7 +66,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
          "height":25,
          "id":3,
-         "name":"Collectables",
+         "name":"Collectable",
          "opacity":1,
          "type":"tilelayer",
          "visible":true,
