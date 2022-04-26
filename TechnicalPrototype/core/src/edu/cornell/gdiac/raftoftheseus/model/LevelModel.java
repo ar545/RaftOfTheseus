@@ -425,9 +425,6 @@ public class LevelModel {
         // Populate game objects
         populateLevel();
 
-        final FollowFlowField<Vector2> followFlowFieldSB = new FollowFlowField<Vector2>(raft, currentField);
-        raft.setSteeringBehavior(followFlowFieldSB);
-
         // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
         if (USE_SHADER_FOR_WATER) {
@@ -995,20 +992,6 @@ public class LevelModel {
     /** Apply current effect to all applicable objects. Linear Combination Model */
     public void updateAllCurrentEffects(float dt){
         for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o, dt); } }
-    }
-
-    /** TODO: There are two ways of applying vector field, through rotational physics or though movement linear
-     * combinations. Both make use of CurrentField.java
-     * Rotational physics is achieved by rotational movement of objects in current from direction and linear movement
-     * from magnitude. Represented by act(). this require combining class Actor and class Obstacles since the two has
-     * conflicting physics.
-     * Linear combinations model does not deal with rotations and simply calculate the vector linear combinations of
-     * the nearby vectors in the field. Might have error in corner cases. I have tested it pretty thoroughly and debugged.
-     * I choose to implement the second one and we can switch to the first one if needed.  */
-    public void updatePlayerCurrentEffects(float dt){
-        raft.act(dt);
-        /* OR */
-        currentField.updateCurrentEffects(raft, dt);
     }
 
     // PROJECTILE MANIPULATION
