@@ -929,14 +929,16 @@ public class LevelModel {
      * The G, B, and A values of the texture are unused.
      */
     private Texture recalculateSurfMap() {
-        int res = 2;
+        int res = 5;
+        float sqrt2 = 1.414f; // for 3/4 perspective
         Pixmap pix = new Pixmap(res*extraCols(), res*extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(1.0f, 1.0f, 0.5f, 1.0f); // R = 1 = no terrain nearby
         pix.fill();
         for (GameObject o : getObjects()) {
-            if (o.getType() == GameObject.ObjectType.ROCK) {
-                Rock r = (Rock)o;
-                Vector2 pos = r.getPosition(); // in box2d units (3 per tile)
+            GameObject.ObjectType oType = o.getType();
+            if (oType == GameObject.ObjectType.ROCK || oType == GameObject.ObjectType.GOAL) {
+                boolean isRock = (oType == GameObject.ObjectType.ROCK);
+                Vector2 pos = o.getPosition(); // in box2d units (3 per tile)
                 pos.scl(1.0f/GRID_SIZE); // in tiles
                 pos.add(1, 1); // offset one tile
                 // rock position, in tiles:
@@ -945,25 +947,31 @@ public class LevelModel {
                 // rock center, in tile coords:
                 float cx = rx + 0.5f;
                 float cy = ry + 0.5f;
+                // rock radius
+                float rockRadius = isRock ? 0.6f : 0.97f;
 
                 // iterate through neighboring tiles (but don't go OOB)
-                for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x-1, rx+1); tx++) {
-                    for (int ty = Math.max(0, ry-1); ty <= Math.min(map_size.y-1, ry+1); ty++) {
+                for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x+1, rx+1); tx++) {
+                    for (int ty = Math.max(0, ry-1); ty <= Math.min(map_size.y+1, ry+1); ty++) {
                         // iterate through the pixels covering that tile
                         for (int px = tx*res; px < (tx+1)*res; px ++) {
                             for (int py = ty*res; py < (ty+1)*res; py ++) {
                                 // center of pixel, in tile coords
                                 float x = (px+0.5f)/res;
                                 float y = (py+0.5f)/res;
+                                /*
                                 // nearest point in the rock to (x, y)
                                 float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
                                 float ny = Math.min(Math.max(cy-0.5f, y), cy+0.5f);
                                 // distance from pixel to nearest point in rock
                                 float dx = x - nx;
                                 float dy = y - ny;
-                                dy /= 0.7f; // for 3/4 perspective
-                                float d = (float)Math.sqrt(dx*dx + dy*dy); // could be substituted with max-norm distance;
-//                                float d = Math.max(Math.abs(dx), Math.abs(dy));
+                                dy *= sqrt2;
+                                 */
+                                float dx = x - cx;
+                                float dy = (y - cy)*sqrt2;
+                                float d = (float)Math.sqrt(dx*dx+dy*dy);
+                                d = Math.max(0.0f, d - rockRadius);
                                 d = Math.min(1.0f, d); // clamp to 1
                                 // if this distance is smaller than what's already in the texture, replace it
                                 float d_old = (pix.getPixel(px, py) >>> 24)/255.0f; // red value only
@@ -978,7 +986,7 @@ public class LevelModel {
             }
         }
         Texture t = new Texture(pix);
-        t.setAnisotropicFilter(1.0f);
+//        t.setAnisotropicFilter(1.0f);
         t.setWrap(Texture.TextureWrap.ClampToEdge, Texture.TextureWrap.ClampToEdge);
         return t;
     }

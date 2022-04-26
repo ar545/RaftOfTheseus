@@ -86,7 +86,7 @@
     "damping" : 5,
     "thrust" : 0.3,
     "max speed" : 10,
-    "width" : 2.8,
+    "width" : 2.5,
     "height" : 1.3,
     "sensor size" : 1.45,
     "texture scale" : 1.5,

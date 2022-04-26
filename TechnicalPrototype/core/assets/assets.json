@@ -33,7 +33,7 @@
       "regular_rock":     "images/Rock.png",
       "sharp_rock": "images/Spiky_Rock.png",
       "treasure":     "images/Chest.png",
-      "target":     "images/Obj_Island_Handlike.png",
+      "target":     "images/Obj_Island_threequarters.png",
       "spear": "images/Obj_Spear_Aerial.png",
       "note" : "images/Obj_MusicNote.png",
       "current": "images/current_square.png",
@@ -49,7 +49,7 @@
       "star":     "images/star.png",
       "plant":     "images/plant.png",
       "fuel": "images/fuel.png",
-      "terrain": "images/terrain.png",
+      "terrain": "images/terrain_demian.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
