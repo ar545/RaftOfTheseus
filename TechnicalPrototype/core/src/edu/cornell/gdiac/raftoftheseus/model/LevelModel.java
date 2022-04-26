@@ -931,7 +931,7 @@ public class LevelModel {
     private Texture recalculateSurfMap() {
         int res = 2;
         Pixmap pix = new Pixmap(res*extraCols(), res*extraRows(),  Pixmap.Format.RGBA8888);
-        pix.setColor(1.0f, 0.5f, 0.5f, 1.0f); // R = 1 = no terrain nearby
+        pix.setColor(1.0f, 1.0f, 0.5f, 1.0f); // R = 1 = no terrain nearby
         pix.fill();
         for (GameObject o : getObjects()) {
             if (o.getType() == GameObject.ObjectType.ROCK) {
@@ -961,6 +961,7 @@ public class LevelModel {
                                 // distance from pixel to nearest point in rock
                                 float dx = x - nx;
                                 float dy = y - ny;
+                                dy /= 0.7f; // for 3/4 perspective
                                 float d = (float)Math.sqrt(dx*dx + dy*dy); // could be substituted with max-norm distance;
 //                                float d = Math.max(Math.abs(dx), Math.abs(dy));
                                 d = Math.min(1.0f, d); // clamp to 1

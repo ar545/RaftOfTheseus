@@ -340,7 +340,7 @@ void main() {
     vec3 texture_wave = get_texture_wave(world_xy);
 
     // calculate height and gradient of surf
-    vec3 surf = get_surf(world_xy);
+    vec3 surf = get_surf(coords);
     surf.yz = vec2(0.0); // ignore surf gradient for coloring
 
     // calculate height and gradient of wake

@@ -36,7 +36,7 @@ public class Rock extends GameObject {
     public Rock(Vector2 position, boolean sharp) {
         physicsObject = new BoxObstacle(WIDTH, HEIGHT);
 //        physicsObject = new WheelObstacle(RADIUS);
-        setPosition(position.add(0, HEIGHT/3));
+        setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
         physicsObject.getFilterData().maskBits = MASK_TERRAIN;
@@ -47,7 +47,7 @@ public class Rock extends GameObject {
     protected void setTextureTransform() {
         float w = WIDTH / texture.getRegionWidth();
         textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - HEIGHT)/2f);
+        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - HEIGHT)/2f + 0.5f);
     }
 
     /** @return Whether this rock is sharp or not. */
