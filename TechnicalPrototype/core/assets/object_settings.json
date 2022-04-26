@@ -56,7 +56,7 @@
   },
   "spear": {
     "speed scale" : 25.0,
-    "health cost" : -15.0,
+    "health cost" : -20.0,
     "size" : 2,
     "range fly" :  10.0,
     "range fall" : 11.0
