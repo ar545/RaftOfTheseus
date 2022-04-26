@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
@@ -42,6 +43,7 @@ public class Raft extends GameObject {
         IDLE_SF = objParams.getInt("idle starting frame");
         SHOOTING_SF = objParams.getInt("shooting starting frame");
         HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
+        FORCE_DURATION = objParams.getLong("enemy bullet duration");
     }
 
     // CONSTANTS
@@ -77,10 +79,13 @@ public class Raft extends GameObject {
     private static float MIN_SPEED = 0.01f;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
+    private final Vector2 externalForce = new Vector2();
     /** Size constants */
     private static float OBJ_WIDTH;
     private static float OBJ_HEIGHT;
     private static float SENSOR_RADIUS;
+    /** How long to keep applying */
+    private static float FORCE_DURATION;
 
     // ANIMATION
     private static float HORIZONTAL_OFFSET;
@@ -194,6 +199,25 @@ public class Raft extends GameObject {
         }
     }
 
+    private long timeStamp;
+    private long forceDuration = 500L;
+
+    /**
+     * Apply projectile force
+     * @param force the force applied
+     */
+    public void setProjectileForce(Vector2 force){
+        externalForce.set(force);
+        timeStamp = TimeUtils.millis();
+    }
+
+    public void applyProjectileForce(){
+        if(TimeUtils.timeSinceMillis(timeStamp) < forceDuration) {
+            physicsObject.getBody().applyForce(externalForce, getPosition(), true);
+        }
+    }
+
+
     /** Getter and setters for health */
     public float getHealth() { return health; }
 
@@ -217,15 +241,6 @@ public class Raft extends GameObject {
     public void applyMoveCost(float dt) {
         float L = physicsObject.getLinearVelocity().len();
         health -= MOVE_COST * L * dt; // base movement cost (no current)
-    }
-
-    /**
-     * Apply projectile force
-     * @param force the force applied
-     */
-    public void applyProjectileForce(Vector2 force){
-        forceCache.set(force);
-        physicsObject.getBody().applyForce(forceCache, getPosition(), true);
     }
 
     /** @return whether the player health is below zero */

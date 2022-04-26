@@ -767,6 +767,7 @@ public class WorldController implements Screen, ContactListener {
 
         // update forces for enemies, players, objects
         player.applyInputForce();
+        player.applyProjectileForce();
         resolveEnemies(dt);
 
         // update light choice
@@ -1052,7 +1053,7 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.ROCK){
             if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
         } else if(g.getType() == GameObject.ObjectType.NOTE){
-            r.applyProjectileForce(((Note) g).getForce());
+            r.setProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);
             g.setDestroyed(true);
         }

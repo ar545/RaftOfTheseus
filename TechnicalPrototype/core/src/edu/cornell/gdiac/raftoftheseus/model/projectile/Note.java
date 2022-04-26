@@ -51,7 +51,7 @@ public class Note extends Projectile {
 
     /** @return the float of this note that will be applied to the raft */
     public Vector2 getForce() {
-        return getLinearVelocity().cpy().nor().scl(FORCE);
+        return getLinearVelocity().cpy().nor().scl(FORCE).rotateDeg(180);
     }
 
     /**
