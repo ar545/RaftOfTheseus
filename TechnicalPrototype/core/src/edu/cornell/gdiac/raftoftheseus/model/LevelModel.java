@@ -1212,11 +1212,11 @@ public class LevelModel {
         if(light_effect == 0){ // constant light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(50);
+            light.setDistance(60);
         }else if(light_effect == 1){ // per-level light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(25);
+            light.setDistance(30);
         }else if(light_effect == 2){ // health light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
