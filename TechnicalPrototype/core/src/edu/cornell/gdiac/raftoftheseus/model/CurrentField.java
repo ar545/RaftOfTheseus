@@ -55,30 +55,35 @@ public class CurrentField implements FlowField<Vector2> {
     Vector2 temp_cpy;
     Vector2 temp_sum = new Vector2(0, 0);
 
-    public void updateCurrentEffects (GameObject o) {
+    /** Calculate the linear displacement of gameObject at its location due to current for time dt */
+    public void updateCurrentEffects (GameObject o, float dt) {
+        // Define the grid-wise location of the player
         Vector2 position = o.getPosition();
-        int column = MathUtils.clamp((int)(position.x - 0.5f*resolution) / resolution, 0, columns - 1);
-        int row = MathUtils.clamp((int)(position.y - 0.5f*resolution) / resolution, 0, rows - 1);
+        int column = MathUtils.clamp((int)(position.x - 0.5f * resolution) / resolution, 0, columns - 1);
+        int row = MathUtils.clamp((int)(position.y - 0.5f * resolution) / resolution, 0, rows - 1);
         float lx = (column + 0.5f) * resolution;
         float ly = (row + 0.5f) * resolution;
         float rx = (column + 1.5f) * resolution;
         float ry = (row + 1.5f) * resolution;
+
+        // To the velocity vector, add the scaled lower-left corner contribution
         temp_cpy = field[column][row].cpy();
         temp_sum.add(temp_cpy.scl(rx - position.x).scl(ry - position.y));
-        if(column + 1 < columns){
+        if(column + 1 < columns){ // add the scaled lower-right corner contribution
             temp_cpy = field[column + 1][row].cpy();
             temp_sum.add(temp_cpy.scl(position.x - lx).scl(ry - position.y));
         }
-        if(row + 1 < rows){
+        if(row + 1 < rows){ // add the scaled upper-left corner contribution
             temp_cpy = field[column][row + 1].cpy();
             temp_sum.add(temp_cpy.scl(rx - position.x).scl(position.y - ly));
         }
-        if((column + 1 < columns) && (row + 1 < rows)){
+        if((column + 1 < columns) && (row + 1 < rows)){ // add the scaled upper-right corner contribution
             temp_cpy = field[column + 1][row + 1].cpy();
             temp_sum.add(temp_cpy.scl(position.x - lx).scl(position.y - ly));
         }
-        temp_sum.scl(0.0024f);
-        o.setPosition(o.getPosition().add(temp_sum));
+
+        // displacement = velocity * time elapsed
+        o.setPosition(o.getPosition().add(temp_sum.scl(dt).scl(0.12f)));
         temp_sum.setZero();
     }
 }

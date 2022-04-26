@@ -39,7 +39,7 @@ public class Current extends GameObject {
     private final Direction direction;
     /** Magnitude of the current. The speed at which a current flows = factor * magnitude, in units per second
      * Current Magnitude Ratio Constant, used in current constructor calls */
-    private static final float MAGNITUDE = 5.5f;
+    private static final float MAGNITUDE = 6f;
 
     // METHODS
     public ObjectType getType() {

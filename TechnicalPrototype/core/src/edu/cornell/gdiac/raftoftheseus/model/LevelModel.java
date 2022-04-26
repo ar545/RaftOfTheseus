@@ -993,8 +993,8 @@ public class LevelModel {
     }
 
     /** Apply current effect to all applicable objects. Linear Combination Model */
-    public void updateAllCurrentEffects(){
-        for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o); } }
+    public void updateAllCurrentEffects(float dt){
+        for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o, dt); } }
     }
 
     /** TODO: There are two ways of applying vector field, through rotational physics or though movement linear
@@ -1008,7 +1008,7 @@ public class LevelModel {
     public void updatePlayerCurrentEffects(float dt){
         raft.act(dt);
         /* OR */
-        currentField.updateCurrentEffects(raft);
+        currentField.updateCurrentEffects(raft, dt);
     }
 
     // PROJECTILE MANIPULATION

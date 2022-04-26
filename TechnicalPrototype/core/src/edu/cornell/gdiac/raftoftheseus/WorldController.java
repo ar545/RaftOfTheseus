@@ -680,7 +680,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public boolean preUpdate(float dt) {
         // NEW*: Ask the level model to process current effects on objects and light effects :*NEW
-        levelModel.updateAllCurrentEffects();
+        levelModel.updateAllCurrentEffects(dt);
         levelModel.updateLights();
 
         // Read the player input
