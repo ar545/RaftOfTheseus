@@ -22,13 +22,12 @@ public enum SirenState implements State<Siren> {
             if(entity.isDoneSinging()) {
                 entity.resetAttackStamp();
                 entity.resetTimeStamp();
-                if(entity.fromFirstLocation()){
-                    entity.setMoveVector(true);
-                } else if(entity.fromSecondLocation()){
-                    entity.setMoveVector(false);
+                if(entity.isStationary()) entity.getStateMachine().changeState(IDLE);
+                else {
+                    entity.setMoveVector();
+                    entity.scaleMoveVector(false);
+                    entity.getStateMachine().changeState(TAKEOFF);
                 }
-                entity.scaleMoveVector(false);
-                entity.getStateMachine().changeState(TAKEOFF);
             }
         }
     },
@@ -53,17 +52,13 @@ public enum SirenState implements State<Siren> {
         @Override
         public void update (Siren entity){
             if(entity.nearLanding()){
+                entity.incrementWaypoint();
                 entity.getStateMachine().changeState(LANDING);
             }
         }
 
         @Override
         public void exit (Siren entity){
-            if(entity.fromFirstLocation()){
-                entity.setFromSecondLocation();
-            } else {
-                entity.setFromFirstLocation();
-            }
             entity.stopMove();
             entity.resetFrame();
         }
@@ -73,6 +68,7 @@ public enum SirenState implements State<Siren> {
         public void update(Siren entity) {
             entity.setTimeStamp();
             if(entity.stunElapsed()){
+                entity.unsetFlash();
                 entity.resetTimeStamp();
                 entity.getStateMachine().changeState(SINGING);
             }

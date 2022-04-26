@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
@@ -1009,18 +1010,25 @@ public class WorldController implements Screen, ContactListener {
             // stun shark
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
-            g.setDestroyed(true);
+            s.setDestroyed(true);
         }
 //      else if(g.getType() == GameObject.ObjectType.HYDRA) {
 //            // stun hydra
 //            SfxController.getInstance().playSFX("spear_enemy_hit");
 //            SfxController.getInstance().playSFX("shark_hit");
 //            ((Hydra) g).setHit(true);}
-        else if (g.getType() == GameObject.ObjectType.OBSTACLE) {
+        else if (g.getType() == GameObject.ObjectType.SIREN){
+            if(((Siren) g).setHit()) {
+                s.setDestroyed(true);
+                SfxController.getInstance().playSFX("spear_enemy_hit");
+            }
+        }
+        else if (g.getType() == GameObject.ObjectType.ROCK || g.getType() == GameObject.ObjectType.OBSTACLE) {
             SfxController.getInstance().playSFX("spear_break");
+            s.setDestroyed(true);
         }
         // destroy bullet
-        s.setDestroyed(true);
+
     }
 
     /**
