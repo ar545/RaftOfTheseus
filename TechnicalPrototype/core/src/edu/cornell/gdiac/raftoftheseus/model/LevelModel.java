@@ -1095,14 +1095,14 @@ public class LevelModel {
         mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
 
         canvas.begin(mapTransform);
-        canvas.draw(mapBackground, Color.GRAY, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
+        canvas.draw(mapBackground, Color.WHITE, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
                 bounds().width/2, bounds().height/2, 0.0f,
                 bounds().width/mapBackground.getWidth(), bounds().height/mapBackground.getHeight());
         for(GameObject obj : getObjects()) {
             GameObject.ObjectType type = obj.getType();
-            if (type != GameObject.ObjectType.TREASURE && type != GameObject.ObjectType.SHARK
-                    && type != GameObject.ObjectType.WOOD) {
-                obj.draw(canvas);
+            if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.ROCK
+                    || type == GameObject.ObjectType.GOAL) {
+                obj.draw(canvas, Color.valueOf("a08962"));
             }
         }
         canvas.end();
