@@ -96,6 +96,7 @@ public class LevelModel {
     private static final int LAYER_COL = 1;
     /** layer of siren */
     private static final int LAYER_SIREN = 2;
+    private static final int TERRAIN_TYPES = 13;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -172,8 +173,8 @@ public class LevelModel {
     private TextureRegion noteTexture;
     /** Texture for map background */
     protected Texture mapBackground;
-//    /** Texture for game background */
-//    protected Texture gameBackground;
+    /** an array of texture region representing the terrain */
+    protected TextureRegion[] terrain;
     /** Texture for water */
     protected Texture waterTexture;
     /** Texture for wall */ // TODO: no longer needed
@@ -616,11 +617,10 @@ public class LevelModel {
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Rock this_rock = new Rock(compute_temp, (tile_int == -1)); // TODO: new land texture if tile_int != 0
-        if (tile_int == -1)
-            this_rock.setTexture(sharpRockTexture);
-        else
-            this_rock.setTexture(regularRockTexture);
-        if(tile_int == -2){this_rock.setTexture(plantTexture);}
+        if (tile_int == -2) { this_rock.setTexture(plantTexture); }
+        if (tile_int == -1) { this_rock.setTexture(sharpRockTexture); }
+        else if (tile_int == 0) { this_rock.setTexture(regularRockTexture); }
+        else { this_rock.setTexture(terrain[tile_int - 1]); }
         obstacles[col][row] = this_rock;
         addObject(this_rock);
     }
@@ -795,7 +795,6 @@ public class LevelModel {
         spearTexture = new TextureRegion(directory.getEntry("spear", Texture.class));
         noteTexture = new TextureRegion(directory.getEntry("note", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
-//        gameBackground = directory.getEntry("background", Texture.class);
 //        blueTexture = directory.getEntry("blue_texture", Texture.class);
         waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
@@ -804,6 +803,15 @@ public class LevelModel {
         lightSettings = directory.getEntry("lights", JsonValue.class);
         canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
+        gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
+    }
+
+    private void gatherTerrainAssets(Texture terrainTexture) {
+        terrain = new TextureRegion[TERRAIN_TYPES];
+        int width = terrainTexture.getWidth() / TERRAIN_TYPES;
+        for(int i = 0; i < TERRAIN_TYPES; i++){
+            terrain[i] = new TextureRegion(terrainTexture, width * i, 0, width, terrainTexture.getHeight());
+        }
     }
 
     /**
@@ -1200,19 +1208,19 @@ public class LevelModel {
 
     /** draw a circle showing how far the player can move before they die */
     public void setLightAndCircle(Vector2 playerPosOnScreen){
-        if(light_effect == 0){ // health light and health circle
+        if(light_effect == 0){ // constant light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            light.setDistance(50);
+        }else if(light_effect == 1){ // per-level light and health circle
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            light.setDistance(25);
+        }else if(light_effect == 2){ // health light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
             float d = getPlayer().getPotentialDistance() * 6;
             light.setDistance(d);
-        }else if(light_effect == 1){ // health light and constant circle
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, 380);
-            float d = getPlayer().getPotentialDistance() * 6;
-            light.setDistance(d);
-        }else if(light_effect == 2){ // constant light and health circle
-            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(40);
         }
     }
 }
