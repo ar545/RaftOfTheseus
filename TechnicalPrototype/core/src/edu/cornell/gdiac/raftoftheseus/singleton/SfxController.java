@@ -28,7 +28,7 @@ public class SfxController {
     /** Speed taken to transition music in miliseconds. */
     private float fadeOutRate = 0.02f;
     /** Current preset being used for music. */
-    private  int musicPreset;
+    private  int musicPreset = -1;
     /** Structure to hold all music presets for future reference. */
     private ArrayMap<Integer, JsonValue> musicPresets;
     /** ArrayMap to link sfx names to Sound instances. */
@@ -243,7 +243,6 @@ public class SfxController {
     /**
      * Stop a sound effect
      * @param name The name of the sound.
-     * @param id The id of the instance
      */
     public void stopSFX(String name){
         sfx.get(name).stop();
@@ -306,13 +305,18 @@ public class SfxController {
     /**
      * For looping menu music only.
      * @param name
-     * @param m
      */
-    public void loopMusic(String name, Music m){
+    public void loopMusic(String name){
+        Music m = music.get(name);
         m.play();
         m.setLooping(true);
         m.setVolume(musicVolume);
         music.put(name, m);
+    }
+
+    public void startMenuMusic(){
+        setMusicPreset(0);
+        loopMusic("background");
     }
 
     /**

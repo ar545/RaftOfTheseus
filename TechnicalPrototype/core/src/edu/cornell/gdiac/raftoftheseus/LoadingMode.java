@@ -241,9 +241,6 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 			controller.addListener( this );
 		}
 
-		// Start music?
-		SfxController.getInstance().loopMusic("menu", internal.getEntry("menu", Music.class));
-
 		// Start loading the real assets
 		assets = new AssetDirectory( assetsFile );
 		assets.loadAssets();

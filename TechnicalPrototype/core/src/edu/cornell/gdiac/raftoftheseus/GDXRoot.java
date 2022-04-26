@@ -21,6 +21,7 @@ package edu.cornell.gdiac.raftoftheseus;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
@@ -147,6 +148,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			saveData = loading.getSaveGameData();
 			setConstants();
 			populateScreens();
+			SfxController.getInstance().startMenuMusic();
 			setMenuScreen(false);
 			menu.setSaveData(saveData);
 			loading.dispose();
