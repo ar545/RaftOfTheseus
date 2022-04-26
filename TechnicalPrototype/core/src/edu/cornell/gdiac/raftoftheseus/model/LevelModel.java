@@ -810,7 +810,7 @@ public class LevelModel {
         terrain = new TextureRegion[TERRAIN_TYPES];
         int width = terrainTexture.getWidth() / TERRAIN_TYPES;
         for(int i = 0; i < TERRAIN_TYPES; i++){
-            terrain[i] = new TextureRegion(terrainTexture, width * i, 0, width, terrainTexture.getHeight());
+            terrain[i] = new TextureRegion(terrainTexture, width * i + 1, 0, width - 2, terrainTexture.getHeight());
         }
     }
 
