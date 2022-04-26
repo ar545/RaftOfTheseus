@@ -50,6 +50,9 @@
       "plant":     "images/plant.png",
       "fuel": "images/fuel.png",
       "terrain": "images/terrain_demian.png",
+      "hint_movement": "images/hint_move.png",
+      "hint_attack": "images/hint_fire.png",
+      "hint_map": "images/hint_map.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
