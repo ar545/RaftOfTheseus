@@ -17,6 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.model.UICreator;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -89,6 +90,7 @@ public class SettingsMode implements Screen {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
+        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
     }
 
     /**
@@ -106,11 +108,7 @@ public class SettingsMode implements Screen {
         sliderBar = directory.getEntry("slider_bar", Texture.class);
     }
 
-    /**
-     * Sets the ScreenListener for this mode
-     *
-     * The ScreenListener will respond to request to quit.
-     */
+    /** Sets the ScreenListener for this mode, the ScreenListener will respond to request to quit. */
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
     }
@@ -118,26 +116,27 @@ public class SettingsMode implements Screen {
     /** Sets exit code to menu */
     public void setExitMenu(int value) { this.EXIT_MENU = value; }
 
-    /**
-     * Sets the previous mode value
-     * @param previousMode
-     */
+    /** @param previousMode the previous mode value to be set */
     public void setPreviousMode(int previousMode) { this.previousMode = previousMode; }
 
-    /**
-     * Called when this screen becomes the current screen.
-     */
+    /** Called when this screen becomes the current screen. */
     public void show() {
         active = true;
         stage = new Stage();
-        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         table = new Table(skin);
         buildSettings();
     }
 
-    /**
-     * Constructs the view
-     */
+    /** Called when this screen is no longer the current screen for a Game. */
+    public void hide() {
+        active = false;
+    }
+
+    public void initGUI(){
+
+    }
+
+    /** Constructs the view. */
     private void buildSettings() {
         Gdx.input.setInputProcessor(stage);
 
@@ -150,49 +149,21 @@ public class SettingsMode implements Screen {
 
         Table part1 = new Table();
         part1.align(Align.left);
-        TextButton menuButton = new TextButton("BACK", skin);
-        menuButton.getLabel().setFontScale(0.4f);
-        menuButton.getLabel().setColor(Color.GOLD);
-        menuButton.addListener(new ClickListener(){
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                super.enter(event, x, y, pointer, fromActor);
-                menuButton.getLabel().setColor(Color.GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                menuButton.getLabel().setColor(Color.GOLD);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SfxController.getInstance().playSFX("button_click");
-                exitPressed = true;
-            }
-        });
+        TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.GOLD);
+        menuButton.addListener(UICreator.createListener(menuButton, Color.GRAY, Color.GOLD, this::setExitPressed));
         part1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
         table.add(part1);
         table.row();
 
         Table part2 = new Table();
-        Label titleLabel = new Label("SETTINGS", skin);
-        titleLabel.setFontScale(0.6f);
-        part2.add(titleLabel).expandX().align(Align.center);
+        part2.add(UICreator.createLabel("SETTINGS", skin, 0.6f)).expandX().align(Align.center);
         table.add(part2).padTop(-50);
         table.row();
 
         Table part3 = new Table();
-        Label volumeLabel = new Label("VOLUME", skin);
-        volumeLabel.setFontScale(0.5f);
-        part3.add(volumeLabel).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("VOLUME", skin, 0.5f)).padLeft(80).expandX().align(Align.left);
         part3.row();
-
-        Label musicLabel = new Label("MUSIC", skin);
-        musicLabel.setFontScale(0.4f);
-        part3.add(musicLabel).padLeft(100).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("MUSIC", skin, 0.4f)).padLeft(100).expandX().align(Align.left);
 
         Drawable sliderKnobDrawable = new TextureRegionDrawable(new TextureRegion(sliderKnob));
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
@@ -262,39 +233,23 @@ public class SettingsMode implements Screen {
         table.row();
     }
 
-    /**
-     * Called when this screen is no longer the current screen for a Game.
-     */
-    public void hide() {
-        active = false;
-    }
-
-    /**
-     * Draw the status of this player mode.
-     */
+    /** Draw the status of this player mode. */
     private void draw() {
         stage.act();
         stage.draw();
     }
 
-    /**
-     * Called when the Screen should render itself.
-     */
+    /** Called when the Screen should render itself. */
     public void render(float delta) {
         Gdx.input.setInputProcessor(stage);
         if (active) {
             draw();
             if (exitPressed || InputController.getInstance().didExit()) {
-                resetPressedState();
+                resetExitPressed();
                 listener.exitScreen(this, previousMode);
             }
         }
     }
-
-    /**
-     * Called when this screen should release all resources.
-     */
-    public void dispose() { }
 
     /** Called when the Screen is resized.
      *
@@ -308,22 +263,15 @@ public class SettingsMode implements Screen {
         heightY = height;
     }
 
-    /**
-     * Called when the Screen is paused.
-     */
-    public void pause() {
-        // auto-generated
-    }
-
-    /**
-     * Called when the Screen is resumed from a paused state.
-     */
-    public void resume() {
-        // auto-generated
-    }
-
     /** Reset the settings menu and exit pressed state */
-    private void resetPressedState() {
-        exitPressed = false;
-    }
+    private void setExitPressed() { exitPressed = true; }
+    private void resetExitPressed() { exitPressed = false; }
+
+    /** Called when the Screen is paused. */
+    public void pause() {}
+    /** Called when the Screen is resumed from a paused state. */
+    public void resume() {}
+    /** Called when this screen should release all resources. */
+    public void dispose() { }
+
 }
