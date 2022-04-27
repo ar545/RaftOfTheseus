@@ -10,8 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Queue;
 
-import static edu.cornell.gdiac.raftoftheseus.model.Shark.ENEMY_CHASE_SPEED;
-import static edu.cornell.gdiac.raftoftheseus.model.Shark.ENEMY_ENRAGE_CHASE_SPEED;
+import static edu.cornell.gdiac.raftoftheseus.model.Shark.*;
 import static edu.cornell.gdiac.raftoftheseus.model.Shark.enemyState.*;
 
 
@@ -76,6 +75,8 @@ public class SharkController {
 
     private Raft raft;
 
+    private int[] target;
+
     private LevelModel level;
 
     private Shark.enemyState state;
@@ -126,12 +127,25 @@ public class SharkController {
         state = ENRAGE;
     }
 
+    private void wander(){
+        state = WANDER;
+        int[] tar = null;
+        for (int i = 0; i<10; i++){
+            int[] r = getRandomLoc();
+            if (isSafe(r)) {
+                tar = r;
+            }
+        }
+        target = tar;
+    }
+
 
     private void changeStateIfApplicable() {
         int p = rand.nextInt(30000);
         switch (state) {
             case SPAWN:
-                state = WANDER;
+                wander();
+
                 break;
             case WANDER:
                 if (p <= ticks && dist() <= ENRAGE_CHASE_DIST){
@@ -146,11 +160,11 @@ public class SharkController {
                     enrage();
                 }
                 else if (dist() > CHASE_DIST)
-                    state = WANDER;
+                    wander();
                 break;
             case ENRAGE:
                 if (ticks >= enrage_timestamp + ENRAGE_DURATION || dist() > ENRAGE_CHASE_DIST){
-                    state = WANDER;
+                    wander();
                     shark.setEnraged(false);
                 }
                 break;
@@ -255,7 +269,11 @@ public class SharkController {
 //            }
             if (current.position[0] == goalCol && current.position[1] == goalRow){
 //                System.out.println("found");
+//                System.out.println(Arrays.toString(current.moveDirection));
                 if (current.moveDirection == null){
+                    if(state == WANDER){
+                        wander();
+                    }
                     return new Vector2(raft.getPosition().sub(shark.getPosition()).nor());
                 }
                 return new Vector2(current.moveDirection[0], current.moveDirection[1]);
@@ -288,6 +306,13 @@ public class SharkController {
         return djikstra(level.screenToBoard(raft.getX()), level.screenToBoard(raft.getY()));
     }
 
+    private int[] getRandomLoc(){
+        Random r = new Random();
+        int col = r.nextInt(level.cols());
+        int row = r.nextInt(level.rows());
+        return new int[]{col,row};
+    }
+
     public void updateShark() {
         ticks++;
         if ((id + ticks) % 10 == 0) {
@@ -305,30 +330,14 @@ public class SharkController {
                 // find nearest treasure
                 break;
             case WANDER:
-                // every once in a while pick a new random direction
-//                if (ticks % 60 == 0) {
-//                    int p = rand.nextInt(4);
-//                    // move randomly in one of the four directions
-//                    if (p == 0) {
-//                        moveVector.set(0, 1);
-//                    } else if (p == 1) {
-//                        moveVector.set(0, -1);
-//                    } else if (p == 2) {
-//                        moveVector.set(-1, 0);
-//                    } else {
-//                        moveVector.set(1, 0);
-//                    }
-//                    calculateImpulse(ENEMY_WANDER_SPEED, 0.9f);
-//                }
-//                int x = rand.nextInt(PROTECT_RANGE * 2) - PROTECT_RANGE;
-//                int y = rand.nextInt(PROTECT_RANGE * 2) - PROTECT_RANGE;
-//                if (closestTreasure == null) {
-//                    moveVector.set(pathFind(-1, -1, false));
-//                }
-//                else{
-//                    moveVector.set(pathFind(closestTreasure));
-//                }
-//                 calculateImpulse(ENEMY_WANDER_SPEED, 0);
+                // refactor this into the changing state update some "wandering target" or something var
+//                System.out.println(Arrays.toString(target));
+//                System.out.println(level.obstacles()[target[0]][target[1]].getType());
+                if (target != null){
+                    shark.moveVector.set(djikstra(target[0], target[1]));
+                    shark.calculateImpulse(ENEMY_WANDER_SPEED, 0);
+                }
+//                System.out.println(shark.moveVector);
                 break;
             case CHASE:
                 // find a normal vector pointing to the target player
