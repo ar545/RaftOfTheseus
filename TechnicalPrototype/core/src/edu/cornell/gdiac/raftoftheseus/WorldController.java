@@ -18,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.Timer;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
@@ -234,7 +235,7 @@ public class WorldController implements Screen, ContactListener {
         // Draw the level
         levelModel.updateCameraTransform();
         levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f);
-        levelModel.renderLights(); // New Added: Draw the light effects!
+        if(level_id > 5){ levelModel.renderLights(); } // New Added: Draw the light effects! if level is 4 up.
 
         // draw stars
         drawStar(levelModel.getPlayer().getStar());
@@ -1050,11 +1051,18 @@ public class WorldController implements Screen, ContactListener {
             r.addHealth(((Wood) g).getWood());
             SfxController.getInstance().playSFX("wood_pickup");
             g.setDestroyed(true);
-        } else if(g.getType() == GameObject.ObjectType.SHARK){
+        } else if(g.getType() == GameObject.ObjectType.SHARK || g.getType() == GameObject.ObjectType.SIREN ){
             // update player health
             r.addHealth(Shark.ENEMY_DAMAGE);
             SfxController.getInstance().playSFX("raft_damage");
             g.setDestroyed(true);
+            r.setDamaged(true);
+            Timer.schedule(new Timer.Task(){
+                @Override
+                public void run() {
+                    r.setDamaged(false);
+                }
+            }, .1f, 1, 1);
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             r.addStar();

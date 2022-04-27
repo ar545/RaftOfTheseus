@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus.model;
 
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.btree.Task;
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -22,7 +23,6 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
-
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -197,6 +197,12 @@ public class LevelModel {
     private static boolean USE_SHADER_FOR_WATER = true;
 
     private GameObject[][] obstacles;
+
+    /**
+     * The number of ticks since we beginning the level
+     */
+
+    private long ticks;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** Constructor call for this singleton class */
@@ -1138,6 +1144,7 @@ public class LevelModel {
         getObjects().sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
         // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
         for(GameObject obj : getObjects()) {
+
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) { // don't draw currents with the shader on
                 obj.draw(canvas);
             }
