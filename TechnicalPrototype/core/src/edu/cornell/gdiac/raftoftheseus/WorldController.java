@@ -1187,6 +1187,8 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
+        // check if load the same level, if not, reset lerp vector
+        boolean same_level = level_int == level_id;
         level_id = level_int;
         JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
         System.out.println("Loaded level "+level_int);
@@ -1237,6 +1239,9 @@ public class WorldController implements Screen, ContactListener {
             shaderColors[3*i+2] = c.b;
         }
         canvas.setShaderColors(shaderColors);
+
+        // reset lerp if level changed
+        if(!same_level) {levelModel.resetLerp();}
     }
 
     /**
