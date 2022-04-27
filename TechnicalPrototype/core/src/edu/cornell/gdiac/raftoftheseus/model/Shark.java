@@ -27,6 +27,8 @@ public class Shark extends GameObject {
 
         this.targetRaft = targetRaft;
         this.level = level;
+
+        health = 2;
     }
 
     public ObjectType getType() {
@@ -105,10 +107,16 @@ public class Shark extends GameObject {
 
     private HashSet<String> visited;
 
+    /** How much health this shark has remaining. */
+    private int health;
 
-    public Shark() {
-        super();
+    public void takeDamage() {
+        health -= 1;
+        if (health <= 0)
+            setDestroyed(true);
+        setEnraged(false);
     }
+
 
     public boolean isEnraged(){
         return enraged;

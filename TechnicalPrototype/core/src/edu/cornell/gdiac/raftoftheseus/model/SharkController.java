@@ -63,7 +63,7 @@ public class SharkController {
     /**
      * How close a target must be for us to chase it while enraged
      */
-    private static final int ENRAGE_CHASE_DIST = 18;
+    private static final int ENRAGE_CHASE_DIST = 12;
 
     /**
      * How many ticks to enrage for
@@ -128,13 +128,20 @@ public class SharkController {
 
 
     private void changeStateIfApplicable() {
-        int p = rand.nextInt(30000);
+//        int p = rand.nextInt(30000);
+        int p = 0;
+        // change state when shark gets hit by a spear (bad way to do this, but it's the only possible way without refactoring the architecture.)
+        if (state == ENRAGE && !shark.isEnraged()) {
+            state = WANDER;
+            enrage_timestamp = ticks;
+        }
+        //
         switch (state) {
             case SPAWN:
                 state = WANDER;
                 break;
             case WANDER:
-                if (p <= ticks && dist() <= ENRAGE_CHASE_DIST){
+                if (p <= ticks && dist() <= ENRAGE_CHASE_DIST && ticks >= enrage_timestamp + ENRAGE_DURATION){
                     enrage();
                 }
                 else if (dist() <= CHASE_DIST)
@@ -142,7 +149,7 @@ public class SharkController {
 
                 break;
             case CHASE:
-                if (p <= ticks && dist() <= ENRAGE_CHASE_DIST){
+                if (p <= ticks && dist() <= ENRAGE_CHASE_DIST && ticks >= enrage_timestamp + ENRAGE_DURATION){
                     enrage();
                 }
                 else if (dist() > CHASE_DIST)
@@ -152,6 +159,7 @@ public class SharkController {
                 if (ticks >= enrage_timestamp + ENRAGE_DURATION || dist() > ENRAGE_CHASE_DIST){
                     state = WANDER;
                     shark.setEnraged(false);
+                    enrage_timestamp = ticks;
                 }
                 break;
             default:

@@ -266,8 +266,8 @@ public class WorldController implements Screen, ContactListener {
     }
 
     private float hintTimer = 0f;
-    private float fadeTimeStart = 3f;
-    private float fadeTimeEnd = 4f;
+    private float fadeTimeStart = 8f;
+    private float fadeTimeEnd = 10f;
     private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
     private boolean blockHint = false;
 
@@ -1042,7 +1042,7 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
             s.setDestroyed(true);
-            g.setDestroyed(true);
+            ((Shark)g).takeDamage();
         }
 //      else if(g.getType() == GameObject.ObjectType.HYDRA) {
 //            // stun hydra

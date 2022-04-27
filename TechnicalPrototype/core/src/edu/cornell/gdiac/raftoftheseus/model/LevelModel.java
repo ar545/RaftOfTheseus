@@ -1100,9 +1100,13 @@ public class LevelModel {
         mapTransform.setToTranslation(translation_1).preScale(scale, scale).preTranslate(translation_2);
 
         canvas.begin(mapTransform);
-        canvas.draw(mapBackground, Color.WHITE, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
+//        canvas.draw(mapBackground, Color.WHITE, mapBackground.getWidth() / 2, mapBackground.getHeight() / 2,
+//                bounds().width/2, bounds().height/2, 0.0f,
+//                bounds().width/mapBackground.getWidth(), bounds().height/mapBackground.getHeight());
+        // hardcoded values for the new map texture (to avoid things appearing "off the map"
+        canvas.draw(mapBackground, Color.WHITE, 382, 255,
                 bounds().width/2, bounds().height/2, 0.0f,
-                bounds().width/mapBackground.getWidth(), bounds().height/mapBackground.getHeight());
+                bounds().width/mapBackground.getWidth()*1.349f, bounds().height/mapBackground.getHeight()*1.149f);
         for(GameObject obj : getObjects()) {
             GameObject.ObjectType type = obj.getType();
             if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.ROCK
@@ -1132,6 +1136,10 @@ public class LevelModel {
                 return 1;
             } else if (b.getType() == GameObject.ObjectType.SPEAR && a.getType() == GameObject.ObjectType.RAFT){
                 return -1;
+            } else if (a.getType() == GameObject.ObjectType.SIREN || a.getType() == GameObject.ObjectType.NOTE){
+                return 1;
+            } else if (b.getType() == GameObject.ObjectType.SIREN || b.getType() == GameObject.ObjectType.NOTE){
+                return -1;
             }
             return (int) Math.signum(b.getY() - a.getY());
         }
@@ -1144,7 +1152,6 @@ public class LevelModel {
         getObjects().sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
         // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
         for(GameObject obj : getObjects()) {
-
             if (!USE_SHADER_FOR_WATER || obj.getType() != GameObject.ObjectType.CURRENT) { // don't draw currents with the shader on
                 obj.draw(canvas);
             }
