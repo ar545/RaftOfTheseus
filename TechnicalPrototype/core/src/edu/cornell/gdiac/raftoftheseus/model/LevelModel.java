@@ -1130,6 +1130,8 @@ public class LevelModel {
             canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
+    public void resetLerp() {  }
+
     private static class renderOrderComparator implements Comparator<GameObject>{
         public int compare(GameObject a, GameObject b) {
             if(a.getType() == GameObject.ObjectType.SPEAR && b.getType() == GameObject.ObjectType.RAFT){
