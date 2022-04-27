@@ -275,7 +275,11 @@ public class Siren extends GameObject {
     }
 
     /** Get how much damage is done to the player. */
-    public Vector2 getTargetDirection() { return targetRaft.getPosition().cpy().sub(getPosition()).nor(); }
+    public Vector2 getTargetDirection() {
+        start.set(getPosition());
+        finish.set(targetRaft.getPosition().add(targetRaft.getLinearVelocity()));
+        return finish.cpy().sub(start).nor();
+    }
 
     // Stunned
     public boolean setHit(){

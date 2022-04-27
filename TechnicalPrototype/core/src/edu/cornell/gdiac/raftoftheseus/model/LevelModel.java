@@ -537,7 +537,12 @@ public class LevelModel {
     /** Add siren to this game world */
     private void addSiren(Vector2 startGridPos, Vector2 endGridPos) {
         computeSirenPosition(startGridPos.x, endGridPos.x, startGridPos.y, endGridPos.y);
-        Siren this_siren = new Siren(compute_temp, siren_compute_temp, raft);
+        Siren this_siren;
+        if(compute_temp.equals(siren_compute_temp)){
+            this_siren = new Siren(compute_temp, raft);
+        } else {
+            this_siren = new Siren(compute_temp, siren_compute_temp, raft);
+        }
         this_siren.setTexture(sirenTexture);
         addSirenObject(this_siren);
     }
@@ -632,11 +637,12 @@ public class LevelModel {
             Shark this_shark = new Shark(compute_temp, null, this);
             this_shark.setTexture(enemyTexture);
             addSharkObject(this_shark);
-        }else{
-            Siren ts = new Siren(compute_temp, compute_temp, raft);
-            ts.setTexture(sirenTexture);
-            addSirenObject(ts);
         }
+//        else{
+//            Siren ts = new Siren(compute_temp, compute_temp, raft);
+//            ts.setTexture(sirenTexture);
+//            addSirenObject(ts);
+//        }
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
