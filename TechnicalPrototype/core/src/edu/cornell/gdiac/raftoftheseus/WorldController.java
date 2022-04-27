@@ -1048,7 +1048,7 @@ public class WorldController implements Screen, ContactListener {
             r.addHealth(((Wood) g).getWood());
             SfxController.getInstance().playSFX("wood_pickup");
             g.setDestroyed(true);
-        } else if(g.getType() == GameObject.ObjectType.SHARK){
+        } else if(g.getType() == GameObject.ObjectType.SHARK || g.getType() == GameObject.ObjectType.SIREN ){
             // update player health
             r.addHealth(Shark.ENEMY_DAMAGE);
             SfxController.getInstance().playSFX("raft_damage");
