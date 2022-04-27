@@ -98,6 +98,7 @@ public class LevelModel {
     /** layer of siren */
     private static final int LAYER_SIREN = 2;
     private static final int TERRAIN_TYPES = 13;
+    private static final float LERP_FACTOR = 0.05f;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -144,6 +145,8 @@ public class LevelModel {
     protected OrthographicCamera raycamera;
     /** what light effect to show the player */
     private int light_effect = 0;
+    /** the lerp-camera that allow camera retracing */
+    Vector2 lerpCamera = new Vector2(0, 0);
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -1215,10 +1218,11 @@ public class LevelModel {
      * Update the "cameraTransform" with an affine transformation that texture will go through */
     public void updateCameraTransform() {
         Affine2 a = new Affine2().setToScaling(PIXELS_PER_UNIT, PIXELS_PER_UNIT);
+        lerpCamera.scl(1 - LERP_FACTOR)
+                .add(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT).scl(LERP_FACTOR));
 
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT));
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2).sub(lerpCamera);
 
         // "Capped Camera": bound x and y within walls
         Rectangle wallBounds = wallBounds();
