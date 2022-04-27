@@ -28,7 +28,7 @@ public class SfxController {
     /** Speed taken to transition music in miliseconds. */
     private float fadeOutRate = 0.02f;
     /** Current preset being used for music. */
-    private  int musicPreset;
+    private  int musicPreset = -1;
     /** Structure to hold all music presets for future reference. */
     private ArrayMap<Integer, JsonValue> musicPresets;
     /** ArrayMap to link sfx names to Sound instances. */
@@ -243,7 +243,6 @@ public class SfxController {
     /**
      * Stop a sound effect
      * @param name The name of the sound.
-     * @param id The id of the instance
      */
     public void stopSFX(String name){
         sfx.get(name).stop();
@@ -304,27 +303,39 @@ public class SfxController {
     }
 
     /**
-     * For looping menu music only.
-     * @param name
-     * @param m
+     * Loop music at a given volume
+     * @param name index
+     * @param vol volume
      */
-    public void loopMusic(String name, Music m){
+    private void loopMusic(String name, float vol){
+        Music m = music.get(name);
         m.play();
         m.setLooping(true);
-        m.setVolume(musicVolume);
-        music.put(name, m);
+        m.setVolume(vol);
+    }
+
+    /**
+     * Loop music at standard volume
+     * @param name
+     */
+    private void loopMusic(String name){
+        loopMusic(name, musicVolume);
+    }
+
+    public void startMenuMusic(){
+        setMusicPreset(0);
+        loopMusic("menu");
     }
 
     /**
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
     public void startLevelMusic(){
-        if (musicPresets == null) throw new NullPointerException("Constructor not called.");
         STATE = MusicState.SAFE;
-        setMusicVolume(0, "danger", "explore", "background");
-        playMusic("danger", 0);
-        playMusic("explore");
-        playMusic("background");
+        setMusicVolume(0, "danger", "explore");
+        playSFX("calm_ocean", true);
+        loopMusic("danger", 0);
+        loopMusic("explore");
         level_complete = false;
     }
 

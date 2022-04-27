@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
@@ -64,6 +65,8 @@ public class WorldController implements Screen, ContactListener {
     // CONSTANTS
     /** How many frames after winning/losing do we continue? */
     public static int EXIT_COUNT = 1000;
+    /** Number of tutorial levels */
+    public static int TUTORIAL_COUNT = 5;
     /** The amount of time for a physics engine step. */
     public static float WORLD_STEP;
     /** Number of velocity iterations for the constraint solvers */
@@ -92,8 +95,12 @@ public class WorldController implements Screen, ContactListener {
     // TEXTURE
     /** The texture for the star */
     protected TextureRegion star;
-    /** The texture for the exit condition */
-    protected Texture bullet_texture;
+    /** The hint image for movement and exit/reset controls */
+    protected TextureRegion hintMovement;
+    /** The hint image for firing controls */
+    protected TextureRegion hintAttack;
+    /** The hint image for map controls */
+    protected TextureRegion hintMap;
     /** Texture for pause screen */
     protected Texture pauseBackground;
     /** Texture for failed level */
@@ -235,6 +242,9 @@ public class WorldController implements Screen, ContactListener {
         // draw stars
         drawStar(levelModel.getPlayer().getStar());
 
+        // draw control hints
+        drawControlHints();
+
         // draw interfaces
         if (debug) {
             levelModel.drawDebug();
@@ -254,6 +264,28 @@ public class WorldController implements Screen, ContactListener {
             }
             SfxController.getInstance().fadeMusic();
             drawTransition();
+        }
+    }
+
+    private void drawControlHints() {
+        TextureRegion hint = null;
+        switch(level_id) {
+            case(0):
+                hint = hintMovement;
+                break;
+            case(2):
+                hint = hintMap;
+                break;
+            case(4):
+                hint = hintAttack;
+                break;
+            default:
+                // draw nothing
+        }
+        if (hint != null) {
+            canvas.begin();
+            canvas.draw(hint, Color.WHITE, hint.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hint.getRegionWidth(), hint.getRegionHeight());
+            canvas.end();
         }
     }
 
@@ -320,7 +352,7 @@ public class WorldController implements Screen, ContactListener {
             table.setBackground(skin.getDrawable("pause_background"));
 
             TextButton resumeButton = new TextButton("RESUME", skin);
-            resumeButton.getLabel().setFontScale(0.35f);
+            resumeButton.getLabel().setFontScale(0.5f);
             resumeButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -346,7 +378,7 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton restartButton = new TextButton("RESTART", skin);
-            restartButton.getLabel().setFontScale(0.35f);
+            restartButton.getLabel().setFontScale(0.5f);
             restartButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -372,7 +404,7 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton settingsButton = new TextButton("SETTINGS", skin);
-            settingsButton.getLabel().setFontScale(0.35f);
+            settingsButton.getLabel().setFontScale(0.5f);
             table.add(settingsButton);
             settingsButton.addListener(new ClickListener() {
                 @Override
@@ -399,7 +431,7 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.35f);
+            exitButton.getLabel().setFontScale(0.5f);
             exitButton.getLabel().setColor(Color.GOLD);
             exitButton.addListener(new ClickListener() {
                 @Override
@@ -432,7 +464,7 @@ public class WorldController implements Screen, ContactListener {
         if (!transitionBuilt) {
             transitionBuilt = true;
             if (complete && !failed) {
-                buildTransitionScreen(successBackgrounds[Math.min(playerScore, successBackgrounds.length-1)], false);
+                buildTransitionScreen(successBackgrounds[level_id < TUTORIAL_COUNT ? successBackgrounds.length - 1 : playerScore], false);
             } else {
                 buildTransitionScreen(failedBackground, true);
             }
@@ -453,7 +485,7 @@ public class WorldController implements Screen, ContactListener {
 
         Table part1 = new Table();
         TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", skin);
-        mainButton.getLabel().setFontScale(0.4f);
+        mainButton.getLabel().setFontScale(0.6f);
         float buttonWidth =  mainButton.getWidth();
         mainButton.addListener(new ClickListener() {
             @Override
@@ -488,7 +520,7 @@ public class WorldController implements Screen, ContactListener {
         part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
             TextButton replayButton = new TextButton("REPLAY", skin);
-            replayButton.getLabel().setFontScale(0.35f);
+            replayButton.getLabel().setFontScale(0.5f);
             replayButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -514,7 +546,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         TextButton settingsButton = new TextButton("SETTINGS", skin);
-        settingsButton.getLabel().setFontScale(0.35f);
+        settingsButton.getLabel().setFontScale(0.5f);
         settingsButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -539,7 +571,7 @@ public class WorldController implements Screen, ContactListener {
         part2.add(settingsButton).expandX();
 
         TextButton exitButton = new TextButton("EXIT", skin);
-        exitButton.getLabel().setFontScale(0.35f);
+        exitButton.getLabel().setFontScale(0.5f);
         exitButton.getLabel().setColor(Color.GOLD);
         exitButton.addListener(new ClickListener() {
             @Override
@@ -592,20 +624,19 @@ public class WorldController implements Screen, ContactListener {
      * @param directory	Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
-        // Allocate the tiles
+        // UI things
         star = new TextureRegion(directory.getEntry( "star", Texture.class ));
         pauseBackground = directory.getEntry("pause_background", Texture.class);
-        bullet_texture = directory.getEntry( "bullet", Texture.class );
         failedBackground = directory.getEntry("failed_background", Texture.class);
         successBackgrounds = new Texture[4];
         for (int i = 0; i < 4; i++) {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
+        hintAttack = new TextureRegion(directory.getEntry( "hint_attack", Texture.class ));
+        hintMovement = new TextureRegion(directory.getEntry( "hint_movement", Texture.class ));
+        hintMap = new TextureRegion(directory.getEntry( "hint_map", Texture.class ));
 
-        levelModel.setDirectory(directory);
-        levelModel.gatherAssets(directory);
-        this.directory = directory;
-
+        // shader things
         Texture waterDiffuse = directory.getEntry("water_diffuse", Texture.class);
         waterDiffuse.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         Texture waterNormal = directory.getEntry("water_normal", Texture.class);
@@ -613,6 +644,12 @@ public class WorldController implements Screen, ContactListener {
         Texture waterUVOffset = directory.getEntry("water_uv_offset", Texture.class);
         waterUVOffset.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset);
+
+        // level model assets
+        levelModel.setDirectory(directory);
+        levelModel.gatherAssets(directory);
+        this.directory = directory;
+
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -647,7 +684,7 @@ public class WorldController implements Screen, ContactListener {
      */
     public boolean preUpdate(float dt) {
         // NEW*: Ask the level model to process current effects on objects and light effects :*NEW
-        levelModel.updateAllCurrentEffects();
+        levelModel.updateAllCurrentEffects(dt);
         levelModel.updateLights();
 
         // Read the player input
@@ -734,6 +771,7 @@ public class WorldController implements Screen, ContactListener {
 
         // update forces for enemies, players, objects
         player.applyInputForce();
+        player.applyProjectileForce();
         resolveEnemies(dt);
 
         // update light choice
@@ -742,10 +780,11 @@ public class WorldController implements Screen, ContactListener {
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies(float dt) {
-        PooledList<Shark> el = levelModel.getEnemies();
-        for (int i = 0; i< el.size(); i++) {
-            Shark shark = el.get(i);
-            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+//        PooledList<Shark> el = levelModel.getEnemies();
+        for (int i = 0; i< controls.length; i++) {
+//            Shark shark = el.get(i);
+//            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            controls[i].updateShark();
         }
 
 //        for (Hydra h : levelModel.getHydras()) {
@@ -975,6 +1014,7 @@ public class WorldController implements Screen, ContactListener {
             // stun shark
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
+            s.setDestroyed(true);
             g.setDestroyed(true);
         }
 //      else if(g.getType() == GameObject.ObjectType.HYDRA) {
@@ -982,11 +1022,18 @@ public class WorldController implements Screen, ContactListener {
 //            SfxController.getInstance().playSFX("spear_enemy_hit");
 //            SfxController.getInstance().playSFX("shark_hit");
 //            ((Hydra) g).setHit(true);}
-        else if (g.getType() == GameObject.ObjectType.OBSTACLE) {
+        else if (g.getType() == GameObject.ObjectType.SIREN){
+            if(((Siren) g).setHit()) {
+                s.setDestroyed(true);
+                SfxController.getInstance().playSFX("spear_enemy_hit");
+            }
+        }
+        else if (g.getType() == GameObject.ObjectType.ROCK || g.getType() == GameObject.ObjectType.OBSTACLE) {
             SfxController.getInstance().playSFX("spear_break");
+            s.setDestroyed(true);
         }
         // destroy bullet
-        s.setDestroyed(true);
+
     }
 
     /**
@@ -1026,7 +1073,7 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.ROCK){
             if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
         } else if(g.getType() == GameObject.ObjectType.NOTE){
-            r.applyProjectileForce(((Note) g).getForce());
+            r.setProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);
             g.setDestroyed(true);
         }
@@ -1100,7 +1147,7 @@ public class WorldController implements Screen, ContactListener {
         PooledList<Shark> enemies = levelModel.getEnemies();
         controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
+            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);
         }
     }
 
@@ -1146,8 +1193,8 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // update shader color palette
-        String pref_palette = level_int < 3 ? "colors_light" :
-                              level_int < 6 ? "colors_natural" :
+        String pref_palette = level_int < 6 ? "colors_light" :
+                              level_int < 10 ? "colors_natural" :
                               "colors_purple";
         String[] shaderColorStrings = shaderData.get(pref_palette).asStringArray();
         float[] shaderColors = new float[3*shaderColorStrings.length];

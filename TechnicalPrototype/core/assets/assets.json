@@ -33,7 +33,7 @@
       "regular_rock":     "images/Rock.png",
       "sharp_rock": "images/Spiky_Rock.png",
       "treasure":     "images/Chest.png",
-      "target":     "images/Obj_Island_Handlike.png",
+      "target":     "images/Obj_Island_threequarters.png",
       "spear": "images/Obj_Spear_Aerial.png",
       "note" : "images/Obj_MusicNote.png",
       "current": "images/current_square.png",
@@ -48,6 +48,11 @@
       "reticle" : "images/reticle.png",
       "star":     "images/star.png",
       "plant":     "images/plant.png",
+      "fuel": "images/fuel.png",
+      "terrain": "images/terrain_demian.png",
+      "hint_movement": "images/hint_move.png",
+      "hint_attack": "images/hint_fire.png",
+      "hint_map": "images/hint_map.png",
       "progress": {
         "file":      "images/progressbar.png",
         "minFilter": "linear",
@@ -95,11 +100,11 @@
     "button_enter" : "sounds/Sfx_Button_MainMenuEnter.ogg",
     "button_click" : "sounds/Sfx_Button_MainMenuClick.ogg",
     "map_open" : "sounds/Sfx_Map_Opening.ogg",
-    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg"
+    "shark_hit" : "sounds/Sfx_Shark_Hit.ogg",
+    "calm_ocean" : "sounds/Sfx_CalmOcean.ogg"
   },
   "music" : {
       "m": "music/Msc_Menu_RoTTheme.ogg",
-      "b1": "music/Msc_Background_CalmOcean.ogg",
       "e1": "music/Msc_Explore_Longing.ogg",
       "d1": "music/Msc_Danger_Longing.ogg",
     "e2": "music/Msc_Explore_Flow.ogg",
@@ -112,14 +117,18 @@
     "screen_settings" : "screen_settings.json",
     "input_settings" : "input_settings.json",
     "lights" : "light_settings.json",
-    "level:0" : "levels/level0.json",
-    "level:1" : "levels/level1.json",
-    "level:2" : "levels/level2.json",
-    "level:3" : "levels/level3.json",
-    "level:4" : "levels/level4.json",
-    "level:5" : "levels/level5.json",
-    "level:6" : "levels/level6.json",
-    "level:7" : "levels/level7.json",
-    "level:8" : "levels/level8.json"
+    "level:0" : "levels/MoveTutorial.json",
+    "level:1" : "levels/WoodTutorial.json",
+    "level:2" : "levels/MapTutorial.json",
+    "level:3" : "levels/CurrentTutorial.json",
+    "level:4" : "levels/SharkTutorial.json",
+    "level:5" : "levels/StarTutorial.json",
+    "level:6" : "levels/BadCurrent.json",
+    "level:7" : "levels/SharpRocksTutorial.json",
+    "level:8" : "levels/SharpRocks2.json",
+    "level:9" : "levels/SirenEasy.json",
+    "level:10" : "levels/SirenMedium.json",
+    "level:11" : "levels/level6.json",
+    "level:12" : "levels/SirenHard.json"
   }
 }

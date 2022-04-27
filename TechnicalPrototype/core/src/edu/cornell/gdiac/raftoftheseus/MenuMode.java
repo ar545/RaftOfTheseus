@@ -55,12 +55,12 @@ public class MenuMode implements Screen {
     private static JsonValue saveData;
 
     /** Loads constants from screen */
-    public static void setConstants(JsonValue objParams){
+    public static void setConstants(JsonValue objParams, int numLevels){
         STANDARD_WIDTH = objParams.getInt(0);
         STANDARD_HEIGHT = objParams.getInt(1);
         NUM_COLS = objParams.getInt(2);
         colPadding = objParams.getInt("column padding", 25);
-        LEVEL_COUNT = objParams.getInt("level count", 9);
+        LEVEL_COUNT = numLevels;
     }
 
     /** Standard window size (for scaling) */
@@ -220,7 +220,7 @@ public class MenuMode implements Screen {
 
         // instantiate the "back" button, which is used in multiple menus
         TextButton menuButton = new TextButton("BACK", skin);
-        menuButton.getLabel().setFontScale(0.35f);
+        menuButton.getLabel().setFontScale(0.4f);
         menuButton.getLabel().setColor(Color.GOLD);
         menuButton.addListener(new ClickListener(){
             @Override
@@ -247,13 +247,13 @@ public class MenuMode implements Screen {
             case TITLE:
                 // Create buttons
                 TextButton startButton = new TextButton("START", skin);
-                startButton.getLabel().setFontScale(0.35f);
+                startButton.getLabel().setFontScale(0.4f);
                 TextButton levelsButton = new TextButton("LEVELS", skin);
-                levelsButton.getLabel().setFontScale(0.35f);
+                levelsButton.getLabel().setFontScale(0.4f);
                 TextButton settingsButton = new TextButton("SETTINGS", skin);
-                settingsButton.getLabel().setFontScale(0.35f);
+                settingsButton.getLabel().setFontScale(0.4f);
                 TextButton creditsButton = new TextButton("CREDITS", skin);
-                creditsButton.getLabel().setFontScale(0.35f);
+                creditsButton.getLabel().setFontScale(0.4f);
 
                 //Add listeners to buttons
                 startButton.addListener(new ClickListener(){
@@ -338,18 +338,18 @@ public class MenuMode implements Screen {
                 });
 
                 //Add buttons to table
-                menuTable.add(startButton).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(100);
+                menuTable.add(startButton).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(130);
                 menuTable.row();
-                menuTable.add(levelsButton).expandX().align(Align.left).padLeft(100);
+                menuTable.add(levelsButton).expandX().align(Align.left).padLeft(130);
                 menuTable.row();
-                menuTable.add(settingsButton).expandX().align(Align.left).padLeft(100);
+                menuTable.add(settingsButton).expandX().align(Align.left).padLeft(130);
                 menuTable.row();
-                menuTable.add(creditsButton).expandX().align(Align.left).padLeft(100);
+                menuTable.add(creditsButton).expandX().align(Align.left).padLeft(130);
                 break;
             case LEVEL_SELECT:
                 Table part1 = new Table();
                 part1.align(Align.left);
-                part1.add(menuButton).expandX().align(Align.left).padRight(1100).padTop(10);
+                part1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
                 part1.row();
                 menuTable.add(part1);
                 menuTable.row();
@@ -419,20 +419,20 @@ public class MenuMode implements Screen {
                     //Add button to table
                     if (i > 0 && i % NUM_COLS == 0)
                         part3.row().padTop(colPadding);
-                    part3.add(currentButton).size(150).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+                    part3.add(currentButton).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
                 }
                 menuTable.add(part3);
                 menuTable.row();
                 break;
             case CREDITS:
                 Table creditsPart1 = new Table();
-                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(1100).padTop(10);
+                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
                 menuTable.add(creditsPart1);
                 menuTable.row();
 
                 Table creditsPart2 = new Table();
                 Label creditsLabel = new Label("CREDITS", skin);
-                creditsLabel.setFontScale(0.5f);
+                creditsLabel.setFontScale(0.6f);
                 creditsPart2.add(creditsLabel).expandX().align(Align.center);
                 menuTable.add(creditsPart2).padTop(-50);
                 menuTable.row();
@@ -442,22 +442,22 @@ public class MenuMode implements Screen {
 
                 Table creditsPart3Left = new Table();
                 Label programmersLabel = new Label("PROGRAMMER", skin);
-                programmersLabel.setFontScale(0.35f);
+                programmersLabel.setFontScale(0.5f);
                 creditsPart3Left.add(programmersLabel).expandX().align(Align.center);
                 creditsPart3Left.row();
 
                 Label amy = new Label("Amy Huang", skin);
-                amy.setFontScale(0.3f);
+                amy.setFontScale(0.4f);
                 Label demian = new Label("Demian Yutin", skin);
-                demian.setFontScale(0.3f);
+                demian.setFontScale(0.4f);
                 Label howard = new Label("Howard Fu", skin);
-                howard.setFontScale(0.3f);
+                howard.setFontScale(0.4f);
                 Label jaden = new Label("Jaden O'Brien", skin);
-                jaden.setFontScale(0.3f);
+                jaden.setFontScale(0.4f);
                 Label jason = new Label("Jason Tung", skin);
-                jason.setFontScale(0.3f);
+                jason.setFontScale(0.4f);
                 Label leo = new Label("Leo Zhao", skin);
-                leo.setFontScale(0.3f);
+                leo.setFontScale(0.4f);
                 creditsPart3Left.add(amy).expandX().align(Align.center);
                 creditsPart3Left.row();
                 creditsPart3Left.add(demian).expandX().align(Align.center);
@@ -472,16 +472,16 @@ public class MenuMode implements Screen {
 
                 Table creditsPart3Right = new Table();
                 Label designersLabel = new Label("DESIGNER", skin);
-                designersLabel.setFontScale(0.38f);
+                designersLabel.setFontScale(0.5f);
                 creditsPart3Right.add(designersLabel).expandX().align(Align.center);
                 creditsPart3Right.row();
 
                 Label gloria = new Label("Gloria Shi", skin);
-                gloria.setFontScale(0.3f);
+                gloria.setFontScale(0.4f);
                 Label noah = new Label("Noah Braun", skin);
-                noah.setFontScale(0.3f);
+                noah.setFontScale(0.4f);
                 Label spencer = new Label("Spencer Pettee", skin);
-                spencer.setFontScale(0.3f);
+                spencer.setFontScale(0.4f);
 
                 creditsPart3Right.add(gloria).expandX().align(Align.center);
                 creditsPart3Right.row();
@@ -493,7 +493,7 @@ public class MenuMode implements Screen {
                 creditsPart3Right.row();
 
                 creditsPart3.add(creditsPart3Left).expandX().align(Align.center).padRight(180).padLeft(-100);
-                creditsPart3.add(creditsPart3Right).expandX().align(Align.center).padTop(20);
+                creditsPart3.add(creditsPart3Right).expandX().align(Align.center).padTop(-50);
                 menuTable.add(creditsPart3);
                 break;
         }

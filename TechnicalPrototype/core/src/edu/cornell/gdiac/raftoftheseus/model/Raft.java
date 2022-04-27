@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
@@ -17,7 +18,7 @@ import edu.cornell.gdiac.util.FilmStrip;
 /**
  * Model class for the player raft.
  */
-public class Raft extends GameObject implements Steerable<Vector2> {
+public class Raft extends GameObject {
 
     /**
      * Method to set Raft parameters
@@ -42,6 +43,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         IDLE_SF = objParams.getInt("idle starting frame");
         SHOOTING_SF = objParams.getInt("shooting starting frame");
         HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
+        FORCE_DURATION = objParams.getLong("enemy bullet duration");
     }
 
     // CONSTANTS
@@ -79,10 +81,13 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     private static float MIN_SPEED = 0.01f;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
+    private final Vector2 externalForce = new Vector2();
     /** Size constants */
     private static float OBJ_WIDTH;
     private static float OBJ_HEIGHT;
     private static float SENSOR_RADIUS;
+    /** How long to keep applying */
+    private static float FORCE_DURATION;
 
     // ANIMATION
     private static float HORIZONTAL_OFFSET;
@@ -203,6 +208,25 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         }
     }
 
+    private long timeStamp;
+    private long forceDuration = 500L;
+
+    /**
+     * Apply projectile force
+     * @param force the force applied
+     */
+    public void setProjectileForce(Vector2 force){
+        externalForce.set(force);
+        timeStamp = TimeUtils.millis();
+    }
+
+    public void applyProjectileForce(){
+        if(TimeUtils.timeSinceMillis(timeStamp) < forceDuration) {
+            physicsObject.getBody().applyForce(externalForce, getPosition(), true);
+        }
+    }
+
+
     /** Getter and setters for health */
     public float getHealth() { return health; }
 
@@ -226,15 +250,6 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     public void applyMoveCost(float dt) {
         float L = physicsObject.getLinearVelocity().len();
         health -= MOVE_COST * L * dt; // base movement cost (no current)
-    }
-
-    /**
-     * Apply projectile force
-     * @param force the force applied
-     */
-    public void applyProjectileForce(Vector2 force){
-        forceCache.set(force);
-        physicsObject.getBody().applyForce(forceCache, getPosition(), true);
     }
 
     /** @return whether the player health is below zero */
@@ -309,7 +324,7 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         }
         // flip texture based on movement
         float flip = getLinearVelocity().x < 0 ? -1 : 1;
-        textureScale.x = flip * Math.abs(textureScale.y);
+        textureScale.x = flip * Math.abs(textureScale.x);
     }
 
     /**
@@ -360,150 +375,4 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         super.draw(canvas);
     }
 
-
-    /* STEERING */
-
-    @Override
-    public float getAngularVelocity() {
-        return 0;
-    }
-
-    @Override
-    public float getBoundingRadius() {
-        return 0;
-    }
-
-    @Override
-    public boolean isTagged() {
-        return false;
-    }
-
-    @Override
-    public void setTagged(boolean tagged) {
-
-    }
-
-    @Override
-    public float getZeroLinearSpeedThreshold() {
-        return 0;
-    }
-
-    @Override
-    public void setZeroLinearSpeedThreshold(float value) {
-
-    }
-
-    @Override
-    public float getMaxLinearSpeed() {
-        return 0;
-    }
-
-    @Override
-    public void setMaxLinearSpeed(float maxLinearSpeed) {
-
-    }
-
-    @Override
-    public float getMaxLinearAcceleration() {
-        return 0;
-    }
-
-    @Override
-    public void setMaxLinearAcceleration(float maxLinearAcceleration) {
-
-    }
-
-    @Override
-    public float getMaxAngularSpeed() {
-        return 0;
-    }
-
-    @Override
-    public void setMaxAngularSpeed(float maxAngularSpeed) {
-
-    }
-
-    @Override
-    public float getMaxAngularAcceleration() {
-        return 0;
-    }
-
-    @Override
-    public void setMaxAngularAcceleration(float maxAngularAcceleration) {
-
-    }
-
-    @Override
-    public float getOrientation() {
-        return 0;
-    }
-
-    @Override
-    public void setOrientation(float orientation) {
-
-    }
-
-    @Override
-    public float vectorToAngle(Vector2 vector) {
-        return 0;
-    }
-
-    @Override
-    public Vector2 angleToVector(Vector2 outVector, float angle) {
-        return null;
-    }
-
-    @Override
-    public Location<Vector2> newLocation() {
-        return null;
-    }
-
-    /* ACTOR **/
-
-    SteeringBehavior<Vector2> steeringBehavior;
-    public SteeringBehavior<Vector2> getSteeringBehavior () {return steeringBehavior;}
-    public void setSteeringBehavior (SteeringBehavior<Vector2> steeringBehavior) {
-        this.steeringBehavior = steeringBehavior;
-    }
-
-    private static final SteeringAcceleration<Vector2> steeringOutput = new SteeringAcceleration<Vector2>(new Vector2());
-
-    public void act (float delta) {
-        if (steeringBehavior != null) {
-            // Calculate steering acceleration
-            steeringBehavior.calculateSteering(steeringOutput);
-
-            /*
-             * Here you might want to add a motor control layer filtering steering accelerations.
-             *
-             * For instance, a car in a driving game has physical constraints on its movement: it cannot turn while stationary; the
-             * faster it moves, the slower it can turn (without going into a skid); it can brake much more quickly than it can
-             * accelerate; and it only moves in the direction it is facing (ignoring power slides).
-             */
-
-            // Apply steering acceleration
-            applySteering(steeringOutput, delta);
-//            setPosition(bodyinfo.position.x, bodyinfo.position.y);
-        }
-    }
-
-    private void applySteering (SteeringAcceleration<Vector2> steering, float time) {
-        // Update position and linear velocity. Velocity is trimmed to maximum speed
-        getPosition().mulAdd(getLinearVelocity(), time);
-        getLinearVelocity().mulAdd(steering.linear, time).limit(getMaxLinearSpeed());
-
-
-        // Update orientation and angular velocity
-//        if (independentFacing) {
-//            setRotation(getRotation() + (bodyinfo.angularVelocity * time) * MathUtils.radiansToDegrees);
-//            bodyinfo.angularVelocity += steering.angular * time;
-//        } else {
-            // If we haven't got any velocity, then we can do nothing.
-            if (!getLinearVelocity().isZero(getZeroLinearSpeedThreshold())) {
-                float newOrientation = vectorToAngle(getLinearVelocity());
-                physicsObject.getBody().setAngularVelocity((newOrientation - getAngle() * MathUtils.degreesToRadians) * time); // this is superfluous if independentFacing is always true
-                setAngle(newOrientation * MathUtils.radiansToDegrees);
-            }
-//        }
-    }
 }

@@ -9,11 +9,12 @@ import com.badlogic.gdx.Files;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		config.width = 1280;
-		config.height = 720;
+		config.width = LwjglApplicationConfiguration.getDesktopDisplayMode().width ;
+		config.height = LwjglApplicationConfiguration.getDesktopDisplayMode().height;
 		config.resizable = false;
 		config.title = "Raft of Theseus";
 		config.addIcon("images/icon.png", Files.FileType.Internal);
+		config.addIcon("images/icon2.png", Files.FileType.Internal);
 		new LwjglApplication(new GDXRoot(), config);
 	}
 }

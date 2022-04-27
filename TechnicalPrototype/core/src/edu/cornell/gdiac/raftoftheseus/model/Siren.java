@@ -2,8 +2,10 @@ package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
@@ -33,6 +35,7 @@ public class Siren extends GameObject {
         TAKE_OFF_AS = objParams.getFloat("take off animation speed");
         LANDING_AS = objParams.getFloat("landing animation speed");
         FLYING_AS = objParams.getFloat("flying animation speed");
+        FLASHING_AS = objParams.getFloat("flashing speed");
         IDLE_FRAMES = objParams.getInt("idle frames");
         SINGING_FRAMES = objParams.getInt("singing frames");
         TAKE_OFF_FRAMES = objParams.getInt("take off frames");
@@ -47,15 +50,14 @@ public class Siren extends GameObject {
 
     /** The player for targeting. */
     private Raft targetRaft;
-    /** The two locations the Siren will be located. */
-    private Vector2 location1 = new Vector2();
-    private Vector2 location2 = new Vector2();
-    /** The two directions the Siren will be need to move in. */
-    private Vector2 direction1 = new Vector2();
-    private Vector2 direction2 = new Vector2();
+    /** 2 Vector caches to store where the siren is and where it will need to go. */
+    private Vector2 start = new Vector2();
+    private Vector2 finish = new Vector2();
+    /** The index in waypoints of the next waypoint to fly to. */
+    private int waypoint = 1;
+    private Array<Vector2> waypoints;
     /** Vector applied as a force to the Siren. */
     private Vector2 moveVector = new Vector2();
-    private boolean fromLocation1 = true;
     /** FSM to control Siren AI */
     private StateMachine<Siren, SirenState> stateMachine;
     /** To keep track how much time has passed. */
@@ -84,6 +86,7 @@ public class Siren extends GameObject {
     private static float TAKE_OFF_AS;
     private static float LANDING_AS;
     private static float FLYING_AS;
+    private static float FLASHING_AS;
     private static int IDLE_FRAMES;
     private static int SINGING_FRAMES;
     private static int TAKE_OFF_FRAMES;
@@ -94,25 +97,63 @@ public class Siren extends GameObject {
     private static int TAKE_OFF_SF;
     private static int LANDING_SF;
     private static int FLYING_SF;
+
+    /**
+     * General constructor for Siren with 3 or more positions.
+     * @param positions 3 or more positions
+     * @param raft the player
+     */
+    public Siren(Array<Vector2> positions, Raft raft){
+        waypoints = new Array<>();
+        for(Vector2 pos : positions){
+            waypoints.add(new Vector2(pos));
+        }
+        this.targetRaft = raft;
+        setParameters();
+    }
+
+    /**
+     * Helper constructor when the Siren is given only one or two positions
+     * @param positions 1 or 2 positions
+     * @param raft the player
+     */
+    private Siren(Raft raft, Array<Vector2> positions){
+        waypoints = positions;
+        this.targetRaft = raft;
+        setParameters();
+    }
+
     /**
      * Constructor for the Siren.
      * @param position1 The starting position of the Siren.
      * @param position2 The secondary position the Siren will fly to.
-     * @param targetRaft The player to target.
+     * @param raft The player to target.
      */
-    public Siren(Vector2 position1, Vector2 position2, Raft targetRaft) {
+    public Siren(Vector2 position1, Vector2 position2, Raft raft) {
+        this(raft, new Array<Vector2>(){{add(new Vector2(position1)); add(new Vector2(position2));}});
+    }
+
+    /**
+     * Constructor for a stationary Siren
+     * @param position the location of the siren
+     * @param raft the player
+     */
+    public Siren(Vector2 position, Raft raft){
+        this(raft, new Array<Vector2>(){{add(new Vector2(position));}});
+    }
+
+    /**
+     * Constructor helper method to define common parameters.
+     * Must be called at the end of a constructor.
+     */
+    private void setParameters(){
         physicsObject = new WheelObstacle(RADIUS);
-        setPosition(position1);
+        setPosition(waypoints.get(0));
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
         physicsObject.getFilterData().maskBits = MASK_SIREN;
-
-        location1.set(position1);
-        location2.set(position2);
-        direction1.set(position2.cpy().sub(position1).nor());
-        direction2.set(position1.cpy().sub(position2).nor());
+        physicsObject.setSensor(true);
         moveVector.set(0.0f, 0.0f);
-        this.targetRaft = targetRaft;
         stateMachine = new DefaultStateMachine<>(this, SirenState.IDLE);
     }
 
@@ -142,14 +183,25 @@ public class Siren extends GameObject {
 
     /**
      * Changes the force vector of this Siren.
-     * @param direction1 whether to go with the direction1 vector.
      */
-    public void setMoveVector(boolean direction1) {
-        if(direction1) this.moveVector.set(this.direction1);
-        else this.moveVector.set(this.direction2);
+    public void setMoveVector() {
+        start.set(getPosition());
+        finish.set(waypoints.get(waypoint));
+        // Defensive code for 2 of the same position
+        if (finish.cpy().sub(start).len() < PROXIMITY) return;
+        moveVector.set(finish.cpy().sub(start));
     }
     /** Set the move vector to zero so the Siren comes to a rest. */
     public void stopMove(){ this.moveVector.setZero(); }
+
+    public void incrementWaypoint(){
+        if(waypoint == waypoints.size - 1) waypoint = 0;
+        else waypoint++;
+    }
+
+    public boolean isStationary(){
+        return waypoints.size == 1;
+    }
 
     /**
      * Method to change the size of the moveVector after first normalizing it.
@@ -183,38 +235,19 @@ public class Siren extends GameObject {
     public void resetAttackStamp(){ attackStamped = false; }
 
     // Cool downs
-
     /** @return Whether this Siren has elapsed its idling time. */
     public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
     /** @return Whether this Siren has elapsed its singing time. */
     public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
     /** @return Whether this Siren can fire again. */
-    public boolean cooldownElapsed(){
-        return TimeUtils.timeSinceMillis(attackStamp) > COOL_DOWN;
-    }
+    public boolean cooldownElapsed(){ return TimeUtils.timeSinceMillis(attackStamp) > COOL_DOWN; }
     /** @return Whether this Siren is not stunned anymore. */
     public boolean stunElapsed(){ return TimeUtils.timeSinceMillis(timeStamp) > STUN_TIME; }
 
     // Changing location
-
-    /** @return whether Siren is flying from its spawn location. */
-    public boolean fromFirstLocation(){ return fromLocation1; }
-    /** @return whether the Siren is flying from its secondary location. */
-    public boolean fromSecondLocation(){ return !fromLocation1; }
-    /** Set that the Siren is flying from its spawn location. */
-    public void setFromFirstLocation(){ fromLocation1 = true; }
-    /** Set that the Siren is flying from its secondary location. */
-    public void setFromSecondLocation(){ fromLocation1 = false; }
     /** @return when the Siren has reached its destination. */
     public boolean nearLanding(){
-        float dist;
-        if(fromLocation1){
-            dist = getPosition().cpy().sub(location2).len();
-        } else {
-            dist = getPosition().cpy().sub(location1).len();
-        }
-//        System.out.println(dist);
-//        System.out.println(dist < PROXIMITY);
+        float dist = getPosition().cpy().sub(waypoints.get(waypoint)).len();
         return dist < PROXIMITY;
     }
 
@@ -228,6 +261,7 @@ public class Siren extends GameObject {
     public boolean inAttackRange(){
         return targetRaft.getPosition().cpy().sub(getPosition()).len() < ATTACK_RANGE;
     }
+
     /** @return whether the player is in range and the Siren is attack mode.
      *  Resets
      */
@@ -244,11 +278,13 @@ public class Siren extends GameObject {
     public Vector2 getTargetDirection() { return targetRaft.getPosition().cpy().sub(getPosition()).nor(); }
 
     // Stunned
-    public boolean isHit(){ return isHit; }
-    public void setHit(boolean h){
-        if (!(stateMachine.getCurrentState() == SirenState.STUNNED)){
-            isHit = h;
+    public boolean setHit(){
+        if (stateMachine.isInState(SirenState.SINGING) || stateMachine.isInState(SirenState.IDLE)){
+            stateMachine.changeState(SirenState.STUNNED);
+            resetFlash();
+            return true;
         }
+        return false;
     }
 
     // Animation
@@ -286,7 +322,17 @@ public class Siren extends GameObject {
                 setFrame(FLYING_AS, FLYING_FRAMES, FLYING_SF, true);
                 break;
             case STUNNED:
+                frame = SINGING_SF;
+                if(timeElapsed > FLASHING_AS){
+                    flash = !flash;
+                    timeElapsed = 0;
+                }
                 break;
+        }
+        if(getLinearVelocity().x < 0){
+            textureScale.x = Math.abs(textureScale.x);
+        } else if (getLinearVelocity().x > 0){
+            textureScale.x = -1 * Math.abs(textureScale.x);
         }
     }
 
@@ -310,14 +356,14 @@ public class Siren extends GameObject {
     int frameCount = 0;
     float timeElapsed = 0;
     int frame = 0;
+    boolean flash = false;
 
-    /**
-     * Method to reset the frameCount to 0 to ensure the next animation
-     */
-    public void resetFrame(){
-        frameCount = 0;
-    }
+    /** Method to reset the frameCount to 0 to ensure the next animation starts on its starting frame. */
+    public void resetFrame(){ frameCount = 0; }
 
+    /** Method to reset flash boolean to ensure Siren always turns red first when hit. */
+    public void unsetFlash(){ flash = false; }
+    public void resetFlash(){ flash = true; }
     /**
      * Set the appropriate image frame first before drawing the Siren.
      * @param canvas Drawing context
@@ -325,6 +371,7 @@ public class Siren extends GameObject {
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(frame);
-        super.draw(canvas);
+        if(flash) super.draw(canvas, Color.RED);
+        else super.draw(canvas);
     }
 }

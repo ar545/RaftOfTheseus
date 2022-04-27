@@ -45,15 +45,15 @@ public abstract class GameObject {
     protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN;
     protected final static short MASK_ENEMY = CATEGORY_PLAYER | CATEGORY_PLAYER_BULLET | CATEGORY_CURRENT
             | CATEGORY_TERRAIN | CATEGORY_PUSHABLE;
-    protected final static short MASK_NOTE = CATEGORY_PLAYER;
+    protected final static short MASK_NOTE = CATEGORY_PLAYER_SENSOR;
     protected final static short MASK_CURRENT = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PUSHABLE;
     protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PLAYER_BULLET
             | CATEGORY_ENEMY_BULLET | CATEGORY_PUSHABLE;
     protected final static short MASK_WOOD = CATEGORY_PLAYER_SENSOR | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN;
     protected final static short MASK_TREASURE = CATEGORY_PLAYER_SENSOR;// treasure isn't pushed around by anything
     protected final static short MASK_GOAL = CATEGORY_PLAYER_SENSOR;
-    protected final static short MASK_SIREN = 0; // Siren does not interact with anything, flying over player
-    protected final static short MASK_PLAYER_SENSOR = CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE;
+    protected final static short MASK_SIREN = CATEGORY_PLAYER_BULLET; // Siren does not interact with anything, flying over player
+    protected final static short MASK_PLAYER_SENSOR = CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE | CATEGORY_ENEMY_BULLET;
 
     /** How much to scale the texture before displaying (Box2D units / texture pixels) */
     protected Vector2 textureScale;

@@ -51,8 +51,9 @@ const float texture_offset_time_scale = 0.03;
 // surf parameters
 const float surf_amplitude = 1.75;
 const float surf_speed = 0.08; // in tile widths per second
-const float surf_wavelength = 0.10; // as a multiple of 1 tile width
-const float surf_range = 0.25; // surf which is more than this distance away from a shore won't show up
+const float surf_wavelength = 0.2; // as a multiple of 1 tile width
+const float surf_start = 0.0; // surf which is less than this distance away from a shore will be static
+const float surf_range = 0.5; // surf which is more than this distance away from a shore won't show up
 
 // wake parameters
 const float wake_amplitude = 0.025;
@@ -70,7 +71,7 @@ uniform sampler2D normal_texture; // represents 3D contours of texture wave
 uniform sampler2D surf_map; // a map of how close the shoreline is at any point
 uniform sampler2D flow_map; // a map of the current direction and magnitude at any point
 uniform sampler2D texture_offset_uv; // displacement map for texture-based displacements
-uniform float surf_map_res = 2.0; // ratio of surf_map dimensions to level dimensions in tiles
+uniform int surf_map_res; // ratio of surf_map dimensions to level dimensions in tiles
 
 // color palette
 uniform vec3 colors[4];
@@ -256,6 +257,7 @@ float get_surf_map_value(vec2 world_xy) {
     float s10 = sample_surf_map(bottom_left + vec2(1.0,0.0));
     float s11 = sample_surf_map(bottom_left + vec2(1.0,1.0));
     vec2 coeff = uv - (bottom_left + vec2(0.5, 0.5)); // interpolation coefficient (x and y components)
+//    coeff = smoothstep(0.45, 0.55, coeff);
     float s0 = mix(s00, s01, coeff.y);
     float s1 = mix(s10, s11, coeff.y);
     float combined = mix(s0, s1, coeff.x);
@@ -265,13 +267,14 @@ float get_surf_map_value(vec2 world_xy) {
 /* Returns the height [and gradient] of the surf "waves" at the given location. */
 vec3 get_surf(vec2 world_xy) {
     float dist = get_surf_map_value(world_xy); // 0...1, where 0 is close to terrain and 1 is far from terrain
-    float dist_prop = min(1.0, dist/surf_range); // limit surf range
+    float dist_prop = clamp((dist-surf_start)/(surf_range-surf_start), 0.0, 1.0); // limit surf range
     float env = dist_prop*(1.0 - dist_prop) * 2.0; // wave envelope
     float wave = sin(2.0 * PI * (surf_speed * time - dist)/surf_wavelength);
     float height = ((1.0 - dist_prop) + env * wave);
     // optionally calculate gradient (we don't do this, but this is where we would)
     vec2 gradient = vec2(0.0);
     return vec3(height, gradient) * surf_amplitude;
+//    return vec3(dist);
 }
 
 // ================================================== PART 4. WAKE ================================================== //
@@ -340,7 +343,7 @@ void main() {
     vec3 texture_wave = get_texture_wave(world_xy);
 
     // calculate height and gradient of surf
-    vec3 surf = get_surf(world_xy);
+    vec3 surf = get_surf(coords);
     surf.yz = vec2(0.0); // ignore surf gradient for coloring
 
     // calculate height and gradient of wake
@@ -359,5 +362,6 @@ void main() {
     float reflection = 0.02 + 0.98*pow(1.0-cos_ang, 5.0); // 0.02 = ((1-n)/(1+n))^2, where n=1.33 = index of refraction of water
 
     vec3 color = color_from_value(value_from_h_and_r(sum_height, reflection));
+//    color = mix(color, surf, 0.99);
     gl_FragColor = vec4(color, 1.0);
 }

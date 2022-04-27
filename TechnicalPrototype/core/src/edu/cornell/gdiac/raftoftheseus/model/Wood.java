@@ -27,7 +27,7 @@ public class Wood extends GameObject {
      * @param value: amount of wood
      */
     public Wood(Vector2 position, int value) {
-        physicsObject = new WheelObstacle(0.6f + value*0.06f);
+        physicsObject = new WheelObstacle(1f); //value*0.06f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_PUSHABLE;

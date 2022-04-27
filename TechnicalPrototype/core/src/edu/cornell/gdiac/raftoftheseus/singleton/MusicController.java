@@ -147,18 +147,28 @@ public class MusicController {
     /**
      * For looping menu music only.
      * @param name
-     * @param m
      */
-    public void loopMusic(String name, Music m){
+    public void loopMusic(String name){
+        Music m = music.get(name).getMusic();
         m.play();
         m.setLooping(true);
         m.setVolume(musicVolume);
     }
 
     /**
+     * Starts the music for the menu
+     */
+    public void startMenuMusic(){
+        setMusicPreset(0);
+        loopMusic("background");
+    }
+
+    /**
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
-    public void startMusic(){
+    public void startLevelMusic(int preset){
+        if(preset < 1) throw new RuntimeException("Invalid level music preset.");
+        setMusicPreset(preset);
         setMusicVolume(0, "enemy", "siren", "explore");
         playMusic("enemy", 0);
         playMusic("siren", 0);
