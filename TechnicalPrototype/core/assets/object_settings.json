@@ -79,7 +79,7 @@
   "terrain": {
   },
   "raft" : {
-    "move cost" : 0.9,
+    "move cost" : 1.2,
     "with current" : 0.45,
     "against current" : 1.75,
     "max health" : 200,
