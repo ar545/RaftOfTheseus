@@ -1182,8 +1182,8 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // update shader color palette
-        String pref_palette = level_int < 3 ? "colors_light" :
-                              level_int < 6 ? "colors_natural" :
+        String pref_palette = level_int < 6 ? "colors_light" :
+                              level_int < 10 ? "colors_natural" :
                               "colors_purple";
         String[] shaderColorStrings = shaderData.get(pref_palette).asStringArray();
         float[] shaderColors = new float[3*shaderColorStrings.length];
