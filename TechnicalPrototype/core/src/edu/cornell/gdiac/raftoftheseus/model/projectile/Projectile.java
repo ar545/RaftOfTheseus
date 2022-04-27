@@ -13,9 +13,7 @@ public class Projectile extends GameObject {
     /** Original projectile position. */
     private Vector2 originalPos;
 
-    public Projectile(Vector2 pos){
-        originalPos = pos;
-    }
+    public Projectile(){}
 
     @Override
     public ObjectType getType() {
@@ -29,7 +27,7 @@ public class Projectile extends GameObject {
         physicsObject.setFriction(0);
         physicsObject.setRestitution(0);
         physicsObject.setLinearDamping(0);
-        setPosition(originalPos);
+        originalPos = getPosition().cpy();
     }
 
     /** @return how far this spear has traveled. */

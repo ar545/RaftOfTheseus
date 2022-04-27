@@ -57,7 +57,12 @@
   "spear": {
     "speed scale" : 25.0,
     "health cost" : -20.0,
-    "size" : 2,
+    "texture scale" : 1.8,
+    "body length" : 1,
+    "body width" : 0.1,
+    "x offset" : 0.85,
+    "y offset" : 1.045,
+    "angle" : -6.69,
     "range fly" :  10.0,
     "range fall" : 11.0
   },

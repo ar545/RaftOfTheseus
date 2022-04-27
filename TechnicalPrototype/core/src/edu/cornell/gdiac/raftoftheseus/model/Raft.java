@@ -1,15 +1,12 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
-import com.badlogic.gdx.ai.steer.Steerable;
-import com.badlogic.gdx.ai.steer.SteeringAcceleration;
-import com.badlogic.gdx.ai.steer.SteeringBehavior;
-import com.badlogic.gdx.ai.utils.Location;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -100,6 +97,8 @@ public class Raft extends GameObject {
     /** Which frame to start on the filmstrip with this animation. */
     private static int IDLE_SF;
     private static int SHOOTING_SF;
+
+    private Spear spear;
 
     // METHODS
     /** Constructor for Raft object
@@ -257,33 +256,24 @@ public class Raft extends GameObject {
     private float timeElapsed = 0;
     // Which frame should be set for drawing this game cycle.
     private int frame = IDLE_SF;
-    // To check whether the player fired for setting canFire and spear creation.
-    private boolean wasFire = false;
-    // To check whether the player fired for sound playing after the fact.
-    private boolean justFired = false;
+    // Which direction to player is facing.
+    float flip;
+
 
     /** Set whether the playe rhas reached the end of the animation cycle. */
-    public void setCanFire(boolean cf) { canFire = cf; }
+    public void resetCanFire() { canFire = false; }
     /** @return whether the player has reached the end of the firing animation cycle. */
     public boolean canFire() {
-        if(canFire) {
-            justFired = true;
-            setCanFire(false);
-            return true;
-        }
-        return false;
-    }
-    /** @return whether the player has justFired to communicate with sound. */
-    public boolean justFired() {
-        if(justFired) {
-            justFired = false;
-            return true;
-        }
-        return false;
+        return canFire;
     }
 
-    /** @param charging whether to set the player to actively charging */
-    public void setCharging(boolean charging) { this.isCharging = charging; }
+    /** @param charging whether to set the player to actively charging. Subtracts health to create the spear. */
+    public void beginCharging(boolean charging) {
+        if(!isCharging && !canFire && charging) {
+            isCharging = true;
+            addHealth(Spear.DAMAGE);
+        }
+    }
     /** @return whether player is actively charging. */
     public boolean isCharging() { return isCharging; }
 
@@ -299,22 +289,16 @@ public class Raft extends GameObject {
             frameCount = 0;
             timeElapsed = 0;
             frame = SHOOTING_SF;
-        } else if (frame < IDLE_SF && isCharging){
-            if(isFrame(SHOOTING_F, SHOOTING_SF, true)) wasFire = false;
+        } else if (!isFrame(SHOOTING_F, SHOOTING_SF, false) && isCharging){
             setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false);
-            boolean fireFrame = isFrame(SHOOTING_F, SHOOTING_SF, false);
-            if(!wasFire && fireFrame){
-                setCanFire(true);
-                wasFire = true;
-            }
-        } else if (frame < IDLE_SF && !isCharging){
+            canFire = isFrame(SHOOTING_F, SHOOTING_SF, false);
+            if(canFire) isCharging = false;
+        } else if (isFrame(SHOOTING_F, SHOOTING_SF, false)){
             frame += 20;
             timeElapsed = 0;
-        } else {
-            throw new RuntimeException("Raft has reached illegal state.");
         }
         // flip texture based on movement
-        float flip = getLinearVelocity().x < 0 ? -1 : 1;
+        flip = getLinearVelocity().x < 0 ? -1 : 1;
         textureScale.x = flip * Math.abs(textureScale.x);
     }
 
@@ -366,4 +350,22 @@ public class Raft extends GameObject {
         super.draw(canvas);
     }
 
+    /** @param s */
+    public void setSpear(Spear s){
+        spear = s;
+    }
+
+    /** @return whether this raft has a spear or not. */
+    public boolean hasSpear(){
+        return spear != null && !spear.isDestroyed();
+    }
+
+    public void updateSpear(){
+        if(!hasSpear()) return;
+        spear.setFloatPosition(getPosition(), flip);
+    }
+
+    public Spear getSpear(){
+        return spear;
+    }
 }

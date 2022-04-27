@@ -12,11 +12,16 @@ public class Spear extends Projectile {
      * @param objParams the "spear" child in "object_settings.json"
      */
     public static void setConstants(JsonValue objParams){
-        SPEED = objParams.getFloat(0);
-        DAMAGE = objParams.getFloat(1);
-        TEXTURE_SCALE = objParams.getFloat(2);
-        RANGE_FLY = objParams.getInt(3);
-        RANGE_FALL = objParams.getInt(4);
+        SPEED = objParams.getFloat("speed scale");
+        DAMAGE = objParams.getFloat("health cost");
+        TEXTURE_SCALE = objParams.getFloat("texture scale");
+        LENGTH = objParams.getFloat("body length");
+        WIDTH = objParams.getFloat("body width");
+        SPEAR_XO = objParams.getFloat("x offset");
+        SPEAR_YO = objParams.getFloat("y offset");
+        ANGLE = objParams.getFloat("angle");
+        RANGE_FLY = objParams.getInt("range fly");
+        RANGE_FALL = objParams.getInt("range fall");
     }
 
     // SPEAR
@@ -25,11 +30,17 @@ public class Spear extends Projectile {
     public static float DAMAGE;
     /** Size of a spear. */
     public static float TEXTURE_SCALE;
-    private static float LENGTH = 1f;
-    private static float WIDTH = 0.1f;
+    private static float LENGTH;
+    private static float WIDTH;
     /** Range of a spear. */
     private static int RANGE_FLY;
     private static int RANGE_FALL;
+    private static float SPEAR_XO;
+    private static float SPEAR_YO;
+    private static float ANGLE;
+    /** Whether it has been fired. */
+    private boolean fired = false;
+
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
     @Override
@@ -42,13 +53,31 @@ public class Spear extends Projectile {
     /**
      * Constructor for the Spear.
      */
-    public Spear(Vector2 pos, Vector2 dir, Vector2 raft_speed) {
-        super(pos.cpy());
+    public Spear(Vector2 pos) {
+        // Does not initially interact with anything.
         physicsObject = new BoxObstacle(WIDTH, LENGTH);
+        physicsObject.getFilterData().categoryBits = 0;
+        physicsObject.getFilterData().maskBits = 0;
+        setPosition(pos.add(SPEAR_XO, SPEAR_YO));
+        setAngle(ANGLE);
+    }
+
+    public void fire(Vector2 dir, Vector2 raft_speed){
+        fired = true;
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
         physicsObject.getFilterData().maskBits = MASK_PLAYER_BULLET;
         setAngle(dir.angleDeg()-90f);
         setBody(dir.scl(SPEED).mulAdd(raft_speed, 0.5f));
+    }
+
+    /**
+     * Change the position of this spear relative to the raft.
+     * @param pos the raft position
+     */
+    public void setFloatPosition(Vector2 pos, float flip){
+        pos.add(SPEAR_XO * flip, SPEAR_YO);
+        setPosition(pos);
+        setAngle(-Math.abs(getAngle()) * flip);
     }
 
     /**
@@ -66,11 +95,11 @@ public class Spear extends Projectile {
      */
     @Override
     public void update(float delta) {
-        super.update(delta, RANGE_FLY);
+        if(fired) super.update(delta, RANGE_FLY);
     }
 
     /** @return whether this spear is set to be destroyed. */
     public boolean outMaxDistance(){
-        return outMaxDistance(RANGE_FALL);
+        return fired && outMaxDistance(RANGE_FALL);
     }
 }

@@ -32,10 +32,10 @@ public class Note extends Projectile {
     private static float FORCE;
 
     public Note(Vector2 pos, Vector2 dir) {
-        super(pos);
         physicsObject = new WheelObstacle(WIDTH);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY_BULLET;
         physicsObject.getFilterData().maskBits = MASK_NOTE;
+        physicsObject.setPosition(pos);
         setBody(dir.scl(SPEED));
     }
 

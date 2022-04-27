@@ -3,6 +3,7 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
@@ -122,6 +123,8 @@ public abstract class GameObject {
     public void update(float dt) {
         physicsObject.update(dt);
     }
+
+    public Body getBody(){ return physicsObject.getBody(); }
 
     public void deactivatePhysics(World world) {
         physicsObject.deactivatePhysics(world);

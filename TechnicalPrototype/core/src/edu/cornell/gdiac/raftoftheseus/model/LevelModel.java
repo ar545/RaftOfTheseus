@@ -1004,14 +1004,23 @@ public class LevelModel {
 
     /**
      * Add a new bullet to the world based on clicked point.
-     * @param firelocation where the player cliked in box2d coordinates
      */
-    public void createSpear(Vector2 firelocation) {
-        Vector2 facing = firelocation.sub(raft.getPosition()).nor();
-        Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
-        Spear s = new Spear(raft.getPosition(), facing, raft_speed);
+    public void createSpear() {
+        Spear s = new Spear(raft.getPosition());
         s.setTexture(spearTexture);
         addQueuedObject(s);
+        raft.setSpear(s);
+    }
+
+    /**
+     *
+     * @param firelocation
+     */
+    public void fireSpear(Vector2 firelocation){
+        Vector2 facing = firelocation.sub(raft.getPosition()).nor();
+        Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
+        raft.getSpear().fire(facing, raft_speed);
+        raft.setSpear(null);
     }
 
     /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects
@@ -1113,7 +1122,12 @@ public class LevelModel {
 
     private static class renderOrderComparator implements Comparator<GameObject>{
         public int compare(GameObject a, GameObject b) {
-            return (int)Math.signum(b.getY() - a.getY());
+            if(a.getType() == GameObject.ObjectType.SPEAR && b.getType() == GameObject.ObjectType.RAFT){
+                return 1;
+            } else if (b.getType() == GameObject.ObjectType.SPEAR && a.getType() == GameObject.ObjectType.RAFT){
+                return -1;
+            }
+            return (int) Math.signum(b.getY() - a.getY());
         }
     }
 

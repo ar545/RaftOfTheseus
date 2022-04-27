@@ -1,13 +1,10 @@
 package edu.cornell.gdiac.raftoftheseus;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -222,6 +219,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.clear();
 
         // update animations
+        levelModel.getPlayer().updateSpear();
         levelModel.getPlayer().setAnimationFrame(dt);
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
@@ -749,23 +747,28 @@ public class WorldController implements Screen, ContactListener {
         InputController ic = InputController.getInstance();
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
-        player.setCharging(ic.didCharge());
-        if(!wasCharging && player.isCharging() || player.justFired() && player.isCharging()){
+        player.beginCharging(ic.didCharge());
+
+        // Play sfx
+        if(!wasCharging && player.isCharging()){
             wasCharging = true;
             SfxController.getInstance().playSFX("spear_charge");
-        } else if (wasCharging && !player.isCharging()){
-            wasCharging = false;
-            SfxController.getInstance().stopSFX("spear_charge");
         }
 
-        // Add a bullet if we fire
-        if (player.canFire()) {
+        // Create spear when possible
+        if(player.canFire() && !player.hasSpear()){
+            levelModel.createSpear();
+        }
+
+        // Move spear move after firing.
+        if (player.canFire() && ic.didCharge() && player.hasSpear()) {
             // find the nearest enemy to player
+            player.resetCanFire();
             Vector2 firePixel = ic.getFireDirection();
             levelModel.getCameraTransform().inv().applyTo(firePixel);
-            levelModel.createSpear(firePixel);
-            player.addHealth(Spear.DAMAGE);
+            levelModel.fireSpear(firePixel);
             SfxController.getInstance().playSFX("spear_throw");
+            wasCharging = false;
         }
 
         // update forces for enemies, players, objects
