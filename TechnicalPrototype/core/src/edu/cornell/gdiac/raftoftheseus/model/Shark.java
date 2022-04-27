@@ -182,7 +182,7 @@ public class Shark extends GameObject {
     protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+        textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f - 1.0f);
     }
 
     /**

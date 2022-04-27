@@ -266,8 +266,8 @@ public class WorldController implements Screen, ContactListener {
     }
 
     private float hintTimer = 0f;
-    private float fadeTimeStart = 8f;
-    private float fadeTimeEnd = 10f;
+    private float fadeTimeStart = 5f;
+    private float fadeTimeEnd = 6f;
     private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
     private boolean blockHint = false;
 
