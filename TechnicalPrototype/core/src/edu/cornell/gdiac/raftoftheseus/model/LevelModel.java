@@ -1133,8 +1133,6 @@ public class LevelModel {
             canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
-    public void resetLerp() {  }
-
     private static class renderOrderComparator implements Comparator<GameObject>{
         public int compare(GameObject a, GameObject b) {
             if(a.getType() == GameObject.ObjectType.SPEAR && b.getType() == GameObject.ObjectType.RAFT){
@@ -1234,6 +1232,9 @@ public class LevelModel {
         translation.y = Math.max(translation.y, canvas.getHeight() - wallBounds.height * PIXELS_PER_UNIT);
         cameraTransform = a.preTranslate(translation);
     }
+
+    /** reset the most recent lerp position */
+    public void resetLerp() { lerpCamera.set(getPlayer().getPosition().scl(PIXELS_PER_UNIT)); }
 
     /** change the level light effect, for testing purposes only */
     public void change(boolean debug) {

@@ -1241,7 +1241,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.setShaderColors(shaderColors);
 
         // reset lerp if level changed
-        if(!same_level) {levelModel.resetLerp();}
+        if(!same_level) { levelModel.resetLerp(); }
     }
 
     /**
