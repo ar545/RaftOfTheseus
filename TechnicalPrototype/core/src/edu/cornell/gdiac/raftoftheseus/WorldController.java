@@ -273,7 +273,7 @@ public class WorldController implements Screen, ContactListener {
             case(2):
                 hint = hintMap;
                 break;
-            case(5):
+            case(4):
                 hint = hintAttack;
                 break;
             default:
@@ -1012,6 +1012,7 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
             s.setDestroyed(true);
+            g.setDestroyed(true);
         }
 //      else if(g.getType() == GameObject.ObjectType.HYDRA) {
 //            // stun hydra
