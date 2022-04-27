@@ -151,7 +151,7 @@ public class SettingsMode implements Screen {
         Table part1 = new Table();
         part1.align(Align.left);
         TextButton menuButton = new TextButton("BACK", skin);
-        menuButton.getLabel().setFontScale(0.35f);
+        menuButton.getLabel().setFontScale(0.4f);
         menuButton.getLabel().setColor(Color.GOLD);
         menuButton.addListener(new ClickListener(){
             @Override
@@ -173,25 +173,25 @@ public class SettingsMode implements Screen {
                 exitPressed = true;
             }
         });
-        part1.add(menuButton).expandX().align(Align.left).padRight(1100).padTop(10);
+        part1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
         table.add(part1);
         table.row();
 
         Table part2 = new Table();
         Label titleLabel = new Label("SETTINGS", skin);
-        titleLabel.setFontScale(0.5f);
+        titleLabel.setFontScale(0.6f);
         part2.add(titleLabel).expandX().align(Align.center);
         table.add(part2).padTop(-50);
         table.row();
 
         Table part3 = new Table();
         Label volumeLabel = new Label("VOLUME", skin);
-        volumeLabel.setFontScale(0.35f);
+        volumeLabel.setFontScale(0.5f);
         part3.add(volumeLabel).padLeft(80).expandX().align(Align.left);
         part3.row();
 
         Label musicLabel = new Label("MUSIC", skin);
-        musicLabel.setFontScale(0.3f);
+        musicLabel.setFontScale(0.4f);
         part3.add(musicLabel).padLeft(100).expandX().align(Align.left);
 
         Drawable sliderKnobDrawable = new TextureRegionDrawable(new TextureRegion(sliderKnob));
@@ -200,7 +200,7 @@ public class SettingsMode implements Screen {
 
         musicVolume = SfxController.getInstance().getMasterMusicVolume() * 100f;
         Label musicValueLabel = new Label(String.valueOf((int) Math.floor(musicVolume)), skin);
-        musicValueLabel.setFontScale(0.3f);
+        musicValueLabel.setFontScale(0.4f);
 
         musicSlider = new Slider(0, 100, 1, false, sliderStyle);
         musicSlider.setValue(musicVolume);
@@ -213,16 +213,16 @@ public class SettingsMode implements Screen {
             }
         });
         stage.addActor(musicSlider);
-        part3.add(musicSlider).expandX().align(Align.left).width(500).padLeft(-100);
+        part3.add(musicSlider).expandX().align(Align.left).width(600).padLeft(-100);
         part3.add(musicValueLabel).expandX().align(Align.left).width(80).padLeft(60);
         part3.row();
 
         soundEffectsVolume = SfxController.getInstance().getMasterSFXVolume() * 100;
         Label soundEffectsLabel = new Label("SOUND EFFECTS", skin);
-        soundEffectsLabel.setFontScale(0.3f);
+        soundEffectsLabel.setFontScale(0.4f);
         part3.add(soundEffectsLabel).padLeft(100).align(Align.left);
         Label soundEffectsValueLabel = new Label(String.valueOf((int) Math.floor(soundEffectsVolume)), skin);
-        soundEffectsValueLabel.setFontScale(0.3f);
+        soundEffectsValueLabel.setFontScale(0.4f);
         soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
         soundEffectsSlider.setValue(soundEffectsVolume);
         soundEffectsSlider.addListener(new ChangeListener() {
@@ -234,30 +234,30 @@ public class SettingsMode implements Screen {
             }
         });
         stage.addActor(soundEffectsSlider);
-        part3.add(soundEffectsSlider).expandX().align(Align.left).width(500).padLeft(-100);
+        part3.add(soundEffectsSlider).expandX().align(Align.left).width(600).padLeft(-100);
         part3.add(soundEffectsValueLabel).align(Align.left).width(80).padLeft(60);
         part3.row();
 
         Label keyboardSchemeLabel = new Label("KEYBOARD SCHEME", skin);
-        keyboardSchemeLabel.setFontScale(0.35f);
+        keyboardSchemeLabel.setFontScale(0.5f);
         part3.add(keyboardSchemeLabel).padLeft(80).expandX().align(Align.left);
         part3.row();
 
         Image wasdImage = new Image(wasdIcon);
         Image arrowsImage = new Image(arrrowsIcon);
-        part3.add(wasdImage).size(142, 87).expandX().padLeft(100).align(Align.left);
-        part3.add(arrowsImage).size(142, 87).align(Align.left).padLeft(-200);
+        part3.add(wasdImage).size(212, 130).expandX().padLeft(100).align(Align.left);
+        part3.add(arrowsImage).size(212, 130).align(Align.left).padLeft(-200);
         part3.row();
 
         Label keyboardShortcutLabel = new Label("KEYBOARD SHORTCUTS", skin);
-        keyboardShortcutLabel.setFontScale(0.35f);
+        keyboardShortcutLabel.setFontScale(0.5f);
         part3.add(keyboardShortcutLabel).padLeft(80);
         part3.row();
 
         Image keysImage1 = new Image(keysIcon1);
-        part3.add(keysImage1).size(275, 52).padLeft(100).align(Align.left).expandX();
+        part3.add(keysImage1).size(412, 78).padLeft(100).align(Align.left).expandX();
         Image keysImage2 = new Image(keysIcon2);
-        part3.add(keysImage2).size(275, 52).expandX().align(Align.left).padLeft(-80);;
+        part3.add(keysImage2).size(412, 78).expandX().align(Align.left).padLeft(-80);;
         table.add(part3);
         table.row();
     }
