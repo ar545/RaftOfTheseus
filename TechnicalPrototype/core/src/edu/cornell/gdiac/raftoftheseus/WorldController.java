@@ -64,6 +64,8 @@ public class WorldController implements Screen, ContactListener {
     // CONSTANTS
     /** How many frames after winning/losing do we continue? */
     public static int EXIT_COUNT = 1000;
+    /** Number of tutorial levels */
+    public static int TUTORIAL_COUNT = 5;
     /** The amount of time for a physics engine step. */
     public static float WORLD_STEP;
     /** Number of velocity iterations for the constraint solvers */
@@ -349,7 +351,7 @@ public class WorldController implements Screen, ContactListener {
             table.setBackground(skin.getDrawable("pause_background"));
 
             TextButton resumeButton = new TextButton("RESUME", skin);
-            resumeButton.getLabel().setFontScale(0.35f);
+            resumeButton.getLabel().setFontScale(0.5f);
             resumeButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -375,7 +377,7 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton restartButton = new TextButton("RESTART", skin);
-            restartButton.getLabel().setFontScale(0.35f);
+            restartButton.getLabel().setFontScale(0.5f);
             restartButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -401,7 +403,7 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton settingsButton = new TextButton("SETTINGS", skin);
-            settingsButton.getLabel().setFontScale(0.35f);
+            settingsButton.getLabel().setFontScale(0.5f);
             table.add(settingsButton);
             settingsButton.addListener(new ClickListener() {
                 @Override
@@ -428,7 +430,7 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.35f);
+            exitButton.getLabel().setFontScale(0.5f);
             exitButton.getLabel().setColor(Color.GOLD);
             exitButton.addListener(new ClickListener() {
                 @Override
@@ -461,7 +463,7 @@ public class WorldController implements Screen, ContactListener {
         if (!transitionBuilt) {
             transitionBuilt = true;
             if (complete && !failed) {
-                buildTransitionScreen(successBackgrounds[Math.min(playerScore, successBackgrounds.length-1)], false);
+                buildTransitionScreen(successBackgrounds[level_id < TUTORIAL_COUNT ? successBackgrounds.length - 1 : playerScore], false);
             } else {
                 buildTransitionScreen(failedBackground, true);
             }
@@ -482,7 +484,7 @@ public class WorldController implements Screen, ContactListener {
 
         Table part1 = new Table();
         TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", skin);
-        mainButton.getLabel().setFontScale(0.4f);
+        mainButton.getLabel().setFontScale(0.6f);
         float buttonWidth =  mainButton.getWidth();
         mainButton.addListener(new ClickListener() {
             @Override
@@ -517,7 +519,7 @@ public class WorldController implements Screen, ContactListener {
         part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
             TextButton replayButton = new TextButton("REPLAY", skin);
-            replayButton.getLabel().setFontScale(0.35f);
+            replayButton.getLabel().setFontScale(0.5f);
             replayButton.addListener(new ClickListener() {
                 @Override
                 public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -543,7 +545,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         TextButton settingsButton = new TextButton("SETTINGS", skin);
-        settingsButton.getLabel().setFontScale(0.35f);
+        settingsButton.getLabel().setFontScale(0.5f);
         settingsButton.addListener(new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
@@ -568,7 +570,7 @@ public class WorldController implements Screen, ContactListener {
         part2.add(settingsButton).expandX();
 
         TextButton exitButton = new TextButton("EXIT", skin);
-        exitButton.getLabel().setFontScale(0.35f);
+        exitButton.getLabel().setFontScale(0.5f);
         exitButton.getLabel().setColor(Color.GOLD);
         exitButton.addListener(new ClickListener() {
             @Override

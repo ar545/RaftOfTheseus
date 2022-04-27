@@ -14,6 +14,7 @@ public class DesktopLauncher {
 		config.resizable = false;
 		config.title = "Raft of Theseus";
 		config.addIcon("images/icon.png", Files.FileType.Internal);
+		config.addIcon("images/icon2.png", Files.FileType.Internal);
 		new LwjglApplication(new GDXRoot(), config);
 	}
 }
