@@ -64,7 +64,9 @@
     "y offset" : 1.045,
     "angle" : -6.69,
     "range fly" :  10.0,
-    "range fall" : 11.0
+    "range fall" : 11.0,
+    "float range" : 0.5,
+    "float speed" : 1.3
   },
   "note" : {
     "speed scale" : 15.0,

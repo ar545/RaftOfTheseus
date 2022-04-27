@@ -22,6 +22,8 @@ public class Spear extends Projectile {
         ANGLE = objParams.getFloat("angle");
         RANGE_FLY = objParams.getInt("range fly");
         RANGE_FALL = objParams.getInt("range fall");
+        FLOAT_RANGE = objParams.getFloat("float range");
+        FLOAT_SPEED = objParams.getFloat("float speed");
     }
 
     // SPEAR
@@ -38,6 +40,8 @@ public class Spear extends Projectile {
     private static float SPEAR_XO;
     private static float SPEAR_YO;
     private static float ANGLE;
+    private static float FLOAT_RANGE;
+    private static float FLOAT_SPEED;
     /** Whether it has been fired. */
     private boolean fired = false;
 
@@ -74,8 +78,9 @@ public class Spear extends Projectile {
      * Change the position of this spear relative to the raft.
      * @param pos the raft position
      */
-    public void setFloatPosition(Vector2 pos, float flip){
-        pos.add(SPEAR_XO * flip, SPEAR_YO);
+    public void setFloatPosition(Vector2 pos, float floatTime, float flip){
+        float y_float = (float) Math.sin(floatTime*FLOAT_SPEED) * FLOAT_RANGE;
+        pos.add(SPEAR_XO * flip, SPEAR_YO + y_float);
         setPosition(pos);
         setAngle(-Math.abs(getAngle()) * flip);
     }

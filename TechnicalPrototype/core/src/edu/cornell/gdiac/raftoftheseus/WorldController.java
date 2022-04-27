@@ -220,7 +220,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.clear();
 
         // update animations
-        levelModel.getPlayer().updateSpear();
+        levelModel.getPlayer().updateSpear(dt);
         levelModel.getPlayer().setAnimationFrame(dt);
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
@@ -241,7 +241,7 @@ public class WorldController implements Screen, ContactListener {
         drawStar(levelModel.getPlayer().getStar());
 
         // draw control hints
-        drawControlHints();
+        drawControlHints(dt);
 
         // draw interfaces
         if (debug) {
@@ -265,7 +265,20 @@ public class WorldController implements Screen, ContactListener {
         }
     }
 
-    private void drawControlHints() {
+    private float hintTimer = 0f;
+    private float fadeTimeStart = 3f;
+    private float fadeTimeEnd = 4f;
+    private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
+    private boolean blockHint = false;
+
+    private void resetControlHints(){
+        hintTimer = 0;
+        blockHint = false;
+    }
+
+    private void drawControlHints(float dt) {
+        if(blockHint) return;
+        hintTimer += dt;
         TextureRegion hint = null;
         switch(level_id) {
             case(0):
@@ -280,11 +293,22 @@ public class WorldController implements Screen, ContactListener {
             default:
                 // draw nothing
         }
+        if(hintTimer >= fadeTimeEnd) {
+            blockHint = true;
+            return;
+        }
         if (hint != null) {
             canvas.begin();
-            canvas.draw(hint, Color.WHITE, hint.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hint.getRegionWidth(), hint.getRegionHeight());
+            Color c;
+            if(hintTimer >= fadeTimeStart){
+                c = new Color(1f, 1f, 1f, (fadeTimeEnd - hintTimer)/fadeTimeSpan);
+            } else {
+                c = Color.WHITE;
+            }
+            canvas.draw(hint, c, hint.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hint.getRegionWidth(), hint.getRegionHeight());
             canvas.end();
         }
+
     }
 
     private void saveGame() {
@@ -902,7 +926,7 @@ public class WorldController implements Screen, ContactListener {
             wasMoving = true;
         } else if(wasMoving && !player.isMoving()){
             SfxController.getInstance().stopSFX("raft_sail_wind");
-            SfxController.getInstance().playSFX("raft_sail_down");
+//            SfxController.getInstance().playSFX("raft_sail_down");
             wasMoving = false;
         }
     }
@@ -1178,10 +1202,15 @@ public class WorldController implements Screen, ContactListener {
         pauseBuilt = false;
         settingsPressed = false;
         wasComplete = false;
+        wasMoving = false;
+        wasCharging = false;
 
         // Reset Soundcontroller
         SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
         SfxController.getInstance().startLevelMusic();
+
+        // Reset hint displays
+        resetControlHints();
 
         // Reset player position history
         for(int i = 0; i < raftSampleSpeeds.length; i++) {

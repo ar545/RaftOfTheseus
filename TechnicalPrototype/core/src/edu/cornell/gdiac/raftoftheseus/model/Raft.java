@@ -362,6 +362,7 @@ public class Raft extends GameObject {
     /** @param s */
     public void setSpear(Spear s){
         spear = s;
+        floatTime = 0;
     }
 
     /** @return whether this raft has a spear or not. */
@@ -369,9 +370,15 @@ public class Raft extends GameObject {
         return spear != null && !spear.isDestroyed();
     }
 
-    public void updateSpear(){
+    float floatTime;
+
+    public void updateSpear(float dt){
         if(!hasSpear()) return;
-        spear.setFloatPosition(getPosition(), flip);
+        floatTime += dt;
+        if(floatTime >= 360){
+            floatTime = 0;
+        }
+        spear.setFloatPosition(getPosition(), floatTime, flip);
     }
 
     public Spear getSpear(){

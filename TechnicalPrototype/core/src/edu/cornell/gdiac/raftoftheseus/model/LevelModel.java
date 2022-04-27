@@ -1191,7 +1191,7 @@ public class LevelModel {
         float modifiedX = mouseGamePos.x;
         float modifiedY = mouseGamePos.y;
 
-        canvas.draw(reticleTexture, Color.WHITE, reticleTexture.getRegionWidth()*0.5f, reticleTexture.getRegionHeight()*0.5f,
+        canvas.draw(reticleTexture, new Color(0.82f, 0.70f, 0.03f, 1f), reticleTexture.getRegionWidth()*0.5f, reticleTexture.getRegionHeight()*0.5f,
                 modifiedX, modifiedY, reticleTexture.getRegionWidth(), reticleTexture.getRegionHeight());
     }
 
