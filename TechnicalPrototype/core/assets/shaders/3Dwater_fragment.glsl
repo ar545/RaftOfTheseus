@@ -51,8 +51,8 @@ const float texture_offset_time_scale = 0.03;
 // surf parameters
 const float surf_amplitude = 1.75;
 const float surf_speed = 0.08; // in tile widths per second
-const float surf_wavelength = 0.15; // as a multiple of 1 tile width
-const float surf_start = 0.1; // surf which is less than this distance away from a shore will be static
+const float surf_wavelength = 0.2; // as a multiple of 1 tile width
+const float surf_start = 0.0; // surf which is less than this distance away from a shore will be static
 const float surf_range = 0.5; // surf which is more than this distance away from a shore won't show up
 
 // wake parameters

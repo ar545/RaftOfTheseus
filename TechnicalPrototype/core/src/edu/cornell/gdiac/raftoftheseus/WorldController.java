@@ -270,11 +270,11 @@ public class WorldController implements Screen, ContactListener {
             case(0):
                 hint = hintMovement;
                 break;
-            case(1):
-                hint = hintAttack;
-                break;
             case(2):
                 hint = hintMap;
+                break;
+            case(5):
+                hint = hintAttack;
                 break;
             default:
                 // draw nothing
