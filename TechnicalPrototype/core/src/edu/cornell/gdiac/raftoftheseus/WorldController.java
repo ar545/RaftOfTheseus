@@ -238,7 +238,7 @@ public class WorldController implements Screen, ContactListener {
         if(level_id > 5){ levelModel.renderLights(); } // New Added: Draw the light effects! if level is 4 up.
 
         // draw stars
-        drawStar(levelModel.getPlayer().getStar());
+        drawStar(playerScore);
 
         // draw control hints
         drawControlHints(dt);
@@ -1089,10 +1089,7 @@ public class WorldController implements Screen, ContactListener {
             }, .1f, 1, 1);
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
-            r.addStar();
-            levelModel.addRandomWood();
-            playerScore++;
-            SfxController.getInstance().playSFX("chest_collect");
+            addScore();
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
@@ -1104,6 +1101,13 @@ public class WorldController implements Screen, ContactListener {
             r.addHealth(Note.DAMAGE);
             g.setDestroyed(true);
         }
+    }
+
+    private void addScore(){
+        levelModel.addRandomWood();
+        playerScore++;
+        if(playerScore > 3) { playerScore = 3; System.out.println("incorrect 4th treasure detected."); }
+        SfxController.getInstance().playSFX("chest_collect");
     }
 
     /** Unused Callback method for the end of a collision.*/
