@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus.model.projectile;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
@@ -60,7 +61,7 @@ public class Spear extends Projectile {
     public Spear(Vector2 pos) {
         // Does not initially interact with anything.
         physicsObject = new BoxObstacle(WIDTH, LENGTH);
-        physicsObject.getFilterData().categoryBits = 0;
+        physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
         physicsObject.getFilterData().maskBits = 0;
         setPosition(pos.add(SPEAR_XO, SPEAR_YO));
         setAngle(ANGLE);
@@ -68,8 +69,9 @@ public class Spear extends Projectile {
 
     public void fire(Vector2 dir, Vector2 raft_speed){
         fired = true;
-        physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
-        physicsObject.getFilterData().maskBits = MASK_PLAYER_BULLET;
+        Filter f = physicsObject.getFilterData();
+        f.maskBits = MASK_PLAYER_BULLET;
+        physicsObject.setFilterData(f);
         setAngle(dir.angleDeg()-90f);
         setBody(dir.scl(SPEED).mulAdd(raft_speed, 0.5f));
     }
