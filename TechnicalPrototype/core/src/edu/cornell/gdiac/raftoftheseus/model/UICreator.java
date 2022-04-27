@@ -22,9 +22,7 @@ public class UICreator {
     /** The color for hovered buttons */
     private static Color activeColor = Color.GOLD;
 
-    public UICreator(){
-
-    }
+    public UICreator(){}
 
     // TEXTBUTTON CREATORS
 

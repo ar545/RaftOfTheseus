@@ -189,11 +189,9 @@ public class SettingsMode implements Screen {
         part3.row();
 
         soundEffectsVolume = SfxController.getInstance().getMasterSFXVolume() * 100;
-        Label soundEffectsLabel = new Label("SOUND EFFECTS", skin);
-        soundEffectsLabel.setFontScale(0.4f);
-        part3.add(soundEffectsLabel).padLeft(100).align(Align.left);
-        Label soundEffectsValueLabel = new Label(String.valueOf((int) Math.floor(soundEffectsVolume)), skin);
-        soundEffectsValueLabel.setFontScale(0.4f);
+        part3.add(UICreator.createLabel("SOUND EFFECTS", skin, 0.4f)).padLeft(100).align(Align.left);
+
+        Label soundEffectsValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(soundEffectsVolume)), skin, 0.4f);
         soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
         soundEffectsSlider.setValue(soundEffectsVolume);
         soundEffectsSlider.addListener(new ChangeListener() {
@@ -209,9 +207,7 @@ public class SettingsMode implements Screen {
         part3.add(soundEffectsValueLabel).align(Align.left).width(80).padLeft(60);
         part3.row();
 
-        Label keyboardSchemeLabel = new Label("KEYBOARD SCHEME", skin);
-        keyboardSchemeLabel.setFontScale(0.5f);
-        part3.add(keyboardSchemeLabel).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("KEYBOARD SCHEME", skin, 0.5f)).padLeft(80).expandX().align(Align.left);
         part3.row();
 
         Image wasdImage = new Image(wasdIcon);
@@ -220,9 +216,7 @@ public class SettingsMode implements Screen {
         part3.add(arrowsImage).size(212, 130).align(Align.left).padLeft(-200);
         part3.row();
 
-        Label keyboardShortcutLabel = new Label("KEYBOARD SHORTCUTS", skin);
-        keyboardShortcutLabel.setFontScale(0.5f);
-        part3.add(keyboardShortcutLabel).padLeft(80);
+        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin, 0.5f)).padLeft(80);
         part3.row();
 
         Image keysImage1 = new Image(keysIcon1);
