@@ -238,7 +238,7 @@ public class WorldController implements Screen, ContactListener {
         if(level_id > 5){ levelModel.renderLights(); } // New Added: Draw the light effects! if level is 4 up.
 
         // draw stars
-        drawStar(levelModel.getPlayer().getStar());
+        drawStar(playerScore);
 
         // draw control hints
         drawControlHints(dt);
@@ -1092,10 +1092,7 @@ public class WorldController implements Screen, ContactListener {
             }, .1f, 1, 1);
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
-            r.addStar();
-            levelModel.addRandomWood();
-            playerScore++;
-            SfxController.getInstance().playSFX("chest_collect");
+            addScore();
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
@@ -1107,6 +1104,13 @@ public class WorldController implements Screen, ContactListener {
             r.addHealth(Note.DAMAGE);
             g.setDestroyed(true);
         }
+    }
+
+    private void addScore(){
+        levelModel.addRandomWood();
+        playerScore++;
+        if(playerScore > 3) { playerScore = 3; System.out.println("incorrect 4th treasure detected."); }
+        SfxController.getInstance().playSFX("chest_collect");
     }
 
     /** Unused Callback method for the end of a collision.*/
@@ -1190,6 +1194,8 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void setLevel(int level_int){
+        // check if load the same level, if not, reset lerp vector
+        boolean same_level = level_int == level_id;
         level_id = level_int;
         JsonValue level_data = directory.getEntry("level:" + level_int, JsonValue.class);
         System.out.println("Loaded level "+level_int);
@@ -1240,6 +1246,9 @@ public class WorldController implements Screen, ContactListener {
             shaderColors[3*i+2] = c.b;
         }
         canvas.setShaderColors(shaderColors);
+
+        // reset lerp if level changed
+        if(!same_level) { levelModel.resetLerp(); }
     }
 
     /**

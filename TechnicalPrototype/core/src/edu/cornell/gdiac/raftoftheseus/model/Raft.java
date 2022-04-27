@@ -62,8 +62,6 @@ public class Raft extends GameObject {
     public static float MAXIMUM_PLAYER_HEALTH;
     /** Initial player health */
     public static float INITIAL_PLAYER_HEALTH;
-    /** The star of the level. This must be >=0. */
-    private int star;
     /** Whether the raft is actively firing */
     private boolean isCharging;
     private boolean canFire;
@@ -113,7 +111,6 @@ public class Raft extends GameObject {
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER;
         physicsObject.getFilterData().maskBits = MASK_PLAYER;
         this.health = INITIAL_PLAYER_HEALTH;
-        this.star = 0;
 
         interactionSensor = new WheelObstacle(SENSOR_RADIUS);
         interactionSensor.setSensor(true);
@@ -141,8 +138,6 @@ public class Raft extends GameObject {
     public void deactivatePhysics(World world) {
         super.deactivatePhysics(world);
         interactionSensor.deactivatePhysics(world);
-        // TODO: save level star
-        star = 0; // Clear level star
     }
 
     @Override
@@ -237,13 +232,6 @@ public class Raft extends GameObject {
     public void addHealth(float dh) {
         health = Math.min(health + dh, MAXIMUM_PLAYER_HEALTH);
     }
-
-
-    /** Add one star to the player star count */
-    public void addStar() { star++; }
-
-    /** Get the star of the level */
-    public int getStar() { return star; }
 
     /** Reduce player health based on distance traveled and movement cost. */
     public void applyMoveCost(float dt) {

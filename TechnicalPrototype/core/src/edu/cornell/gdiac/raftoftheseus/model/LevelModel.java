@@ -2,8 +2,6 @@ package edu.cornell.gdiac.raftoftheseus.model;
 
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.btree.Task;
-import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -98,14 +96,13 @@ public class LevelModel {
     /** layer of siren */
     private static final int LAYER_SIREN = 2;
     private static final int TERRAIN_TYPES = 13;
+    private static final float LERP_FACTOR = 0.05f;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
     private Raft raft;
     /** The goal of the level */
     private Goal goal;
-    /** The wall of the level */
-    private Wall this_wall;
     /** The vertices of the wall */
     private float[] polygonVertices;
     /** Reference to the game assets directory */
@@ -144,6 +141,8 @@ public class LevelModel {
     protected OrthographicCamera raycamera;
     /** what light effect to show the player */
     private int light_effect = 0;
+    /** the lerp-camera that allow camera retracing */
+    Vector2 lerpCamera = new Vector2(0, 0);
 
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
@@ -199,14 +198,11 @@ public class LevelModel {
     private GameObject[][] obstacles;
 
     /**
-     * The number of ticks since we beginning the level
+     * The number of ticks since we were beginning the level
      */
-
     private long ticks;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
-    /** Constructor call for this singleton class */
-    public LevelModel(){}
     /** get the reference to the player avatar */
     public Raft getPlayer() { return raft; }
     /** get a reference to the goal */
@@ -354,14 +350,6 @@ public class LevelModel {
         return new Affine2().set(cameraTransform);
     }
 
-    // TODO Create enemy super class to reduce redundant code.
-//    protected void addHydraObject(Hydra obj) {
-//        assert inBounds(obj) : "Object is not in bounds";
-//        objects.add(obj);
-//        obj.activatePhysics(world);
-//        hydras.add(obj);
-//    }
-
     /** add siren to the world */
     protected void addSirenObject(Siren this_siren) {
         assert inBounds(this_siren) : "Object is not in bounds";
@@ -472,7 +460,8 @@ public class LevelModel {
         y1 += -DEFAULT_BOUNDARY;
         y2 += -DEFAULT_BOUNDARY;
         float[] polygonVertices = new float[] {x1, y1, x2, y1, x2, y2, x1, y2};
-        this_wall = new Wall(polygonVertices);
+        /** The wall of the level */
+        Wall this_wall = new Wall(polygonVertices);
         this_wall.setTexture(earthTile);
         addObject(this_wall);
     }
@@ -1215,10 +1204,11 @@ public class LevelModel {
      * Update the "cameraTransform" with an affine transformation that texture will go through */
     public void updateCameraTransform() {
         Affine2 a = new Affine2().setToScaling(PIXELS_PER_UNIT, PIXELS_PER_UNIT);
+        lerpCamera.scl(1 - LERP_FACTOR)
+                .add(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT).scl(LERP_FACTOR));
 
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2)
-                .sub(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT));
+        Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2).sub(lerpCamera);
 
         // "Capped Camera": bound x and y within walls
         Rectangle wallBounds = wallBounds();
@@ -1229,10 +1219,13 @@ public class LevelModel {
         cameraTransform = a.preTranslate(translation);
     }
 
+    /** reset the most recent lerp position */
+    public void resetLerp() { lerpCamera.set(getPlayer().getPosition().scl(PIXELS_PER_UNIT)); }
+
     /** change the level light effect, for testing purposes only */
     public void change(boolean debug) {
         light_effect ++;
-        if( light_effect == 3 ){ light_effect = 0; if(debug) { raft.addHealth(160); } } // for testing purposes
+        if( light_effect == 3 ){ light_effect = 0; if(debug) { raft.addHealth(200); } } // for testing purposes
     }
 
     /** draw a circle showing how far the player can move before they die */
