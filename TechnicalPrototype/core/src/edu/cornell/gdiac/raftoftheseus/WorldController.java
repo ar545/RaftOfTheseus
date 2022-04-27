@@ -237,7 +237,7 @@ public class WorldController implements Screen, ContactListener {
         // Draw the level
         levelModel.updateCameraTransform();
         levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f);
-        if(level_id > 4){ levelModel.renderLights(); } // New Added: Draw the light effects! if level is 4 up.
+        if(level_id > 5){ levelModel.renderLights(); } // New Added: Draw the light effects! if level is 4 up.
 
         // draw stars
         drawStar(levelModel.getPlayer().getStar());
