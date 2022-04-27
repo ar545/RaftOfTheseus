@@ -62,11 +62,11 @@
     "range fall" : 11.0
   },
   "note" : {
-    "speed scale" : 10.0,
-    "health cost" : -15.0,
+    "speed scale" : 15.0,
+    "health cost" : -20.0,
     "texture scale" : 2,
-    "range fly" :  10.0,
-    "range fall" : 11.0,
+    "range fly" :  12.0,
+    "range fall" : 14.0,
     "force" : 30,
     "width" : 0.8
   },
