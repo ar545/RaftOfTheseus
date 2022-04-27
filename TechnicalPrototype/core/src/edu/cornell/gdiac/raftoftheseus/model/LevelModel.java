@@ -521,7 +521,7 @@ public class LevelModel {
                     }
                 }
             }
-            Vector2 position = new Vector2(obj.getFloat("x") / 50f, obj.getFloat("y") / 50f);
+            Vector2 position = new Vector2(obj.getFloat("x") / 50f, rows() - 1 - (obj.getFloat("y") / 50f));
 
             // Now, add this siren by finding another copy of it
             if(existingPositions.containsKey(id)){
