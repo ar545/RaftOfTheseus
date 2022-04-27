@@ -775,10 +775,11 @@ public class WorldController implements Screen, ContactListener {
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies(float dt) {
-        PooledList<Shark> el = levelModel.getEnemies();
-        for (int i = 0; i< el.size(); i++) {
-            Shark shark = el.get(i);
-            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+//        PooledList<Shark> el = levelModel.getEnemies();
+        for (int i = 0; i< controls.length; i++) {
+//            Shark shark = el.get(i);
+//            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
+            controls[i].updateShark();
         }
 
 //        for (Hydra h : levelModel.getHydras()) {
@@ -1126,7 +1127,7 @@ public class WorldController implements Screen, ContactListener {
         PooledList<Shark> enemies = levelModel.getEnemies();
         controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer());
+            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);
         }
     }
 
