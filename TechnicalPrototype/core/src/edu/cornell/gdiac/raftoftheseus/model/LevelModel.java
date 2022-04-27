@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus.model;
 
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.ai.btree.Task;
 import com.badlogic.gdx.ai.steer.behaviors.FollowFlowField;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -22,7 +23,6 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
-
 import java.util.HashMap;
 
 public class LevelModel {
@@ -193,6 +193,12 @@ public class LevelModel {
     private static boolean USE_SHADER_FOR_WATER = true;
 
     private GameObject[][] obstacles;
+
+    /**
+     * The number of ticks since we beginning the level
+     */
+
+    private long ticks;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** Constructor call for this singleton class */
@@ -1110,7 +1116,12 @@ public class LevelModel {
             if (!useShader || obj.getType() != GameObject.ObjectType.CURRENT) {
                 if (obj.getType() == GameObject.ObjectType.SHARK) {
                     obj.draw(canvas);//, ((Shark) obj).isEnraged() ? Color.RED : Color.WHITE);
-                } else if(obj.getType() != GameObject.ObjectType.RAFT) {
+                }
+                else if (obj.getType() == GameObject.ObjectType.RAFT) {
+                    Color tint = ((Raft)obj).isDamaged() ?  Color.RED : Color.WHITE;
+                    obj.draw(canvas, tint);
+                }
+                else {
                     obj.draw(canvas);
                 }
             }

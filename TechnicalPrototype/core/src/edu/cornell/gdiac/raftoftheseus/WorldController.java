@@ -20,6 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.Timer;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
@@ -1005,6 +1006,13 @@ public class WorldController implements Screen, ContactListener {
             r.addHealth(Shark.ENEMY_DAMAGE);
             SfxController.getInstance().playSFX("raft_damage");
             g.setDestroyed(true);
+            r.setDamaged(true);
+            Timer.schedule(new Timer.Task(){
+                @Override
+                public void run() {
+                    r.setDamaged(false);
+                }
+            }, .1f, 1, 1);
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             r.addStar();

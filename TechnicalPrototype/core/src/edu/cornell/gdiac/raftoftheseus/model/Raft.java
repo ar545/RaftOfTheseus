@@ -68,6 +68,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
     /** Whether the raft is actively firing */
     private boolean isCharging;
     private boolean canFire;
+    /** Whether or not the raft is currently being damaged (feedback purposes) */
+    private boolean isDamaged;
     /** The amount to slow the character down, while they aren't moving */
     private static float DAMPING;
     /** The amount to accelerate the character */
@@ -116,6 +118,8 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         interactionSensor.getFilterData().maskBits = MASK_PLAYER_SENSOR;
         isCharging = false;
         canFire = false;
+        /** Whether or not the player was very recently damaged. */
+        isDamaged = false;
     }
 
     /**
@@ -165,6 +169,11 @@ public class Raft extends GameObject implements Steerable<Vector2> {
         boolean isRowing = !movementInput.isZero();
         return isDrifting || isRowing;
     }
+
+    /** Getter and setters for whether or not the player was recently damaged. */
+    public boolean isDamaged() { return isDamaged; }
+
+    public void setDamaged(boolean damaged) { this.isDamaged = damaged; }
 
     /** Sets the player movement input. */
     public void setMovementInput(Vector2 value) { movementInput.set(value); }
