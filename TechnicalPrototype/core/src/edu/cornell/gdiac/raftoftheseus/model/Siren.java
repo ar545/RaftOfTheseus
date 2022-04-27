@@ -261,6 +261,7 @@ public class Siren extends GameObject {
     public boolean inAttackRange(){
         return targetRaft.getPosition().cpy().sub(getPosition()).len() < ATTACK_RANGE;
     }
+
     /** @return whether the player is in range and the Siren is attack mode.
      *  Resets
      */
@@ -327,6 +328,11 @@ public class Siren extends GameObject {
                     timeElapsed = 0;
                 }
                 break;
+        }
+        if(getLinearVelocity().x < 0){
+            textureScale.x = Math.abs(textureScale.x);
+        } else if (getLinearVelocity().x > 0){
+            textureScale.x = -1 * Math.abs(textureScale.x);
         }
     }
 

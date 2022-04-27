@@ -315,7 +315,7 @@ public class Raft extends GameObject {
         }
         // flip texture based on movement
         float flip = getLinearVelocity().x < 0 ? -1 : 1;
-        textureScale.x = flip * Math.abs(textureScale.y);
+        textureScale.x = flip * Math.abs(textureScale.x);
     }
 
     /**
