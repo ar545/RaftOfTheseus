@@ -372,6 +372,7 @@ public class GameCanvas {
 	 * @param affine the global transform apply to the camera
 	 */
 	public void begin(Affine2 affine) {
+		global.idt();
 		global.setAsAffine(affine);
 		global.mulLeft(camera.combined);
 		spriteBatch.setProjectionMatrix(global);// custom shader must be set before this (or maybe not?)
@@ -1290,6 +1291,6 @@ public class GameCanvas {
 	}
 	/*=*=* Radial Health Bar END *=*=*/
 
+	/** get the camera matrix and use it for box-2d light transformation calculations */
 	public Matrix4 getCameraMatrix(){ return global.cpy(); }
-	public OrthographicCamera getCamera(){ return camera; }
 }

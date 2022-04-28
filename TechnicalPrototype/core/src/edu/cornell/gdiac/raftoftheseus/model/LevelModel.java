@@ -1201,8 +1201,10 @@ public class LevelModel {
      * Update the "cameraTransform" with an affine transformation that texture will go through */
     public void updateCameraTransform() {
         Affine2 a = new Affine2().setToScaling(PIXELS_PER_UNIT, PIXELS_PER_UNIT);
-        lerpCamera.scl(1 - LERP_FACTOR)
-                .add(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT).scl(LERP_FACTOR));
+        if (Float.isFinite(lerpCamera.x) && Float.isFinite(lerpCamera.y)) {
+            lerpCamera.scl(1 - LERP_FACTOR)
+                    .add(getPlayer().getPosition().add(0, 0.5f).scl(PIXELS_PER_UNIT).scl(LERP_FACTOR));
+        } else { lerpCamera.setZero(); }
 
         // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
         Vector2 translation = new Vector2((float)canvas.getWidth()/2, (float)canvas.getHeight()/2).sub(lerpCamera);
