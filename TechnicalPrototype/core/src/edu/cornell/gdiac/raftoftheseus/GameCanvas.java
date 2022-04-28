@@ -1290,4 +1290,7 @@ public class GameCanvas {
 				(player_position.y + 20), RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
 	}
 	/*=*=* Radial Health Bar END *=*=*/
+
+	public Matrix4 getCameraMatrix(){ return global.cpy(); }
+	public OrthographicCamera getCamera(){ return camera; }
 }

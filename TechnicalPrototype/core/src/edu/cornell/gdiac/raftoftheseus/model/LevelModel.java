@@ -460,8 +460,7 @@ public class LevelModel {
         y1 += -DEFAULT_BOUNDARY;
         y2 += -DEFAULT_BOUNDARY;
         float[] polygonVertices = new float[] {x1, y1, x2, y1, x2, y2, x1, y2};
-        /** The wall of the level */
-        Wall this_wall = new Wall(polygonVertices);
+        Wall this_wall = new Wall(polygonVertices); /* The wall of the level */
         this_wall.setTexture(earthTile);
         addObject(this_wall);
     }
@@ -743,11 +742,21 @@ public class LevelModel {
     /** Render the shadow effects. This function should be called after all objects are drawn,
      * but before any health-bar, map, or de-bug information is drawn.
      * Precondition and Post-condition: canvas is closed */
-    public void renderLights(){ if (rayhandler != null) {
+    public void renderLights2(){ if (rayhandler != null) {
         Vector2 lightTrans = lightTranslation();
         light.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, light.getDirection());
         rayhandler.render();
     } }
+
+    /** Render the shadow effects. */
+    public void renderLights(){ if (rayhandler != null) {
+        canvas.begin(cameraTransform);
+        canvas.end();
+        rayhandler.setCombinedMatrix(canvas.getCameraMatrix());
+        rayhandler.render();
+    } }
+
+
 
     /** This calculates the box-2d light position translation according to the screen (canvas) size,
      *  the player position, and the pixel per unit scale.
@@ -834,10 +843,11 @@ public class LevelModel {
         PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
         point.setColor(color[0],color[1],color[2],color[3]);
         point.setSoft(lightJson.getBoolean("soft"));
+        point.setSoftnessLength(6);
 
         // Create a filter to exclude see through items
         Filter f = new Filter();
-        f.maskBits = (short) lightJson.getInt("excludeBits");
+        f.categoryBits = (short) 1<<10;
         point.setContactFilter(f);
         point.setActive(true); // TURN ON NOW
         return point;
@@ -1237,11 +1247,11 @@ public class LevelModel {
         }else if(light_effect == 1){ // per-level light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(30);
+            light.setDistance(25);
         }else if(light_effect == 2){ // health light and health circle
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            float d = getPlayer().getPotentialDistance() * 6;
+            float d = getPlayer().getPotentialDistance() * 2;
             light.setDistance(d);
         }
     }
