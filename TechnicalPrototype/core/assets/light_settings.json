@@ -11,7 +11,7 @@
 		"pos":			[  0,   0],
 		"distance":		   50,
 		"rays":			512,
-		"soft":			false,
+		"soft":			true,
 		"excludeBits":	255
 	}
  }
