@@ -4,7 +4,7 @@
     "previous": "2",
     "reset": "R",
     "debug": "G",
-    "exit": "Escape",
+    "exit": "P",
     "fire": 0,
     "map": "Z",
     "sprint": "Shift",
@@ -17,7 +17,8 @@
     "left" : "Left",
     "right" : "Right",
     "tab" : "Tab",
-    "pause": "P",
+    "test" : "T",
+    "pause": "Escape",
     "revert" : "C",
     "rotate left" : "J",
     "rotate right" : "K"
