@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import edu.cornell.gdiac.raftoftheseus.MenuMode;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 
-import javax.xml.soap.Text;
+//import javax.xml.soap.Text;
 import java.util.function.Consumer;
 
 public class UICreator {
