@@ -1,0 +1,154 @@
+package edu.cornell.gdiac.raftoftheseus.model;
+
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import edu.cornell.gdiac.raftoftheseus.MenuMode;
+import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
+
+import javax.xml.soap.Text;
+import java.util.function.Consumer;
+
+public class UICreator {
+
+    /** The standard size for fonts */
+    private static float FONT_SIZE = 0.4f;
+    /** The color for inactive buttons */
+    private static Color inactiveColor = Color.WHITE;
+    /** The color for hovered buttons */
+    private static Color activeColor = Color.GOLD;
+
+    public UICreator(){}
+
+    // TEXTBUTTON CREATORS
+
+    public static TextButton createTextButton(String name, Skin skin, float fontSize, Color c){
+        TextButton button = new TextButton(name, skin);
+        button.getLabel().setFontScale(fontSize);
+        button.getLabel().setColor(c);
+        return button;
+    }
+
+    public static TextButton createTextButton(String name, Skin skin, float fontSize){
+        return createTextButton(name, skin, fontSize, Color.WHITE);
+    }
+
+    public static TextButton createTextButton(String name, Skin skin, Color c){
+        return createTextButton(name, skin, FONT_SIZE, c);
+    }
+
+    public static TextButton createTextButton(String name, Skin skin){
+        return createTextButton(name, skin, FONT_SIZE);
+    }
+
+    // LABEL CREATORS
+
+    public static Label createLabel(String name, Skin skin, float fontSize){
+        Label label = new Label(name, skin);
+        label.setFontScale(fontSize);
+        return label;
+    }
+
+    // LISTENER CREATORS
+
+    public static ClickListener createListener(TextButton button, Color ActC, Color inActC, String enter_sfx, String clickSFX,
+                                             Consumer<MenuMode.MenuScreen> function, MenuMode.MenuScreen screen){
+        return new ClickListener(){
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if(pointer == -1) SfxController.getInstance().playSFX(enter_sfx);
+                super.enter(event, x, y, pointer, fromActor);
+                button.getLabel().setColor(ActC);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                button.getLabel().setColor(inActC);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                SfxController.getInstance().playSFX(clickSFX);
+                function.accept(screen);
+            }
+        };
+    }
+
+    public static ClickListener createListener(TextButton button, String clickSFX, Consumer<MenuMode.MenuScreen> function, MenuMode.MenuScreen screen){
+        return createListener(button, activeColor, inactiveColor, "button_enter", clickSFX, function, screen);
+    }
+
+    public static ClickListener createListener(TextButton button, Consumer<MenuMode.MenuScreen> function, MenuMode.MenuScreen screen){
+        return createListener(button, "button_click", function, screen);
+    }
+
+    public static ClickListener createListener(TextButton button, Color ActC, Color inActC,
+                                             String enter_sfx, String clickSFX, Runnable function){
+        return new ClickListener(){
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if(pointer == -1) SfxController.getInstance().playSFX(enter_sfx);
+                super.enter(event, x, y, pointer, fromActor);
+                button.getLabel().setColor(ActC);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                button.getLabel().setColor(inActC);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                SfxController.getInstance().playSFX(clickSFX);
+                function.run();
+            }
+        };
+    }
+
+    public static ClickListener createListener(TextButton button, String clickSFX, Runnable function){
+        return createListener(button, activeColor, inactiveColor, "button_enter", clickSFX, function);
+    }
+
+    public static ClickListener createListener(TextButton button, Runnable function){
+        return createListener(button, "button_click", function);
+    }
+
+    public static  ClickListener createListener(TextButton button, Color c1, Color c2, Runnable function){
+        return createListener(button, c1, c2, "button_enter", "button_click", function);
+    }
+
+    // LEVEL BUTTONS
+    public static ClickListener createListener(TextButton button, boolean canPlay, Consumer<Integer> function, int level){
+        return new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if (pointer == -1) SfxController.getInstance().playSFX("button_island");
+                super.enter(event, x, y, pointer, fromActor);
+                if (canPlay) {
+                    button.setColor(Color.LIGHT_GRAY);
+                }
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                button.setColor(Color.WHITE);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (canPlay) {
+                    button.setColor(Color.LIGHT_GRAY);
+                    SfxController.getInstance().playSFX("raft_sail_open");
+                    function.accept(level);
+                }
+            }
+        };
+    }
+}

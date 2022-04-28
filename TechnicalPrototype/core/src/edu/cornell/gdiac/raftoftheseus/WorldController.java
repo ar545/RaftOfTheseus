@@ -363,6 +363,9 @@ public class WorldController implements Screen, ContactListener {
         stage.addActor(transparentBackgroundTexture);
     }
 
+    /** Helper method to pass for button creation and concealing pause reseting. */
+    private void resetPausePressed(){ pausePressed = false; }
+
     private void drawPause() {
         if (!pauseBuilt) {
             pauseBuilt = true;

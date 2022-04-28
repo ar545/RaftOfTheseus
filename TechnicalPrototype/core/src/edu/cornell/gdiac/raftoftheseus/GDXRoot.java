@@ -144,13 +144,17 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if (screen == loading) {
+			// Load the rest of the constants
 			directory = loading.getAssets();
 			saveData = loading.getSaveGameData();
 			setConstants();
 			populateScreens();
-			SfxController.getInstance().startMenuMusic();
+			// Create the menu
+			menu.initButtons();
 			setMenuScreen(false);
 			menu.setSaveData(saveData);
+			// Start the music
+			SfxController.getInstance().startMenuMusic();
 			loading.dispose();
 			loading = null;
 		}

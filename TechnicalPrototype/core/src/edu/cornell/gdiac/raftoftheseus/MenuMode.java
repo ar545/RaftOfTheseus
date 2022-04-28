@@ -5,18 +5,16 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.model.UICreator;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
-import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
@@ -27,7 +25,7 @@ import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
 public class MenuMode implements Screen {
 
     /** An enum representing which screen is currently active within the menu system */
-    private static enum MenuScreen {
+    public static enum MenuScreen {
         TITLE, // title screen, with buttons leading to the other screens
         LEVEL_SELECT, // level select screen, with buttons that lead to levels
         SETTINGS, // settings screen, where the player can change game settings
@@ -91,7 +89,7 @@ public class MenuMode implements Screen {
     /** Whether the play button was pressed on the main menu */
     private boolean playPressed;
     /** Whether the settings button was pressed on the main menu */
-    private boolean settingsPressed;
+    private Boolean settingsPressed;
 
     /**
      * Creates a MenuMode with the default size and position.
@@ -108,6 +106,7 @@ public class MenuMode implements Screen {
         settingsPressed = false;
         playPressed = false;
         currentScreen = MenuScreen.TITLE;
+        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
     }
 
     /**
@@ -125,30 +124,126 @@ public class MenuMode implements Screen {
         levelButtonImages[4] = directory.getEntry("level_locked", Texture.class);
     }
 
+    // BUTTON INITIALIZATION
+
+    private TextButton backButton;
+    private Table backTable;
+    private Array<TextButton> titleButtons = new Array<>();
+    private Array<Table> levelTables = new Array<>();
+    private TextureRegionDrawable[] buttonDrawables = new TextureRegionDrawable[4];
+    private TextButtonStyle[] buttonStyles = new TextButtonStyle[4];
+    private TextButtonStyle lockButtonStyle = new TextButtonStyle();
+    private Array<Table> creditTables = new Array<>();
+
+    /**
+     * Creates all the necessary buttons for the menu to prevent to need for reconstruction every time.
+     */
+    public void initButtons(){
+        initMenuButtons();
+        initLevelTables();
+        initCreditTables();
+    }
+
+    /**
+     * Creates all necessary buttons for the menu screen.
+     */
+    private void initMenuButtons(){
+        backButton = UICreator.createTextButton("BACK", skin, Color.GOLD);
+        backButton.addListener(UICreator.createListener(backButton, Color.GRAY, Color.GOLD,
+                "button_enter", "button_click", this::changeScreenTo, MenuScreen.TITLE));
+
+        backTable = new Table();
+        backTable.add(backButton).expandX().align(Align.left).padRight(1500).padTop(10);
+
+        // instantiate the "back" button, which is used in multiple menus
+        Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
+        for(String n : holder){
+            titleButtons.add(UICreator.createTextButton(n, skin));
+        }
+        //Add listeners to buttons
+        titleButtons.get(0).addListener(UICreator.createListener(titleButtons.get(0), "raft_sail_open", this::setPlayState));
+        titleButtons.get(1).addListener(UICreator.createListener(titleButtons.get(1), "map_open", this::changeScreenTo, MenuScreen.LEVEL_SELECT));
+        titleButtons.get(2).addListener(UICreator.createListener(titleButtons.get(2), this::setSettingsState));
+        titleButtons.get(3).addListener(UICreator.createListener(titleButtons.get(3), this::changeScreenTo, MenuScreen.CREDITS));
+    }
+
+    /**
+     * Creates all necessary tables for the level select screen (except levels themselves).
+     */
+    private void initLevelTables(){
+        Table part2 = new Table();
+        part2.row();
+        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, 0.6f)).expandX().align(Align.center);
+        levelTables.add(backTable, part2);
+
+        // Button styles
+        for (int i = 0; i < 4; i++) {
+            buttonDrawables[i] = new TextureRegionDrawable(new TextureRegion(levelButtonImages[i]));
+            buttonStyles[i] = new TextButtonStyle();
+            buttonStyles[i].up = buttonDrawables[i];
+            buttonStyles[i].down = buttonDrawables[i].tint(Color.GRAY);
+            buttonStyles[i].font = skin.getFont("default-font");
+        }
+        TextureRegionDrawable lockButtonDrawable =  new TextureRegionDrawable(new TextureRegion(levelButtonImages[4]));
+        lockButtonStyle.up = lockButtonDrawable;
+        lockButtonStyle.down = lockButtonDrawable;
+        lockButtonStyle.font = skin.getFont("default-font");
+    }
+
+    /**
+     * Creates all the credit visuals for the game.
+     */
+    private void initCreditTables(){
+        Table tb2 = new Table();
+        tb2.add(UICreator.createLabel("CREDITS", skin, 0.6f)).expandX().align(Align.center);
+
+        Table tb3 = new Table();
+        tb3.align(Align.center);
+
+        Table part3L = new Table();
+        part3L.add(UICreator.createLabel("PROGRAMMER", skin, 0.5f)).expandX().align(Align.center);
+        part3L.row();
+
+        Table part3R = new Table();
+        part3R.add(UICreator.createLabel("DESIGNER", skin, 0.5f)).expandX().align(Align.center);
+        part3R.row();
+
+        Array<String> members = new Array<String>(new String[]{"Amy Huang", "Demian Yutin", "Howard Fu",
+                "Jaden O'Brien", "Jason Tung", "Leo Zhao", "Gloria Shi", "Noah Braun", "Spencer Pettee", ""});
+        int i = 0;
+        for(String name : members){
+            Label l = new Label(name, skin);
+            l.setFontScale(0.4f);
+            if (i <= 5) {
+                part3L.add(l).expandX().align(Align.center);
+                if (i != 5) part3L.row();
+            } else {
+                part3R.add(l).expandX().align(Align.center);
+                if (i != members.size - 1) part3R.row();
+            }
+            i++;
+        }
+
+        tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
+        tb3.add(part3R).expandX().align(Align.center).padTop(-50);
+        creditTables.add(backTable, tb2, tb3);
+    }
+
     /**
      * Sets the ScreenListener for this mode
-     *
      * The ScreenListener will respond to requests to quit.
      */
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
     }
 
-    /** Sets the save data */
+    /** @param saveData the save data to be set. */
     public void setSaveData(JsonValue saveData) { this.saveData = saveData; }
 
-    /**
-     * Returns the level selected by the player
-     *
-     * @return level selected
-     */
+    /** @return level selected by the player */
     public int getSelectedLevel() { return selectedLevel; }
 
-    /**
-     * Returns true if the player has selected a level
-     *
-     * @return true if the player has selected a level
-     */
+    /** @return true if the player has selected a level */
     public boolean isReady() {
         return isLevelPressed;
     }
@@ -160,7 +255,6 @@ public class MenuMode implements Screen {
         active = true;
         stage = new Stage();
         Gdx.input.setInputProcessor(stage);
-        skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
         buildMenu();
     }
 
@@ -170,7 +264,6 @@ public class MenuMode implements Screen {
     public void hide() {
         active = false;
         stage = null;
-        skin = null;
     }
 
     /**
@@ -179,7 +272,6 @@ public class MenuMode implements Screen {
     private void draw() {
         canvas.begin();
         canvas.clear();
-
         switch (currentScreen) {
             case TITLE:
                 canvas.drawBackground(menuBackground, true);
@@ -213,294 +305,70 @@ public class MenuMode implements Screen {
         }
     }
 
+    /**
+     * Creates the UI screen based on the given MenuScreen state by population the menuTable.
+     */
     private void buildMenu(){
         Table menuTable = new Table(skin);
         menuTable.setFillParent(true);
         menuTable.align(Align.top);
-
-        // instantiate the "back" button, which is used in multiple menus
-        TextButton menuButton = new TextButton("BACK", skin);
-        menuButton.getLabel().setFontScale(0.4f);
-        menuButton.getLabel().setColor(Color.GOLD);
-        menuButton.addListener(new ClickListener(){
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                super.enter(event, x, y, pointer, fromActor);
-                menuButton.getLabel().setColor(Color.GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                menuButton.getLabel().setColor(Color.GOLD);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SfxController.getInstance().playSFX("button_click");
-                changeScreenTo(MenuScreen.TITLE);
-            }
-        });
-
+        int i = 0;
         switch(currentScreen) {
             case TITLE:
-                // Create buttons
-                TextButton startButton = new TextButton("START", skin);
-                startButton.getLabel().setFontScale(0.4f);
-                TextButton levelsButton = new TextButton("LEVELS", skin);
-                levelsButton.getLabel().setFontScale(0.4f);
-                TextButton settingsButton = new TextButton("SETTINGS", skin);
-                settingsButton.getLabel().setFontScale(0.4f);
-                TextButton creditsButton = new TextButton("CREDITS", skin);
-                creditsButton.getLabel().setFontScale(0.4f);
-
-                //Add listeners to buttons
-                startButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                        super.enter(event, x, y, pointer, fromActor);
-                        startButton.getLabel().setColor(activeColor);
+                for(TextButton tb : titleButtons){
+                    if(i == 0){
+                        menuTable.add(tb).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(130);
+                    } else {
+                        menuTable.add(tb).expandX().align(Align.left).padLeft(130);
                     }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        startButton.getLabel().setColor(inactiveColor);
-                    }
-
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        SfxController.getInstance().playSFX("raft_sail_open");
-                        playPressed = true;
-                    }
-                });
-                levelsButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                        super.enter(event, x, y, pointer, fromActor);
-                        levelsButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        levelsButton.getLabel().setColor(inactiveColor);
-                    }
-
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        SfxController.getInstance().playSFX("map_open");
-                        changeScreenTo(MenuScreen.LEVEL_SELECT);
-                    }
-                });
-                settingsButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                        super.enter(event, x, y, pointer, fromActor);
-                        settingsButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        settingsButton.getLabel().setColor(inactiveColor);
-                    }
-
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        SfxController.getInstance().playSFX("button_click");
-                        settingsPressed = true;
-                    }
-                });
-                creditsButton.addListener(new ClickListener(){
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                        super.enter(event, x, y, pointer, fromActor);
-                        creditsButton.getLabel().setColor(activeColor);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        super.exit(event, x, y, pointer, toActor);
-                        creditsButton.getLabel().setColor(inactiveColor);
-                    }
-
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        SfxController.getInstance().playSFX("button_click");
-                        changeScreenTo(MenuScreen.CREDITS);
-                    }
-                });
-
-                //Add buttons to table
-                menuTable.add(startButton).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(130);
-                menuTable.row();
-                menuTable.add(levelsButton).expandX().align(Align.left).padLeft(130);
-                menuTable.row();
-                menuTable.add(settingsButton).expandX().align(Align.left).padLeft(130);
-                menuTable.row();
-                menuTable.add(creditsButton).expandX().align(Align.left).padLeft(130);
+                    if (i != titleButtons.size - 1) menuTable.row();
+                    i++;
+                }
                 break;
             case LEVEL_SELECT:
-                Table part1 = new Table();
-                part1.align(Align.left);
-                part1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
-                part1.row();
-                menuTable.add(part1);
-                menuTable.row();
-
-                Table part2 = new Table();
-                Label levelSelectLabel = new Label("SELECT A LEVEL", skin);
-                levelSelectLabel.setFontScale(0.6f);
-                part2.add(levelSelectLabel).expandX().align(Align.center);
-                menuTable.add(part2);
-                menuTable.row();
-
-                Table part3 = new Table();
-
-                // Create buttons
-                TextureRegionDrawable[] buttonDrawables = new TextureRegionDrawable[4];
-                TextButtonStyle[] buttonStyles = new TextButtonStyle[4];
-                for (int i = 0; i < 4; i++) {
-                    buttonDrawables[i] = new TextureRegionDrawable(new TextureRegion(levelButtonImages[i]));
-                    buttonStyles[i] = new TextButtonStyle();
-                    buttonStyles[i].up = buttonDrawables[i];
-                    buttonStyles[i].down = buttonDrawables[i].tint(Color.GRAY);
-                    buttonStyles[i].font = skin.getFont("default-font");
+                for(Table t : levelTables){
+                    menuTable.add(t);
+                    menuTable.row();
                 }
-
-                TextButtonStyle lockButtonStyle = new TextButtonStyle();
-                TextureRegionDrawable lockButtonDrawable =  new TextureRegionDrawable(new TextureRegion(levelButtonImages[4]));
-                lockButtonStyle.up = lockButtonDrawable;
-                lockButtonStyle.down = lockButtonDrawable;
-                lockButtonStyle.font = skin.getFont("default-font");
-
-                levelButtons = new TextButton[LEVEL_COUNT];
-
-                for (int i = 0; i < LEVEL_COUNT; i ++) {
-                    JsonValue levelData = saveData.get("level_data").get(i);
-                    int score = levelData.get("score").asInt();
-                    boolean debug = saveData.get("debug").asBoolean();
-                    boolean unlocked = levelData.get("unlocked").asBoolean();
-                    levelButtons[i] = new TextButton(String.valueOf(i), debug || unlocked ? buttonStyles[score] : lockButtonStyle);
-                    TextButton currentButton = levelButtons[i];
-                    currentButton.getLabel().setFontScale(0.5f);
-                    int finalI = i;
-                    currentButton.addListener(new ClickListener(){
-                        @Override
-                        public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                            if(pointer == -1) SfxController.getInstance().playSFX("button_island");
-                            super.enter(event, x, y, pointer, fromActor);
-                            if (debug || unlocked) {
-                                currentButton.setColor(Color.LIGHT_GRAY);
-                            }
-                        }
-
-                        @Override
-                        public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                            super.exit(event, x, y, pointer, toActor);
-                            currentButton.setColor(Color.WHITE);
-                        }
-
-                        @Override
-                        public void clicked(InputEvent event, float x, float y) {
-                            if (debug || unlocked) {
-                                currentButton.setColor(Color.LIGHT_GRAY);
-                                SfxController.getInstance().playSFX("raft_sail_open");
-                                selectlevel(finalI);
-                            }
-                        }
-                    });
-                    //Add button to table
-                    if (i > 0 && i % NUM_COLS == 0)
-                        part3.row().padTop(colPadding);
-                    part3.add(currentButton).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
-                }
-                menuTable.add(part3);
+                menuTable.add(addLevelIslands());
                 menuTable.row();
                 break;
             case CREDITS:
-                Table creditsPart1 = new Table();
-                creditsPart1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
-                menuTable.add(creditsPart1);
-                menuTable.row();
-
-                Table creditsPart2 = new Table();
-                Label creditsLabel = new Label("CREDITS", skin);
-                creditsLabel.setFontScale(0.6f);
-                creditsPart2.add(creditsLabel).expandX().align(Align.center);
-                menuTable.add(creditsPart2).padTop(-50);
-                menuTable.row();
-
-                Table creditsPart3 = new Table();
-                creditsPart3.align(Align.center);
-
-                Table creditsPart3Left = new Table();
-                Label programmersLabel = new Label("PROGRAMMER", skin);
-                programmersLabel.setFontScale(0.5f);
-                creditsPart3Left.add(programmersLabel).expandX().align(Align.center);
-                creditsPart3Left.row();
-
-                Label amy = new Label("Amy Huang", skin);
-                amy.setFontScale(0.4f);
-                Label demian = new Label("Demian Yutin", skin);
-                demian.setFontScale(0.4f);
-                Label howard = new Label("Howard Fu", skin);
-                howard.setFontScale(0.4f);
-                Label jaden = new Label("Jaden O'Brien", skin);
-                jaden.setFontScale(0.4f);
-                Label jason = new Label("Jason Tung", skin);
-                jason.setFontScale(0.4f);
-                Label leo = new Label("Leo Zhao", skin);
-                leo.setFontScale(0.4f);
-                creditsPart3Left.add(amy).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(demian).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(howard).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(jaden).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(jason).expandX().align(Align.center);
-                creditsPart3Left.row();
-                creditsPart3Left.add(leo).expandX().align(Align.center);
-
-                Table creditsPart3Right = new Table();
-                Label designersLabel = new Label("DESIGNER", skin);
-                designersLabel.setFontScale(0.5f);
-                creditsPart3Right.add(designersLabel).expandX().align(Align.center);
-                creditsPart3Right.row();
-
-                Label gloria = new Label("Gloria Shi", skin);
-                gloria.setFontScale(0.4f);
-                Label noah = new Label("Noah Braun", skin);
-                noah.setFontScale(0.4f);
-                Label spencer = new Label("Spencer Pettee", skin);
-                spencer.setFontScale(0.4f);
-
-                creditsPart3Right.add(gloria).expandX().align(Align.center);
-                creditsPart3Right.row();
-                creditsPart3Right.add(noah).expandX().align(Align.center);
-                creditsPart3Right.row();
-                creditsPart3Right.add(spencer).expandX().align(Align.center);
-                creditsPart3Right.row();
-                creditsPart3Right.add(new Label("", skin));
-                creditsPart3Right.row();
-
-                creditsPart3.add(creditsPart3Left).expandX().align(Align.center).padRight(180).padLeft(-100);
-                creditsPart3.add(creditsPart3Right).expandX().align(Align.center).padTop(-50);
-                menuTable.add(creditsPart3);
+                for(Table t : creditTables){
+                    if(i != 1) menuTable.add(t);
+                    else menuTable.add(t).padTop(-50);
+                    if(i != creditTables.size -1) menuTable.row();
+                    i++;
+                }
                 break;
         }
-
         stage.addActor(menuTable);
     }
 
+    /** Adds the 3rd table to the levelTables array to menu population. */
+    private Table addLevelIslands(){
+        Table part3 = new Table();
+        levelButtons = new TextButton[LEVEL_COUNT];
+        // Create and add textbuttons to screen. Must update each pass to update star displays.
+        for (int i = 0; i < LEVEL_COUNT; i ++) {
+            JsonValue levelData = saveData.get("level_data").get(i);
+            int score = levelData.get("score").asInt();
+            boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
+            levelButtons[i] = new TextButton(String.valueOf(i), canPlay ? buttonStyles[score] : lockButtonStyle);
+            levelButtons[i].getLabel().setFontScale(0.5f);
+            levelButtons[i].addListener(UICreator.createListener(levelButtons[i], canPlay, this::selectlevel, i));
+            //Add button to table
+            if (i > 0 && i % NUM_COLS == 0)
+                part3.row().padTop(colPadding);
+            part3.add(levelButtons[i]).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+        }
+        return part3;
+    }
+
+    /**
+     * Sets the selected level to the given id for communication with WorldController
+     * @param id the level id
+     */
     private void selectlevel(int id) {
         if (levelButtons != null && !isLevelPressed) {
             isLevelPressed = true;
@@ -508,16 +376,15 @@ public class MenuMode implements Screen {
         }
     }
 
+    /**
+     * Method to set the different menu screens
+     * @param targetScreen the screen we want
+     */
     private void changeScreenTo(MenuScreen targetScreen) {
         stage.clear();
         currentScreen = targetScreen;
         buildMenu();
     }
-
-    /**
-     * Called when this screen should release all resources.
-     */
-    public void dispose() { }
 
     /** Called when the Screen is resized.
      *
@@ -532,25 +399,20 @@ public class MenuMode implements Screen {
     }
 
     /** Reset the play pressed state */
+    private void setPlayState(){ playPressed = true; }
     private void resetPlayState() { playPressed = false; }
-
     /** Reset the level pressed state */
+    private void setPressedState(){ isLevelPressed = true; }
     private void resetPressedState() { isLevelPressed = false; }
-
     /** Reset the settings pressed state */
+    private void setSettingsState(){ settingsPressed = true; }
     private void resetSettingsState() { settingsPressed = false; }
 
-    /**
-     * Called when the Screen is paused.
-     */
-    public void pause() {
-        // auto-generated
-    }
 
-    /**
-     * Called when the Screen is resumed from a paused state.
-     */
-    public void resume() {
-        // auto-generated
-    }
+    /** Called when the Screen is paused. */
+    public void pause() {}
+    /** Called when the Screen is resumed from a paused state. */
+    public void resume() {}
+    /** Called when this screen should release all resources. */
+    public void dispose() {}
 }
