@@ -672,7 +672,7 @@ public class WorldController implements Screen, ContactListener {
 
         // level model assets
         levelModel.setDirectory(directory);
-        levelModel.gatherAssets(directory);
+        levelModel.gatherAssets();
         this.directory = directory;
 
     }

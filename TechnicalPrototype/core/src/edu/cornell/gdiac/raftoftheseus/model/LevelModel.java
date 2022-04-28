@@ -3,7 +3,6 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -36,9 +35,9 @@ public class LevelModel {
     /** Default boundary width and height of a single grid in Box2d units */
     private static final float DEFAULT_BOUNDARY = 1.0f;
     /** Default num of rows in the map (y, height) */
-    private static final int DEFAULT_GRID_ROW = 8;
+    private static final int DEFAULT_GRID_ROW = 16;
     /** Default num of columns in the map (x, width) */
-    private static final int DEFAULT_GRID_COL = 10;
+    private static final int DEFAULT_GRID_COL = 24;
     /** a final vector 2 with both x and y as 0 */
     private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
     /** Top-down game with no gravity */
@@ -55,12 +54,28 @@ public class LevelModel {
     private static final int TILE_ENEMY_SIREN = 2;
     /** Index of the representation of enemy in tile set texture */
     private static final int TILE_ENEMY_SHARK = 3;
+    /** Offset of north current in tile set index */
+    private static final int TILE_NORTH_EAST = 4;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST = 5;
+    /** Offset of east current in tile set index */
+    private static final int TILE_EAST_SOUTH = 6;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH = 7;
     /** Index of the representation of rock in tile set texture */
     private static final int TILE_ROCK_ALONE = 8;
     /** Index of the representation of rock in tile set texture */
     private static final int TILE_ROCK_SHARP = 9;
     /** Index of the representation of goal in tile set texture */
     private static final int TILE_GOAL = 10;
+    /** Offset of south current in tile set index */
+    private static final int TILE_SOUTH_WEST = 11;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST = 12;
+    /** Offset of west current in tile set index */
+    private static final int TILE_WEST_NORTH = 13;
+    /** Offset of north current in tile set index */
+    private static final int TILE_NORTH = 14;
     /** Index of the representation of treasure in tile set texture */
     private static final int TILE_TREASURE = 15;
     /** Index of the representation of default wood in tile set texture */
@@ -71,31 +86,17 @@ public class LevelModel {
     private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_SEA = 42;
+    /** Total variation of terrains */
+    private static final int TERRAIN_TYPES = TILE_SEA - TILE_LAND_OFFSET - 1;
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
-    /** Offset of north current in tile set index */
-    private static final int TILE_NORTH_EAST = 4;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST = 5;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST_SOUTH = 6;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH = 7;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH_WEST = 11;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST = 12;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST_NORTH = 13;
-    /** Offset of north current in tile set index */
-    private static final int TILE_NORTH = 14;
     /** layer of environment and land */
     private static final int LAYER_ENV = 0;
     /** layer of collectables and shark */
     private static final int LAYER_COL = 1;
     /** layer of siren */
     private static final int LAYER_SIREN = 2;
-    private static final int TERRAIN_TYPES = 13;
+    /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.05f;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
@@ -106,9 +107,9 @@ public class LevelModel {
     /** The vertices of the wall */
     private float[] polygonVertices;
     /** Reference to the game assets directory */
-    private AssetDirectory directory; // TODO: is this reference needed at all?
+    private AssetDirectory directory;
     /** Reference to the game canvas. */
-    private GameCanvas canvas;
+    private final GameCanvas canvas;
     /** The read-in level data */
     private JsonValue level_data;
     /** The Box2D world */
@@ -135,10 +136,8 @@ public class LevelModel {
     private CurrentField currentField;
     /** The light source of this level */
     private PointSource light;
-    /** The rayhandler for storing lights, and drawing them (SIGH) */
+    /** The ray-handler for storing lights, and drawing them (SIGH) */
     protected RayHandler rayhandler;
-    /** The camera defining the RayHandler view; scale is in physics coordinates */
-    protected OrthographicCamera raycamera;
     /** what light effect to show the player */
     private int light_effect = 0;
     /** the lerp-camera that allow camera retracing */
@@ -177,7 +176,7 @@ public class LevelModel {
     protected TextureRegion[] terrain;
     /** Texture for water */
     protected Texture waterTexture;
-    /** Texture for wall */ // TODO: no longer needed
+    /** Texture for wall */
     private TextureRegion earthTile;
     /** Texture for fuel */
     private TextureRegion fuelTexture;
@@ -197,16 +196,12 @@ public class LevelModel {
 
     private GameObject[][] obstacles;
 
-    /**
-     * The number of ticks since we were beginning the level
-     */
+    /** The number of ticks since we were beginning the level */ // TODO: Is this needed?
     private long ticks;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
     public Raft getPlayer() { return raft; }
-    /** get a reference to the goal */
-    public Goal getGoal() { return goal; }
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
@@ -343,7 +338,7 @@ public class LevelModel {
      * @return the screen position coordinate for a board cell index.
      */
     public float boardToScreen(int n) {
-        return (float) (n + 0.5f) * (getTileSize());
+        return (n + 0.5f) * (getTileSize());
     }
 
     public Affine2 getCameraTransform() {
@@ -460,8 +455,7 @@ public class LevelModel {
         y1 += -DEFAULT_BOUNDARY;
         y2 += -DEFAULT_BOUNDARY;
         float[] polygonVertices = new float[] {x1, y1, x2, y1, x2, y2, x1, y2};
-        /** The wall of the level */
-        Wall this_wall = new Wall(polygonVertices);
+        Wall this_wall = new Wall(polygonVertices); /* The wall of the level */
         this_wall.setTexture(earthTile);
         addObject(this_wall);
     }
@@ -744,6 +738,14 @@ public class LevelModel {
      * but before any health-bar, map, or de-bug information is drawn.
      * Precondition and Post-condition: canvas is closed */
     public void renderLights(){ if (rayhandler != null) {
+        canvas.begin(cameraTransform);
+        canvas.end();
+        rayhandler.setCombinedMatrix(canvas.getCameraMatrix(), bounds.width/2.0f, bounds.height/2.0f, bounds.width, bounds.height);
+        rayhandler.render();
+    } }
+
+    /** Render the shadow effects. */
+    public void renderLightsAlternative(){ if (rayhandler != null) {
         Vector2 lightTrans = lightTranslation();
         light.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, light.getDirection());
         rayhandler.render();
@@ -776,9 +778,8 @@ public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* Texture assets and box2d lighting *=*=*=*=*=*=*=*=*=*/
 
-    /** This gather the assets required for initializing the objects
-     * @param directory the asset directory */
-    public void gatherAssets(AssetDirectory directory) {
+    /** This gather the assets required for initializing the objects. Should be called after directory is set. */
+    public void gatherAssets() {
         raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 8, 5, 40);// TODO: use data-driven design for rows/cols/size
         woodTexture = new TextureRegion(directory.getEntry("wood", Texture.class));
         doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
@@ -834,10 +835,11 @@ public class LevelModel {
         PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
         point.setColor(color[0],color[1],color[2],color[3]);
         point.setSoft(lightJson.getBoolean("soft"));
+        point.setSoftnessLength(6);
 
         // Create a filter to exclude see through items
         Filter f = new Filter();
-        f.maskBits = (short) lightJson.getInt("excludeBits");
+        f.categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
         point.setContactFilter(f);
         point.setActive(true); // TURN ON NOW
         return point;
@@ -853,14 +855,9 @@ public class LevelModel {
      * @param  lightJson	the JSON tree defining the light
      */
     private void initLighting(JsonValue lightJson) {
-        raycamera = new OrthographicCamera(bounds.width, bounds.height);
-        raycamera.position.set(bounds.width/2.0f, bounds.height/2.0f, 0);
-        raycamera.update();
-
         RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
         RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
         rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height);
-        rayhandler.setCombinedMatrix(raycamera);
 
         float[] color = lightJson.get("color").asFloatArray();
         rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
@@ -1225,23 +1222,25 @@ public class LevelModel {
     /** change the level light effect, for testing purposes only */
     public void change(boolean debug) {
         light_effect ++;
-        if( light_effect == 3 ){ light_effect = 0; if(debug) { raft.addHealth(200); } } // for testing purposes
+        if( light_effect == 4 ){ light_effect = 0; if(debug) { raft.addHealth(200); } } // for testing purposes
     }
 
     /** draw a circle showing how far the player can move before they die */
     public void setLightAndCircle(Vector2 playerPosOnScreen){
-        if(light_effect == 0){ // constant light and health circle
-            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            light.setDistance(60);
-        }else if(light_effect == 1){ // per-level light and health circle
-            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+        if(light_effect == 0){ // constant light
+            light.setDistance(45);
+            light.setSoftnessLength(12);
+            light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
+        }else if(light_effect == 1){ // short constant light
+            light.setDistance(20);
+            light.setSoftnessLength(6);
+        }else if(light_effect == 2){ // non-block light
             light.setDistance(30);
-        }else if(light_effect == 2){ // health light and health circle
-            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-            float d = getPlayer().getPotentialDistance() * 6;
+            light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_NON;
+        }else if(light_effect == 3){ // health light
+            float d = getPlayer().getPotentialDistance() * 2;
             light.setDistance(d);
         }
     }
