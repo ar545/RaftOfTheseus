@@ -1,5 +1,5 @@
 {
-  "debug": true,
+  "debug": false,
   "level_data": [
     {
       "name": "Level 0",
@@ -15,7 +15,7 @@
       "path": "levels/level1.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 2",
@@ -23,7 +23,7 @@
       "path": "levels/level2.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 3",
@@ -31,15 +31,7 @@
       "path": "levels/level3.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
-    },
-    {
-      "name": "Level 3",
-      "level": 3,
-      "path": "levels/level3.png",
-      "complete": false,
-      "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 4",
@@ -55,7 +47,7 @@
       "path": "levels/level5.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 6",
@@ -63,7 +55,7 @@
       "path": "levels/level6.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 7",
@@ -71,7 +63,7 @@
       "path": "levels/level7.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 8",
@@ -95,7 +87,7 @@
       "path": "levels/level10.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 11",
@@ -103,7 +95,7 @@
       "path": "levels/level11.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 12",
@@ -117,6 +109,14 @@
       "name": "Level 13",
       "level": 13,
       "path": "levels/level13.png",
+      "complete": false,
+      "score": 0,
+      "unlocked": false
+    },
+    {
+      "name": "Level 14",
+      "level": 14,
+      "path": "levels/level14.png",
       "complete": false,
       "score": 0,
       "unlocked": false
