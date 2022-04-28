@@ -129,7 +129,8 @@
     "level:9" : "levels/9SirenEasy.json",
     "level:10" : "levels/10SirenMedium.json",
     "level:11" : "levels/11Combined.json",
-    "level:12" : "levels/12SirenHard.json",
-    "level:13" : "levels/13Spring.json"
+    "level:12" : "levels/12Maze.json",
+    "level:13" : "levels/13Spring.json",
+    "level:14" : "levels/14SirenHard.json"
   }
 }

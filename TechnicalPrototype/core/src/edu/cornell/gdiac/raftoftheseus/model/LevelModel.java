@@ -1230,12 +1230,14 @@ public class LevelModel {
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
         if(light_effect == 0){ // constant light
-            light.setDistance(60);
+            light.setDistance(45);
+            light.setSoftnessLength(12);
             light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
         }else if(light_effect == 1){ // short constant light
-            light.setDistance(25);
+            light.setDistance(20);
+            light.setSoftnessLength(6);
         }else if(light_effect == 2){ // non-block light
-            light.setDistance(40);
+            light.setDistance(30);
             light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_NON;
         }else if(light_effect == 3){ // health light
             float d = getPlayer().getPotentialDistance() * 2;
