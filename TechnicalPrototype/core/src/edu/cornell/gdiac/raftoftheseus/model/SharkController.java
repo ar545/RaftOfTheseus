@@ -284,7 +284,7 @@ public class SharkController {
                     }
                     return new Vector2(raft.getPosition().sub(shark.getPosition()).nor());
                 }
-                return new Vector2(current.moveDirection[0], current.moveDirection[1]);
+                return new Vector2(current.moveDirection[0], current.moveDirection[1]).nor();
             }
             int[] dirs = {-1, 0, 1};
             // for all 8 directions (3x3 = 9 but ignore 0, 0 case)
