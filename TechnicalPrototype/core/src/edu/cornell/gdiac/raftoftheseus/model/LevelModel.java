@@ -480,7 +480,7 @@ public class LevelModel {
             int row = rows() - row_reversed - 1;
             for(int col = 0; col < cols(); col ++){
                 int index = row_reversed * cols() + col;
-                populateEnv(row, col, environment.get("data").getInt(index));
+                populateEnv(row, col, environment.get("data").getInt(index), row_reversed == 0);
                 populateCollect(row, col, collectables.get("data").getInt(index));
                 // TODO: if we populate the raft field before instantiating enemies,
                 //  we can properly instantiate instead of putting null for target raft field
@@ -567,7 +567,8 @@ public class LevelModel {
      * @param row the row the environment element is in the world
      * @param col the column the environment element is in the world
      * @param tile_int whether this tile is a rock or a current or a goal */
-    private void populateEnv(int row, int col, int tile_int) {
+    private void populateEnv(int row, int col, int tile_int, boolean top_row) {
+        if(top_row) { populateExtendLand(row, col, tile_int - TILE_LAND_OFFSET); }
         currentField.field[col][row] = ZERO_VECTOR_2;
         if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
         if (tile_int == TILE_START) { addRaft(row, col); return; }
@@ -613,7 +614,7 @@ public class LevelModel {
         if (tile_int == -1) { this_rock.setTexture(sharpRockTexture); }
         else if (tile_int == 0) { this_rock.setTexture(regularRockTexture); }
         else { this_rock.setTexture(terrain[tile_int - 1]); }
-        obstacles[col][row] = this_rock;
+        if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
         addObject(this_rock);
     }
 
@@ -1244,6 +1245,33 @@ public class LevelModel {
         }else if(light_effect == 3){ // health light
             float d = getPlayer().getPotentialDistance() * 2;
             light.setDistance(d);
+        }
+    }
+
+    /* Fix extend land into invisible border */
+    private void populateExtendLand(int row, int col, int tile_int) {
+        int extend = computeExtend(tile_int);
+        if(extend != -1){
+            addRock(row + 1, col, extend);
+        }
+    }
+
+    private int computeExtend(int tile_int){
+        switch (tile_int){
+            case 1: case 2:
+                return tile_int + 7;
+            case 3: case 4: case 7: case 13:
+                return 7;
+            case 5:
+                return 13;
+            case 6: case 9: case 10:
+                return 6;
+            case 8: case 11: case 12:
+                return 12;
+            case 0: case -1:
+                return 0;
+            default:
+                return -1;
         }
     }
 }
