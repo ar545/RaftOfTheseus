@@ -55,10 +55,20 @@ public class CurrentField implements FlowField<Vector2> {
     Vector2 temp_cpy;
     Vector2 temp_sum = new Vector2(0, 0);
 
-    /** Calculate the linear displacement of gameObject at its location due to current for time dt */
+    /** Calculate and apply the linear displacement of gameObject o at its location due to current for time dt
+     * @param dt time period
+     * @param o the game object to act upon */
     public void updateCurrentEffects (GameObject o, float dt) {
         // Define the grid-wise location of the player
-        Vector2 position = o.getPosition();
+        calculateCurrentVelocity(o.getPosition());
+        // displacement = velocity * time elapsed
+        o.setPosition(o.getPosition().add(temp_sum.scl(dt)));
+        temp_sum.setZero();
+    }
+
+    /** Calculate the linear velocity at position and store it in temp_sum
+     * @param position the position to compute the linear velocity due to current */
+    public void calculateCurrentVelocity(Vector2 position){
         int column = MathUtils.clamp((int)(position.x - 0.5f * resolution) / resolution, 0, columns - 1);
         int row = MathUtils.clamp((int)(position.y - 0.5f * resolution) / resolution, 0, rows - 1);
         float lx = (column + 0.5f) * resolution;
@@ -81,9 +91,15 @@ public class CurrentField implements FlowField<Vector2> {
             temp_cpy = field[column + 1][row + 1].cpy();
             temp_sum.add(temp_cpy.scl(position.x - lx).scl(position.y - ly));
         }
+        temp_sum.scl(0.12f);
+    }
 
-        // displacement = velocity * time elapsed
-        o.setPosition(o.getPosition().add(temp_sum.scl(dt).scl(0.12f)));
+    /** @return the linear velocity at the position input
+     * @param position the position to compute the linear velocity due to current */
+    public Vector2 getCurrentVelocity(Vector2 position){
+        calculateCurrentVelocity(position);
+        Vector2 result = temp_sum.cpy();
         temp_sum.setZero();
+        return result;
     }
 }
