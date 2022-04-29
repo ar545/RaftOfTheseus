@@ -3,22 +3,19 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Random;
 
 
-public class Shark extends GameObject {
+public class OldShark extends GameObject {
 
 //    private Random rand = new Random();
 
-    public Shark(Vector2 position, Raft targetRaft, LevelModel level) {
+    public OldShark(Vector2 position, Raft targetRaft, LevelModel level) {
         physicsObject = new WheelObstacle(1.45f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);

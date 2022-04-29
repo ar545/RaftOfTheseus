@@ -50,9 +50,25 @@
     "wander speed" : 1.5,
     "chase speed" : 2.0,
     "enrage speed" : 6.0,
-    "damage" : -40,
     "protect range" : 5,
-    "search range" : 30
+    "search range" : 30,
+
+    "damage" : -40,
+    "approach speed" : 2.0,
+    "approach range" : 20.0,
+    "warm up" : 1.0,
+    "cool down" : 1.0,
+    "attack speed" : 10.0,
+    "attack range" : 10.0,
+    "stun time" : 2.0,
+    "texture scale" : 1.0,
+    "radius" : 0.4,
+    "swim animation speed" : 0.1,
+    "bite animation speed" : 0.25,
+    "swim frames" : 10,
+    "bite frames" : 8,
+    "swim start frame" : 7,
+    "bite start frame" : 0
   },
   "spear": {
     "speed scale" : 25.0,

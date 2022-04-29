@@ -129,7 +129,7 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<Shark> enemies = new PooledList<>();
+    private PooledList<OldShark> enemies = new PooledList<>();
     /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
@@ -205,7 +205,7 @@ public class LevelModel {
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
-    public PooledList<Shark> getEnemies() { return enemies; }
+    public PooledList<OldShark> getEnemies() { return enemies; }
     /** get the list of sirens in the world */
     public PooledList<Siren> getSirens() { return sirens; }
     /** This added queue is use for adding new project tiles */
@@ -303,7 +303,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addSharkObject(Shark obj) {
+    protected void addSharkObject(OldShark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -538,7 +538,7 @@ public class LevelModel {
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
-        for (Shark shark : enemies){
+        for (OldShark shark : enemies){
             shark.setTargetRaft(raft);
         }
     }
@@ -623,7 +623,7 @@ public class LevelModel {
     private void addEnemy(int row, int col, boolean is_shark) {
         computePosition(col, row);
         if(is_shark){
-            Shark this_shark = new Shark(compute_temp, null, this);
+            OldShark this_shark = new OldShark(compute_temp, null, this);
             this_shark.setTexture(enemyTexture);
             addSharkObject(this_shark);
         }

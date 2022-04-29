@@ -47,7 +47,7 @@ public class WorldController implements Screen, ContactListener {
         Raft.setConstants(objParams.get("raft"));
         Spear.setConstants(objParams.get("spear"));
         Note.setConstants(objParams.get("note"));
-        Shark.setConstants(objParams.get("shark"));
+        OldShark.setConstants(objParams.get("shark"));
 //        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
         Rock.setConstants(objParams.get("rock"));
@@ -225,7 +225,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
         }
-        for(Shark s : levelModel.getEnemies()){
+        for(OldShark s : levelModel.getEnemies()){
             s.setAnimationFrame(dt);
         }
 
@@ -886,7 +886,7 @@ public class WorldController implements Screen, ContactListener {
         boolean sharkNow = false;
         boolean sirenNow = false;
         for(SharkController ai : controls){
-            if(ai.isAlive() && ai.getState() == Shark.enemyState.ENRAGE){
+            if(ai.isAlive() && ai.getState() == OldShark.enemyState.ENRAGE){
                 sharkNow = true;
                 break;
             }
@@ -1045,7 +1045,7 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
             s.setDestroyed(true);
-            ((Shark)g).takeDamage();
+            ((OldShark)g).takeDamage();
         }
 //      else if(g.getType() == GameObject.ObjectType.HYDRA) {
 //            // stun hydra
@@ -1080,7 +1080,7 @@ public class WorldController implements Screen, ContactListener {
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.SHARK || g.getType() == GameObject.ObjectType.SIREN ){
             // update player health
-            r.addHealth(Shark.ENEMY_DAMAGE);
+            r.addHealth(OldShark.ENEMY_DAMAGE);
             SfxController.getInstance().playSFX("raft_damage");
             g.setDestroyed(true);
             r.setDamaged(true);
@@ -1178,7 +1178,7 @@ public class WorldController implements Screen, ContactListener {
 
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
-        PooledList<Shark> enemies = levelModel.getEnemies();
+        PooledList<OldShark> enemies = levelModel.getEnemies();
         controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
             controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);

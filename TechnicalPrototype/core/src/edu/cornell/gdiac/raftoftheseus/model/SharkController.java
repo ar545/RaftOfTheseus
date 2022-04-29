@@ -8,10 +8,9 @@ import java.util.Random;
 import com.badlogic.gdx.ai.msg.PriorityQueue;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.Queue;
 
-import static edu.cornell.gdiac.raftoftheseus.model.Shark.*;
-import static edu.cornell.gdiac.raftoftheseus.model.Shark.enemyState.*;
+import static edu.cornell.gdiac.raftoftheseus.model.OldShark.*;
+import static edu.cornell.gdiac.raftoftheseus.model.OldShark.enemyState.*;
 
 
 
@@ -71,7 +70,7 @@ public class SharkController {
 
     private int id;
 
-    private Shark shark;
+    private OldShark shark;
 
     private Raft raft;
 
@@ -79,7 +78,7 @@ public class SharkController {
 
     private LevelModel level;
 
-    private Shark.enemyState state;
+    private OldShark.enemyState state;
     /**
      * The number of ticks since we started this controller
      */
@@ -98,7 +97,7 @@ public class SharkController {
         CHASE_DIST = objParams.getInt("chase distance", 12);
     }
 
-    public SharkController(int id, Shark shark, Raft raft, LevelModel level) {
+    public SharkController(int id, OldShark shark, Raft raft, LevelModel level) {
         this.id = id;
         this.shark = shark;
         this.raft = raft;
@@ -113,7 +112,7 @@ public class SharkController {
         return ticks;
     }
 
-    public Shark.enemyState getState(){
+    public OldShark.enemyState getState(){
         return state;
     }
 
@@ -217,13 +216,13 @@ public class SharkController {
             moveDist *= Math.sqrt(2);
         }
         float speed = 0;
-        if (state == Shark.enemyState.WANDER){
-            speed = Shark.ENEMY_WANDER_SPEED;
+        if (state == OldShark.enemyState.WANDER){
+            speed = OldShark.ENEMY_WANDER_SPEED;
         }
-        else if (state == Shark.enemyState.CHASE){
+        else if (state == OldShark.enemyState.CHASE){
             speed = ENEMY_CHASE_SPEED;
         }
-        else if (state == Shark.enemyState.ENRAGE){
+        else if (state == OldShark.enemyState.ENRAGE){
             speed = ENEMY_ENRAGE_CHASE_SPEED;
         }
         Vector2 movementVector = new Vector2(dir[0], dir[1]).scl(speed);
