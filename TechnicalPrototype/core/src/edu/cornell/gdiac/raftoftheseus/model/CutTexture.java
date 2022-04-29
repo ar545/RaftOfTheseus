@@ -25,6 +25,8 @@ public class CutTexture
     private static final int retracing_health_size = 20;
     /** health history */
     private float[] retracing_health = new float[retracing_health_size];
+
+    private boolean retracing_tick = false;
     /** pointer to the retracing array, where to read from and write to, and move the pointer forward */
     int retracing_index = 0;
     /** Constructor call with known texture */
@@ -117,8 +119,10 @@ public class CutTexture
         Color color = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         float retrace_health = retraceHealth(health);
         if(retrace_health > health){
+            Color bkgColor = Color.BLUE;
+            if(retracing_index % 7 < 3){ bkgColor = Color.WHITE; }
            // cut according to retrace_health
-           update(retrace_health, Color.BLUE);
+           update(retrace_health, bkgColor);
            // render to retrace health
            render(spriteBatch);
         }
@@ -130,13 +134,14 @@ public class CutTexture
 
     /** find the health "retracing_health_size" screens ago */
     private float retraceHealth(float health) {
-        float result = retracing_health[retracing_index];
-        retracing_health[retracing_index] = health;
-        retracing_index ++;
-        if(retracing_index >= retracing_health_size){
-            retracing_index = 0;
+        retracing_tick = !retracing_tick;
+        if(retracing_tick){ return retracing_health[retracing_index]; } else {
+            float result = retracing_health[retracing_index];
+            retracing_health[retracing_index] = health;
+            retracing_index ++;
+            if(retracing_index >= retracing_health_size){ retracing_index = 0; }
+            return result;
         }
-        return result;
     }
 
     public static class VertexAngle {
