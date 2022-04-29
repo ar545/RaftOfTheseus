@@ -98,6 +98,10 @@ public class LevelModel {
     private static final int LAYER_SIREN = 2;
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.05f;
+    private static final int TILE_NON_ROCK = 16;
+    private static final int ROCK_REGULAR = 0;
+    private static final int ROCK_SHARP = -1;
+    private static final int ROCK_PLANT = -2;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -263,8 +267,7 @@ public class LevelModel {
      * width: GRID_SIZE.x * map_size.x + DEFAULT_BOUNDARY,
      * height: GRID_SIZE.y * map_size.y + DEFAULT_BOUNDARY */
     public Rectangle wallBounds(){
-        return new Rectangle(bounds.x - DEFAULT_BOUNDARY, bounds.y - 0.2f * DEFAULT_BOUNDARY,
-                bounds.width + DEFAULT_BOUNDARY, bounds.height + 2.8f * DEFAULT_BOUNDARY);
+        return new Rectangle(bounds.x - 0, bounds.y - 0, bounds.width + 0, bounds.height + GRID_SIZE);
     }
 
     /** @return the height and width of bounds only
@@ -568,20 +571,28 @@ public class LevelModel {
      * @param col the column the environment element is in the world
      * @param tile_int whether this tile is a rock or a current or a goal */
     private void populateEnv(int row, int col, int tile_int, boolean top_row) {
-        if(top_row) { populateExtendLand(row, col, tile_int - TILE_LAND_OFFSET); }
         currentField.field[col][row] = ZERO_VECTOR_2;
-        if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
-        if (tile_int == TILE_START) { addRaft(row, col); return; }
-        if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
-        if (tile_int == TILE_ROCK_ALONE){ addRock(row, col, 0); return; }
-        if (tile_int == TILE_ROCK_SHARP){ addRock(row, col, -1); return; }
-        if (tile_int == TILE_PLANT){ addRock(row, col, -2); return; }
-        if (tile_int >= TILE_LAND_OFFSET && tile_int < TILE_SEA){
-            addRock(row, col, tile_int - TILE_LAND_OFFSET); return;
+        int rockInt = computeRockInt(tile_int);
+        if(rockInt != TILE_NON_ROCK){
+            if(top_row) { populateExtendLand(row, col, rockInt); }
+            addRock(row, col, rockInt);
+        }else{
+            if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
+            if (tile_int == TILE_START) { addRaft(row, col); return; }
+            if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
+            if (tile_int >= TILE_WOOD_OFFSET)
+            { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
+            addCurrent(row, col, compute_direction(tile_int));
         }
-        if (tile_int >= TILE_WOOD_OFFSET)
-        { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
-        addCurrent(row, col, compute_direction(tile_int));
+    }
+
+    /** Compute the rock_int according to the tile_int: 0 for reg, 1-13 for land, -1 for sharp, -2 for plant */
+    private int computeRockInt(int tile_int){
+        if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){ return tile_int - TILE_LAND_OFFSET; }
+        if (tile_int == TILE_ROCK_ALONE){ return ROCK_REGULAR; }
+        if (tile_int == TILE_ROCK_SHARP){ return ROCK_SHARP; }
+        if (tile_int == TILE_PLANT){ return ROCK_PLANT; }
+        return TILE_NON_ROCK;
     }
 
     /** Compute the direction of the current base on the level json input
@@ -606,13 +617,13 @@ public class LevelModel {
     /** Add Rock Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position
-     * @param tile_int 0 if stand-alone, 1-16 if texture alas, -1 for sharp */
+     * @param tile_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp, (tile_int == -1)); // TODO: new land texture if tile_int != 0
-        if (tile_int == -2) { this_rock.setTexture(plantTexture); }
-        if (tile_int == -1) { this_rock.setTexture(sharpRockTexture); }
-        else if (tile_int == 0) { this_rock.setTexture(regularRockTexture); }
+        Rock this_rock = new Rock(compute_temp, (tile_int == ROCK_SHARP));
+        if (tile_int == ROCK_PLANT) { this_rock.setTexture(plantTexture); }
+        else if (tile_int == ROCK_SHARP) { this_rock.setTexture(sharpRockTexture); }
+        else if (tile_int == ROCK_REGULAR) { this_rock.setTexture(regularRockTexture); }
         else { this_rock.setTexture(terrain[tile_int - 1]); }
         if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
         addObject(this_rock);
@@ -1256,6 +1267,7 @@ public class LevelModel {
         }
     }
 
+    /**  */
     private int computeExtend(int tile_int){
         switch (tile_int){
             case 1: case 2:
