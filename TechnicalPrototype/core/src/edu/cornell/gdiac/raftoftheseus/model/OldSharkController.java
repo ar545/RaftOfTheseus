@@ -14,7 +14,7 @@ import static edu.cornell.gdiac.raftoftheseus.model.OldShark.enemyState.*;
 
 
 
-public class SharkController {
+public class OldSharkController {
 
 
     private class PathfindingTile implements Comparable<PathfindingTile> {
@@ -97,7 +97,7 @@ public class SharkController {
         CHASE_DIST = objParams.getInt("chase distance", 12);
     }
 
-    public SharkController(int id, OldShark shark, Raft raft, LevelModel level) {
+    public OldSharkController(int id, OldShark shark, Raft raft, LevelModel level) {
         this.id = id;
         this.shark = shark;
         this.raft = raft;

@@ -134,7 +134,7 @@ public class WorldController implements Screen, ContactListener {
     /** Countdown active for winning or losing */
     private int countdown;
     /** array of controls for each enemy**/
-    private SharkController[] controls;
+    private OldSharkController[] controls;
     /** Find whether an enemy can see the player. */
     private EnemyRayCast enemySight;
     /** Whether the settings button was pressed */
@@ -885,7 +885,7 @@ public class WorldController implements Screen, ContactListener {
         // Get danger
         boolean sharkNow = false;
         boolean sirenNow = false;
-        for(SharkController ai : controls){
+        for(OldSharkController ai : controls){
             if(ai.isAlive() && ai.getState() == OldShark.enemyState.ENRAGE){
                 sharkNow = true;
                 break;
@@ -1179,9 +1179,9 @@ public class WorldController implements Screen, ContactListener {
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
         PooledList<OldShark> enemies = levelModel.getEnemies();
-        controls = new SharkController[enemies.size()];
+        controls = new OldSharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);
+            controls[i] = new OldSharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);
         }
     }
 

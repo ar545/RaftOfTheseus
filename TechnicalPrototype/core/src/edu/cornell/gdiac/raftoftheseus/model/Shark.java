@@ -11,7 +11,7 @@ import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class NewShark extends GameObject {
+public class Shark extends GameObject {
     /**
      * Method to fill in all constants for the Shark
      * @param objParams the JsonValue with heading "shark".
@@ -42,7 +42,7 @@ public class NewShark extends GameObject {
     /** How the Shark wants to move. */
     private Vector2 desiredVelocity = new Vector2();
     /** FSM to control Shark AI */
-    private StateMachine<NewShark, NewSharkState> stateMachine;
+    private StateMachine<Shark, SharkState> stateMachine;
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
@@ -73,14 +73,14 @@ public class NewShark extends GameObject {
      * @param position start position
      * @param raft the player
      */
-    public NewShark(Vector2 position, Raft raft){
+    public Shark(Vector2 position, Raft raft){
         physicsObject = new WheelObstacle(RADIUS);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
         physicsObject.getFilterData().maskBits = MASK_ENEMY;
         desiredVelocity.set(0.0f, 0.0f);
-        stateMachine = new DefaultStateMachine<>(this, NewSharkState.IDLE);
+        stateMachine = new DefaultStateMachine<>(this, SharkState.IDLE);
         this.targetRaft = raft;
     }
 
@@ -103,7 +103,7 @@ public class NewShark extends GameObject {
         stateMachine.update();
     }
     /** @return this Shark's FSM */
-    public StateMachine<NewShark, NewSharkState> getStateMachine(){ return this.stateMachine; }
+    public StateMachine<Shark, SharkState> getStateMachine(){ return this.stateMachine; }
     /** @return this Shark's ObjectType for collision. */
     public ObjectType getType() {
         return ObjectType.SHARK;
@@ -153,8 +153,8 @@ public class NewShark extends GameObject {
 
     // Stunned
     public boolean setHit(){
-        if (!(stateMachine.isInState(NewSharkState.STUNNED) || stateMachine.isInState(NewSharkState.DYING))){
-            stateMachine.changeState(NewSharkState.STUNNED);
+        if (!(stateMachine.isInState(SharkState.STUNNED) || stateMachine.isInState(SharkState.DYING))){
+            stateMachine.changeState(SharkState.STUNNED);
             resetFlash();
             return true;
         }
