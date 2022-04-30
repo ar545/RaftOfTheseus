@@ -26,22 +26,22 @@ import java.util.HashMap;
 public class LevelModel {
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
-    /** Width and height of a single grid square in Box2d units */
+    /** Width and height of a single grid square in Box-2d units. A grid is 3 meter wide. */
     private static final float GRID_SIZE = 3.0f;
     /** Pixels per grid square */
-    private static final float GRID_PIXELS = 100.0f;
+    private static final float GRID_PIXELS = 150.0f;
     /** Pixels per Box2D unit */
     private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
-    /** Default boundary width and height of a single grid in Box2d units */
+    /** Default boundary width and height of a single grid in Box-2d units. Borders are 1 meter wide. */
     private static final float DEFAULT_BOUNDARY = 1.0f;
     /** Default num of rows in the map (y, height) */
     private static final int DEFAULT_GRID_ROW = 16;
     /** Default num of columns in the map (x, width) */
     private static final int DEFAULT_GRID_COL = 24;
-    /** a final vector 2 with both x and y as 0 */
+    /** a final vector 2 with both x and y as 0, e.g. Top-down game with no gravity */
     private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
-    /** Top-down game with no gravity */
-    protected static final Vector2 NO_GRAVITY = ZERO_VECTOR_2;
+    /** the height offset between the health bar and the player height */
+    public static final int BAR_PLAYER_OFFSET = 70;
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
 
@@ -106,8 +106,6 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
     private Raft raft;
-    /** The goal of the level */
-    private Goal goal;
     /** The vertices of the wall */
     private float[] polygonVertices;
     /** Reference to the game assets directory */
@@ -387,7 +385,7 @@ public class LevelModel {
         addQueue.clear();
         if (world != null)
             world.dispose();
-        world = new World(NO_GRAVITY,false);
+        world = new World(ZERO_VECTOR_2,false);
         if (light != null) { light.remove(); light = null; }
         if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
@@ -666,7 +664,6 @@ public class LevelModel {
         Goal this_goal = new Goal(compute_temp);
         this_goal.setTexture(targetTexture);
         addObject(this_goal);
-        goal = this_goal;
     }
 
     /** Add wood Objects to the world, using the Json value for goal
@@ -1060,7 +1057,7 @@ public class LevelModel {
 
     // DRAWING
 
-    public void draw(float time) {
+    public void draw(float time, boolean isTutorial) {
         if (!canvas.shaderCanBeUsed)
             USE_SHADER_FOR_WATER = false; // disable shader if reading shader files failed (e.g. on Mac)
 
@@ -1074,11 +1071,12 @@ public class LevelModel {
         Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
-        drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time);
+        if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
         drawReticle();
         canvas.end();
 
         setLightAndCircle(playerPosOnScreen);
+        if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
     }
 
     public void drawMap(){
@@ -1167,9 +1165,9 @@ public class LevelModel {
     /** Precondition & post-condition: the game canvas is open
      * @param health the health percentage for the player */
     private void drawHealthBar(float health, Vector2 player_position) {
-        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
-                greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 26), health);
+        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f),
+                (player_position.y + BAR_PLAYER_OFFSET), greyBar.getRegionWidth(), greyBar.getRegionHeight());
+        canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 6 + BAR_PLAYER_OFFSET), health);
     }
 
     /** draw the fuel sign if the health is below a certain level */
