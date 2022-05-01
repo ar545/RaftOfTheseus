@@ -34,9 +34,6 @@ public enum HydraState implements State<Hydra> {
         public void update(Hydra entity) {
             if (checkStun(entity)){
                 return;
-            }
-            if(entity.inAttackRange()){
-                entity.getStateMachine().changeState(HITTING);
             } else if(entity.canFire()){
                 entity.getStateMachine().changeState(SPLASHING);
             }
@@ -50,18 +47,6 @@ public enum HydraState implements State<Hydra> {
             } else if (entity.hasFired()){
                 entity.resetHasFired();
                 entity.resetTimeStamp();
-                entity.getStateMachine().changeState(ACTIVE);
-            }
-        }
-    },
-    HITTING(){
-        @Override
-        public void update(Hydra entity) {
-            if (checkStun(entity)){
-                return;
-            }
-            if(entity.hasAttacked()){
-                entity.resetHasAttacked();
                 entity.getStateMachine().changeState(ACTIVE);
             }
         }

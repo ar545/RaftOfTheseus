@@ -36,8 +36,8 @@
     "flying start frame" : 15
   },
   "hydra" : {
-    "hitting range" : 200,
-    "hitting damage" : 50,
+    "hitting range" : 3,
+    "hitting damage" : 25,
     "firing range" : 1500.0,
     "bullet damage" : 30,
     "stun time" : 500,

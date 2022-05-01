@@ -98,7 +98,7 @@ public class Hydra extends GameObject {
         return targetRaft.getPosition().sub(getPosition()).len() <= HITTING_RANGE;
     }
     public boolean willAttack(){
-        hasAttacked = stateMachine.isInState(HydraState.HITTING) && inAttackRange();
+        hasAttacked = stateMachine.isInState(HydraState.ACTIVE) && inAttackRange();
         return hasAttacked;
     }
     public boolean hasAttacked(){ return hasAttacked; }
