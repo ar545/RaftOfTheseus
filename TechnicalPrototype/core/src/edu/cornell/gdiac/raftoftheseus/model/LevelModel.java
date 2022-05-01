@@ -895,8 +895,8 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* New-added current and wood methods *=*=*=*=*=*=*=*=*=*/
 
     /** Add wood Objects to random location in the world */
-    public void addRandomWood() {
-        Wood this_wood = new Wood(boundsVector2());
+    public void addWood(Vector2 pos, int value) {
+        Wood this_wood = new Wood(pos, value);
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
     }

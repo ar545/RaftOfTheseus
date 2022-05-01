@@ -134,7 +134,7 @@
     "width" : 3,
     "height" : 0.5,
     "health" : 3,
-    "drops" : 1,
+    "drops" : 15,
     "hit box width" : 3,
     "hit box height" : 2
   }
