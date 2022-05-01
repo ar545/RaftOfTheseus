@@ -21,12 +21,10 @@ public enum HydraState implements State<Hydra> {
             }
             else if (!entity.inRange() || !entity.canSee())
                 entity.getStateMachine().changeState(IDLE);
-            else if(entity.canFire()){
-                entity.resetTimeStamp();
-                entity.getStateMachine().changeState(PRIMING);
-            } else if(entity.canFire())
-                entity.getStateMachine().changeState(PRIMING);
-            {}
+//            else if(entity.canFire()){
+//                entity.resetTimeStamp();
+//                entity.getStateMachine().changeState(PRIMING);
+//            } else if(entity.canFire())  entity.getStateMachine().changeState(PRIMING);
         }
     },
     PRIMING(){

@@ -18,10 +18,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Timer;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
-import edu.cornell.gdiac.raftoftheseus.model.enemy.EnemyRayCast;
-import edu.cornell.gdiac.raftoftheseus.model.enemy.Shark;
-import edu.cornell.gdiac.raftoftheseus.model.enemy.SharkController;
-import edu.cornell.gdiac.raftoftheseus.model.enemy.Siren;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 //import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
@@ -894,21 +891,27 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("shark_hit");
             s.setDestroyed(true);
             ((Shark)g).takeDamage();
-        }
-//      else if(g.getType() == GameObject.ObjectType.HYDRA) {
-//            // stun hydra
-//            SfxController.getInstance().playSFX("spear_enemy_hit");
-//            SfxController.getInstance().playSFX("shark_hit");
-//            ((Hydra) g).setHit(true);}
-        else if (g.getType() == GameObject.ObjectType.SIREN){
+        } else if(g.getType() == GameObject.ObjectType.HYDRA) {
+            // stun hydra
+            SfxController.getInstance().playSFX("spear_enemy_hit");
+            SfxController.getInstance().playSFX("shark_hit");
+            ((Hydra) g).setHit(true);
+        } else if (g.getType() == GameObject.ObjectType.SIREN){
             if(((Siren) g).setHit()) {
                 s.setDestroyed(true);
                 SfxController.getInstance().playSFX("spear_enemy_hit");
             }
-        }
-        else if (g.getType() == GameObject.ObjectType.ROCK || g.getType() == GameObject.ObjectType.OBSTACLE) {
+        } else if (g.getType() == GameObject.ObjectType.ROCK || g.getType() == GameObject.ObjectType.OBSTACLE) {
             SfxController.getInstance().playSFX("spear_break");
             s.setDestroyed(true);
+        } else if (g.getType() == GameObject.ObjectType.SHIPWRECK){
+            s.setDestroyed(true);
+            Shipwreck sw = ((Shipwreck) g);
+            sw.takeDamage();
+            if(sw.noHealth()){
+                sw.setDestroyed(true);
+                levelModel.addWood(sw.getPosition(), Shipwreck.getDrops());
+            }
         }
         // destroy bullet
 
@@ -955,7 +958,6 @@ public class WorldController implements Screen, ContactListener {
     }
 
     private void addScore(){
-        levelModel.addRandomWood();
         playerScore++;
         if(playerScore > 3) { playerScore = 3; System.out.println("incorrect 4th treasure detected."); }
         SfxController.getInstance().playSFX("chest_collect");

@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
 public class Shipwreck extends GameObject{
 
@@ -30,6 +31,7 @@ public class Shipwreck extends GameObject{
     private static float HIT_HEIGHT;
     private static int HEALTH;
     private static int DROPS;
+    private static int FRAME_COUNT;
 
     // The current health of this shipwreck.
     private int health;
@@ -94,6 +96,12 @@ public class Shipwreck extends GameObject{
     public void drawDebug(GameCanvas canvas) {
         super.drawDebug(canvas);
         hitbox.drawDebug(canvas);
+    }
+
+    @Override
+    public void draw(GameCanvas canvas){
+        ((FilmStrip) texture).setFrame((FRAME_COUNT - 1) - (health - 1));
+        super.draw(canvas);
     }
 }
 
