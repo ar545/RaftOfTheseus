@@ -80,11 +80,11 @@ public class Spear extends Projectile {
      * Change the position of this spear relative to the raft.
      * @param pos the raft position
      */
-    public void setFloatPosition(Vector2 pos, float floatTime, float flip){
+    public void setFloatPosition(Vector2 pos, float floatTime, float flip, Vector2 dir){
         float y_float = (float) Math.sin(floatTime*FLOAT_SPEED) * FLOAT_RANGE;
-        pos.add(SPEAR_XO * flip, SPEAR_YO + y_float);
+        pos.add(SPEAR_XO, SPEAR_YO + y_float);
         setPosition(pos);
-        setAngle(-Math.abs(getAngle()) * flip);
+        setAngle(dir.sub(getPosition()).rotateDeg(-90f).angleDeg());
     }
 
     /**

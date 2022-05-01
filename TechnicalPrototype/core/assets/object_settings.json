@@ -50,13 +50,13 @@
     "wander speed" : 1.5,
     "chase speed" : 2.0,
     "enrage speed" : 6.0,
-    "damage" : -40,
+    "damage" : -25,
     "protect range" : 5,
     "search range" : 30
   },
   "spear": {
     "speed scale" : 25.0,
-    "health cost" : -10.0,
+    "health cost" : -5.0,
     "texture scale" : 1.8,
     "body length" : 1,
     "body width" : 0.1,
@@ -86,11 +86,11 @@
   "terrain": {
   },
   "raft" : {
-    "move cost" : 1.2,
+    "move cost" : 1.1,
     "with current" : 0.45,
     "against current" : 1.75,
-    "max health" : 160,
-    "initial health" : 120,
+    "max health" : 100,
+    "initial health" : 100,
     "damping" : 5,
     "thrust" : 0.3,
     "max speed" : 10,

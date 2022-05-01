@@ -1024,7 +1024,7 @@ public class LevelModel {
      * @param firelocation
      */
     public void fireSpear(Vector2 firelocation){
-        Vector2 facing = firelocation.sub(raft.getPosition()).nor();
+        Vector2 facing = firelocation.sub(raft.getSpear().getPosition()).nor();
         Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
         raft.getSpear().fire(facing, raft_speed);
         raft.setSpear(null);

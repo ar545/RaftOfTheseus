@@ -8,14 +8,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Timer;
@@ -221,7 +218,7 @@ public class WorldController implements Screen, ContactListener {
         canvas.clear();
 
         // update animations
-        levelModel.getPlayer().updateSpear(dt);
+        levelModel.getPlayer().updateSpear(dt, firePixel);
         levelModel.getPlayer().setAnimationFrame(dt);
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
@@ -234,7 +231,6 @@ public class WorldController implements Screen, ContactListener {
         updateRaftWakeSamples();
 
         // Draw the level
-        levelModel.updateCameraTransform();
         levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 5);
 
         // draw stars
@@ -363,9 +359,6 @@ public class WorldController implements Screen, ContactListener {
         stage.addActor(transparentBackgroundTexture);
     }
 
-    /** Helper method to pass for button creation and concealing pause reseting. */
-    private void resetPausePressed(){ pausePressed = false; }
-
     private void drawPause() {
         if (!pauseBuilt) {
             pauseBuilt = true;
@@ -376,115 +369,32 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            TextButton resumeButton = new TextButton("RESUME", skin);
-            resumeButton.getLabel().setFontScale(0.5f);
-            resumeButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                    super.enter(event, x, y, pointer, fromActor);
-                    resumeButton.getLabel().setColor(Color.LIGHT_GRAY);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    resumeButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    SfxController.getInstance().playSFX("button_click");
-                    super.clicked(event, x, y);
-                    pausePressed = false;
-                }
-            });
+            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, 0.5f);
+            resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
             table.add(resumeButton).padTop(-20);
             table.row();
 
-            TextButton restartButton = new TextButton("RESTART", skin);
-            restartButton.getLabel().setFontScale(0.5f);
-            restartButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                    super.enter(event, x, y, pointer, fromActor);
-                    restartButton.getLabel().setColor(Color.LIGHT_GRAY);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    restartButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    SfxController.getInstance().playSFX("button_click");
-                    super.clicked(event, x, y);
-                    reset();
-                }
-            });
+            TextButton restartButton = UICreator.createTextButton("RESTART", skin, 0.5f);
+            restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             table.add(restartButton);
             table.row();
 
-            TextButton settingsButton = new TextButton("SETTINGS", skin);
-            settingsButton.getLabel().setFontScale(0.5f);
+            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.5f);
             table.add(settingsButton);
-            settingsButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                    super.enter(event, x, y, pointer, fromActor);
-                    settingsButton.getLabel().setColor(Color.LIGHT_GRAY);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    settingsButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    SfxController.getInstance().playSFX("button_click");
-                    super.clicked(event, x, y);
-                    settingsPressed = true;
-
-                }
-            });
+            settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
             table.row();
 
             TextButton exitButton = new TextButton("EXIT", skin);
             exitButton.getLabel().setFontScale(0.5f);
             exitButton.getLabel().setColor(Color.GOLD);
-            exitButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                    super.enter(event, x, y, pointer, fromActor);
-                    exitButton.getLabel().setColor(Color.LIGHT_GRAY);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    exitButton.getLabel().setColor(Color.GOLD);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    SfxController.getInstance().playSFX("button_click");
-                    super.clicked(event, x, y);
-                    exitPressed = true;
-                }
-            });
+            exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
             table.add(exitButton);
         }
         stage.act();
         stage.draw();
     }
 
+    /** Whether to build or draw the transition screen. */
     private void drawTransition() {
         if (!transitionBuilt) {
             transitionBuilt = true;
@@ -498,6 +408,7 @@ public class WorldController implements Screen, ContactListener {
         stage.draw();
     }
 
+    /** Code to construct the transition screen. */
     private void buildTransitionScreen(Texture background, boolean didFail) {
         table.clear();
         stage.clear();
@@ -509,34 +420,8 @@ public class WorldController implements Screen, ContactListener {
         table.setBackground(skin.getDrawable("transition_background"));
 
         Table part1 = new Table();
-        TextButton mainButton = new TextButton(didFail ? "RESTART" : "NEXT", skin);
-        mainButton.getLabel().setFontScale(0.6f);
-        float buttonWidth =  mainButton.getWidth();
-        mainButton.addListener(new ClickListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                super.enter(event, x, y, pointer, fromActor);
-                mainButton.getLabel().setColor(Color.LIGHT_GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                mainButton.getLabel().setColor(Color.WHITE);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SfxController.getInstance().playSFX("button_click");
-                super.clicked(event, x, y);
-                if (didFail) {
-                    reset();
-                } else {
-                    nextPressed = true;
-                }
-            }
-        });
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, 0.6f);
+        mainButton.addListener(UICreator.createListener(mainButton, this::goNext, didFail));
         part1.add(mainButton).expandX().align(Align.center).padTop(10);
         table.add(part1);
         table.row();
@@ -544,85 +429,39 @@ public class WorldController implements Screen, ContactListener {
         Table part2 = new Table();
         part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
-            TextButton replayButton = new TextButton("REPLAY", skin);
-            replayButton.getLabel().setFontScale(0.5f);
-            replayButton.addListener(new ClickListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                    super.enter(event, x, y, pointer, fromActor);
-                    replayButton.getLabel().setColor(Color.LIGHT_GRAY);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    super.exit(event, x, y, pointer, toActor);
-                    replayButton.getLabel().setColor(Color.WHITE);
-                }
-
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    SfxController.getInstance().playSFX("button_click");
-                    super.clicked(event, x, y);
-                    reset();
-                }
-            });
+            TextButton replayButton = UICreator.createTextButton("REPLAY", skin, 0.5f);
+            replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             part2.add(replayButton).expandX().padRight(70);
         }
 
-        TextButton settingsButton = new TextButton("SETTINGS", skin);
-        settingsButton.getLabel().setFontScale(0.5f);
-        settingsButton.addListener(new ClickListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                super.enter(event, x, y, pointer, fromActor);
-                settingsButton.getLabel().setColor(Color.LIGHT_GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                settingsButton.getLabel().setColor(Color.WHITE);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SfxController.getInstance().playSFX("button_click");
-                super.clicked(event, x, y);
-                settingsPressed = true;
-            }
-        });
+        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.5f, Color.GOLD);
+        settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
         part2.add(settingsButton).expandX();
 
-        TextButton exitButton = new TextButton("EXIT", skin);
-        exitButton.getLabel().setFontScale(0.5f);
-        exitButton.getLabel().setColor(Color.GOLD);
-        exitButton.addListener(new ClickListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                if(pointer == -1) SfxController.getInstance().playSFX("button_enter");
-                super.enter(event, x, y, pointer, fromActor);
-                exitButton.getLabel().setColor(Color.GRAY);
-            }
-
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                super.exit(event, x, y, pointer, toActor);
-                exitButton.getLabel().setColor(Color.GOLD);
-            }
-
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SfxController.getInstance().playSFX("button_click");
-                super.clicked(event, x, y);
-                exitPressed = true;
-            }
-        });
+        TextButton exitButton = UICreator.createTextButton("EXIT", skin, 0.5f, Color.GOLD);
+        exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, Color.GOLD, this::setExitPressed));
         part2.add(exitButton).expandX();
         table.add(part2);
         table.row();
     }
+
+    /** @param didFail whether the player has failed ofr not. */
+    private void goNext(boolean didFail) {
+        if (didFail) {
+            reset();
+        } else {
+            nextPressed = true;
+        }
+    }
+
+    /** Set settingsPressed to be true for transitioning. */
+    private void setSettingsPressed(){ settingsPressed = true; }
+    /** Set settingsPressed to be true for transitioning. */
+    private void setPausePressed(){ pausePressed = true; }
+    /** Set settingsPressed to be true for transitioning. */
+    private void setExitPressed(){ exitPressed = true; }
+    /** Helper method to pass for button creation and concealing pause resetting. */
+    private void resetPausePressed(){ pausePressed = false; }
 
     /** Draw star at the up left corner
      * Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
@@ -709,6 +548,8 @@ public class WorldController implements Screen, ContactListener {
      */
     public boolean preUpdate(float dt) {
         // NEW*: Ask the level model to process current effects on objects and light effects :*NEW
+        // Update camera to prevent null pointer exceptions
+        levelModel.updateCameraTransform();
         levelModel.updateAllCurrentEffects(dt);
         levelModel.updateLights();
 
@@ -765,7 +606,10 @@ public class WorldController implements Screen, ContactListener {
         return true;
     }
 
+    // Boolean to keep track of charging for sound effects
     private boolean wasCharging = false;
+    // Vector2 to store mouse position in pixel coordinates.
+    private Vector2 firePixel;
 
     /** The core gameplay loop of this world. This method is called after input is read, but before collisions
      * are resolved. The very last thing that it should do is apply forces to the appropriate objects.
@@ -773,6 +617,8 @@ public class WorldController implements Screen, ContactListener {
     public void update(float dt){
         // Process actions in object model
         InputController ic = InputController.getInstance();
+        firePixel = ic.getMouseLocation();
+        levelModel.getCameraTransform().inv().applyTo(firePixel);
         Raft player = levelModel.getPlayer();
         player.setMovementInput(ic.getMovement());
         player.beginCharging(ic.didCharge());
@@ -792,8 +638,6 @@ public class WorldController implements Screen, ContactListener {
         if (player.canFire() && ic.didRelease() && player.hasSpear()) {
             // find the nearest enemy to player
             player.resetCanFire();
-            Vector2 firePixel = ic.getFireDirection();
-            levelModel.getCameraTransform().inv().applyTo(firePixel);
             levelModel.fireSpear(firePixel);
             SfxController.getInstance().playSFX("spear_throw");
             wasCharging = false;

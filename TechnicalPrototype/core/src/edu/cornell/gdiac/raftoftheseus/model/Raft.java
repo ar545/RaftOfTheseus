@@ -363,15 +363,16 @@ public class Raft extends GameObject {
         return spear != null && !spear.isDestroyed();
     }
 
+    /** The amount of time that has elapsed for floating */
     float floatTime;
 
-    public void updateSpear(float dt){
+    public void updateSpear(float dt, Vector2 dir){
         if(!hasSpear()) return;
         floatTime += dt;
         if(floatTime >= 360){
             floatTime = 0;
         }
-        spear.setFloatPosition(getPosition(), floatTime, flip);
+        spear.setFloatPosition(getPosition(), floatTime, flip, dir);
     }
 
     public Spear getSpear(){
