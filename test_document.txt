@@ -1,7 +1,0 @@
-After you clone this repo to your computer, add your name to the end 
-of this file, and then push the changed file to the repo. If you can 
-see your edit on GitHub, then your stuff is set up properly.
-======================================================================
-Demian
-Jason
-Leo
