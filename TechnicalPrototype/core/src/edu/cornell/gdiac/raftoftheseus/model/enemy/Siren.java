@@ -56,7 +56,7 @@ public class Siren extends GameObject {
     private Vector2 start = new Vector2();
     private Vector2 finish = new Vector2();
     /** The index in waypoints of the next waypoint to fly to. */
-    private int waypoint = 1;
+    private int waypoint;
     private Array<Vector2> waypoints;
     /** Vector applied as a force to the Siren. */
     private Vector2 moveVector = new Vector2();
@@ -157,6 +157,7 @@ public class Siren extends GameObject {
         physicsObject.setSensor(true);
         moveVector.set(0.0f, 0.0f);
         stateMachine = new DefaultStateMachine<>(this, SirenState.IDLE);
+        waypoint = 1;
     }
 
     @Override
@@ -196,11 +197,13 @@ public class Siren extends GameObject {
     /** Set the move vector to zero so the Siren comes to a rest. */
     public void stopMove(){ this.moveVector.setZero(); }
 
+    /** Method to change the indicator of the next flying location. */
     public void incrementWaypoint(){
         if(waypoint == waypoints.size - 1) waypoint = 0;
         else waypoint++;
     }
 
+    /** @return whether this Siren stays in place or not. */
     public boolean isStationary(){
         return waypoints.size == 1;
     }

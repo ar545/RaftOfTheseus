@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.Timer;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.EnemyRayCast;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.Shark;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.SharkController;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.Siren;
