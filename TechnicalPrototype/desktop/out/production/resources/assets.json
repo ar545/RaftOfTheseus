@@ -49,6 +49,7 @@
       "star":     "images/star.png",
       "plant":     "images/plant.png",
       "fuel": "images/fuel.png",
+      "shipwreck" : "images/Obj_Shipwreck.png",
       "terrain": "images/terrain_demian.png",
       "hint_movement": "images/hint_move.png",
       "hint_attack": "images/hint_fire.png",

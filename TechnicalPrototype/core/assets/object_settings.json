@@ -129,5 +129,13 @@
       "49a8ba",
       "318899"
     ]
+  },
+  "shipwreck" : {
+    "width" : 3,
+    "height" : 0.5,
+    "health" : 3,
+    "drops" : 1,
+    "hit box width" : 3,
+    "hit box height" : 2
   }
 }

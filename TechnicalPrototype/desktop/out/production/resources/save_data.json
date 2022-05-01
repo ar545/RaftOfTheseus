@@ -79,7 +79,7 @@
       "path": "levels/level9.png",
       "complete": false,
       "score": 0,
-      "unlocked": false
+      "unlocked": true
     },
     {
       "name": "Level 10",
