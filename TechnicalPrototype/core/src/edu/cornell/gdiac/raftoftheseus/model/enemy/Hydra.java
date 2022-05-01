@@ -111,4 +111,8 @@ public class Hydra extends GameObject {
             isHit = h;
         }
     }
+
+    public void setTargetRaft(Raft raft) {
+        targetRaft = raft;
+    }
 }
