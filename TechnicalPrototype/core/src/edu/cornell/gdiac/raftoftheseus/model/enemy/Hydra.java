@@ -32,7 +32,6 @@ public class Hydra extends GameObject {
     private static float FIRING_RANGE;
 
     // Booleans
-    private boolean isHit = false;
     private boolean canSee = false;
     private boolean hasFired;
     private boolean hasAttacked;
@@ -105,10 +104,9 @@ public class Hydra extends GameObject {
     public void resetHasAttacked(){ hasAttacked = false; }
 
     // Stunned
-    public boolean isHit(){ return isHit; }
     public void setHit(boolean h){
         if (!stateMachine.isInState(HydraState.STUNNED)){
-            isHit = h;
+            stateMachine.changeState(HydraState.STUNNED);
         }
     }
 }

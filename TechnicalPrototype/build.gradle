@@ -10,6 +10,7 @@ buildscript {
     dependencies {
         classpath 'com.mobidevelop.robovm:robovm-gradle-plugin:2.3.12'
         classpath "com.badlogicgames.gdx:gdx-ai:1.8.1"
+
     }
 }
 
@@ -44,6 +45,7 @@ project(":desktop") {
 
     dependencies {
         implementation project(":core")
+        implementation "com.talosvfx:talos-libgdx:1.4.0"
         api "com.badlogicgames.gdx:gdx-backend-lwjgl:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
@@ -59,6 +61,7 @@ project(":core") {
 
 
     dependencies {
+        implementation "com.talosvfx:talos-libgdx:1.4.0"
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         api "com.badlogicgames.gdx-controllers:gdx-controllers-core:$gdxControllersVersion"

@@ -7,20 +7,14 @@ public enum HydraState implements State<Hydra> {
     IDLE(){
         @Override
         public void update(Hydra entity) {
-            if (entity.inRange() && entity.canSee())
-                entity.getStateMachine().changeState(ACTIVE);
-            checkStun(entity);
+            if (entity.inRange() && entity.canSee()) entity.getStateMachine().changeState(ACTIVE);
         }
     },
     ACTIVE(){
         @Override
         public void update(Hydra entity) {
             entity.setTimeStamp();
-            if (checkStun(entity)){
-                return;
-            }
-            else if (!entity.inRange() || !entity.canSee())
-                entity.getStateMachine().changeState(IDLE);
+            if (!entity.inRange() || !entity.canSee()) entity.getStateMachine().changeState(IDLE);
 //            else if(entity.canFire()){
 //                entity.resetTimeStamp();
 //                entity.getStateMachine().changeState(PRIMING);
@@ -30,19 +24,13 @@ public enum HydraState implements State<Hydra> {
     PRIMING(){
         @Override
         public void update(Hydra entity) {
-            if (checkStun(entity)){
-                return;
-            } else if(entity.canFire()){
-                entity.getStateMachine().changeState(SPLASHING);
-            }
+            if(entity.canFire()) entity.getStateMachine().changeState(SPLASHING);
         }
     },
     SPLASHING(){
         @Override
         public void update(Hydra entity) {
-            if (checkStun(entity)){
-                return;
-            } else if (entity.hasFired()){
+            if (entity.hasFired()){
                 entity.resetHasFired();
                 entity.resetTimeStamp();
                 entity.getStateMachine().changeState(ACTIVE);
@@ -59,15 +47,6 @@ public enum HydraState implements State<Hydra> {
             }
         }
     };
-    
-    private static boolean checkStun(Hydra entity){
-        if (entity.isHit()){
-            entity.setHit(false);
-            entity.getStateMachine().changeState(STUNNED);
-            return true;
-        }
-        return false;
-    }
 
 
     @Override
