@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus.model;
+package edu.cornell.gdiac.raftoftheseus.model.enemy;
 
 
 import java.util.Arrays;
@@ -8,10 +8,13 @@ import java.util.Random;
 import com.badlogic.gdx.ai.msg.PriorityQueue;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.Queue;
+import edu.cornell.gdiac.raftoftheseus.model.Current;
+import edu.cornell.gdiac.raftoftheseus.model.GameObject;
+import edu.cornell.gdiac.raftoftheseus.model.LevelModel;
+import edu.cornell.gdiac.raftoftheseus.model.Raft;
 
-import static edu.cornell.gdiac.raftoftheseus.model.Shark.*;
-import static edu.cornell.gdiac.raftoftheseus.model.Shark.enemyState.*;
+import static edu.cornell.gdiac.raftoftheseus.model.enemy.Shark.*;
+import static edu.cornell.gdiac.raftoftheseus.model.enemy.Shark.enemyState.*;
 
 
 

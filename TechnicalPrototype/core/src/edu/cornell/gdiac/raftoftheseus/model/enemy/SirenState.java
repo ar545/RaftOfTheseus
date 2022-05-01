@@ -1,8 +1,7 @@
-package edu.cornell.gdiac.raftoftheseus.model;
+package edu.cornell.gdiac.raftoftheseus.model.enemy;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
-import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 
 public enum SirenState implements State<Siren> {
 

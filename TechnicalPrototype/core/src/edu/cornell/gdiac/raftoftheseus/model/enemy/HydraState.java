@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus.model.unused;
+package edu.cornell.gdiac.raftoftheseus.model.enemy;
 
 import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.msg.Telegram;
