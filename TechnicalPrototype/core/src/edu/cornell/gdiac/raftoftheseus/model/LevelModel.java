@@ -188,6 +188,8 @@ public class LevelModel {
     protected TextureRegion greyBar;
     /** The texture for the aiming reticle */
     private TextureRegion reticleTexture;
+    /** The shipwreck texture. */
+    private FilmStrip shipwreckTexture;
     /** Json information for light settings */
     private JsonValue lightSettings;
 
@@ -812,6 +814,7 @@ public class LevelModel {
         lightSettings = directory.getEntry("lights", JsonValue.class);
         canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
+        shipwreckTexture = new FilmStrip(directory.getEntry("shipwreck", Texture.class), 1, 3);
         gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
     }
 

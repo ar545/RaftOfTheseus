@@ -450,7 +450,7 @@ public class SfxController {
     /**
      * Stops all sound.
      */
-    private void haltSFX(){
+    public void haltSFX(){
         for(Sound s : sfx.values()){
             s.stop();
         }

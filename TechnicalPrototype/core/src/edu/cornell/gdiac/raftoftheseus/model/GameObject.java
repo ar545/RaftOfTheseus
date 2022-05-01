@@ -27,7 +27,8 @@ public abstract class GameObject {
         SPEAR,
         HYDRA,
         SIREN,
-        NOTE
+        NOTE,
+        SHIPWRECK
     }
 
     /** Collision filtering categories */

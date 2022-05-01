@@ -230,8 +230,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private void setMenuScreen(boolean stopMusic){
 		if(stopMusic) {
 			SfxController.getInstance().haltMusic();
-			SfxController.getInstance().stopLoopingSFX("raft_sail_wind");
+			SfxController.getInstance().haltSFX();
 		}
+		SfxController.getInstance().startMenuMusic();
 		menu.setScreenListener(this);
 		setScreen(menu);
 	}
@@ -241,7 +242,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	private void setPlayScreen(int currentLevel){
 		SfxController.getInstance().haltMusic();
-		SfxController.getInstance().stopLoopingSFX("raft_sail_wind");
+		SfxController.getInstance().haltSFX();
 		this.currentLevel = currentLevel;
 		playing.setLevel(this.currentLevel);
 		setPlayScreen();
