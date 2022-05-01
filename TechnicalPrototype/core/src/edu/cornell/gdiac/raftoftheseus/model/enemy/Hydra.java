@@ -109,4 +109,8 @@ public class Hydra extends GameObject {
             stateMachine.changeState(HydraState.STUNNED);
         }
     }
+
+    public void setTargetRaft(Raft raft) {
+        targetRaft = raft;
+    }
 }

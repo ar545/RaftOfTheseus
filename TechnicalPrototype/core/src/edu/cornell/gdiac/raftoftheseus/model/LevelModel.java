@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.lights.PointSource;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.Hydra;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.Shark;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.Siren;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
@@ -138,7 +139,9 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<Shark> enemies = new PooledList<>();
+    private PooledList<Shark> sharks = new PooledList<>();
+    /** All hydras objects in the world */
+    private PooledList<Hydra> hydras = new PooledList<>();
     /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
@@ -215,8 +218,10 @@ public class LevelModel {
     public Raft getPlayer() { return raft; }
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
-    /** get the enemies (list) of the world */
-    public PooledList<Shark> getEnemies() { return enemies; }
+    /** get the shark (list) of the world */
+    public PooledList<Shark> getSharks() { return sharks; }
+    /** get the hydra (list) of the world */
+    public PooledList<Hydra> getHydras() { return hydras; }
     /** get the list of sirens in the world */
     public PooledList<Siren> getSirens() { return sirens; }
     /** This added queue is use for adding new project tiles */
@@ -317,7 +322,16 @@ public class LevelModel {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
-        enemies.add(obj);
+        sharks.add(obj);
+    }
+
+    /** Immediately adds the object to the physics world and the enemy list
+     * @param obj The enemy object to add */
+    protected void addHydraObject(Hydra obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        hydras.add(obj);
     }
 
 
@@ -371,7 +385,9 @@ public class LevelModel {
     public void dispose() {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
-        enemies.clear();
+        sharks.clear();
+        hydras.clear();
+        sirens.clear();
         addQueue.clear();
         world.dispose();
         objects = null;
@@ -390,7 +406,9 @@ public class LevelModel {
     public void reset() {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
-        enemies.clear();
+        sharks.clear();
+        hydras.clear();
+        sirens.clear();
         addQueue.clear();
         if (world != null)
             world.dispose();
@@ -548,8 +566,11 @@ public class LevelModel {
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
-        for (Shark shark : enemies){
+        for (Shark shark : sharks){
             shark.setTargetRaft(raft);
+        }
+        for (Hydra hydra: hydras){
+            hydra.setTargetRaft(raft);
         }
     }
 
@@ -561,8 +582,8 @@ public class LevelModel {
         if (tile_int == TILE_DEFAULT){ return; }
         if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
         if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
-        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, false); return; }
-        if (tile_int == TILE_HYDRA){ addEnemy(row, col, true); return; }
+        if (tile_int == TILE_ENEMY_SIREN){ return; } // TODO: undefined behavior
+        if (tile_int == TILE_HYDRA){ addEnemy(row, col, false); return; }
         if (tile_int == TILE_WRECK){ addWood(row, col, 40); return; }
         if (tile_int == TILE_LAND_OFFSET - 1){ addWood(row, col, 20); return; }
         if (tile_int == TILE_LAND_OFFSET - 2){ addWood(row, col, 15); return; }
@@ -647,6 +668,11 @@ public class LevelModel {
             Shark this_shark = new Shark(compute_temp, null, this);
             this_shark.setTexture(enemyTexture);
             addSharkObject(this_shark);
+        }
+        else{
+            Hydra hydra = new Hydra(compute_temp, null);
+            hydra.setTexture(enemyTexture);
+            addHydraObject(hydra);
         }
 //        else{
 //            Siren ts = new Siren(compute_temp, compute_temp, raft);

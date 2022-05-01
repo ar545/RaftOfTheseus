@@ -224,7 +224,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
         }
-        for(Shark s : levelModel.getEnemies()){
+        for(Shark s : levelModel.getSharks()){
             s.setAnimationFrame(dt);
         }
 
@@ -1028,7 +1028,7 @@ public class WorldController implements Screen, ContactListener {
 
     /** Prepare the AI for the enemy in the level */
     public void prepareEnemy(){
-        PooledList<Shark> enemies = levelModel.getEnemies();
+        PooledList<Shark> enemies = levelModel.getSharks();
         controls = new SharkController[enemies.size()];
         for (int i = 0; i < enemies.size(); i++) {
             controls[i] = new SharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);
