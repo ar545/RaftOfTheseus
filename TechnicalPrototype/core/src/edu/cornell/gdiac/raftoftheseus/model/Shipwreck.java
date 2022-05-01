@@ -54,9 +54,10 @@ public class Shipwreck extends GameObject{
 
         hitbox = new BoxObstacle(HIT_WIDTH, HIT_HEIGHT);
         hitbox.setPosition(physicsObject.getPosition());
+        hitbox.setSensor(true);
         hitbox.setBodyType(BodyDef.BodyType.StaticBody);
-        hitbox.getFilterData().categoryBits = CATEGORY_ENEMY;
-        hitbox.getFilterData().maskBits = MASK_ENEMY;
+        hitbox.getFilterData().categoryBits = CATEGORY_DESTRUCTIBLE;
+        hitbox.getFilterData().maskBits = MASK_DESTRUCTIBLE;
         health = HEALTH;
     }
 

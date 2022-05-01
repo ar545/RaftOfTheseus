@@ -43,10 +43,11 @@ public abstract class GameObject {
     protected final static short CATEGORY_PLAYER_SENSOR = 1<<9;
     public final static short CATEGORY_LIGHT_BLOCK = 1<<10;
     public final static short CATEGORY_LIGHT_NON = 1<<11;
+    protected final static short CATEGORY_DESTRUCTIBLE = 1<<12;
     /** Collision filtering masks */
     protected final static short MASK_PLAYER = CATEGORY_ENEMY | CATEGORY_ENEMY_BULLET | CATEGORY_CURRENT
             | CATEGORY_TERRAIN;
-    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN;
+    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN | CATEGORY_DESTRUCTIBLE;
     protected final static short MASK_ENEMY = CATEGORY_PLAYER | CATEGORY_PLAYER_BULLET | CATEGORY_CURRENT
             | CATEGORY_TERRAIN | CATEGORY_PUSHABLE;
     protected final static short MASK_NOTE = CATEGORY_PLAYER_SENSOR;
@@ -58,6 +59,7 @@ public abstract class GameObject {
     protected final static short MASK_GOAL = CATEGORY_PLAYER_SENSOR;
     protected final static short MASK_SIREN = CATEGORY_PLAYER_BULLET; // Siren does not interact with anything, flying over player
     protected final static short MASK_PLAYER_SENSOR = CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE | CATEGORY_ENEMY_BULLET;
+    protected final static short MASK_DESTRUCTIBLE = CATEGORY_ENEMY_BULLET;
 
     /** How much to scale the texture before displaying (Box2D units / texture pixels) */
     protected Vector2 textureScale;
