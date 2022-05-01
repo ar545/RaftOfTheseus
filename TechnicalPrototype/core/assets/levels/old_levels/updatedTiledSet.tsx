@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.4" name="updatedTiledSet" tilewidth="50" tileheight="50" tilecount="56" columns="7">
- <image source="update.png" width="350" height="400"/>
+<tileset version="1.8" tiledversion="1.8.4" name="updatedTiledSet" tilewidth="50" tileheight="50" tilecount="42" columns="7">
+ <image source="updatedTiled.png" width="350" height="300"/>
  <tile id="0" type="Raft"/>
  <tile id="1" type="Siren"/>
  <tile id="2" type="Enemy"/>
@@ -27,7 +27,7 @@
  <tile id="24" type="Wood"/>
  <tile id="25" type="Wood"/>
  <tile id="26" type="Wood"/>
- <tile id="27" type="Wood"/>
+ <tile id="27" type="Rock"/>
  <tile id="28" type="Rock"/>
  <tile id="29" type="Rock"/>
  <tile id="30" type="Rock"/>
@@ -41,24 +41,20 @@
  <tile id="38" type="Rock"/>
  <tile id="39" type="Rock"/>
  <tile id="40" type="Rock"/>
- <tile id="42" type="Rock"/>
- <tile id="43" type="Rock"/>
- <tile id="44" type="Rock"/>
- <tile id="45" type="Current"/>
- <tile id="46" type="Current"/>
- <tile id="47" type="Current"/>
- <tile id="48" type="Current"/>
- <tile id="49" type="Enemy"/>
- <tile id="50" type="Enemy"/>
- <tile id="51" type="Enemy"/>
- <tile id="52" type="Current"/>
- <tile id="53" type="Current"/>
- <tile id="54" type="Current"/>
- <tile id="55" type="Current"/>
  <wangsets>
   <wangset name="Land Set" type="corner" tile="28">
    <wangcolor name="Land" color="#ff0000" tile="34" probability="1"/>
    <wangcolor name="Sea" color="#00ff00" tile="41" probability="1"/>
+   <wangtile tileid="3" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="4" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="5" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="6" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="7" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="8" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="10" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="11" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="12" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="13" wangid="0,2,0,2,0,2,0,2"/>
    <wangtile tileid="28" wangid="0,2,0,1,0,2,0,2"/>
    <wangtile tileid="29" wangid="0,2,0,2,0,1,0,2"/>
    <wangtile tileid="30" wangid="0,1,0,2,0,1,0,1"/>

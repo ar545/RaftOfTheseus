@@ -82,12 +82,17 @@ public class LevelModel {
     private static final int TILE_TREASURE = 15;
     /** Index of the representation of default wood in tile set texture */
     private static final int TILE_WOOD_OFFSET = 15;
-    /** Index of the representation of place-holder in tile set texture */
-    private static final int TILE_PLANT = 28;
+    /** Index of the representation of wreck in tile set texture */
+    private static final int TILE_WRECK = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_SEA = 42;
+    private static final int TILE_STRONG_CURRENT = 42;
+    /** Index of the representation of plant in tile set texture */
+    private static final int TILE_PLANT = 45;
+    /** Index of the representation of plant in tile set texture */
+    private static final int TILE_HYDRA = 50;
     /** Total variation of terrains */
     private static final int TERRAIN_TYPES = TILE_SEA - TILE_LAND_OFFSET - 1;
 
@@ -557,9 +562,11 @@ public class LevelModel {
         if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
         if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
         if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, false); return; }
-        if (tile_int == TILE_PLANT - 1){ addWood(row, col, 20); return; }
-        if (tile_int == TILE_PLANT - 2){ addWood(row, col, 15); return; }
-        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_PLANT){
+        if (tile_int == TILE_HYDRA){ addEnemy(row, col, true); return; }
+        if (tile_int == TILE_WRECK){ addWood(row, col, 40); return; }
+        if (tile_int == TILE_LAND_OFFSET - 1){ addWood(row, col, 20); return; }
+        if (tile_int == TILE_LAND_OFFSET - 2){ addWood(row, col, 15); return; }
+        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_LAND_OFFSET){
             addWood(row, col, tile_int - TILE_WOOD_OFFSET);
             return;
         }
@@ -582,9 +589,9 @@ public class LevelModel {
             if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
             if (tile_int == TILE_START) { addRaft(row, col); return; }
             if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
-            if (tile_int >= TILE_WOOD_OFFSET)
-            { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
-            addCurrent(row, col, compute_direction(tile_int));
+            if (tile_int < TILE_WOOD_OFFSET) {addCurrent(row, col, compute_direction(tile_int), false); return;}
+            if (tile_int > TILE_PLANT) {addCurrent(row, col, compute_direction(tile_int - TILE_STRONG_CURRENT), true); return; }
+            System.out.println("Un-parse-able information detected in environment layer:" + tile_int);
         }
     }
 
@@ -593,7 +600,7 @@ public class LevelModel {
         if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){ return tile_int - TILE_LAND_OFFSET; }
         if (tile_int == TILE_ROCK_ALONE){ return ROCK_REGULAR; }
         if (tile_int == TILE_ROCK_SHARP){ return ROCK_SHARP; }
-        if (tile_int == TILE_PLANT){ return ROCK_PLANT; }
+        if (tile_int <= TILE_PLANT && tile_int > TILE_SEA){ return ROCK_PLANT; }
         return TILE_NON_ROCK;
     }
 
@@ -688,10 +695,10 @@ public class LevelModel {
      * @param row the row gird position
      * @param col the column grid position
      * @param direction the direction */
-    private void addCurrent(int row, int col, Current.Direction direction) {
+    private void addCurrent(int row, int col, Current.Direction direction, boolean isStrong) {
         // TODO: the current object collision no longer needed, but texture is needed
         computePosition(col, row);
-        Current this_current = new Current(compute_temp, direction);
+        Current this_current = new Current(compute_temp, direction, isStrong);
         this_current.setTexture(currentTexture);
 
         // Initialize the current field, used for current vector field
