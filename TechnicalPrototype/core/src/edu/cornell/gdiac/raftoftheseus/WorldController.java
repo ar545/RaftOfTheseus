@@ -782,13 +782,13 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("spear_charge");
         }
 
+        if(!player.canFire() && ic.didRelease()) { player.reverseFire(); wasCharging = false; } // cancel fire if player release before time
+
         // Create spear when possible
-        if(player.canFire() && !player.hasSpear()){
-            levelModel.createSpear();
-        }
+        if(player.canFire() && !player.hasSpear()){ levelModel.createSpear(); }
 
         // Move spear move after firing.
-        if (player.canFire() && ic.didCharge() && player.hasSpear()) {
+        if (player.canFire() && ic.didRelease() && player.hasSpear()) {
             // find the nearest enemy to player
             player.resetCanFire();
             Vector2 firePixel = ic.getFireDirection();
@@ -826,7 +826,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.update(dt);
             if(s.willAttack()){
-                levelModel.createNote(s.getPosition().cpy(), s.getTargetDirection());
+                levelModel.createNote(s.getPosition().cpy(), s.getTargetDirection(levelModel.getPlayerCurrentVelocity()));
             }
         }
     }

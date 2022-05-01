@@ -6,6 +6,7 @@
     "debug": "G",
     "exit": "P",
     "fire": 0,
+    "fireKey": "Space",
     "map": "Z",
     "sprint": "Shift",
     "w" : "W",

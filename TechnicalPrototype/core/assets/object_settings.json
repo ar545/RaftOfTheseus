@@ -99,7 +99,7 @@
     "sensor size" : 1.45,
     "texture scale" : 1.5,
     "idle animation speed" : 0.05,
-    "shooting animation speed" : 0.05,
+    "shooting animation speed" : 0.0333333,
     "rotation animation speed" : 0.1,
     "idle frames" : 19,
     "shooting frames" : 19,

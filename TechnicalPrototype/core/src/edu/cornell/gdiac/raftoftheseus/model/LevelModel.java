@@ -1001,6 +1001,9 @@ public class LevelModel {
         for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o, dt); } }
     }
 
+    /** return the current velocity that the player is experiencing */
+    public Vector2 getPlayerCurrentVelocity(){ return currentField.getCurrentVelocity(raft.getPosition()); }
+
     // PROJECTILE MANIPULATION
 
     /**

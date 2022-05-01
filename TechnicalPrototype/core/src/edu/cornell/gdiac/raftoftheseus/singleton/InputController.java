@@ -203,6 +203,8 @@ public class InputController {
 	public boolean didMap() { return mapPressed && !mapPrevious; }
 	/** @return true if the fire button was pressed. */
 	public boolean didCharge() { return firePressed && !firePrevious; }
+	/** @return true if the fire button was pressed. */
+	public boolean didRelease() { return !firePressed && firePrevious; }
 	/** @return true if the tab button was pressed for changing what is selected on a screen. */
 	public boolean didTab() { return tabPressed && !tabPrevious; }
 	/** @return true if the change control scheme button was pressed. */
@@ -286,7 +288,7 @@ public class InputController {
 		// TODO add rotational aiming
 
 		mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
-		firePressed = Gdx.input.isButtonPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fire"));
+		firePressed = Gdx.input.isButtonPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fireKey"));
 		if (firePressed) {
 			fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 		}
