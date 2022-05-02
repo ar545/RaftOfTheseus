@@ -7,6 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
+import edu.cornell.gdiac.raftoftheseus.EnemyRayCast;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -49,7 +50,9 @@ public class Shark extends GameObject {
     private long timeStamp = 0L;
     private boolean timeStamped = false;
     /** Whether this Shark has just been attacked by the player. */
-    private boolean isHit;
+    private boolean isHit; // unused?
+    /** Whether the Shark can see the player. (must be set by WorldController) */
+    public boolean canSee;
     /** Constants that determine time in each state for range of attack. */
     public static float CONTACT_DAMAGE;
     public static float HEAR_RANGE;
@@ -85,6 +88,7 @@ public class Shark extends GameObject {
         desiredVelocity.set(0.0f, 0.0f);
         stateMachine = new DefaultStateMachine<>(this, SharkState.IDLE);
         this.targetRaft = raft;
+        canSee = false;
     }
 
     @Override
@@ -146,7 +150,7 @@ public class Shark extends GameObject {
 
     /** @return whether the player is in line-of-sight of this Shark. */
     public boolean canSee(){
-        return true; // TODO
+        return canSee;
     }
 
     /** @return whether the player is in a given range of this Shark. */
@@ -160,10 +164,7 @@ public class Shark extends GameObject {
     }
 
     public float getTargetDistance() {
-        float x = targetRaft.getPosition().cpy().sub(getPosition()).len();
-//        System.out.println(x);
-//        return 0;
-        return x;
+        return targetRaft.getPosition().cpy().sub(getPosition()).len();
     }
 
     public void setDesiredVelocity(float speed, boolean aimingAtPlayer) {

@@ -817,6 +817,7 @@ public class WorldController implements Screen, ContactListener {
 //        }
 
         for(Shark s : levelModel.getEnemies()){
+            updateLineOfSight(s);
             s.updateAI(dt);
         }
         for(Siren s : levelModel.getSirens()){
@@ -825,6 +826,12 @@ public class WorldController implements Screen, ContactListener {
                 levelModel.createNote(s.getPosition().cpy(), s.getTargetDirection());
             }
         }
+    }
+
+    private void updateLineOfSight(Shark s) {
+        enemySight.reset();
+        levelModel.world.rayCast(enemySight, s.getPosition(), levelModel.getPlayer().getPosition());
+        s.canSee = enemySight.getCanSee();
     }
 
     /** Processes physics
