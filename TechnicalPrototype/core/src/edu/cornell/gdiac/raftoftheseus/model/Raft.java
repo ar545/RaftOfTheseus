@@ -257,8 +257,10 @@ public class Raft extends GameObject {
     float flip;
 
 
-    /** Set whether the playe rhas reached the end of the animation cycle. */
-    public void resetCanFire() { canFire = false; }
+    /** Set whether the player has reached the end of the animation cycle. */
+    public void resetCanFire() { canFire = false; isCharging = false;  }
+    /** Reverse the firing animation and effect due to pre-mature release of mouse. */
+    public void reverseFire() { canFire = false; isCharging = false; addHealth(-Spear.DAMAGE); }
     /** @return whether the player has reached the end of the firing animation cycle. */
     public boolean canFire() {
         return canFire;
@@ -282,7 +284,7 @@ public class Raft extends GameObject {
         timeElapsed += dt;
         if(frame >= IDLE_SF && !isCharging){
             setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
-        } else if (frame >= IDLE_SF && isCharging){
+        } else if (frame >= IDLE_SF ){ // && isCharging
             frameCount = 0;
             timeElapsed = 0;
             frame = SHOOTING_SF;
@@ -290,7 +292,10 @@ public class Raft extends GameObject {
             setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false);
             canFire = isFrame(SHOOTING_F, SHOOTING_SF, false);
             if(canFire) isCharging = false;
-        } else if (isFrame(SHOOTING_F, SHOOTING_SF, false)){
+        }  else if (isFrame(SHOOTING_F, SHOOTING_SF, false)){
+            frame += 20;
+            timeElapsed = 0;
+        } else { // !(isFrame(SHOOTING_F, SHOOTING_SF, false)) && !isCharging
             frame += 20;
             timeElapsed = 0;
         }
@@ -358,15 +363,16 @@ public class Raft extends GameObject {
         return spear != null && !spear.isDestroyed();
     }
 
+    /** The amount of time that has elapsed for floating */
     float floatTime;
 
-    public void updateSpear(float dt){
+    public void updateSpear(float dt, Vector2 dir){
         if(!hasSpear()) return;
         floatTime += dt;
         if(floatTime >= 360){
             floatTime = 0;
         }
-        spear.setFloatPosition(getPosition(), floatTime, flip);
+        spear.setFloatPosition(getPosition(), floatTime, flip, dir);
     }
 
     public Spear getSpear(){

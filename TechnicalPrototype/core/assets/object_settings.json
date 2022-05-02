@@ -36,8 +36,8 @@
     "flying start frame" : 15
   },
   "hydra" : {
-    "hitting range" : 200,
-    "hitting damage" : 50,
+    "hitting range" : 3,
+    "hitting damage" : 25,
     "firing range" : 1500.0,
     "bullet damage" : 30,
     "stun time" : 500,
@@ -50,13 +50,13 @@
     "wander speed" : 1.5,
     "chase speed" : 2.0,
     "enrage speed" : 6.0,
-    "damage" : -40,
+    "damage" : -25,
     "protect range" : 5,
     "search range" : 30
   },
   "spear": {
     "speed scale" : 25.0,
-    "health cost" : -10.0,
+    "health cost" : -3.0,
     "texture scale" : 1.8,
     "body length" : 1,
     "body width" : 0.1,
@@ -86,11 +86,11 @@
   "terrain": {
   },
   "raft" : {
-    "move cost" : 1.2,
+    "move cost" : 1.0,
     "with current" : 0.45,
     "against current" : 1.75,
-    "max health" : 200,
-    "initial health" : 60,
+    "max health" : 100,
+    "initial health" : 100,
     "damping" : 5,
     "thrust" : 0.3,
     "max speed" : 10,
@@ -99,7 +99,7 @@
     "sensor size" : 1.45,
     "texture scale" : 1.5,
     "idle animation speed" : 0.05,
-    "shooting animation speed" : 0.05,
+    "shooting animation speed" : 0.0333333,
     "rotation animation speed" : 0.1,
     "idle frames" : 19,
     "shooting frames" : 19,
@@ -134,7 +134,7 @@
     "width" : 3,
     "height" : 0.5,
     "health" : 3,
-    "drops" : 1,
+    "drops" : 15,
     "hit box width" : 3,
     "hit box height" : 2
   }

@@ -16,6 +16,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.lights.PointSource;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.Hydra;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.Shark;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.Siren;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -80,12 +83,17 @@ public class LevelModel {
     private static final int TILE_TREASURE = 15;
     /** Index of the representation of default wood in tile set texture */
     private static final int TILE_WOOD_OFFSET = 15;
-    /** Index of the representation of place-holder in tile set texture */
-    private static final int TILE_PLANT = 28;
+    /** Index of the representation of wreck in tile set texture */
+    private static final int TILE_WRECK = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_SEA = 42;
+    private static final int TILE_STRONG_CURRENT = 42;
+    /** Index of the representation of plant in tile set texture */
+    private static final int TILE_PLANT = 45;
+    /** Index of the representation of plant in tile set texture */
+    private static final int TILE_HYDRA = 50;
     /** Total variation of terrains */
     private static final int TERRAIN_TYPES = TILE_SEA - TILE_LAND_OFFSET - 1;
 
@@ -131,7 +139,9 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<Shark> enemies = new PooledList<>();
+    private PooledList<Shark> sharks = new PooledList<>();
+    /** All hydras objects in the world */
+    private PooledList<Hydra> hydras = new PooledList<>();
     /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
@@ -208,8 +218,10 @@ public class LevelModel {
     public Raft getPlayer() { return raft; }
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
-    /** get the enemies (list) of the world */
-    public PooledList<Shark> getEnemies() { return enemies; }
+    /** get the shark (list) of the world */
+    public PooledList<Shark> getSharks() { return sharks; }
+    /** get the hydra (list) of the world */
+    public PooledList<Hydra> getHydras() { return hydras; }
     /** get the list of sirens in the world */
     public PooledList<Siren> getSirens() { return sirens; }
     /** This added queue is use for adding new project tiles */
@@ -310,7 +322,16 @@ public class LevelModel {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
-        enemies.add(obj);
+        sharks.add(obj);
+    }
+
+    /** Immediately adds the object to the physics world and the enemy list
+     * @param obj The enemy object to add */
+    protected void addHydraObject(Hydra obj) {
+        assert inBounds(obj) : "Object is not in bounds";
+        objects.add(obj);
+        obj.activatePhysics(world);
+        hydras.add(obj);
     }
 
 
@@ -364,7 +385,9 @@ public class LevelModel {
     public void dispose() {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
-        enemies.clear();
+        sharks.clear();
+        hydras.clear();
+        sirens.clear();
         addQueue.clear();
         world.dispose();
         objects = null;
@@ -383,7 +406,9 @@ public class LevelModel {
     public void reset() {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
-        enemies.clear();
+        sharks.clear();
+        hydras.clear();
+        sirens.clear();
         addQueue.clear();
         if (world != null)
             world.dispose();
@@ -541,8 +566,11 @@ public class LevelModel {
 
     /** This is a temporary function that help all enemies target the raft */
     private void populateEnemiesRaftField(){
-        for (Shark shark : enemies){
+        for (Shark shark : sharks){
             shark.setTargetRaft(raft);
+        }
+        for (Hydra hydra: hydras){
+            hydra.setTargetRaft(raft);
         }
     }
 
@@ -554,10 +582,12 @@ public class LevelModel {
         if (tile_int == TILE_DEFAULT){ return; }
         if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
         if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
-        if (tile_int == TILE_ENEMY_SIREN){ addEnemy(row, col, false); return; }
-        if (tile_int == TILE_PLANT - 1){ addWood(row, col, 20); return; }
-        if (tile_int == TILE_PLANT - 2){ addWood(row, col, 15); return; }
-        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_PLANT){
+        if (tile_int == TILE_ENEMY_SIREN){ return; } // TODO: undefined behavior
+        if (tile_int == TILE_HYDRA){ addEnemy(row, col, false); return; }
+        if (tile_int == TILE_WRECK){ addWood(row, col, 40); return; }
+        if (tile_int == TILE_LAND_OFFSET - 1){ addWood(row, col, 20); return; }
+        if (tile_int == TILE_LAND_OFFSET - 2){ addWood(row, col, 15); return; }
+        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_LAND_OFFSET){
             addWood(row, col, tile_int - TILE_WOOD_OFFSET);
             return;
         }
@@ -580,9 +610,9 @@ public class LevelModel {
             if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
             if (tile_int == TILE_START) { addRaft(row, col); return; }
             if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
-            if (tile_int >= TILE_WOOD_OFFSET)
-            { System.out.println("Un-parse-able information detected in environment layer:" + tile_int); return; }
-            addCurrent(row, col, compute_direction(tile_int));
+            if (tile_int < TILE_WOOD_OFFSET) {addCurrent(row, col, compute_direction(tile_int), false); return;}
+            if (tile_int > TILE_PLANT) {addCurrent(row, col, compute_direction(tile_int - TILE_STRONG_CURRENT), true); return; }
+            System.out.println("Un-parse-able information detected in environment layer:" + tile_int);
         }
     }
 
@@ -591,7 +621,7 @@ public class LevelModel {
         if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){ return tile_int - TILE_LAND_OFFSET; }
         if (tile_int == TILE_ROCK_ALONE){ return ROCK_REGULAR; }
         if (tile_int == TILE_ROCK_SHARP){ return ROCK_SHARP; }
-        if (tile_int == TILE_PLANT){ return ROCK_PLANT; }
+        if (tile_int <= TILE_PLANT && tile_int > TILE_SEA){ return ROCK_PLANT; }
         return TILE_NON_ROCK;
     }
 
@@ -638,6 +668,11 @@ public class LevelModel {
             Shark this_shark = new Shark(compute_temp, null, this);
             this_shark.setTexture(enemyTexture);
             addSharkObject(this_shark);
+        }
+        else{
+            Hydra hydra = new Hydra(compute_temp, null);
+            hydra.setTexture(enemyTexture);
+            addHydraObject(hydra);
         }
 //        else{
 //            Siren ts = new Siren(compute_temp, compute_temp, raft);
@@ -686,10 +721,10 @@ public class LevelModel {
      * @param row the row gird position
      * @param col the column grid position
      * @param direction the direction */
-    private void addCurrent(int row, int col, Current.Direction direction) {
+    private void addCurrent(int row, int col, Current.Direction direction, boolean isStrong) {
         // TODO: the current object collision no longer needed, but texture is needed
         computePosition(col, row);
-        Current this_current = new Current(compute_temp, direction);
+        Current this_current = new Current(compute_temp, direction, isStrong);
         this_current.setTexture(currentTexture);
 
         // Initialize the current field, used for current vector field
@@ -893,8 +928,8 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* New-added current and wood methods *=*=*=*=*=*=*=*=*=*/
 
     /** Add wood Objects to random location in the world */
-    public void addRandomWood() {
-        Wood this_wood = new Wood(boundsVector2());
+    public void addWood(Vector2 pos, int value) {
+        Wood this_wood = new Wood(pos, value);
         this_wood.setTexture(doubleTexture); // TODO use correct wood texture
         addQueuedObject(this_wood);
     }
@@ -1004,6 +1039,9 @@ public class LevelModel {
         for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o, dt); } }
     }
 
+    /** return the current velocity that the player is experiencing */
+    public Vector2 getPlayerCurrentVelocity(){ return currentField.getCurrentVelocity(raft.getPosition()); }
+
     // PROJECTILE MANIPULATION
 
     /**
@@ -1021,7 +1059,7 @@ public class LevelModel {
      * @param firelocation
      */
     public void fireSpear(Vector2 firelocation){
-        Vector2 facing = firelocation.sub(raft.getPosition()).nor();
+        Vector2 facing = firelocation.sub(raft.getSpear().getPosition()).nor();
         Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
         raft.getSpear().fire(facing, raft_speed);
         raft.setSpear(null);

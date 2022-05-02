@@ -151,4 +151,29 @@ public class UICreator {
             }
         };
     }
+
+    // WorldController Buttons
+    public static ClickListener createListener(TextButton button, Consumer<Boolean> function, boolean didFail){
+        return new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                if (pointer == -1) SfxController.getInstance().playSFX("button_enter");
+                super.enter(event, x, y, pointer, fromActor);
+                button.setColor(Color.LIGHT_GRAY);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                button.setColor(Color.WHITE);
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                SfxController.getInstance().playSFX("button_click");
+                super.clicked(event, x, y);
+                function.accept(didFail);
+            }
+        };
+    }
 }

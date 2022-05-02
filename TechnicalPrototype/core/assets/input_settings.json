@@ -6,7 +6,9 @@
     "debug": "G",
     "exit": "P",
     "fire": 0,
-    "map": "Z",
+    "fireKey": "Space",
+    "map": "Tab",
+    "map_alt": "M",
     "sprint": "Shift",
     "w" : "W",
     "s" : "S",
@@ -16,10 +18,9 @@
     "down" : "Down",
     "left" : "Left",
     "right" : "Right",
-    "tab" : "Tab",
     "test" : "T",
     "pause": "Escape",
-    "revert" : "C",
+    "special" : "C",
     "rotate left" : "J",
     "rotate right" : "K"
   }

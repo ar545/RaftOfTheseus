@@ -37,13 +37,6 @@ public class InputController {
 
 	private static JsonValue controlSettings;
 
-	private enum ControlScheme{
-		KeyboardOnly,
-		KeyboardMouse,
-		Custom
-	}
-	private ControlScheme controlScheme;
-
 	private ArrayMap<String, Integer> mappings;
 
 	/*=*=*=*=*=*=*=*=*=* GAME NAVIGATION CONTROLS *=*=*=*=*=*=*=*=*=*/
@@ -76,8 +69,8 @@ public class InputController {
 	private boolean firePressed;
 	private boolean firePrevious;
 	/** Whether the tab button was pressed for selection. */
-	private boolean tabPressed;
-	private boolean tabPrevious;
+	private boolean specialPressed;
+	private boolean specialPrevious;
 	/** Whether the right arrow button/D was pressed for adjusting settings. CAN BE HELD.*/
 	private boolean rightPressed;
 	/** Whether the left arrow button/A was pressed for adjusting settings. CAN BE HELD.*/
@@ -138,23 +131,10 @@ public class InputController {
 		if(mappings.get(action) == null ){
 			throw new RuntimeException("Given action does not exist");
 		} else if (!Input.Keys.toString(mappings.get(action)).equals(key)) {
-			controlScheme = ControlScheme.Custom;
 			mappings.put(action, Input.Keys.valueOf(key));
 			return true;
 		}
 		return false;
-	}
-
-	/**
-	 * Function to display which control scheme is being used.
-	 * @return String representing control scheme
-	 */
-	public String getControlScheme(){
-		switch (controlScheme){
-			case KeyboardMouse: return "Keyboard and Mouse";
-			case Custom: return "Custom";
-			default: throw new RuntimeException("Illegal state reached in Input Controller.");
-		}
 	}
 
 	/**
@@ -164,19 +144,14 @@ public class InputController {
 	 * @return String of key associated with action.
 	 */
 	public String getKey(String action){
-		if(controlScheme == ControlScheme.KeyboardMouse) {
-			if (action.equals("fire")) {
-				return "Left Mouse Button";
-			} else if (action.equals("map")) {
-				return "Right Mouse Button";
-			}
+		if (action.equals("fire")) {
+			return "Left Mouse Button";
 		}
 		String k = Input.Keys.toString(mappings.get(action));
 		if (k == null) {
 			throw new RuntimeException("Given action does not exist");
 		}
 		return k;
-
 	}
 
 	/* GETTERS */
@@ -203,10 +178,12 @@ public class InputController {
 	public boolean didMap() { return mapPressed && !mapPrevious; }
 	/** @return true if the fire button was pressed. */
 	public boolean didCharge() { return firePressed && !firePrevious; }
-	/** @return true if the tab button was pressed for changing what is selected on a screen. */
-	public boolean didTab() { return tabPressed && !tabPrevious; }
+	/** @return true if the fire button was pressed. */
+	public boolean didRelease() { return !firePressed && firePrevious; }
 	/** @return true if the change control scheme button was pressed. */
 	public boolean didChange() { return changePressed && !changePrevious; }
+	/** @return whether special key was pressed. */
+	public boolean didSpecial() { return specialPressed && !specialPrevious; }
 	/** @return true if the "right" direction button was pressed for keyboard control of settings. */
 	public boolean didRight() { return rightPressed; }
 	/** @return true if the "left" direction button was pressed for keyboard control of settings. */
@@ -215,10 +192,6 @@ public class InputController {
 	public boolean didSprint() { return sprintPressed; }
 	/** @return true if the settings button was pressed. */
 	public boolean didPause() { return pausePressed & !pausePrevious; }
-	/** @return true if the mouse is being used. */
-	public boolean mouseActive() { return controlScheme == ControlScheme.KeyboardMouse; }
-	/** Find whether the player moved and should reduce health . */
-	public boolean Moved(){ return (x_offset!= 0 || y_offset != 0); }
 
 	/**
 	 * -1 = down/left, 1 = up/right, 0 = still
@@ -226,8 +199,8 @@ public class InputController {
 	 * normalize vector so diagonal movement isn't 41.4% faster than normal movement
 	 */
 	public Vector2 getMovement() { return mov_offset.set(x_offset, y_offset).nor(); }
-	/** @return where the mouse was clicked in screen coordinates */
-	public Vector2 getFireDirection() { return fire_location; }
+	/** @return where the mouse is in screen coordinates. */
+	public Vector2 getMouseLocation() { return fire_location; }
 
 	/* READ INPUT */
 
@@ -241,7 +214,7 @@ public class InputController {
 		debugPrevious  = debugPressed;
 		exitPrevious = exitPressed;
 		pausePrevious = pausePressed;
-		tabPrevious = tabPressed;
+		specialPrevious = specialPressed;
 		changePrevious = changePressed;
 		firePrevious = firePressed;
 		// Read new input
@@ -260,7 +233,7 @@ public class InputController {
 
 		// Player action keys
 		changePressed = Gdx.input.isKeyPressed(mappings.get("test")); //		changePressed = false;
-		tabPressed = Gdx.input.isKeyPressed(mappings.get("tab"));
+		specialPressed = Gdx.input.isKeyPressed(mappings.get("special"));
 		sprintPressed = Gdx.input.isKeyPressed(mappings.get("sprint"));
 
 		// Reset offsets
@@ -285,10 +258,8 @@ public class InputController {
 
 		// TODO add rotational aiming
 
-		mapPressed = Gdx.input.isKeyPressed(mappings.get("map"));
-		firePressed = Gdx.input.isButtonPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fire"));
-		if (firePressed) {
-			fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
-		}
+		mapPressed = Gdx.input.isKeyPressed(mappings.get("map")) || Gdx.input.isKeyPressed(mappings.get("map_alt"));
+		firePressed = Gdx.input.isButtonPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fireKey"));
+		fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 	}
 }

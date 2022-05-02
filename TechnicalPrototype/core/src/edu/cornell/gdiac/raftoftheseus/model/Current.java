@@ -39,7 +39,9 @@ public class Current extends GameObject {
     private final Direction direction;
     /** Magnitude of the current. The speed at which a current flows = factor * magnitude, in units per second
      * Current Magnitude Ratio Constant, used in current constructor calls */
-    private static final float MAGNITUDE = 6f;
+    private static final float WEAK_MAGNITUDE = 4f;
+    private static final float STRONG_MAGNITUDE = 9f;
+    boolean isStrong;
 
     // METHODS
     public ObjectType getType() {
@@ -47,7 +49,7 @@ public class Current extends GameObject {
     }
 
     /** constructor with known direction */
-    public Current(Vector2 position, Direction direction){
+    public Current(Vector2 position, Direction direction, boolean isStrong){
         physicsObject = new BoxObstacle(3f, 3f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
@@ -56,6 +58,7 @@ public class Current extends GameObject {
         setRotationFromDirection();
         physicsObject.getFilterData().categoryBits = CATEGORY_CURRENT;
         physicsObject.getFilterData().maskBits = MASK_CURRENT;
+        this.isStrong = isStrong;
     }
 
     private void setRotationFromDirection() {
@@ -97,23 +100,24 @@ public class Current extends GameObject {
     /** get the direction vector of the current
      * @return currents should be normalized to their magnitude. */
     public Vector2 getDirectionVector() {
+        float magnitude = isStrong ? STRONG_MAGNITUDE : WEAK_MAGNITUDE;
         switch (this.direction){
             case EAST:
-                return new Vector2(MAGNITUDE, 0);
+                return new Vector2(magnitude, 0);
             case WEST:
-                return new Vector2(-MAGNITUDE, 0);
+                return new Vector2(-magnitude, 0);
             case NORTH:
-                return new Vector2(0, MAGNITUDE);
+                return new Vector2(0, magnitude);
             case SOUTH:
-                return new Vector2(0, -MAGNITUDE);
+                return new Vector2(0, -magnitude);
             case NORTH_EAST:
-                return new Vector2(1, 1).nor().scl(MAGNITUDE);
+                return new Vector2(1, 1).nor().scl(magnitude);
             case EAST_SOUTH:
-                return new Vector2(1, -1).nor().scl(MAGNITUDE);
+                return new Vector2(1, -1).nor().scl(magnitude);
             case SOUTH_WEST:
-                return new Vector2(-1, -1).nor().scl(MAGNITUDE);
+                return new Vector2(-1, -1).nor().scl(magnitude);
             case WEST_NORTH:
-                return new Vector2(-1, 1).nor().scl(MAGNITUDE);
+                return new Vector2(-1, 1).nor().scl(magnitude);
             default:
                 return new Vector2(0, 0);
         }
