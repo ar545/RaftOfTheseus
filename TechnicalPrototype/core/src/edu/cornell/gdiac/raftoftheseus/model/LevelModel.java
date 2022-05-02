@@ -509,12 +509,14 @@ public class LevelModel {
             for(int col = 0; col < cols(); col ++){
                 int index = row_reversed * cols() + col;
                 populateEnv(row, col, environment.get("data").getInt(index), row_reversed == 0);
+            }
+        }
+        // populate collectables AFTER environment, so that sharks have a non-null Raft to use in their constructor
+        for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
+            int row = rows() - row_reversed - 1;
+            for(int col = 0; col < cols(); col ++){
+                int index = row_reversed * cols() + col;
                 populateCollect(row, col, collectables.get("data").getInt(index));
-                // TODO: if we populate the raft field before instantiating enemies,
-                //  we can properly instantiate instead of putting null for target raft field
-                //  see the Enemy this_enemy = new Enemy(compute_temp, null);
-                //  on private void addEnemy(int row, int col, int enemy_type){}
-                populateEnemiesRaftField();
             }
         }
 
@@ -562,16 +564,6 @@ public class LevelModel {
         }
         this_siren.setTexture(sirenTexture);
         addSirenObject(this_siren);
-    }
-
-    /** This is a temporary function that help all enemies target the raft */
-    private void populateEnemiesRaftField(){
-        for (Shark shark : sharks){
-            shark.setTargetRaft(raft);
-        }
-        for (Hydra hydra: hydras){
-            hydra.setTargetRaft(raft);
-        }
     }
 
     /** This is the level editor JSON parser that populate the collectable layer
@@ -665,7 +657,7 @@ public class LevelModel {
     private void addEnemy(int row, int col, boolean is_shark) {
         computePosition(col, row);
         if(is_shark){
-            Shark this_shark = new Shark(compute_temp, null, this);
+            Shark this_shark = new Shark(compute_temp, getPlayer());
             this_shark.setTexture(enemyTexture);
             addSharkObject(this_shark);
         }

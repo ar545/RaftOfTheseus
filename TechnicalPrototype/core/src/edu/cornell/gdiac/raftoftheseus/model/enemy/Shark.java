@@ -1,10 +1,13 @@
 package edu.cornell.gdiac.raftoftheseus.model.enemy;
 
+import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
+import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.utils.Queue;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.TimeUtils;
+import edu.cornell.gdiac.raftoftheseus.EnemyRayCast;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.LevelModel;
@@ -13,190 +16,181 @@ import edu.cornell.gdiac.raftoftheseus.model.Treasure;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-
-
 public class Shark extends GameObject {
+    /**
+     * Method to fill in all constants for the Shark
+     * @param objParams the JsonValue with heading "shark".
+     */
+    public static void setConstants(JsonValue objParams){
+        CONTACT_DAMAGE = objParams.getFloat("damage");
+        HEAR_RANGE = objParams.getFloat("hearing range");
+        APPROACH_SPEED = objParams.getFloat("approach speed");
+        APPROACH_RANGE = objParams.getFloat("approach range");
+        ATTACK_WINDUP_TIME = objParams.getFloat("warm up");
+        ATTACK_SPEED = objParams.getFloat("attack speed");
+        ATTACK_RANGE = objParams.getFloat("attack range");
+        ATTACK_COOLDOWN_TIME = objParams.getFloat("cool down");
+        STUN_TIME = objParams.getLong("stun time");
 
-//    private Random rand = new Random();
+        TEXTURE_SCALE = objParams.getFloat("texture scale");
+        RADIUS = objParams.getFloat("radius");
 
-    public Shark(Vector2 position, Raft targetRaft, LevelModel level) {
-        physicsObject = new WheelObstacle(1.45f);
+        SWIM_AS = objParams.getFloat("swim animation speed");
+        BITE_AS = objParams.getFloat("bite animation speed");
+        SWIM_FRAMES = objParams.getInt("swim frames");
+        BITE_FRAMES = objParams.getInt("bite frames");
+        SWIM_SF = objParams.getInt("swim start frame");
+        BITE_SF = objParams.getInt("bite start frame");
+    }
+
+    /** The player for targeting. */
+    private Raft targetRaft;
+    private Vector2 aimDirection = new Vector2(0, 0);
+    /** How the Shark wants to move. */
+    private Vector2 desiredVelocity = new Vector2();
+    /** FSM to control Shark AI */
+    private StateMachine<Shark, SharkState> stateMachine;
+    /** To keep track how much time has passed. */
+    private long timeStamp = 0L;
+    private boolean timeStamped = false;
+    /** Whether this Shark has just been attacked by the player. */
+    private boolean isHit; // unused?
+    /** Whether the Shark can see the player. (must be set by WorldController) */
+    public boolean canSee;
+    /** Constants that determine time in each state for range of attack. */
+    public static float CONTACT_DAMAGE;
+    public static float HEAR_RANGE;
+    public static float APPROACH_SPEED;
+    public static float APPROACH_RANGE;
+    public static float ATTACK_WINDUP_TIME;
+    public static float ATTACK_SPEED;
+    public static float ATTACK_RANGE;
+    public static float ATTACK_COOLDOWN_TIME;
+    public static float STUN_TIME;
+
+    private static float TEXTURE_SCALE;
+    private static float RADIUS;
+
+    private static float SWIM_AS;
+    private static float BITE_AS;
+    private static int SWIM_FRAMES;
+    private static int BITE_FRAMES;
+    private static int SWIM_SF;
+    private static int BITE_SF;
+
+    /**
+     * Constructor for Shark
+     * @param position start position
+     * @param raft the player
+     */
+    public Shark(Vector2 position, Raft raft){
+        physicsObject = new WheelObstacle(RADIUS);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
         physicsObject.getFilterData().maskBits = MASK_ENEMY;
-
-        this.targetRaft = targetRaft;
-        this.level = level;
-
-        health = 2;
+        desiredVelocity.set(0.0f, 0.0f);
+        stateMachine = new DefaultStateMachine<>(this, SharkState.IDLE);
+        this.targetRaft = raft;
+        canSee = false;
     }
 
-    public ObjectType getType() {
-        return ObjectType.SHARK;
-    }
-
-    public static void setConstants(JsonValue objParams){
-        ENEMY_WANDER_SPEED = objParams.getFloat("wander speed");
-        ENEMY_CHASE_SPEED = objParams.getFloat("chase speed");
-        ENEMY_DAMAGE = objParams.getFloat("damage");
-        ENEMY_ENRAGE_CHASE_SPEED = objParams.getFloat("enrage speed", 8f);
-        PROTECT_RANGE = objParams.getInt("protect range", 5);
-        MAX_DEPTH = objParams.getInt("search range", 30);
-    }
-
-    /**
-     * How much damage an enemy deals to the player upon collision, per animation frame
-     */
-    public static final float DAMAGE_PER_FRAME = 0.5f;
-    /**
-     * How fast enemy wanders around w/o target
-     **/
-    public static float ENEMY_WANDER_SPEED = 2.5f;
-    /**
-     * How fast the enemy moves towards its target, in units per second
-     */
-    public static float ENEMY_CHASE_SPEED = 4.0f;
-    /**
-     * How fast the enemy moves towards its target while enraged , in units per second
-     */
-    public static float ENEMY_ENRAGE_CHASE_SPEED = 8.0f;
-    /**
-     * How much health will enemy take from player upon collision
-     */
-    public static float ENEMY_DAMAGE;
-
-    /** how far will the enemy go from a nearby treasure in tiles **/
-    private static int PROTECT_RANGE = 5;
-
-    /** max depth for djikstra pathfind **/
-    public static int MAX_DEPTH = 30;
-
-    public Vector2 moveVector = new Vector2();
-
-    public static enum enemyState {
-        /**
-         * The enemy just spawned
-         */
-        SPAWN,
-        /**
-         * The enemy is patrolling around without a target
-         */
-        WANDER,
-        /**
-         * The enemy has a target, but must get closer
-         */
-        CHASE,
-        /**
-         * Like chase, but increased range and moves at greater speed
-         */
-        ENRAGE,
-    }
-
-    /**
-     * This is the player, if this enemy is targeting the player.
-     */
-    private Raft targetRaft;
-
-    private Treasure closestTreasure;
-
-    /** if the enemy is enraged **/
-    private boolean enraged;
-
-    /** LevelModel used to convert screen coords **/
-    private LevelModel level;
-
-    private HashSet<String> visited;
-
-    /** How much health this shark has remaining. */
-    private int health;
-
-    public void takeDamage() {
-        health -= 1;
-        if (health <= 0)
-            setDestroyed(true);
-        setEnraged(false);
-    }
-
-
-    public boolean isEnraged(){
-        return enraged;
-    }
-
-    public void setEnraged(boolean b){
-        this.enraged = b;
-    }
-
-    public void setTargetRaft(Raft targetRaft) {
-        this.targetRaft = targetRaft;
-    }
-
-    //    // TODO: this will change depending on implementation of AIController
-    public void update(float dt) {
-        super.update(dt);
-        if (moveVector != null && targetRaft != null) {
-            physicsObject.getBody().applyLinearImpulse(moveVector, getPosition(), true);
-        }
-    }
-    /**
-     * Sets moveVector so that applying it as a linear impulse brings this object's velocity closer to
-     * moveVector*topSpeed.
-     * Precondition: moveVector.len() == 1.
-     * @param topSpeed Won't apply an impulse that takes us above this speed
-     * @param smoothing Impulse is scaled by (1-smoothing). Higher smoothing means wider turns, slower responses.
-     */
-    public void calculateImpulse(float topSpeed, float smoothing) {
-        float currentSpeed = physicsObject.getBody().getLinearVelocity().dot(moveVector); // current speed in that direction
-        float impulseMagnitude = (topSpeed - currentSpeed)*physicsObject.getBody().getMass()*(1-smoothing);
-        moveVector.scl(impulseMagnitude);
-    }
-
-    /* DISPLAY AND ANIMATION */
-
-    // ANIMATION
-    private static float HORIZONTAL_OFFSET = 0.0f;
-    /** How much to enlarge the shark. */
-    private static float TEXTURE_SCALE = 1.50f;
-    /** The animation speed for the shark. */
-    private static float IDLE_AS = 0.05f;
-    private static float ATTACK_AS = 0.05f;
-    /** The number of frames for this animation. */
-    private static int IDLE_F = 9;
-    private static int ATTACK_F = 7;
-    /** Which frame to start on the filmstrip with this animation. */
-    private static int IDLE_SF = 8;
-    private static int ATTACK_SF = 0;
-
-    // The value to increment once the animation time has passed. Used to calculate which frame should be used.
-    private int frameCount = 0;
-    // The amount of time elapsed, used for checking whether to increment frameCount.
-    private float timeElapsed = 0;
-    // Which frame should be set for drawing this game cycle.
-    private int frame = IDLE_SF;
-    // whether the shark was enraged in the last animation frame
-    private boolean wasEnraged = false;
-
-    /**
-     * Realign the shark sprite so that the bottom of it is at the bottom of the physics object.
-     */
     @Override
     protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f - 1.0f);
+        textureOffset = new Vector2(0, 0);
     }
 
     /**
-     * Set the filmstrip frame before call the super draw method.
-     * @param canvas Drawing context
+     * Method to switch the state of the FSM when applicable.
+     * @param dt the time increment
      */
-    @Override
-    public void draw(GameCanvas canvas, Color color){
-        ((FilmStrip) texture).setFrame(frame);
-        super.draw(canvas, color);
+    public void updateAI(float dt) {
+        if(!isDestroyed()) {
+            Vector2 currentVelocity = physicsObject.getLinearVelocity().cpy();
+            Vector2 f = currentVelocity.sub(desiredVelocity).scl(-2.0f * physicsObject.getMass());
+            physicsObject.getBody().applyForce(f, getPosition(), true);
+//            physicsObject.setLinearVelocity(desiredVelocity);
+            stateMachine.update();
+        }
+    }
+    /** @return this Shark's FSM */
+    public StateMachine<Shark, SharkState> getStateMachine(){ return this.stateMachine; }
+    /** @return this Shark's ObjectType for collision. */
+    public ObjectType getType() {
+        return ObjectType.SHARK;
+    }
+
+    // Timing
+    /** Method to start recording time for transitioning between states. */
+    public void setTimeStamp(){
+        if(!timeStamped) {
+            timeStamp = TimeUtils.millis();
+            timeStamped = true;
+        }
+    }
+    /** Method to allow a new time stamp. */
+    public void resetTimeStamp(){ timeStamped = false; }
+
+    /** @return Whether the given period of time (in seconds) has elapsed since the last call to resetTimeStamp. */
+    public boolean hasTimeElapsed(float time){ return TimeUtils.timeSinceMillis(timeStamp) > time*1000; }
+
+    // Attacking player
+    public boolean isAggressive() {
+        return stateMachine.isInState(SharkState.APPROACH) || stateMachine.isInState(SharkState.PAUSE_BEFORE_ATTACK)
+                || stateMachine.isInState(SharkState.ATTACK) || stateMachine.isInState(SharkState.PAUSE_AFTER_ATTACK);
+    }
+
+    // Can collide with the player and damage them
+    public boolean canHurtPlayer() {
+        return stateMachine.isInState(SharkState.ATTACK) || stateMachine.isInState(SharkState.PAUSE_AFTER_ATTACK);
+    }
+
+    /** Whether the player can hear danger music because of this Shark */
+    public boolean canHear(){
+        return inRange(HEAR_RANGE) && isAggressive();
+    }
+
+    /** @return whether the player is in line-of-sight of this Shark. */
+    public boolean canSee(){
+        return canSee;
+    }
+
+    /** @return whether the player is in a given range of this Shark. */
+    public boolean inRange(float dist){
+        return getTargetDistance() < dist;
+    }
+
+    /**  */
+    public Vector2 getTargetDirection() {
+        return targetRaft.getPosition().cpy().add(targetRaft.getLinearVelocity().cpy().scl(0.25f)).sub(getPosition()).nor();
+    }
+
+    public float getTargetDistance() {
+        return targetRaft.getPosition().cpy().sub(getPosition()).len();
+    }
+
+    public void setDesiredVelocity(float speed, boolean aimingAtPlayer) {
+        if (speed == 0.0f)
+            desiredVelocity.set(0,0);
+        else if(aimingAtPlayer) {
+            aimDirection = getTargetDirection();
+            desiredVelocity.set(aimDirection).scl(speed);
+        } else {
+            // aim using last-used direction
+            desiredVelocity.set(aimDirection).scl(speed);
+        }
+    }
+
+    // Stunned
+    public boolean setHit(){
+        if (!(stateMachine.isInState(SharkState.STUNNED) || stateMachine.isInState(SharkState.DYING))){
+            stateMachine.changeState(SharkState.STUNNED);
+            resetFlash();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -204,22 +198,34 @@ public class Shark extends GameObject {
      * @param dt the current time in the game.
      */
     public void setAnimationFrame(float dt) {
+        // Get frame number
         timeElapsed += dt;
-        if (isEnraged() != wasEnraged) {
-            // animation changed, set frame to 0
-            frameCount = 0;
-            timeElapsed = 0;
-            wasEnraged = isEnraged();
+        switch(stateMachine.getCurrentState()){
+            case STUNNED:
+                frame = SWIM_SF;
+                if(timeElapsed > SWIM_AS){
+                    flash = !flash;
+                    timeElapsed = 0;
+                }
+                break;
+            case IDLE:
+            case APPROACH:
+            case PAUSE_BEFORE_ATTACK:
+            case PAUSE_AFTER_ATTACK:
+            case DYING:
+                unsetFlash();
+                setFrame(SWIM_AS, SWIM_FRAMES, SWIM_SF, false);
+                break;
+            case ATTACK:
+                unsetFlash();
+                setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
+                break;
         }
-        // update animation frame
-        if(!isEnraged()) { // not attacking
-            setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
-        } else {
-            setFrame(ATTACK_AS, ATTACK_F, ATTACK_SF, false);
+        if(getLinearVelocity().x < 0){
+            textureScale.x = Math.abs(textureScale.x);
+        } else if (getLinearVelocity().x > 0){
+            textureScale.x = -1 * Math.abs(textureScale.x);
         }
-        // flip texture based on movement
-        float flip = getLinearVelocity().x > 0 ? -1 : 1;
-        textureScale.x = flip * Math.abs(textureScale.x);
     }
 
     /**
@@ -230,23 +236,43 @@ public class Shark extends GameObject {
      * @param reverse whether the animation should be drawn backwards.
      * @return whether it has reached the last animation image.
      */
-    private void setFrame(float animationSpeed, int frames, int start, boolean reverse){
+    private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
         if (timeElapsed > animationSpeed){
             timeElapsed = 0;
             frameCount += 1;
             frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
         }
+        return reverse ? frame == start : frame == frames - 1 + start;
     }
 
-    /**
-     * Checks whether the current frame is the starting or ending frame.
-     * @param frames the amount of frames for the given animation.
-     * @param start the starting index.
-     * @param begin whether to check for the starting or ending index.
-     * @return whether the current frame is the start or end frame.
-     */
-//    private boolean isFrame(int frames, int start, boolean begin){
-//        return begin ? frame == start : frame == frames - 1 + start;
-//    }
+    public boolean isDoneWithAttackAnimation() {
+        return stateMachine.isInState(SharkState.ATTACK) && frame == BITE_SF + BITE_FRAMES - 1;
+    }
 
+    int frameCount = 0;
+    float timeElapsed = 0;
+    int frame = 0;
+    boolean flash = false;
+
+    /** Method to reset the frameCount to 0 to ensure the next animation starts on its starting frame. */
+    public void resetFrame(){ frameCount = 0; }
+
+    /** Method to reset flash boolean to ensure Shark always turns red first when hit. */
+    public void unsetFlash(){ flash = false; }
+    public void resetFlash(){ flash = true; }
+
+    /**
+     * Set the appropriate image frame first before drawing the Shark.
+     * @param canvas Drawing context
+     */
+    @Override
+    public void draw(GameCanvas canvas){
+        ((FilmStrip) texture).setFrame(frame);
+        if(flash) super.draw(canvas, Color.RED);
+        else super.draw(canvas);
+    }
+
+    public void takeDamage() {
+        // nothing happens (for now)
+    }
 }
