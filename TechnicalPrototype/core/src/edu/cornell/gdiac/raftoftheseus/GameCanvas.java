@@ -111,7 +111,7 @@ public class GameCanvas {
 	private TextureRegion holder;
 
 	/** data used for shader */
-	private ShaderProgram shaderProgram;
+	private ShaderProgram waterShader;
 	private Vector2 levelSize = new Vector2(0,0);
 	private int surfMapRes;
 	private float[] raftSamplePositionsXY = new float[16];
@@ -119,6 +119,7 @@ public class GameCanvas {
 	private float raftSampleTime = 0.0f;
 	private float[] shaderColors;
 	public final boolean shaderCanBeUsed;
+	private ShaderProgram itemShader;
 
 	/**
 	 * Creates a new GameCanvas determined by the application configuration.
@@ -148,12 +149,16 @@ public class GameCanvas {
 		try {
 			String vertexShader = Gdx.files.internal("shaders/3Dwater_vertex.glsl").readString();
 			String fragmentShader = Gdx.files.internal("shaders/3Dwater_fragment.glsl").readString();
-			shaderProgram = new ShaderProgram(vertexShader, fragmentShader);
+			waterShader = new ShaderProgram(vertexShader, fragmentShader);
+			String vertexShader2 = Gdx.files.internal("shaders/floating_item_vertex.glsl").readString();
+			String fragmentShader2 = Gdx.files.internal("shaders/floating_item_fragment.glsl").readString();
+			itemShader = new ShaderProgram(vertexShader2, fragmentShader2);
 		} catch (GdxRuntimeException e) {
 			System.out.println("Couldn't load shader files for some reason! Shader will be disabled.");
-			shaderProgram = null;
+			waterShader = null;
+			itemShader = null;
 		}
-		shaderCanBeUsed = (shaderProgram != null);
+		shaderCanBeUsed = (waterShader != null && itemShader != null);
 	}
 
 	/**
@@ -380,9 +385,6 @@ public class GameCanvas {
 		setBlendState(BlendState.NO_PREMULT);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
-
-		if(spriteBatch.getShader() == shaderProgram)
-			spriteBatch.setShader(null);
 	}
 
 	/**
@@ -401,9 +403,6 @@ public class GameCanvas {
 
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
-
-		if(spriteBatch.getShader() == shaderProgram)
-			spriteBatch.setShader(null);
 	}
 
 	/**
@@ -415,31 +414,44 @@ public class GameCanvas {
 		spriteBatch.setProjectionMatrix(camera.combined);
 		spriteBatch.begin();
 		active = DrawPass.STANDARD;
-
-		if(spriteBatch.getShader() == shaderProgram)
-			spriteBatch.setShader(null);
 	}
 
 	/**
 	 * Must be called AFTER begin(...) and BEFORE end() for the shader to work.
 	 */
-	public void useShader(float time) {
-		spriteBatch.setShader(shaderProgram); // this calls customShader.bind(), but only if drawing == true
+	public void useWaterShader(float time) {
+		spriteBatch.setShader(waterShader); // this calls customShader.bind(), but only if drawing == true
 		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
 		// pass textures (as indices)
-		shaderProgram.setUniformi("flow_map", 1);
-		shaderProgram.setUniformi("surf_map", 2);
-		shaderProgram.setUniformi("normal_texture", 3);
-		shaderProgram.setUniformi("texture_offset_uv", 4); // waterUVOffset
+		waterShader.setUniformi("flow_map", 1);
+		waterShader.setUniformi("surf_map", 2);
+		waterShader.setUniformi("normal_texture", 3);
+		waterShader.setUniformi("texture_offset_uv", 4); // waterUVOffset
 		// pass other stuff
-		shaderProgram.setUniformf("time", time);
-		shaderProgram.setUniformf("level_size", levelSize.x, levelSize.y);
-		shaderProgram.setUniformi("surf_map_res", surfMapRes);
-		shaderProgram.setUniform3fv("colors", shaderColors, 0, shaderColors.length);
+		waterShader.setUniformf("time", time);
+		waterShader.setUniformf("level_size", levelSize.x, levelSize.y);
+		waterShader.setUniformi("surf_map_res", surfMapRes);
+		waterShader.setUniform3fv("colors", shaderColors, 0, shaderColors.length);
 		// pass in raft position/speed samples
-		shaderProgram.setUniform2fv("wake_samples_pos", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
-		shaderProgram.setUniform1fv("wake_samples_speed", raftSampleSpeeds, 0, raftSampleSpeeds.length);
-		shaderProgram.setUniformf("wake_sample_latency", raftSampleTime);
+		waterShader.setUniform2fv("wake_samples_pos", raftSamplePositionsXY, 0, raftSamplePositionsXY.length);
+		waterShader.setUniform1fv("wake_samples_speed", raftSampleSpeeds, 0, raftSampleSpeeds.length);
+		waterShader.setUniformf("wake_sample_latency", raftSampleTime);
+	}
+
+	/**
+	 * Must be called AFTER begin(...) and BEFORE end() for the shader to work.
+	 */
+	public void useItemShader(float time) {
+		spriteBatch.setShader(itemShader); // this calls customShader.bind(), but only if drawing == true
+		// if customShader.bind() is not called first, then setUniform() will SILENTLY fail, and the uniform will keep its initial value.
+		// pass textures (as indices)
+		itemShader.setUniformi("mask", 5);
+		// pass other stuff
+		itemShader.setUniformf("time", time);
+//		itemShader.setUniformf("time", time);
+
+		// do this
+//		spriteBatch.setProjectionMatrix(global);// custom shader must be set before this (or maybe not?)
 	}
 
 	public void setDataMaps(Texture flowMap, Texture surfMap) {
@@ -452,13 +464,15 @@ public class GameCanvas {
 		surfMapRes = surfMap.getWidth()/flowMap.getWidth();
 	}
 
-	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset) {
+	public void setWaterTextures(Texture waterDiffuse, Texture waterNormal, Texture waterUVOffset, Texture floatingItemMask) {
 //		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE2);
 //		waterDiffuse.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE3);
 		waterNormal.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE4);
 		waterUVOffset.bind();
+		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE5);
+		floatingItemMask.bind();
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE0);
 	}
 
@@ -483,6 +497,7 @@ public class GameCanvas {
 	 * Ends a drawing sequence, flushing textures to the graphics card.
 	 */
 	public void end() {
+		spriteBatch.setShader(null);
 		spriteBatch.end();
 		active = DrawPass.INACTIVE;
 	}

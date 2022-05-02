@@ -508,7 +508,9 @@ public class WorldController implements Screen, ContactListener {
         waterNormal.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
         Texture waterUVOffset = directory.getEntry("water_uv_offset", Texture.class);
         waterUVOffset.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat);
-        canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset);
+        Texture floatingItemMask = directory.getEntry("floating_item_mask", Texture.class);
+        floatingItemMask.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.ClampToEdge);
+        canvas.setWaterTextures(waterDiffuse, waterNormal, waterUVOffset, floatingItemMask);
 
         // level model assets
         levelModel.setDirectory(directory);
