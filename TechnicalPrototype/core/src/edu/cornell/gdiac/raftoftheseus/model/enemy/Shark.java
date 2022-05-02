@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
-import edu.cornell.gdiac.raftoftheseus.EnemyRayCast;
+import edu.cornell.gdiac.raftoftheseus.model.enemy.EnemyRayCast;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.LevelModel;

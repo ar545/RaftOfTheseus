@@ -4,7 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.RayCastCallback;
 
-import static edu.cornell.gdiac.raftoftheseus.model.GameObject.CATEGORY_LIGHT_BLOCK;
+import static edu.cornell.gdiac.raftoftheseus.model.GameObject.CATEGORY_TERRAIN;
 
 public class EnemyRayCast implements RayCastCallback {
 
@@ -20,7 +20,7 @@ public class EnemyRayCast implements RayCastCallback {
 
     @Override
     public float reportRayFixture(Fixture fixture, Vector2 point, Vector2 normal, float fraction) {
-        if(fixture.getFilterData().categoryBits == CATEGORY_LIGHT_BLOCK){
+        if(fixture.getFilterData().categoryBits == CATEGORY_TERRAIN){
             canSee = false;
             return 0;
         }

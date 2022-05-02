@@ -8,19 +8,13 @@ import java.util.Random;
 import com.badlogic.gdx.ai.msg.PriorityQueue;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
-<<<<<<<< HEAD:TechnicalPrototype/core/src/edu/cornell/gdiac/raftoftheseus/model/enemy/SharkController.java
 import edu.cornell.gdiac.raftoftheseus.model.Current;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.LevelModel;
 import edu.cornell.gdiac.raftoftheseus.model.Raft;
 
-import static edu.cornell.gdiac.raftoftheseus.model.enemy.Shark.*;
-import static edu.cornell.gdiac.raftoftheseus.model.enemy.Shark.enemyState.*;
-========
-
-import static edu.cornell.gdiac.raftoftheseus.model.OldShark.*;
-import static edu.cornell.gdiac.raftoftheseus.model.OldShark.enemyState.*;
->>>>>>>> new_sharks:TechnicalPrototype/core/src/edu/cornell/gdiac/raftoftheseus/model/OldSharkController.java
+import static edu.cornell.gdiac.raftoftheseus.model.enemy.OldShark.*;
+import static edu.cornell.gdiac.raftoftheseus.model.enemy.OldShark.enemyState.*;
 
 
 
@@ -226,13 +220,13 @@ public class OldSharkController {
             moveDist *= Math.sqrt(2);
         }
         float speed = 0;
-        if (state == OldShark.enemyState.WANDER){
-            speed = OldShark.ENEMY_WANDER_SPEED;
+        if (state == WANDER){
+            speed = ENEMY_WANDER_SPEED;
         }
-        else if (state == OldShark.enemyState.CHASE){
+        else if (state == CHASE){
             speed = ENEMY_CHASE_SPEED;
         }
-        else if (state == OldShark.enemyState.ENRAGE){
+        else if (state == ENRAGE){
             speed = ENEMY_ENRAGE_CHASE_SPEED;
         }
         Vector2 movementVector = new Vector2(dir[0], dir[1]).scl(speed);
