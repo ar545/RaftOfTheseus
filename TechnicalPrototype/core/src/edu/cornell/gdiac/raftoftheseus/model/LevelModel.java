@@ -129,7 +129,7 @@ public class LevelModel {
     /** Queue for adding objects */
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
-    private PooledList<OldShark> enemies = new PooledList<>();
+    private PooledList<Shark> enemies = new PooledList<>();
     /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
     /** Reference to the current field */
@@ -205,7 +205,7 @@ public class LevelModel {
     /** get the objects (list) of the world */
     public PooledList<GameObject> getObjects() { return objects; }
     /** get the enemies (list) of the world */
-    public PooledList<OldShark> getEnemies() { return enemies; }
+    public PooledList<Shark> getEnemies() { return enemies; }
     /** get the list of sirens in the world */
     public PooledList<Siren> getSirens() { return sirens; }
     /** This added queue is use for adding new project tiles */
@@ -303,7 +303,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world and the enemy list
      * @param obj The enemy object to add */
-    protected void addSharkObject(OldShark obj) {
+    protected void addSharkObject(Shark obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(obj);
         obj.activatePhysics(world);
@@ -481,12 +481,14 @@ public class LevelModel {
             for(int col = 0; col < cols(); col ++){
                 int index = row_reversed * cols() + col;
                 populateEnv(row, col, environment.get("data").getInt(index));
+            }
+        }
+        // populate collectables AFTER environment, so that sharks have a non-null Raft to use in their constructor
+        for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
+            int row = rows() - row_reversed - 1;
+            for(int col = 0; col < cols(); col ++){
+                int index = row_reversed * cols() + col;
                 populateCollect(row, col, collectables.get("data").getInt(index));
-                // TODO: if we populate the raft field before instantiating enemies,
-                //  we can properly instantiate instead of putting null for target raft field
-                //  see the Enemy this_enemy = new Enemy(compute_temp, null);
-                //  on private void addEnemy(int row, int col, int enemy_type){}
-                populateEnemiesRaftField();
             }
         }
 
@@ -534,13 +536,6 @@ public class LevelModel {
         }
         this_siren.setTexture(sirenTexture);
         addSirenObject(this_siren);
-    }
-
-    /** This is a temporary function that help all enemies target the raft */
-    private void populateEnemiesRaftField(){
-        for (OldShark shark : enemies){
-            shark.setTargetRaft(raft);
-        }
     }
 
     /** This is the level editor JSON parser that populate the collectable layer
@@ -623,7 +618,7 @@ public class LevelModel {
     private void addEnemy(int row, int col, boolean is_shark) {
         computePosition(col, row);
         if(is_shark){
-            OldShark this_shark = new OldShark(compute_temp, null, this);
+            Shark this_shark = new Shark(compute_temp, getPlayer());
             this_shark.setTexture(enemyTexture);
             addSharkObject(this_shark);
         }

@@ -18,6 +18,7 @@ public class Shark extends GameObject {
      */
     public static void setConstants(JsonValue objParams){
         CONTACT_DAMAGE = objParams.getFloat("damage");
+        HEAR_RANGE = objParams.getFloat("hearing range");
         APPROACH_SPEED = objParams.getFloat("approach speed");
         APPROACH_RANGE = objParams.getFloat("approach range");
         ATTACK_WINDUP_TIME = objParams.getFloat("warm up");
@@ -39,6 +40,7 @@ public class Shark extends GameObject {
 
     /** The player for targeting. */
     private Raft targetRaft;
+    private Vector2 aimDirection = new Vector2(0, 0);
     /** How the Shark wants to move. */
     private Vector2 desiredVelocity = new Vector2();
     /** FSM to control Shark AI */
@@ -50,6 +52,7 @@ public class Shark extends GameObject {
     private boolean isHit;
     /** Constants that determine time in each state for range of attack. */
     public static float CONTACT_DAMAGE;
+    public static float HEAR_RANGE;
     public static float APPROACH_SPEED;
     public static float APPROACH_RANGE;
     public static float ATTACK_WINDUP_TIME;
@@ -95,12 +98,14 @@ public class Shark extends GameObject {
      * Method to switch the state of the FSM when applicable.
      * @param dt the time increment
      */
-    public void update(float dt) {
-        Vector2 currentVelocity = physicsObject.getLinearVelocity().cpy();
-        Vector2 f = currentVelocity.sub(desiredVelocity).scl(-60.0f*physicsObject.getMass());
-        physicsObject.getBody().applyForceToCenter(f, true);
-
-        stateMachine.update();
+    public void updateAI(float dt) {
+        if(!isDestroyed()) {
+            Vector2 currentVelocity = physicsObject.getLinearVelocity().cpy();
+            Vector2 f = currentVelocity.sub(desiredVelocity).scl(-2.0f * physicsObject.getMass());
+            physicsObject.getBody().applyForce(f, getPosition(), true);
+//            physicsObject.setLinearVelocity(desiredVelocity);
+            stateMachine.update();
+        }
     }
     /** @return this Shark's FSM */
     public StateMachine<Shark, SharkState> getStateMachine(){ return this.stateMachine; }
@@ -124,6 +129,21 @@ public class Shark extends GameObject {
     public boolean hasTimeElapsed(float time){ return TimeUtils.timeSinceMillis(timeStamp) > time*1000; }
 
     // Attacking player
+    public boolean isAggressive() {
+        return stateMachine.isInState(SharkState.APPROACH) || stateMachine.isInState(SharkState.PAUSE_BEFORE_ATTACK)
+                || stateMachine.isInState(SharkState.ATTACK) || stateMachine.isInState(SharkState.PAUSE_AFTER_ATTACK);
+    }
+
+    // Can collide with the player and damage them
+    public boolean canHurtPlayer() {
+        return stateMachine.isInState(SharkState.ATTACK) || stateMachine.isInState(SharkState.PAUSE_AFTER_ATTACK);
+    }
+
+    /** Whether the player can hear danger music because of this Shark */
+    public boolean canHear(){
+        return inRange(HEAR_RANGE) && isAggressive();
+    }
+
     /** @return whether the player is in line-of-sight of this Shark. */
     public boolean canSee(){
         return true; // TODO
@@ -136,18 +156,25 @@ public class Shark extends GameObject {
 
     /**  */
     public Vector2 getTargetDirection() {
-        return targetRaft.getPosition().cpy().add(targetRaft.getLinearVelocity()).sub(getPosition()).nor();
+        return targetRaft.getPosition().cpy().add(targetRaft.getLinearVelocity().cpy().scl(0.25f)).sub(getPosition()).nor();
     }
 
     public float getTargetDistance() {
-        return targetRaft.getPosition().cpy().sub(getPosition()).len();
+        float x = targetRaft.getPosition().cpy().sub(getPosition()).len();
+//        System.out.println(x);
+//        return 0;
+        return x;
     }
 
     public void setDesiredVelocity(float speed, boolean aimingAtPlayer) {
-        if(aimingAtPlayer) {
-            desiredVelocity = getTargetDirection().scl(speed);
+        if (speed == 0.0f)
+            desiredVelocity.set(0,0);
+        else if(aimingAtPlayer) {
+            aimDirection = getTargetDirection();
+            desiredVelocity.set(aimDirection).scl(speed);
         } else {
-            desiredVelocity = getLinearVelocity().nor().scl(speed);
+            // aim using last-used direction
+            desiredVelocity.set(aimDirection).scl(speed);
         }
     }
 
@@ -169,22 +196,24 @@ public class Shark extends GameObject {
         // Get frame number
         timeElapsed += dt;
         switch(stateMachine.getCurrentState()){
-            case IDLE:
-            case APPROACH:
-            case PAUSE_BEFORE_ATTACK:
-            case PAUSE_AFTER_ATTACK:
-            case DYING:
-                setFrame(SWIM_AS, SWIM_FRAMES, SWIM_SF, false);
-                break;
-            case ATTACK:
-                setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
-                break;
             case STUNNED:
                 frame = SWIM_SF;
                 if(timeElapsed > SWIM_AS){
                     flash = !flash;
                     timeElapsed = 0;
                 }
+                break;
+            case IDLE:
+            case APPROACH:
+            case PAUSE_BEFORE_ATTACK:
+            case PAUSE_AFTER_ATTACK:
+            case DYING:
+                unsetFlash();
+                setFrame(SWIM_AS, SWIM_FRAMES, SWIM_SF, false);
+                break;
+            case ATTACK:
+                unsetFlash();
+                setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
                 break;
         }
         if(getLinearVelocity().x < 0){
@@ -211,6 +240,10 @@ public class Shark extends GameObject {
         return reverse ? frame == start : frame == frames - 1 + start;
     }
 
+    public boolean isDoneWithAttackAnimation() {
+        return stateMachine.isInState(SharkState.ATTACK) && frame == BITE_SF + BITE_FRAMES - 1;
+    }
+
     int frameCount = 0;
     float timeElapsed = 0;
     int frame = 0;
@@ -232,5 +265,9 @@ public class Shark extends GameObject {
         ((FilmStrip) texture).setFrame(frame);
         if(flash) super.draw(canvas, Color.RED);
         else super.draw(canvas);
+    }
+
+    public void takeDamage() {
+        // nothing happens (for now)
     }
 }

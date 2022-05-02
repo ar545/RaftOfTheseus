@@ -40,7 +40,7 @@ public enum SharkState implements State<Shark> {
         public void update(Shark entity) {
             entity.setDesiredVelocity(Shark.ATTACK_SPEED, false); // shark doesn't change direction mid-charge
             entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Shark.ATTACK_WINDUP_TIME)) {
+            if(entity.isDoneWithAttackAnimation()) {
                 entity.getStateMachine().changeState(PAUSE_AFTER_ATTACK);
             }
         }

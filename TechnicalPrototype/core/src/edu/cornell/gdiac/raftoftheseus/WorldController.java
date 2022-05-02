@@ -47,7 +47,7 @@ public class WorldController implements Screen, ContactListener {
         Raft.setConstants(objParams.get("raft"));
         Spear.setConstants(objParams.get("spear"));
         Note.setConstants(objParams.get("note"));
-        OldShark.setConstants(objParams.get("shark"));
+        Shark.setConstants(objParams.get("shark"));
 //        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
         Rock.setConstants(objParams.get("rock"));
@@ -133,8 +133,6 @@ public class WorldController implements Screen, ContactListener {
     private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
-    /** array of controls for each enemy**/
-    private OldSharkController[] controls;
     /** Find whether an enemy can see the player. */
     private EnemyRayCast enemySight;
     /** Whether the settings button was pressed */
@@ -225,7 +223,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
         }
-        for(OldShark s : levelModel.getEnemies()){
+        for(Shark s : levelModel.getEnemies()){
             s.setAnimationFrame(dt);
         }
 
@@ -810,12 +808,6 @@ public class WorldController implements Screen, ContactListener {
 
     /** get enemies take actions according to their AI */
     private void resolveEnemies(float dt) {
-//        PooledList<Shark> el = levelModel.getEnemies();
-        for (int i = 0; i< controls.length; i++) {
-//            Shark shark = el.get(i);
-//            shark.resolveAction(controls[i].getAction(), levelModel.getPlayer(), controls[i].getTicks());
-            controls[i].updateShark();
-        }
 
 //        for (Hydra h : levelModel.getHydras()) {
 //            levelModel.world.rayCast(hydraSight, h.getPosition(), levelModel.getPlayer().getPosition());
@@ -824,6 +816,9 @@ public class WorldController implements Screen, ContactListener {
 //            h.update(dt);
 //        }
 
+        for(Shark s : levelModel.getEnemies()){
+            s.updateAI(dt);
+        }
         for(Siren s : levelModel.getSirens()){
             s.update(dt);
             if(s.willAttack()){
@@ -885,8 +880,8 @@ public class WorldController implements Screen, ContactListener {
         // Get danger
         boolean sharkNow = false;
         boolean sirenNow = false;
-        for(OldSharkController ai : controls){
-            if(ai.isAlive() && ai.getState() == OldShark.enemyState.ENRAGE){
+        for(Shark s : levelModel.getEnemies()){
+            if(s.canHear()){
                 sharkNow = true;
                 break;
             }
@@ -1042,10 +1037,12 @@ public class WorldController implements Screen, ContactListener {
     private void ResolveSpearCollision(Spear s, GameObject g) {
         if(g.getType() == GameObject.ObjectType.SHARK) {
             // stun shark
-            SfxController.getInstance().playSFX("spear_enemy_hit");
-            SfxController.getInstance().playSFX("shark_hit");
-            s.setDestroyed(true);
-            ((OldShark)g).takeDamage();
+            if(((Shark) g).setHit()) {
+                s.setDestroyed(true);
+                SfxController.getInstance().playSFX("spear_enemy_hit");
+                SfxController.getInstance().playSFX("shark_hit");
+                ((Shark)g).takeDamage();
+            }
         }
 //      else if(g.getType() == GameObject.ObjectType.HYDRA) {
 //            // stun hydra
@@ -1079,10 +1076,14 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("wood_pickup");
             g.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.SHARK || g.getType() == GameObject.ObjectType.SIREN ){
+            if (g.getType() == GameObject.ObjectType.SHARK) {
+                if (!((Shark)g).canHurtPlayer())
+                    return; // ignore collisions with underwater shark
+            }
             // update player health
-            r.addHealth(OldShark.ENEMY_DAMAGE);
+            r.addHealth(Shark.CONTACT_DAMAGE);
             SfxController.getInstance().playSFX("raft_damage");
-            g.setDestroyed(true);
+//            g.setDestroyed(true);
             r.setDamaged(true);
             Timer.schedule(new Timer.Task(){
                 @Override
@@ -1175,16 +1176,6 @@ public class WorldController implements Screen, ContactListener {
 
     }
 
-
-    /** Prepare the AI for the enemy in the level */
-    public void prepareEnemy(){
-        PooledList<OldShark> enemies = levelModel.getEnemies();
-        controls = new OldSharkController[enemies.size()];
-        for (int i = 0; i < enemies.size(); i++) {
-            controls[i] = new OldSharkController(i, enemies.get(i), levelModel.getPlayer(), levelModel);
-        }
-    }
-
     /** The current level id. */
     private int level_id = 0;
 
@@ -1201,7 +1192,6 @@ public class WorldController implements Screen, ContactListener {
         System.out.println("Loaded level "+level_int);
         emptyLevel();
         levelModel.loadLevel(level_int, level_data);
-        prepareEnemy();
         stage.clear();
         table.clear();
         playerScore = 0;
