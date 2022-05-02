@@ -891,10 +891,12 @@ public class WorldController implements Screen, ContactListener {
     private void ResolveSpearCollision(Spear s, GameObject g) {
         if(g.getType() == GameObject.ObjectType.SHARK) {
             // stun shark
-            SfxController.getInstance().playSFX("spear_enemy_hit");
-            SfxController.getInstance().playSFX("shark_hit");
-            s.setDestroyed(true);
-            ((Shark)g).takeDamage();
+            if (((Shark)g).setHit()) {
+                SfxController.getInstance().playSFX("spear_enemy_hit");
+                SfxController.getInstance().playSFX("shark_hit");
+                s.setDestroyed(true);
+                ((Shark) g).takeDamage();
+            }
         } else if(g.getType() == GameObject.ObjectType.HYDRA) {
             // stun hydra
             SfxController.getInstance().playSFX("spear_enemy_hit");
