@@ -1,13 +1,14 @@
 package edu.cornell.gdiac.raftoftheseus.model.projectile;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.raftoftheseus.model.GameObject;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.Animated;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
-public class Spear extends Projectile {
+public class Spear extends Projectile implements Animated {
 
     /**
      * @param objParams the "spear" child in "object_settings.json"
@@ -108,5 +109,24 @@ public class Spear extends Projectile {
     /** @return whether this spear is set to be destroyed. */
     public boolean outMaxDistance(){
         return fired && outMaxDistance(RANGE_FALL);
+    }
+
+    /**
+     * Sets the animation frame of the
+     * @param dt
+     */
+    public void setAnimationFrame(float dt) {
+
+    }
+
+
+    /**
+     * Set the appropriate image frame first before drawing the Siren.
+     * @param canvas Drawing context
+     */
+    @Override
+    public void draw(GameCanvas canvas){
+//        ((FilmStrip) texture).setFrame(frame);
+        super.draw(canvas);
     }
 }

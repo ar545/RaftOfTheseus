@@ -15,7 +15,7 @@ import edu.cornell.gdiac.util.FilmStrip;
 /**
  * Model class for the player raft.
  */
-public class Raft extends GameObject {
+public class Raft extends GameObject implements Animated{
 
     /**
      * Method to set Raft parameters
@@ -97,8 +97,10 @@ public class Raft extends GameObject {
     /** Which frame to start on the filmstrip with this animation. */
     private static int IDLE_SF;
     private static int SHOOTING_SF;
-
+    /** The player's spear when held in inventory. */
     private Spear spear;
+    /** Frame calculator for animation. */
+    private FrameCalculator fc = new FrameCalculator(IDLE_SF);
 
     // METHODS
     /** Constructor for Raft object
@@ -223,49 +225,33 @@ public class Raft extends GameObject {
 
     /** Getter and setters for health */
     public float getHealth() { return health; }
-
     /** Getter and setters for health */
     public float getHealthRatio() { return health / MAXIMUM_PLAYER_HEALTH; }
+    /** @param newHealth the amount of health the player will have updated. */
     public void setHealth(float newHealth) {
         health = Math.max(0, newHealth);
     }
+    /** @param dh amount to change player health by with collisons. */
     public void addHealth(float dh) {
         health = Math.min(health + dh, MAXIMUM_PLAYER_HEALTH);
     }
-
     /** Reduce player health based on distance traveled and movement cost. */
     public void applyMoveCost(float dt) {
         float L = physicsObject.getLinearVelocity().len();
         health -= MOVE_COST * L * dt; // base movement cost (no current)
     }
-
     /** @return whether the player health is below zero */
     public boolean isDead() { return health < 0f; }
-
     /** How far the raft could travel with its current health, in game units, assuming they don't use currents or drift */
     public float getPotentialDistance() {
         return health / MOVE_COST;
     }
-
-    // The value to increment once the animation time has passed. Used to calculate which frame should be used.
-    private int frameCount = 0;
-    // The amount of time elapsed, used for checking whether to increment frameCount.
-    private float timeElapsed = 0;
-    // Which frame should be set for drawing this game cycle.
-    private int frame = IDLE_SF;
-    // Which direction to player is facing.
-    float flip;
-
-
     /** Set whether the player has reached the end of the animation cycle. */
     public void resetCanFire() { canFire = false; isCharging = false;  }
     /** Reverse the firing animation and effect due to pre-mature release of mouse. */
     public void reverseFire() { canFire = false; isCharging = false; addHealth(-Spear.DAMAGE); }
     /** @return whether the player has reached the end of the firing animation cycle. */
-    public boolean canFire() {
-        return canFire;
-    }
-
+    public boolean canFire() { return canFire; }
     /** @param charging whether to set the player to actively charging. Subtracts health to create the spear. */
     public void beginCharging(boolean charging) {
         if(!isCharging && !canFire && charging) {
@@ -276,59 +262,38 @@ public class Raft extends GameObject {
     /** @return whether player is actively charging. */
     public boolean isCharging() { return isCharging; }
 
+    // Which direction to player is facing.
+    float flip;
+
     /**
      * Method to set animation based on the time elapsed in the game.
      * @param dt the current time in the game.
      */
+    @Override
     public void setAnimationFrame(float dt) {
-        timeElapsed += dt;
-        if(frame >= IDLE_SF && !isCharging){
-            setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
-        } else if (frame >= IDLE_SF ){ // && isCharging
-            frameCount = 0;
-            timeElapsed = 0;
-            frame = SHOOTING_SF;
-        } else if (!isFrame(SHOOTING_F, SHOOTING_SF, false) && isCharging){
-            setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false);
-            canFire = isFrame(SHOOTING_F, SHOOTING_SF, false);
+        fc.addTime(dt);
+        if(fc.getFrame() >= IDLE_SF && !isCharging){
+            fc.setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
+        } else if (fc.getFrame() >= IDLE_SF){ // && isCharging
+            fc.resetIncrement();
+            fc.resetTimeElapsed();
+            fc.setFrame(SHOOTING_SF);
+        } else if (!fc.isFrame(SHOOTING_F, SHOOTING_SF, false) && isCharging){
+            fc.setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false);
+            canFire = fc.isFrame(SHOOTING_F, SHOOTING_SF, false);
             if(canFire) isCharging = false;
-        }  else if (isFrame(SHOOTING_F, SHOOTING_SF, false)){
-            frame += 20;
-            timeElapsed = 0;
-        } else { // !(isFrame(SHOOTING_F, SHOOTING_SF, false)) && !isCharging
-            frame += 20;
-            timeElapsed = 0;
+        }  else if (fc.isFrame(SHOOTING_F, SHOOTING_SF, false)){
+            fc.setFrame(fc.getFrame() + 20);
+            fc.resetIncrement();
+            fc.resetTimeElapsed();
+        } else {
+            fc.setFrame(fc.getFrame() + 20);
+            fc.resetIncrement();
+            fc.resetTimeElapsed();
         }
         // flip texture based on movement
         flip = getLinearVelocity().x < 0 ? -1 : 1;
         textureScale.x = flip * Math.abs(textureScale.x);
-    }
-
-    /**
-     * Sets the frame of the animation based on the FSM and time given.
-     * @param animationSpeed how many seconds should pass between each frame.
-     * @param frames the number of frames this animation has.
-     * @param start which frame in the FilmStrip the animation starts on.
-     * @param reverse whether the animation should be drawn backwards.
-     * @return whether it has reached the last animation image.
-     */
-    private void setFrame(float animationSpeed, int frames, int start, boolean reverse){
-        if (timeElapsed > animationSpeed){
-            timeElapsed = 0;
-            frameCount += 1;
-            frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
-        }
-    }
-
-    /**
-     * Checks whether the current frame is the starting or ending frame.
-     * @param frames the amount of frames for the given animation.
-     * @param start the starting index.
-     * @param begin whether to check for the starting or ending index.
-     * @return whether the current frame is the start or end frame.
-     */
-    private boolean isFrame(int frames, int start, boolean begin){
-        return begin ? frame == start : frame == frames - 1 + start;
     }
 
     /**
@@ -341,31 +306,32 @@ public class Raft extends GameObject {
         textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
         // 0.25 offset because the texture is off-center horizontally
     }
-
     /**
      * Set the filmstrip frame before call the super draw method.
      * @param canvas Drawing context
      */
     @Override
     public void draw(GameCanvas canvas){
-        ((FilmStrip) texture).setFrame(frame);
+        ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
     }
 
-    /** @param s */
+    /** @param s the newly created spear. */
     public void setSpear(Spear s){
         spear = s;
         floatTime = 0;
     }
-
     /** @return whether this raft has a spear or not. */
     public boolean hasSpear(){
         return spear != null && !spear.isDestroyed();
     }
-
     /** The amount of time that has elapsed for floating */
     float floatTime;
-
+    /**
+     * Change the spear location based on the raft and mouse location
+     * @param dt the time elapsed.
+     * @param dir the mouse location
+     */
     public void updateSpear(float dt, Vector2 dir){
         if(!hasSpear()) return;
         floatTime += dt;
@@ -374,8 +340,6 @@ public class Raft extends GameObject {
         }
         spear.setFloatPosition(getPosition(), floatTime, flip, dir);
     }
-
-    public Spear getSpear(){
-        return spear;
-    }
+    /** The Spear the raft owns */
+    public Spear getSpear(){ return spear; }
 }

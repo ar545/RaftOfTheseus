@@ -219,6 +219,9 @@ public class WorldController implements Screen, ContactListener {
         // update animations
         levelModel.getPlayer().updateSpear(dt, firePixel);
         levelModel.getPlayer().setAnimationFrame(dt);
+//        for(Spear s : levelModel.getSpears()){
+//            s.se
+//        }
         for(Siren s : levelModel.getSirens()){
             s.setAnimationFrame(dt);
         }

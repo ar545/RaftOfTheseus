@@ -9,12 +9,14 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.Animated;
+import edu.cornell.gdiac.raftoftheseus.model.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.Raft;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class Siren extends GameObject {
+public class Siren extends GameObject implements Animated {
 
     /**
      * Method to fill in all constants for the Siren
@@ -62,6 +64,8 @@ public class Siren extends GameObject {
     private Vector2 moveVector = new Vector2();
     /** FSM to control Siren AI */
     private StateMachine<Siren, SirenState> stateMachine;
+    /** Animation Calculator */
+    private FrameCalculator fc = new FrameCalculator();
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
@@ -160,6 +164,7 @@ public class Siren extends GameObject {
         waypoint = 1;
     }
 
+    /** Set the texture location relative to the physics body. */
     @Override
     protected void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
@@ -181,6 +186,8 @@ public class Siren extends GameObject {
     public GameObject.ObjectType getType() {
         return GameObject.ObjectType.SIREN;
     }
+    /** @return this Siren's FrameCalculator for reseting purposes. */
+    public FrameCalculator getFrameCalculator() { return fc; }
 
     // Setting movement
 
@@ -290,7 +297,7 @@ public class Siren extends GameObject {
     public boolean setHit(){
         if (stateMachine.isInState(SirenState.SINGING) || stateMachine.isInState(SirenState.IDLE)){
             stateMachine.changeState(SirenState.STUNNED);
-            resetFlash();
+            fc.setFlash(true);
             return true;
         }
         return false;
@@ -310,32 +317,30 @@ public class Siren extends GameObject {
      * Method to set animation based on the time elapsed in the game.
      * @param dt the current time in the game.
      */
+    @Override
     public void setAnimationFrame(float dt) {
         // Get frame number
-        timeElapsed += dt;
+        fc.addTime(dt);
 //        System.out.println(stateMachine.getCurrentState());
         switch(stateMachine.getCurrentState()){
             case IDLE:
-                setFrame(IDLE_AS, IDLE_FRAMES, IDLE_SF, false);
+                fc.setFrame(IDLE_AS, IDLE_FRAMES, IDLE_SF, false);
                 break;
             case SINGING:
-                setFrame(SINGING_AS, SINGING_FRAMES, SINGING_SF, false);
+                fc.setFrame(SINGING_AS, SINGING_FRAMES, SINGING_SF, false);
                 break;
             case LANDING:
-                setAnimationDone(setFrame(LANDING_AS, LANDING_FRAMES, LANDING_SF, true));
+                setAnimationDone(fc.setFrame(LANDING_AS, LANDING_FRAMES, LANDING_SF, true));
                 break;
             case TAKEOFF:
-                setAnimationDone(setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, TAKE_OFF_SF, false));
+                setAnimationDone(fc.setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, TAKE_OFF_SF, false));
                 break;
             case FLYING:
-                setFrame(FLYING_AS, FLYING_FRAMES, FLYING_SF, true);
+                fc.setFrame(FLYING_AS, FLYING_FRAMES, FLYING_SF, true);
                 break;
             case STUNNED:
-                frame = SINGING_SF;
-                if(timeElapsed > FLASHING_AS){
-                    flash = !flash;
-                    timeElapsed = 0;
-                }
+                fc.setFrame(SINGING_SF);
+                fc.toFlash(FLASHING_AS);
                 break;
         }
         if(getLinearVelocity().x < 0){
@@ -346,41 +351,13 @@ public class Siren extends GameObject {
     }
 
     /**
-     * Sets the frame of the animation based on the FSM and time given.
-     * @param animationSpeed how many seconds should pass between each frame.
-     * @param frames the number of frames this animation has.
-     * @param start which frame in the FilmStrip the animation starts on.
-     * @param reverse whether the animation should be drawn backwards.
-     * @return whether it has reached the last animation image.
-     */
-    private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
-        if (timeElapsed > animationSpeed){
-            timeElapsed = 0;
-            frameCount += 1;
-            frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
-        }
-        return reverse ? frame == start : frame == frames - 1 + start;
-    }
-
-    int frameCount = 0;
-    float timeElapsed = 0;
-    int frame = 0;
-    boolean flash = false;
-
-    /** Method to reset the frameCount to 0 to ensure the next animation starts on its starting frame. */
-    public void resetFrame(){ frameCount = 0; }
-
-    /** Method to reset flash boolean to ensure Siren always turns red first when hit. */
-    public void unsetFlash(){ flash = false; }
-    public void resetFlash(){ flash = true; }
-    /**
      * Set the appropriate image frame first before drawing the Siren.
      * @param canvas Drawing context
      */
     @Override
     public void draw(GameCanvas canvas){
-        ((FilmStrip) texture).setFrame(frame);
-        if(flash) super.draw(canvas, Color.RED);
+        ((FilmStrip) texture).setFrame(fc.getFrame());
+        if(fc.getFlash()) super.draw(canvas, Color.RED);
         else super.draw(canvas);
     }
 }

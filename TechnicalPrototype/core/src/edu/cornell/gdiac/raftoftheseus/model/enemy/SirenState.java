@@ -52,14 +52,9 @@ public enum SirenState implements State<Siren> {
         public void update (Siren entity){
             if(entity.nearLanding()){
                 entity.incrementWaypoint();
+                entity.stopMove();
                 entity.getStateMachine().changeState(LANDING);
             }
-        }
-
-        @Override
-        public void exit (Siren entity){
-            entity.stopMove();
-            entity.resetFrame();
         }
     },
     STUNNED(){
@@ -67,7 +62,7 @@ public enum SirenState implements State<Siren> {
         public void update(Siren entity) {
             entity.setTimeStamp();
             if(entity.stunElapsed()){
-                entity.unsetFlash();
+                entity.getFrameCalculator().setFlash(false);
                 entity.resetTimeStamp();
                 entity.getStateMachine().changeState(SINGING);
             }
@@ -82,7 +77,8 @@ public enum SirenState implements State<Siren> {
     @Override
     public void exit(Siren entity) {
         entity.resetTimeStamp();
-        entity.resetFrame();
+        entity.getFrameCalculator().resetIncrement();
+        entity.getFrameCalculator().resetTimeElapsed();
     }
 
     @Override

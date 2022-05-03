@@ -144,6 +144,8 @@ public class LevelModel {
     private PooledList<Hydra> hydras = new PooledList<>();
     /** All siren in the world */
     private PooledList<Siren> sirens = new PooledList<>();
+    /** All spears in the world */
+    private PooledList<Spear> spears = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
     /** The light source of this level */
@@ -224,6 +226,8 @@ public class LevelModel {
     public PooledList<Hydra> getHydras() { return hydras; }
     /** get the list of sirens in the world */
     public PooledList<Siren> getSirens() { return sirens; }
+    /** get the list of sirens in the world */
+    public PooledList<Spear> getSpears() { return spears; }
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -1042,13 +1046,14 @@ public class LevelModel {
     public void createSpear() {
         Spear s = new Spear(raft.getPosition());
         s.setTexture(spearTexture);
+        spears.add(s);
         addQueuedObject(s);
         raft.setSpear(s);
     }
 
     /**
-     *
-     * @param firelocation
+     * Remove the spear from raft ownership, giving it velocity.
+     * @param firelocation where the mouse was pointing upon release
      */
     public void fireSpear(Vector2 firelocation){
         Vector2 facing = firelocation.sub(raft.getSpear().getPosition()).nor();

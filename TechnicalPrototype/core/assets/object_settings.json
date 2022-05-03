@@ -45,15 +45,13 @@
     "size" : 10
   },
   "shark" : {
-    "damage per frame" : 0,
     "chase distance" : 12,
     "wander speed" : 1.5,
     "chase speed" : 2.0,
     "enrage speed" : 6.0,
     "protect range" : 5,
     "search range" : 30,
-
-    "damage" : -40,
+    "damage" : -25,
     "hearing range" : 15,
     "approach speed" : 4.0,
     "approach range" : 20.0,
