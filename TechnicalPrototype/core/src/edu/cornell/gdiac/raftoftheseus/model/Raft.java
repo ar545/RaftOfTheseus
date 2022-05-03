@@ -15,7 +15,7 @@ import edu.cornell.gdiac.util.FilmStrip;
 /**
  * Model class for the player raft.
  */
-public class Raft extends GameObject implements Animated{
+public class Raft extends GameObject implements Animated {
 
     /**
      * Method to set Raft parameters
@@ -205,8 +205,6 @@ public class Raft extends GameObject implements Animated{
     }
 
     private long timeStamp;
-    private long forceDuration = 500L;
-
     /**
      * Apply projectile force
      * @param force the force applied
@@ -217,7 +215,7 @@ public class Raft extends GameObject implements Animated{
     }
 
     public void applyProjectileForce(){
-        if(TimeUtils.timeSinceMillis(timeStamp) < forceDuration) {
+        if(TimeUtils.timeSinceMillis(timeStamp) < FORCE_DURATION) {
             physicsObject.getBody().applyForce(externalForce, getPosition(), true);
         }
     }
@@ -291,8 +289,7 @@ public class Raft extends GameObject implements Animated{
             fc.resetTimeElapsed();
         }
         // flip texture based on movement
-        flip = getLinearVelocity().x < 0 ? -1 : 1;
-        textureScale.x = flip * Math.abs(textureScale.x);
+        flip = setTextureXOrientation();
     }
 
     /**

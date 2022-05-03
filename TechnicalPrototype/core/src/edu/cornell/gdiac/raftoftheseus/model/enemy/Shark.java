@@ -52,8 +52,6 @@ public class Shark extends GameObject implements Animated {
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
-    /** Whether this Shark has just been attacked by the player. */
-    private boolean isHit; // unused?
     /** Whether the Shark can see the player. (must be set by WorldController) */
     public boolean canSee;
     /** Constants that determine time in each state for range of attack. */
@@ -216,11 +214,7 @@ public class Shark extends GameObject implements Animated {
                 fc.setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
                 break;
         }
-        if(getLinearVelocity().x < 0){
-            textureScale.x = Math.abs(textureScale.x);
-        } else if (getLinearVelocity().x > 0){
-            textureScale.x = -1 * Math.abs(textureScale.x);
-        }
+        setTextureXOrientation();
     }
 
     public boolean isDoneWithAttackAnimation() {

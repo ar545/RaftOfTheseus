@@ -209,4 +209,17 @@ public abstract class GameObject {
     public boolean AffectedByCurrent(){
         return getType() == ObjectType.RAFT || getType() == ObjectType.WOOD || getType() == ObjectType.SHARK;
     }
+
+    public boolean posXVel(){ return getLinearVelocity().x > 0; }
+    public boolean negXVel(){ return getLinearVelocity().x < 0; }
+    public int setTextureXOrientation(){
+        if(posXVel()){
+            textureScale.x = 1 * Math.abs(textureScale.x);
+            return 1;
+        } else if(negXVel()){
+            textureScale.x = -1 * Math.abs(textureScale.x);
+            return -1;
+        }
+        return 1;
+    }
 }

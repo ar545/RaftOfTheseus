@@ -16,7 +16,7 @@ import edu.cornell.gdiac.raftoftheseus.model.Raft;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class Siren extends GameObject implements Animated {
+public class Siren extends Enemy<Siren, SirenState> implements Animated {
 
     /**
      * Method to fill in all constants for the Siren
@@ -77,14 +77,14 @@ public class Siren extends GameObject implements Animated {
     private boolean animationDone;
     /** Constants that determine time in each state for range of attack. */
     private static float PROXIMITY;
-    private static long IDLE_TIME;
-    private static long SINGING_TIME;
+    protected static long IDLE_TIME;
+    protected static long SINGING_TIME;
     private static float ATTACK_RANGE;
     private static float HEAR_RANGE;
     private static float TAKE_OFF_SPEED;
     private static float FLY_SPEED;
-    private static long COOL_DOWN;
-    private static long STUN_TIME;
+    protected static long COOL_DOWN;
+    protected static long STUN_TIME;
     private static float TEXTURE_SCALE;
     private static float RADIUS;
     private static float IDLE_AS;
@@ -110,6 +110,7 @@ public class Siren extends GameObject implements Animated {
      * @param raft the player
      */
     public Siren(Array<Vector2> positions, Raft raft){
+        super(raft);
         waypoints = new Array<>();
         for(Vector2 pos : positions){
             waypoints.add(new Vector2(pos));
@@ -124,6 +125,7 @@ public class Siren extends GameObject implements Animated {
      * @param raft the player
      */
     private Siren(Raft raft, Array<Vector2> positions){
+        super(raft);
         waypoints = positions;
         this.targetRaft = raft;
         setParameters();
@@ -172,17 +174,17 @@ public class Siren extends GameObject implements Animated {
         textureOffset = new Vector2();
     }
 
-    /**
-     * Method to switch the state of the FSM when applicable.
-     * @param dt the time increment
-     */
-    public void update(float dt) {
+    /** @param dt the time increment, to switch the state of the FSM when applicable. */
+    @Override
+    public void updateAI(float dt) {
         physicsObject.setLinearVelocity(moveVector);
         stateMachine.update();
     }
     /** @return this Siren's FSM */
+    @Override
     public StateMachine<Siren, SirenState> getStateMachine(){ return this.stateMachine; }
     /** @return this Siren's ObjectType for collision. */
+    @Override
     public GameObject.ObjectType getType() {
         return GameObject.ObjectType.SIREN;
     }
@@ -224,16 +226,6 @@ public class Siren extends GameObject implements Animated {
 
 
     // Time
-
-    /** Method to start recording time for transitioning between states. */
-    public void setTimeStamp(){
-        if(!timeStamped) {
-            timeStamp = TimeUtils.millis();
-            timeStamped = true;
-        }
-    }
-    /** Method to allow a new time stamp. */
-    public void resetTimeStamp(){ timeStamped = false; }
     /** Method to start recording time between firing */
     public void setAttackStamp(){
         if(!attackStamped){
@@ -262,7 +254,6 @@ public class Siren extends GameObject implements Animated {
     }
 
     // Attacking player
-
     public boolean canHear(){
         return targetRaft.getPosition().cpy().sub(getPosition()).len() < HEAR_RANGE && stateMachine.isInState(SirenState.SINGING);
     }
@@ -339,11 +330,7 @@ public class Siren extends GameObject implements Animated {
                 fc.checkFlash(FLASHING_AS);
                 break;
         }
-        if(getLinearVelocity().x < 0){
-            textureScale.x = Math.abs(textureScale.x);
-        } else if (getLinearVelocity().x > 0){
-            textureScale.x = -1 * Math.abs(textureScale.x);
-        }
+        setTextureXOrientation();
     }
 
     /**
