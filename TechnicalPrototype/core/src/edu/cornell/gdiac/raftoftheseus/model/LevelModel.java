@@ -146,6 +146,7 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** All spears in the world */
     private PooledList<Spear> spears = new PooledList<>();
+    private PooledList<Treasure> treasure = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
     /** The light source of this level */
@@ -229,6 +230,7 @@ public class LevelModel {
     public PooledList<Siren> getSirens() { return sirens; }
     /** get the list of sirens in the world */
     public PooledList<Spear> getSpears() { return spears; }
+    public PooledList<Treasure> getTreasure() { return treasure; }
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -391,6 +393,7 @@ public class LevelModel {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
         sharks.clear();
+        treasure.clear();
         hydras.clear();
         sirens.clear();
         addQueue.clear();
@@ -686,6 +689,7 @@ public class LevelModel {
         Treasure this_treasure = new Treasure(compute_temp);
         this_treasure.setTexture(treasureTexture);
         obstacles[col][row] = this_treasure;
+        treasure.add(this_treasure);
         addObject(this_treasure);
         treasureCount++;
     }
