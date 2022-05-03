@@ -182,8 +182,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	private void setConstants(){
 		JsonValue screenParams = directory.getEntry("screen_settings", JsonValue.class);
-		NUM_LEVELS = screenParams.getInt("level count", 22);
-		LEVELS_PER_PAGE = screenParams.getInt("level per page", 11);
+		NUM_LEVELS = screenParams.getInt("level count", 20);
+		LEVELS_PER_PAGE = screenParams.getInt("level per page", 10);
 		setExitCodes(screenParams.get("exit codes"));
 		MenuMode.setConstants(screenParams.get("screen"), NUM_LEVELS, LEVELS_PER_PAGE);
 		SettingsMode.setContants(screenParams.get("screen"));

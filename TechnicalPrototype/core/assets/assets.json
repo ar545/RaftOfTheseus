@@ -133,6 +133,11 @@
     "level:11" : "levels/11Combined.json",
     "level:12" : "levels/12Maze.json",
     "level:13" : "levels/13Spring.json",
-    "level:14" : "levels/14SirenHard.json"
+    "level:14" : "levels/14SirenHard.json",
+    "level:15": "levels/14SirenHard.json",
+    "level:16": "levels/14SirenHard.json",
+    "level:17": "levels/14SirenHard.json",
+    "level:18": "levels/14SirenHard.json",
+    "level:19": "levels/14SirenHard.json"
   }
 }

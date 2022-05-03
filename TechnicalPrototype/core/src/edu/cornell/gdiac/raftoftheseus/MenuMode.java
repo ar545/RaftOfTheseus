@@ -17,7 +17,10 @@ import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.util.ScreenListener;
 import org.lwjgl.Sys;
 
+import java.util.Arrays;
+
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
+import static edu.cornell.gdiac.raftoftheseus.GDXRoot.NUM_LEVELS;
 
 /**
  * Class that provides the menu screen for the state of the game.
@@ -337,7 +340,7 @@ public class MenuMode implements Screen {
                 }
                 scrollPane = new ScrollPane(addLevelIslands());
                 scrollPane.setFlickScroll(true);
-                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.6f);
+                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.7f).padTop(-40);
                 menuTable.row();
                 break;
             case CREDITS:
@@ -354,35 +357,45 @@ public class MenuMode implements Screen {
 
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
+        int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
+        int[] buttonPadding = new int[NUM_LEVELS];
+        int padding = (int) stage.getWidth() / 15;
+        for (int i = 0; i < buttonPadding.length; i++) {
+            buttonPadding[i] = padding * i;
+        }
+        System.out.println(Arrays.toString(buttonPadding));
         Table scrollTable = new Table();
         Table pageTable = new Table();
         Table levelTable = new Table();
+        levelTable.align(Align.left);
         levelButtons = new TextButton[LEVEL_COUNT];
-        // Create and add textbuttons to screen. Must update each pass to update star displays.
+        int levelNumber = 0;
         for (int i = 0; i < LEVEL_COUNT; i ++) {
+            levelNumber = levelCounts[i];
             if (i % LEVELS_PER_PAGE == 0) {
                 // one entire page has been completed
-                pageTable.row().padTop(100);
                 levelTable = new Table();
-                pageTable.add(levelTable);
-
+                levelTable.align(Align.left);
+                pageTable.add(levelTable).width(stage.getWidth());
                 if (i > 0) {
                     // if it is not the first page
-                    scrollTable.add(pageTable).width(stage.getWidth());
-                    pageTable.row();
+                    scrollTable.add(pageTable);
                     pageTable = new Table();
                 }
             }
-            JsonValue levelData = saveData.get("level_data").get(i);
+            // Create and add textbuttons to screen. Must update each pass to update star displays.
+            JsonValue levelData = saveData.get("level_data").get(levelNumber);
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
-            levelButtons[i] = new TextButton(String.valueOf(i), canPlay ? buttonStyles[score] : lockButtonStyle);
-            levelButtons[i].getLabel().setFontScale(0.5f);
-            levelButtons[i].addListener(UICreator.createListener(levelButtons[i], canPlay, this::selectlevel, i));
+            levelButtons[levelNumber] = new TextButton(String.valueOf(levelNumber), canPlay ? buttonStyles[score] : lockButtonStyle);
+            levelButtons[levelNumber].getLabel().setFontScale(0.5f);
+            levelButtons[levelNumber].addListener(UICreator.createListener(levelButtons[levelNumber], canPlay, this::selectlevel, levelNumber));
             //Add button to table
             if (i > 0 && i % NUM_COLS == 0)
-                levelTable.row();
-            levelTable.add(levelButtons[i]).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+                levelTable.row().width(stage.getWidth()).padTop(-45);
+
+            int levelPosition = levelNumber % LEVELS_PER_PAGE;
+            levelTable.add(levelButtons[levelNumber]).size(170).padLeft(buttonPadding[levelPosition % 5]).padRight(levelNumber > 5 ? -60 : 0);
         }
 
         return scrollTable;

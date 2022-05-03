@@ -12,9 +12,9 @@
   "screen" : {
   "standard width" : 800,
   "standard height" : 700,
-  "column number" : 5,
+  "column number" : 2,
   "column padding" : 40
   },
-  "level count" : 22,
-  "levels per page": 11
+  "level count" : 20,
+  "levels per page": 10
 }
