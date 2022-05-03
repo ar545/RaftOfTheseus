@@ -16,10 +16,15 @@ public enum SirenState implements State<Siren> {
     },
     SINGING() {
         @Override
+        public void enter(Siren entity) {
+        }
+
+        @Override
         public void update (Siren entity){
             entity.stateTimer.setTimeStamp();
             if(entity.stateTimer.hasTimeElapsed(Siren.SINGING_TIME, true)) {
                 entity.attackTimer.resetTimeStamp();
+                entity.attackTimer.setTimeStamp();
                 if(entity.isStationary()) entity.getStateMachine().changeState(IDLE);
                 else {
                     entity.setMoveVector();

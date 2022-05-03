@@ -55,8 +55,8 @@ public class FrameCalculator {
         if (timeElapsed > animationSpeed){
             resetTimeElapsed();
             increment += 1;
-            frame = start + (reverse ? (frames - 1) - increment % frames : increment % frames);
         }
+        frame = start + (reverse ? (frames - 1) - increment % frames : increment % frames);
         return reverse ? frame == start : frame == frames - 1 + start;
     }
 

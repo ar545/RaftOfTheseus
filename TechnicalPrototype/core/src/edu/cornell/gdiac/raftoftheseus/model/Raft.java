@@ -5,12 +5,12 @@ import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.raftoftheseus.model.util.Animated;
 import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.model.util.TextureHolder;
+import edu.cornell.gdiac.raftoftheseus.model.util.Timer;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -220,16 +220,18 @@ public class Raft extends GameObject implements Animated {
         }
     }
 
+    private Timer forceTime = new Timer();
 
-    private long timeStamp;
     /** @param force the force applied to player over a period of time. */
     public void setProjectileForce(Vector2 force){
         externalForce.set(force);
-        timeStamp = TimeUtils.millis();
+        // Reset timer so the most recent forces takes precedence.
+        forceTime.resetTimeStamp();
+        forceTime.setTimeStamp();
     }
 
     public void applyProjectileForce(){
-        if(TimeUtils.timeSinceMillis(timeStamp) < FORCE_DURATION) {
+        if(forceTime.hasTimeElapsed(FORCE_DURATION, true)) {
             physicsObject.getBody().applyForce(externalForce, getPosition(), true);
         }
     }

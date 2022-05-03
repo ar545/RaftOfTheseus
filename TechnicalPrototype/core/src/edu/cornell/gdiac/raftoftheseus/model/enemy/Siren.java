@@ -159,6 +159,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         moveVector.set(0.0f, 0.0f);
         stateMachine = new DefaultStateMachine<>(this, SirenState.IDLE);
         waypoint = 1;
+        attackTimer.setTimeStamp();
     }
 
     /** Set the texture location relative to the physics body. */
@@ -233,6 +234,8 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     /** @return whether the player is in range and the Siren is attack mode. */
     public boolean willAttack(){
         hasAttacked = stateMachine.getCurrentState() == SirenState.SINGING && inAttackRange() && attackTimer.hasTimeElapsed(COOL_DOWN, false);
+        System.out.println(attackTimer.hasTimeElapsed(COOL_DOWN, false));
+        System.out.println(hasAttacked);
         if(hasAttacked) {
             attackTimer.resetTimeStamp();
             attackTimer.setTimeStamp();
