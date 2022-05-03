@@ -5,8 +5,8 @@
 		"name": "Level 0",
 		"level": 0,
 		"path": "levels/level0.json",
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": true
 	},
 	{
@@ -15,7 +15,7 @@
 		"path": "levels/level1.png",
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 2",
