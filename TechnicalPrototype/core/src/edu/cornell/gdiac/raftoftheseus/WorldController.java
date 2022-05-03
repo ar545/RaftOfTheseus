@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -13,9 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.Timer;
+import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.*;
@@ -27,7 +26,10 @@ import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
+import org.lwjgl.Sys;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Iterator;
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
 
@@ -317,6 +319,9 @@ public class WorldController implements Screen, ContactListener {
         if (level_id + 1 < NUM_LEVELS) {
             saveData.get("level_data").get(level_id + 1).get("unlocked").set(true);
         }
+        FileHandle file = Gdx.files.local("save_data.json");
+        String jsonString = saveData.prettyPrint(JsonWriter.OutputType.json, 1);
+        file.writeString(jsonString, false);
     }
 
     private void updateRaftWakeSamples() {
@@ -561,10 +566,11 @@ public class WorldController implements Screen, ContactListener {
         InputController input = InputController.getInstance();
         input.readInput();
         if (input.didDebug()) { debug = !debug; } // Toggle debug
-        if (input.didMap()) {
+        if (input.didMap() && !complete && !failed) {
+            // Toggle map
             map = !map;
             SfxController.getInstance().playSFX("map_open");
-        } // Toggle map
+        }
 
         // Now it is time to maybe switch screens. First, check for input trigger screen switch
         if (input.didExit() || exitPressed) {
@@ -582,7 +588,8 @@ public class WorldController implements Screen, ContactListener {
             settingsPressed = false;
             listener.exitScreen(this, WORLD_TO_SETTINGS);
             return false;
-        } else if (input.didPause() || pausePressed)  {
+        } else if ((input.didPause() || pausePressed) && (!complete && !failed))  {
+            System.out.println("here");
             pause();
             pausePressed = true;
             return false;
