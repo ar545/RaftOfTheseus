@@ -2,7 +2,9 @@ package edu.cornell.gdiac.raftoftheseus.model;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
 public class Treasure extends GameObject {
 
@@ -16,15 +18,22 @@ public class Treasure extends GameObject {
 
     private static float OPEN_AS = 0.05f;
 
+    private static float OPEN_RANGE = 6.0f;
+
+    private boolean inrange;
+
+    private Raft raft;
+
     /** Frame calculator for animation. */
     private FrameCalculator fc = new FrameCalculator(OPEN_SF);
 
-    public Treasure(Vector2 position) {
+    public Treasure(Vector2 position, Raft raft) {
         physicsObject = new WheelObstacle(0.9f);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_NON_PUSHABLE;
         physicsObject.getFilterData().maskBits = MASK_TREASURE;
+        this.raft = raft;
 
         collected = false;
     }
@@ -55,8 +64,19 @@ public class Treasure extends GameObject {
 
 
     public void setAnimationFrame(float dt) {
-        fc.addTime(dt);
-        fc.setFrame(OPEN_AS, OPEN_SF, OPEN_FC, false);
-        System.out.println(fc.getFrame());
+        if(raft.getPosition().cpy().sub(getPosition()).len()< OPEN_RANGE){
+            inrange = true;
+        }
+        if(inrange  && fc.getFrame() < OPEN_FC - 1) {
+            fc.addTime(dt);
+            fc.setFrame(OPEN_AS, OPEN_SF, OPEN_FC, false);
+            System.out.println(fc.getFrame());
+        }
+    }
+
+    @Override
+    public void draw(GameCanvas canvas){
+        ((FilmStrip) texture).setFrame(fc.getFrame());
+        super.draw(canvas);
     }
 }
