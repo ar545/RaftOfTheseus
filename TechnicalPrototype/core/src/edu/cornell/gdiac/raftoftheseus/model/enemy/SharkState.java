@@ -81,7 +81,8 @@ public enum SharkState implements State<Shark> {
     @Override
     public void exit(Shark entity) {
         entity.resetTimeStamp();
-        entity.resetFrame();
+        entity.getFrameCalculator().resetIncrement();
+        entity.getFrameCalculator().resetTimeElapsed();
     }
 
     @Override

@@ -186,8 +186,6 @@ public class Siren extends GameObject implements Animated {
     public GameObject.ObjectType getType() {
         return GameObject.ObjectType.SIREN;
     }
-    /** @return this Siren's FrameCalculator for reseting purposes. */
-    public FrameCalculator getFrameCalculator() { return fc; }
 
     // Setting movement
 
@@ -313,10 +311,8 @@ public class Siren extends GameObject implements Animated {
         return false;
     }
 
-    /**
-     * Method to set animation based on the time elapsed in the game.
-     * @param dt the current time in the game.
-     */
+    @Override
+    public FrameCalculator getFrameCalculator() { return fc; }
     @Override
     public void setAnimationFrame(float dt) {
         // Get frame number
@@ -340,7 +336,7 @@ public class Siren extends GameObject implements Animated {
                 break;
             case STUNNED:
                 fc.setFrame(SINGING_SF);
-                fc.toFlash(FLASHING_AS);
+                fc.checkFlash(FLASHING_AS);
                 break;
         }
         if(getLinearVelocity().x < 0){

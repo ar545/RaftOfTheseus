@@ -7,16 +7,13 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
+import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.EnemyRayCast;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
-import edu.cornell.gdiac.raftoftheseus.model.GameObject;
-import edu.cornell.gdiac.raftoftheseus.model.LevelModel;
-import edu.cornell.gdiac.raftoftheseus.model.Raft;
-import edu.cornell.gdiac.raftoftheseus.model.Treasure;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class Shark extends GameObject {
+public class Shark extends GameObject implements Animated {
     /**
      * Method to fill in all constants for the Shark
      * @param objParams the JsonValue with heading "shark".
@@ -50,6 +47,8 @@ public class Shark extends GameObject {
     private Vector2 desiredVelocity = new Vector2();
     /** FSM to control Shark AI */
     private StateMachine<Shark, SharkState> stateMachine;
+    /** FrameController for animation. */
+    private FrameCalculator fc = new FrameCalculator(SWIM_SF);
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
@@ -187,38 +186,34 @@ public class Shark extends GameObject {
     public boolean setHit(){
         if (!(stateMachine.isInState(SharkState.STUNNED) || stateMachine.isInState(SharkState.DYING))){
             stateMachine.changeState(SharkState.STUNNED);
-            resetFlash();
+            fc.setFlash(false);
             return true;
         }
         return false;
     }
 
-    /**
-     * Method to set animation based on the time elapsed in the game.
-     * @param dt the current time in the game.
-     */
+    @Override
+    public FrameCalculator getFrameCalculator() { return fc; }
+    @Override
     public void setAnimationFrame(float dt) {
         // Get frame number
-        timeElapsed += dt;
+        fc.addTime(dt);
         switch(stateMachine.getCurrentState()){
             case STUNNED:
-                frame = SWIM_SF;
-                if(timeElapsed > SWIM_AS){
-                    flash = !flash;
-                    timeElapsed = 0;
-                }
+                fc.setFrame(SWIM_SF);
+                fc.checkFlash(SWIM_AS);
                 break;
             case IDLE:
             case APPROACH:
             case PAUSE_BEFORE_ATTACK:
             case PAUSE_AFTER_ATTACK:
             case DYING:
-                unsetFlash();
-                setFrame(SWIM_AS, SWIM_FRAMES, SWIM_SF, false);
+                fc.setFlash(false);
+                fc.setFrame(SWIM_AS, SWIM_FRAMES, SWIM_SF, false);
                 break;
             case ATTACK:
-                unsetFlash();
-                setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
+                fc.setFlash(false);
+                fc.setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
                 break;
         }
         if(getLinearVelocity().x < 0){
@@ -228,38 +223,9 @@ public class Shark extends GameObject {
         }
     }
 
-    /**
-     * Sets the frame of the animation based on the FSM and time given.
-     * @param animationSpeed how many seconds should pass between each frame.
-     * @param frames the number of frames this animation has.
-     * @param start which frame in the FilmStrip the animation starts on.
-     * @param reverse whether the animation should be drawn backwards.
-     * @return whether it has reached the last animation image.
-     */
-    private boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
-        if (timeElapsed > animationSpeed){
-            timeElapsed = 0;
-            frameCount += 1;
-            frame = start + (reverse ? (frames - 1) - frameCount % frames : frameCount % frames);
-        }
-        return reverse ? frame == start : frame == frames - 1 + start;
-    }
-
     public boolean isDoneWithAttackAnimation() {
-        return stateMachine.isInState(SharkState.ATTACK) && frame == BITE_SF + BITE_FRAMES - 1;
+        return stateMachine.isInState(SharkState.ATTACK) && fc.isFrame(BITE_FRAMES, BITE_SF, false);
     }
-
-    int frameCount = 0;
-    float timeElapsed = 0;
-    int frame = 0;
-    boolean flash = false;
-
-    /** Method to reset the frameCount to 0 to ensure the next animation starts on its starting frame. */
-    public void resetFrame(){ frameCount = 0; }
-
-    /** Method to reset flash boolean to ensure Shark always turns red first when hit. */
-    public void unsetFlash(){ flash = false; }
-    public void resetFlash(){ flash = true; }
 
     /**
      * Set the appropriate image frame first before drawing the Shark.
@@ -267,8 +233,8 @@ public class Shark extends GameObject {
      */
     @Override
     public void draw(GameCanvas canvas){
-        ((FilmStrip) texture).setFrame(frame);
-        if(flash) super.draw(canvas, Color.RED);
+        ((FilmStrip) texture).setFrame(fc.getFrame());
+        if(fc.getFlash()) super.draw(canvas, Color.RED);
         else super.draw(canvas);
     }
 

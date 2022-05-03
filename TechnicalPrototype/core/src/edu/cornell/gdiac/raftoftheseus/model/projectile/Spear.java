@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.Animated;
+import edu.cornell.gdiac.raftoftheseus.model.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
@@ -46,6 +47,7 @@ public class Spear extends Projectile implements Animated {
     private static float FLOAT_SPEED;
     /** Whether it has been fired. */
     private boolean fired = false;
+    private FrameCalculator fc = new FrameCalculator();
 
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
@@ -111,14 +113,11 @@ public class Spear extends Projectile implements Animated {
         return fired && outMaxDistance(RANGE_FALL);
     }
 
-    /**
-     * Sets the animation frame of the
-     * @param dt
-     */
-    public void setAnimationFrame(float dt) {
+    @Override
+    public FrameCalculator getFrameCalculator(){ return fc; }
 
-    }
-
+    @Override
+    public void setAnimationFrame(float dt) {}
 
     /**
      * Set the appropriate image frame first before drawing the Siren.

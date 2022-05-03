@@ -265,10 +265,9 @@ public class Raft extends GameObject implements Animated{
     // Which direction to player is facing.
     float flip;
 
-    /**
-     * Method to set animation based on the time elapsed in the game.
-     * @param dt the current time in the game.
-     */
+    @Override
+    public FrameCalculator getFrameCalculator(){ return fc; };
+
     @Override
     public void setAnimationFrame(float dt) {
         fc.addTime(dt);

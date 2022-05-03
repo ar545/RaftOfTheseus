@@ -69,7 +69,7 @@ public class FrameCalculator {
      * Method to check whether enough time has elapsed to change color.
      * @param flashingSpeed how much time should elapse before changing color.
      */
-    public void toFlash(float flashingSpeed){
+    public void checkFlash(float flashingSpeed){
         if (timeElapsed > flashingSpeed){
             flash = !flash;
             resetTimeElapsed();

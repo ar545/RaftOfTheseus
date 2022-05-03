@@ -6,4 +6,9 @@ public interface Animated {
      * @param dt the amount of time since the last game loop.
      */
     public void setAnimationFrame(float dt);
+
+    /**
+     * @return this animated object's framecalculator
+     */
+    public FrameCalculator getFrameCalculator();
 }
