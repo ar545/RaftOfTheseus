@@ -33,7 +33,7 @@
       "double":     "images/New_Large_Log.png",
       "regular_rock":     "images/Rock.png",
       "sharp_rock": "images/Spiky_Rock.png",
-      "treasure":     "images/Chest.png",
+      "treasure":     "images/chest_sprite.png",
       "target":     "images/Obj_Island_threequarters.png",
       "spear": "images/Obj_Spear.png",
       "note" : "images/Obj_MusicNote.png",

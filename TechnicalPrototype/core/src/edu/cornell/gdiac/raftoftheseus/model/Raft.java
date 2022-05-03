@@ -261,7 +261,7 @@ public class Raft extends GameObject implements Animated {
     /** Set whether the player has reached the end of the animation cycle. */
     public void resetCanFire() { canFire = false; isCharging = false;  }
     /** Reverse the firing animation and effect due to pre-mature release of mouse. */
-    public void reverseFire() { canFire = false; isCharging = false; addHealth(-Spear.DAMAGE); }
+    public void reverseFire() { canFire = false; isCharging = false; addHealth(-Spear.DAMAGE); raftState = RaftState.IDLE; }
     /** @return whether the player has reached the end of the firing animation cycle. */
     public boolean canFire() { return canFire; }
     /** @param charging whether to set the player to actively charging. Subtracts health to create the spear. */

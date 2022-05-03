@@ -230,6 +230,9 @@ public class WorldController implements Screen, ContactListener {
         for(Shark s : levelModel.getSharks()){
             s.setAnimationFrame(dt);
         }
+        for(Treasure s: levelModel.getTreasure()){
+            s.setAnimationFrame(dt);
+        }
 
         // Update raft samples (for displaying the wake in the shader) before drawing water
         updateRaftWakeSamples();
@@ -964,7 +967,7 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             addScore();
-            g.setDestroyed(true);
+            ((Treasure) g).setCollected(true);
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
