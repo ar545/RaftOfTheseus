@@ -1,0 +1,125 @@
+{
+"debug": true,
+"level_data": [
+	{
+		"name": "Level 0",
+		"level": 0,
+		"path": "levels/level0.json",
+		"complete": true,
+		"score": 3,
+		"unlocked": true
+	},
+	{
+		"name": "Level 1",
+		"level": 1,
+		"path": "levels/level1.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": true
+	},
+	{
+		"name": "Level 2",
+		"level": 2,
+		"path": "levels/level2.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 3",
+		"level": 3,
+		"path": "levels/level3.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 4",
+		"level": 4,
+		"path": "levels/level4.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 5",
+		"level": 5,
+		"path": "levels/level5.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 6",
+		"level": 6,
+		"path": "levels/level6.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 7",
+		"level": 7,
+		"path": "levels/level7.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 8",
+		"level": 8,
+		"path": "levels/level8.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 9",
+		"level": 9,
+		"path": "levels/level9.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 10",
+		"level": 10,
+		"path": "levels/level10.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 11",
+		"level": 11,
+		"path": "levels/level11.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 12",
+		"level": 12,
+		"path": "levels/level12.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 13",
+		"level": 13,
+		"path": "levels/level13.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	},
+	{
+		"name": "Level 14",
+		"level": 14,
+		"path": "levels/level14.png",
+		"complete": false,
+		"score": 0,
+		"unlocked": false
+	}
+]
+}

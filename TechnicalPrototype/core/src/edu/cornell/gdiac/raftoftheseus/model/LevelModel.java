@@ -146,6 +146,7 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** All spears in the world */
     private PooledList<Spear> spears = new PooledList<>();
+    private PooledList<Treasure> treasure = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
     /** The light source of this level */
@@ -161,14 +162,14 @@ public class LevelModel {
     /** Texture for all ships, as they look the same */
     private FilmStrip raftTexture;
     private FilmStrip raftAura;
+    /** Texture for all treasures */
+    private FilmStrip treasureTexture;
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodTexture;
     /** Texture for wood pieces that represents double pile of logs */
     private TextureRegion doubleTexture;
     /** Texture for all target, as they look the same */
     private TextureRegion targetTexture;
-    /** Texture for all treasures */
-    private TextureRegion treasureTexture;
     /** Texture for all rock, as they look the same */
     private TextureRegion regularRockTexture;
     /** Texture for all rock, as they look the same */
@@ -229,6 +230,7 @@ public class LevelModel {
     public PooledList<Siren> getSirens() { return sirens; }
     /** get the list of sirens in the world */
     public PooledList<Spear> getSpears() { return spears; }
+    public PooledList<Treasure> getTreasure() { return treasure; }
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -391,6 +393,7 @@ public class LevelModel {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
         sharks.clear();
+        treasure.clear();
         hydras.clear();
         sirens.clear();
         addQueue.clear();
@@ -683,9 +686,10 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-        Treasure this_treasure = new Treasure(compute_temp);
+        Treasure this_treasure = new Treasure(compute_temp, raft);
         this_treasure.setTexture(treasureTexture);
         obstacles[col][row] = this_treasure;
+        treasure.add(this_treasure);
         addObject(this_treasure);
         treasureCount++;
     }
@@ -831,7 +835,7 @@ public class LevelModel {
         regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
         plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
-        treasureTexture = new TextureRegion(directory.getEntry("treasure", Texture.class));
+        treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 5);
