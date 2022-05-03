@@ -671,7 +671,7 @@ public class WorldController implements Screen, ContactListener {
             s.updateAI(dt);
         }
         for(Siren s : levelModel.getSirens()){
-            s.update(dt);
+            s.updateAI(dt);
             if(s.willAttack()){
                 levelModel.createNote(s.getPosition().cpy(), s.getTargetDirection(levelModel.getPlayerCurrentVelocity()));
             }
@@ -904,7 +904,7 @@ public class WorldController implements Screen, ContactListener {
             // stun hydra
             SfxController.getInstance().playSFX("spear_enemy_hit");
             SfxController.getInstance().playSFX("shark_hit");
-            ((Hydra) g).setHit(true);
+            ((Hydra) g).setHit();
         } else if (g.getType() == GameObject.ObjectType.SIREN){
             if(((Siren) g).setHit()) {
                 s.setDestroyed(true);

@@ -289,7 +289,7 @@ public class Raft extends GameObject implements Animated {
             fc.resetTimeElapsed();
         }
         // flip texture based on movement
-        flip = setTextureXOrientation();
+        flip = setTextureXOrientation(false);
     }
 
     /**

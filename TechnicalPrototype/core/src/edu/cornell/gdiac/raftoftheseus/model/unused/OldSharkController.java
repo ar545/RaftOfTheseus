@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus.model.enemy;
+package edu.cornell.gdiac.raftoftheseus.model.unused;
 
 
 import java.util.Arrays;
@@ -13,8 +13,8 @@ import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.LevelModel;
 import edu.cornell.gdiac.raftoftheseus.model.Raft;
 
-import static edu.cornell.gdiac.raftoftheseus.model.enemy.OldShark.*;
-import static edu.cornell.gdiac.raftoftheseus.model.enemy.OldShark.enemyState.*;
+import static edu.cornell.gdiac.raftoftheseus.model.unused.OldShark.*;
+import static edu.cornell.gdiac.raftoftheseus.model.unused.OldShark.enemyState.*;
 
 
 

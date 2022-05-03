@@ -9,7 +9,7 @@ public enum SirenState implements State<Siren> {
         @Override
         public void update (Siren entity){
             entity.setTimeStamp();
-            if(entity.isPastIdleCooldown()) {
+            if(entity.hasTimeElapsed(Siren.IDLE_TIME)) {
                 entity.getStateMachine().changeState(SINGING);
             }
         }
@@ -18,7 +18,7 @@ public enum SirenState implements State<Siren> {
         @Override
         public void update (Siren entity){
             entity.setTimeStamp();
-            if(entity.isDoneSinging()) {
+            if(entity.hasTimeElapsed(Siren.SINGING_TIME)) {
                 entity.resetAttackStamp();
                 entity.resetTimeStamp();
                 if(entity.isStationary()) entity.getStateMachine().changeState(IDLE);
@@ -61,7 +61,7 @@ public enum SirenState implements State<Siren> {
         @Override
         public void update(Siren entity) {
             entity.setTimeStamp();
-            if(entity.stunElapsed()){
+            if(entity.hasTimeElapsed(Siren.STUN_TIME)){
                 entity.getFrameCalculator().setFlash(false);
                 entity.resetTimeStamp();
                 entity.getStateMachine().changeState(SINGING);

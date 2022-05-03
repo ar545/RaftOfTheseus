@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus.model;
+package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;

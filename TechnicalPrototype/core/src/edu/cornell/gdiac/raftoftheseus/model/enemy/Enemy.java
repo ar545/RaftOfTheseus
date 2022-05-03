@@ -9,13 +9,14 @@ import edu.cornell.gdiac.raftoftheseus.model.Raft;
 
 public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
-    private Raft player;
-    private long timeStamp;
-    private boolean timeStamped;
+    protected Raft player;
+    private long timeStamp = 0L;
+    private boolean timeStamped = false;
+    private long attackStamp = 0L;
+    private boolean attackStamped = false;
 
     public Enemy(Raft player){
         this.player = player;
-        timeStamped = false;
     }
 
     /**
@@ -35,6 +36,18 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
     public void resetTimeStamp(){ timeStamped = false; }
     /** @return Whether the given period of time (in seconds) has elapsed since the last call to resetTimeStamp. */
     public boolean hasTimeElapsed(float time){ return TimeUtils.timeSinceMillis(timeStamp) > time*1000; }
+    /** Method to start recording time between firing */
+    public void setAttackStamp(){
+        if(!attackStamped){
+            attackStamp = TimeUtils.millis();
+            attackStamped = true;
+        }
+    }
+    /** Method to allow a new time stamp. */
+    public void resetAttackStamp(){ attackStamped = false; }
+    /** @return Whether the given period of time (in seconds) has elapsed since the last call to resetTimeStamp. */
+    public boolean hasAttackTimeElapsed(float time){ return TimeUtils.timeSinceMillis(attackStamp) > time*1000; }
+
 
     /** @return whether the player is in a given range of this Shark. */
     public boolean inRange(float dist){ return getTargetDistance() < dist; }
@@ -46,4 +59,6 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** Return the FSM of this enemy. */
     public abstract StateMachine<T, K> getStateMachine();
+
+    public abstract boolean setHit();
 }

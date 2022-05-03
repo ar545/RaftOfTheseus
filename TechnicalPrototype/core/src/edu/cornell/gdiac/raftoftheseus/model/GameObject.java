@@ -212,12 +212,12 @@ public abstract class GameObject {
 
     public boolean posXVel(){ return getLinearVelocity().x > 0; }
     public boolean negXVel(){ return getLinearVelocity().x < 0; }
-    public int setTextureXOrientation(){
+    public int setTextureXOrientation(boolean reverse){
         if(posXVel()){
-            textureScale.x = 1 * Math.abs(textureScale.x);
+            textureScale.x = reverse ? -1 : 1 * Math.abs(textureScale.x);
             return 1;
         } else if(negXVel()){
-            textureScale.x = -1 * Math.abs(textureScale.x);
+            textureScale.x = reverse ? 1 : -1 * Math.abs(textureScale.x);
             return -1;
         }
         return 1;

@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus.model.enemy;
+package edu.cornell.gdiac.raftoftheseus.model.unused;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;

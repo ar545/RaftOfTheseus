@@ -23,15 +23,15 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
      * @param objParams the JsonValue with heading "siren".
      */
     public static void setConstants(JsonValue objParams){
-        IDLE_TIME = objParams.getLong("idle time");
-        SINGING_TIME = objParams.getLong("singing time");
+        IDLE_TIME = objParams.getFloat("idle time");
+        SINGING_TIME = objParams.getFloat("singing time");
         ATTACK_RANGE = objParams.getFloat("attack range");
         HEAR_RANGE = objParams.getFloat("hearing range");
         PROXIMITY = objParams.getFloat("proximity");
         FLY_SPEED = objParams.getFloat("fly speed");
         TAKE_OFF_SPEED = objParams.getFloat("take off speed");
-        COOL_DOWN = objParams.getLong("cool down");
-        STUN_TIME = objParams.getLong("stun time");
+        COOL_DOWN = objParams.getFloat("cool down");
+        STUN_TIME = objParams.getFloat("stun time");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
         RADIUS = objParams.getFloat("radius");
         IDLE_AS = objParams.getFloat("idle animation speed");
@@ -52,8 +52,6 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         FLYING_SF = objParams.getInt("flying start frame");
     }
 
-    /** The player for targeting. */
-    private Raft targetRaft;
     /** 2 Vector caches to store where the siren is and where it will need to go. */
     private Vector2 start = new Vector2();
     private Vector2 finish = new Vector2();
@@ -69,22 +67,21 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
-    private long attackStamp = 0L;
-    private boolean attackStamped = false;
+
     /** Whether this Siren has just attacked the player. */
     private boolean isHit = false;
     private boolean hasAttacked;
     private boolean animationDone;
     /** Constants that determine time in each state for range of attack. */
     private static float PROXIMITY;
-    protected static long IDLE_TIME;
-    protected static long SINGING_TIME;
+    protected static float IDLE_TIME;
+    protected static float SINGING_TIME;
     private static float ATTACK_RANGE;
     private static float HEAR_RANGE;
     private static float TAKE_OFF_SPEED;
     private static float FLY_SPEED;
-    protected static long COOL_DOWN;
-    protected static long STUN_TIME;
+    protected static float COOL_DOWN;
+    protected static float STUN_TIME;
     private static float TEXTURE_SCALE;
     private static float RADIUS;
     private static float IDLE_AS;
@@ -115,7 +112,6 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         for(Vector2 pos : positions){
             waypoints.add(new Vector2(pos));
         }
-        this.targetRaft = raft;
         setParameters();
     }
 
@@ -127,7 +123,6 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     private Siren(Raft raft, Array<Vector2> positions){
         super(raft);
         waypoints = positions;
-        this.targetRaft = raft;
         setParameters();
     }
 
@@ -224,28 +219,6 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         else moveVector.nor().scl(TAKE_OFF_SPEED);
     }
 
-
-    // Time
-    /** Method to start recording time between firing */
-    public void setAttackStamp(){
-        if(!attackStamped){
-            attackStamp = TimeUtils.millis();
-            attackStamped = true;
-        }
-    }
-    /** Method to allow a new time stamp. */
-    public void resetAttackStamp(){ attackStamped = false; }
-
-    // Cool downs
-    /** @return Whether this Siren has elapsed its idling time. */
-    public boolean isPastIdleCooldown(){ return TimeUtils.timeSinceMillis(timeStamp) > IDLE_TIME; }
-    /** @return Whether this Siren has elapsed its singing time. */
-    public boolean isDoneSinging(){ return TimeUtils.timeSinceMillis(timeStamp) > SINGING_TIME; }
-    /** @return Whether this Siren can fire again. */
-    public boolean cooldownElapsed(){ return TimeUtils.timeSinceMillis(attackStamp) > COOL_DOWN; }
-    /** @return Whether this Siren is not stunned anymore. */
-    public boolean stunElapsed(){ return TimeUtils.timeSinceMillis(timeStamp) > STUN_TIME; }
-
     // Changing location
     /** @return when the Siren has reached its destination. */
     public boolean nearLanding(){
@@ -254,20 +227,12 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     }
 
     // Attacking player
-    public boolean canHear(){
-        return targetRaft.getPosition().cpy().sub(getPosition()).len() < HEAR_RANGE && stateMachine.isInState(SirenState.SINGING);
-    }
-
+    public boolean canHear(){ return inRange(HEAR_RANGE) && stateMachine.isInState(SirenState.SINGING);}
     /** @return whether the player is in attack range of this Siren. */
-    public boolean inAttackRange(){
-        return targetRaft.getPosition().cpy().sub(getPosition()).len() < ATTACK_RANGE;
-    }
-
-    /** @return whether the player is in range and the Siren is attack mode.
-     *  Resets
-     */
+    public boolean inAttackRange(){ return inRange(ATTACK_RANGE); }
+    /** @return whether the player is in range and the Siren is attack mode. */
     public boolean willAttack(){
-        hasAttacked = stateMachine.getCurrentState() == SirenState.SINGING && inAttackRange() && cooldownElapsed();
+        hasAttacked = stateMachine.getCurrentState() == SirenState.SINGING && inAttackRange() && hasAttackTimeElapsed(COOL_DOWN);
         if(hasAttacked) {
             resetAttackStamp();
             setAttackStamp();
@@ -276,9 +241,10 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     }
 
     /** Get how much damage is done to the player. */
+    @Override
     public Vector2 getTargetDirection(Vector2 playerCurrentVelocity) {
         start.set(getPosition());
-        finish.set(targetRaft.getPosition().add(targetRaft.getLinearVelocity()).add(playerCurrentVelocity));
+        finish.set(player.getPosition().add(player.getLinearVelocity()).add(playerCurrentVelocity));
         return finish.cpy().sub(start).nor();
     }
 
@@ -330,7 +296,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
                 fc.checkFlash(FLASHING_AS);
                 break;
         }
-        setTextureXOrientation();
+        setTextureXOrientation(true);
     }
 
     /**

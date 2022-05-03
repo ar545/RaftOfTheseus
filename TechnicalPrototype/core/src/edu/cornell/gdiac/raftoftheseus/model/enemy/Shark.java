@@ -214,7 +214,7 @@ public class Shark extends GameObject implements Animated {
                 fc.setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
                 break;
         }
-        setTextureXOrientation();
+        setTextureXOrientation(false);
     }
 
     public boolean isDoneWithAttackAnimation() {
