@@ -9,12 +9,17 @@ import edu.cornell.gdiac.raftoftheseus.model.Raft;
 
 public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
+    /** The player */
     protected Raft player;
     private long timeStamp = 0L;
     private boolean timeStamped = false;
     private long attackStamp = 0L;
     private boolean attackStamped = false;
 
+    /**
+     * Constructor
+     * @param player
+     */
     public Enemy(Raft player){
         this.player = player;
     }
@@ -59,6 +64,6 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** Return the FSM of this enemy. */
     public abstract StateMachine<T, K> getStateMachine();
-
+    /** Called when the enemy is hit by the player spear. */
     public abstract boolean setHit();
 }

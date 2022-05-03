@@ -167,5 +167,10 @@
     "drops" : 15,
     "hit box width" : 3,
     "hit box height" : 2
+  },
+  "stun" : {
+    "as" : 0.0666,
+    "sf" : 0,
+    "fc" : 4
   }
 }
