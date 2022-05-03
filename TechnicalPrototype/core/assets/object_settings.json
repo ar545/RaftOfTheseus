@@ -71,7 +71,7 @@
   },
   "spear": {
     "speed scale" : 25.0,
-    "health cost" : -3.0,
+    "health cost" : -2.0,
     "texture scale" : 3.5,
     "texture x offset" : -20,
     "texture y offset" : 0,
@@ -126,7 +126,7 @@
     "sensor size" : 1.45,
     "texture scale" : 1.5,
     "idle animation speed" : 0.05,
-    "shooting animation speed" : 0.0333333,
+    "shooting animation speed" : 0.016666667,
     "rotation animation speed" : 0.1,
     "idle frames" : 19,
     "shooting frames" : 19,
