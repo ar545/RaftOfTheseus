@@ -20,7 +20,7 @@ public class Treasure extends GameObject {
 
     private static float OPEN_RANGE = 6.0f;
 
-    private boolean inrange;
+    private boolean animated;
 
     private Raft raft;
 
@@ -34,6 +34,7 @@ public class Treasure extends GameObject {
         physicsObject.getFilterData().categoryBits = CATEGORY_NON_PUSHABLE;
         physicsObject.getFilterData().maskBits = MASK_TREASURE;
         this.raft = raft;
+        animated = false;
 
         collected = false;
     }
@@ -50,7 +51,7 @@ public class Treasure extends GameObject {
 
     public void update(float dt) {
         super.update(dt);
-        if (collected) {
+        if (collected && animated) {
             this.setDestroyed(true);
         }
     }
@@ -64,13 +65,13 @@ public class Treasure extends GameObject {
 
 
     public void setAnimationFrame(float dt) {
-        if(raft.getPosition().cpy().sub(getPosition()).len()< OPEN_RANGE){
-            inrange = true;
-        }
-        if(inrange  && fc.getFrame() < OPEN_FC - 1) {
+
+        if(collected) {
             fc.addTime(dt);
             fc.setFrame(OPEN_AS, OPEN_SF, OPEN_FC, false);
-            System.out.println(fc.getFrame());
+            if(fc.getFrame() == OPEN_FC - 1){
+                animated=true;
+            }
         }
     }
 
