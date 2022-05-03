@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.util.ScreenListener;
+import org.lwjgl.Sys;
 
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
 
@@ -36,6 +37,7 @@ public class MenuMode implements Screen {
     // https://stackoverflow.com/questions/31794636/clickable-buttons-using-libgdx
     private Stage stage;
     private Skin skin;
+    private ScrollPane scrollPane;
     /** Background texture for menu */
     private Texture menuBackground;
     /** Background texture for credits */
@@ -52,12 +54,13 @@ public class MenuMode implements Screen {
     private static JsonValue saveData;
 
     /** Loads constants from screen */
-    public static void setConstants(JsonValue objParams, int numLevels){
+    public static void setConstants(JsonValue objParams, int numLevels, int levelsPerPage){
         STANDARD_WIDTH = objParams.getInt(0);
         STANDARD_HEIGHT = objParams.getInt(1);
         NUM_COLS = objParams.getInt(2);
         colPadding = objParams.getInt("column padding", 25);
         LEVEL_COUNT = numLevels;
+        LEVELS_PER_PAGE = levelsPerPage;
     }
 
     /** Standard window size (for scaling) */
@@ -85,6 +88,10 @@ public class MenuMode implements Screen {
     private boolean active;
     /** Level count **/
     private static int LEVEL_COUNT;
+    /** Number of levels per page */
+    private static int LEVELS_PER_PAGE;
+    /** Current page */
+    private int currentPage;
     /** Whether the play button was pressed on the main menu */
     private boolean playPressed;
     /** Whether the settings button was pressed on the main menu */
@@ -124,7 +131,6 @@ public class MenuMode implements Screen {
     }
 
     // BUTTON INITIALIZATION
-
     private TextButton backButton;
     private Table backTable;
     private Array<TextButton> titleButtons = new Array<>();
@@ -329,7 +335,9 @@ public class MenuMode implements Screen {
                     menuTable.add(t);
                     menuTable.row();
                 }
-                menuTable.add(addLevelIslands());
+                scrollPane = new ScrollPane(addLevelIslands());
+                scrollPane.setFlickScroll(true);
+                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.6f);
                 menuTable.row();
                 break;
             case CREDITS:
@@ -346,10 +354,25 @@ public class MenuMode implements Screen {
 
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
-        Table part3 = new Table();
+        Table scrollTable = new Table();
+        Table pageTable = new Table();
+        Table levelTable = new Table();
         levelButtons = new TextButton[LEVEL_COUNT];
         // Create and add textbuttons to screen. Must update each pass to update star displays.
         for (int i = 0; i < LEVEL_COUNT; i ++) {
+            if (i % LEVELS_PER_PAGE == 0) {
+                // one entire page has been completed
+                pageTable.row().padTop(100);
+                levelTable = new Table();
+                pageTable.add(levelTable);
+
+                if (i > 0) {
+                    // if it is not the first page
+                    scrollTable.add(pageTable).width(stage.getWidth());
+                    pageTable.row();
+                    pageTable = new Table();
+                }
+            }
             JsonValue levelData = saveData.get("level_data").get(i);
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
@@ -358,10 +381,11 @@ public class MenuMode implements Screen {
             levelButtons[i].addListener(UICreator.createListener(levelButtons[i], canPlay, this::selectlevel, i));
             //Add button to table
             if (i > 0 && i % NUM_COLS == 0)
-                part3.row().padTop(colPadding);
-            part3.add(levelButtons[i]).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+                levelTable.row();
+            levelTable.add(levelButtons[i]).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
         }
-        return part3;
+
+        return scrollTable;
     }
 
     /**

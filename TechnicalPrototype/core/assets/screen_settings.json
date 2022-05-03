@@ -15,5 +15,6 @@
   "column number" : 5,
   "column padding" : 40
   },
-  "level count" : 15
+  "level count" : 22,
+  "levels per page": 11
 }

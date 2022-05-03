@@ -56,6 +56,8 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	private int currentLevel = 0;
 	/** How many levels there are */
 	public static int NUM_LEVELS;
+	/** How many levels there are per page in the level select screen */
+	public static int LEVELS_PER_PAGE;
 	/** Exit code from loading = -1 */
 	/** Exit code for quitting = 0 */
 	public static int QUIT;
@@ -180,9 +182,10 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	private void setConstants(){
 		JsonValue screenParams = directory.getEntry("screen_settings", JsonValue.class);
-		NUM_LEVELS = screenParams.getInt("level count", 9);
+		NUM_LEVELS = screenParams.getInt("level count", 22);
+		LEVELS_PER_PAGE = screenParams.getInt("level per page", 11);
 		setExitCodes(screenParams.get("exit codes"));
-		MenuMode.setConstants(screenParams.get("screen"), NUM_LEVELS);
+		MenuMode.setConstants(screenParams.get("screen"), NUM_LEVELS, LEVELS_PER_PAGE);
 		SettingsMode.setContants(screenParams.get("screen"));
 		WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
 		InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
