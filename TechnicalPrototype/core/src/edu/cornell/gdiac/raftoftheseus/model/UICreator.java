@@ -159,13 +159,13 @@ public class UICreator {
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 if (pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
-                button.setColor(Color.LIGHT_GRAY);
+                button.getLabel().setColor(Color.LIGHT_GRAY);
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
-                button.setColor(Color.WHITE);
+                button.getLabel().setColor(Color.WHITE);
             }
 
             @Override
