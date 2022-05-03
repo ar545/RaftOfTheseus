@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
@@ -18,8 +19,9 @@ import edu.cornell.gdiac.util.FilmStrip;
 public class Raft extends GameObject implements Animated {
 
     /**
+     * @param objParams the "raft" child of object settings
      * Method to set Raft parameters
-     */
+     * */
     public static void setConstants(JsonValue objParams){
         MOVE_COST = objParams.getFloat("move cost");
         WITH_CURRENT = objParams.getFloat("with current");
@@ -28,6 +30,7 @@ public class Raft extends GameObject implements Animated {
         INITIAL_PLAYER_HEALTH = objParams.getFloat("initial health");
         DAMPING = objParams.getFloat("damping");
         THRUST = objParams.getFloat("thrust");
+        MIN_SPEED = objParams.getFloat("min speed");
         MAX_SPEED = objParams.getFloat("max speed");
         OBJ_WIDTH = objParams.getFloat("width");
         OBJ_HEIGHT = objParams.getFloat("height");
@@ -35,12 +38,15 @@ public class Raft extends GameObject implements Animated {
         TEXTURE_SCALE = objParams.getFloat("texture scale");
         IDLE_AS = objParams.getFloat("idle animation speed");
         SHOOTING_AS = objParams.getFloat("shooting animation speed");
-        IDLE_F = objParams.getInt("idle frames");
-        SHOOTING_F = objParams.getInt("shooting frames");
         IDLE_SF = objParams.getInt("idle starting frame");
         SHOOTING_SF = objParams.getInt("shooting starting frame");
+        IDLE_FC = objParams.getInt("idle frames");
+        SHOOTING_FC = objParams.getInt("shooting frames");
         HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
         FORCE_DURATION = objParams.getLong("enemy bullet duration");
+        AURA_AS = objParams.getFloat("aura as");
+        AURA_SF = objParams.getInt("aura sf");
+        AURA_FC = objParams.getInt("aura fc");
     }
 
     // CONSTANTS
@@ -73,7 +79,7 @@ public class Raft extends GameObject implements Animated {
     private static float THRUST;
     /** The maximum character speed allowed */
     private static float MAX_SPEED;
-    private static float MIN_SPEED = 0.01f;
+    private static float MIN_SPEED;
     /** Cache for internal force calculations */
     private final Vector2 forceCache = new Vector2();
     private final Vector2 externalForce = new Vector2();
@@ -91,16 +97,27 @@ public class Raft extends GameObject implements Animated {
     /** The animation speed for the raft. */
     private static float IDLE_AS;
     private static float SHOOTING_AS;
-    /** The number of frames for this animation. */
-    private static int IDLE_F;
-    private static int SHOOTING_F;
     /** Which frame to start on the filmstrip with this animation. */
     private static int IDLE_SF;
     private static int SHOOTING_SF;
+    /** The number of frames for this animation. */
+    private static int IDLE_FC;
+    private static int SHOOTING_FC;
     /** The player's spear when held in inventory. */
     private Spear spear;
     /** Frame calculator for animation. */
     private FrameCalculator fc = new FrameCalculator(IDLE_SF);
+    // AURA
+    private FrameCalculator aurafc = new FrameCalculator();
+    private static float AURA_AS;
+    private static int AURA_SF;
+    private static int AURA_FC;
+    private TextureHolder attackAura;
+    private enum RaftState{
+        IDLE,
+        CHARGING,
+    }
+    private RaftState raftState = RaftState.IDLE;
 
     // METHODS
     /** Constructor for Raft object
@@ -162,26 +179,22 @@ public class Raft extends GameObject implements Animated {
         interactionSensor.update(dt);
     }
 
-    /** Returns the player movement input. */
+    /** @return the player movement input. */
     protected Vector2 getMovementInput() { return movementInput; }
-
+    /** @return whether the player is moving or not. */
     public boolean isMoving() {
         boolean isDrifting = physicsObject.getLinearVelocity().len() > MIN_SPEED;
         boolean isRowing = !movementInput.isZero();
         return isDrifting || isRowing;
     }
-
     /** Getter and setters for whether or not the player was recently damaged. */
     public boolean isDamaged() { return isDamaged; }
-
     public void setDamaged(boolean damaged) { this.isDamaged = damaged; }
-
     /** Sets the player movement input. */
     public void setMovementInput(Vector2 value) { movementInput.set(value); }
 
     /**
      * Applies the force to the body
-     *
      * This method should be called after the force attribute is set.
      */
     public void applyInputForce() {
@@ -203,6 +216,7 @@ public class Raft extends GameObject implements Animated {
             physicsObject.setLinearVelocity(physicsObject.getLinearVelocity().scl(speedRatio));
         }
     }
+
 
     private long timeStamp;
     /**
@@ -255,6 +269,8 @@ public class Raft extends GameObject implements Animated {
         if(!isCharging && !canFire && charging) {
             isCharging = true;
             addHealth(Spear.DAMAGE);
+            raftState = RaftState.CHARGING;
+            fc.resetAll();
         }
     }
     /** @return whether player is actively charging. */
@@ -269,34 +285,44 @@ public class Raft extends GameObject implements Animated {
     @Override
     public void setAnimationFrame(float dt) {
         fc.addTime(dt);
-        if(fc.getFrame() >= IDLE_SF && !isCharging){
-            fc.setFrame(IDLE_AS, IDLE_SF, IDLE_F, false);
-        } else if (fc.getFrame() >= IDLE_SF){ // && isCharging
-            fc.resetIncrement();
-            fc.resetTimeElapsed();
-            fc.setFrame(SHOOTING_SF);
-        } else if (!fc.isFrame(SHOOTING_SF, SHOOTING_F, false) && isCharging){
-            fc.setFrame(SHOOTING_AS, SHOOTING_SF, SHOOTING_F, false);
-            canFire = fc.isFrame(SHOOTING_SF, SHOOTING_F, false);
-            if(canFire) isCharging = false;
-        }  else if (fc.isFrame(SHOOTING_SF, SHOOTING_F, false)){
-            fc.setFrame(fc.getFrame() + 20);
-            fc.resetIncrement();
-            fc.resetTimeElapsed();
-        } else {
-            fc.setFrame(fc.getFrame() + 20);
-            fc.resetIncrement();
-            fc.resetTimeElapsed();
+        aurafc.addTime(dt);
+        switch (raftState){
+            case IDLE:
+                fc.setFrame(IDLE_AS, IDLE_SF, IDLE_FC, false);
+                break;
+            case CHARGING:
+                fc.setFrame(SHOOTING_AS, SHOOTING_SF, SHOOTING_FC, false);
+                canFire = fc.isFrame(SHOOTING_SF, SHOOTING_FC, false);
+                aurafc.setFrame(AURA_AS, AURA_SF, AURA_FC, false);
+                if(canFire) {
+                    isCharging = false;
+                    raftState = RaftState.IDLE;
+                    fc.resetAll();
+                    aurafc.resetAll();
+                }
         }
-        // flip texture based on movement
         flip = setTextureXOrientation(false);
     }
 
     /**
-     * Realign the raft so that the bottom of it is at the bottom of the capsule object.
+     * Set the texture for this raft and its aura.
+     * @param raft texture
+     * @param aura texture
      */
+    public void setTexture(TextureRegion raft, TextureRegion aura){
+        super.setTexture(raft);
+        attackAura = new TextureHolder(aura);
+        attackAura.setTextureScale(new Vector2(
+                getWidth() * 2/ this.attackAura.texture.getRegionWidth(),
+                getWidth() * 2/ this.attackAura.texture.getRegionHeight()));
+        attackAura.setTextureOffset(new Vector2(
+                HORIZONTAL_OFFSET,
+                (attackAura.texture.getRegionHeight() * attackAura.textureScale.y - getHeight())/2f));
+    }
+
+    /** Realign the raft so thsat the bottom of it is at the bottom of the capsule object. */
     @Override
-    protected void setTextureTransform() {
+    public void setTextureTransform() {
         float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
         textureScale = new Vector2(w, w);
         textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
@@ -310,6 +336,10 @@ public class Raft extends GameObject implements Animated {
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
+        if(raftState == RaftState.CHARGING){
+            ((FilmStrip) attackAura.texture).setFrame(aurafc.getFrame());
+            super.draw(canvas, attackAura);
+        }
     }
 
     /** @param s the newly created spear. */

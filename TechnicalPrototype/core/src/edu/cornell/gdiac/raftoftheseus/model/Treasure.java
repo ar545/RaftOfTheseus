@@ -33,7 +33,6 @@ public class Treasure extends GameObject {
     public void update(float dt) {
         super.update(dt);
         if (collected) {
-            // TODO: update player score
             this.setDestroyed(true);
         }
     }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
+import org.lwjgl.Sys;
 
 /**
  * Base class for all Model objects in the game.
@@ -142,16 +143,13 @@ public abstract class GameObject {
     }
 
 
-    /**
-     * Returns true if this object is destroyed.
-     */
+    /** Returns true if this object is destroyed. */
     public boolean isDestroyed() {
         return physicsObject.isRemoved();
     }
 
     /**
      * Sets whether this object is destroyed.
-     *
      * @param value whether this object is destroyed
      */
     public void setDestroyed(boolean value) {
@@ -160,7 +158,6 @@ public abstract class GameObject {
 
     /**
      * Draws the texture physics object.
-     *
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
@@ -169,12 +166,25 @@ public abstract class GameObject {
 
     /**
      * Draws the texture physics object.
-     *
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas, Color color) {
         if (texture != null) {
             canvas.draw(texture, color, origin.x, origin.y, getX() + textureOffset.x, getY() + textureOffset.y, getAngle(), textureScale.x, textureScale.y);
+        }
+    }
+
+    /**
+     * Drawing an additional texture for a GameObject.
+     * @param canvas drawing context
+     * @param holder the additional texture
+     * @param color the color
+     */
+    public void draw(GameCanvas canvas, TextureHolder holder) {
+        if (holder.texture != null) {
+            canvas.draw(holder.texture, holder.color, holder.origin.x, holder.origin.y,
+                    getX() + holder.textureOffset.x, getY() + holder.textureOffset.y,
+                    getAngle(), holder.textureScale.x, holder.textureScale.y);
         }
     }
 

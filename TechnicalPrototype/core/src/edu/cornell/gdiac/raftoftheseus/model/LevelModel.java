@@ -160,6 +160,7 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
     private FilmStrip raftTexture;
+    private FilmStrip raftAura;
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodTexture;
     /** Texture for wood pieces that represents double pile of logs */
@@ -760,7 +761,7 @@ public class LevelModel {
     private void addRaft(int row, int col) {
         computePosition(col, row);
         Raft this_raft = new Raft(compute_temp);
-        this_raft.setTexture(raftTexture);
+        this_raft.setTexture(raftTexture, raftAura);
         addObject(this_raft);
         raft = this_raft;
         prepareLights(this_raft);
@@ -823,6 +824,7 @@ public class LevelModel {
     /** This gather the assets required for initializing the objects. Should be called after directory is set. */
     public void gatherAssets() {
         raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 8, 5, 40);// TODO: use data-driven design for rows/cols/size
+        raftAura = new FilmStrip(directory.getEntry("raft_aura", Texture.class), 2, 5);
         woodTexture = new TextureRegion(directory.getEntry("wood", Texture.class));
         doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
@@ -1113,7 +1115,7 @@ public class LevelModel {
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
-        drawReticle();
+//        drawReticle();
         canvas.end();
 
         setLightAndCircle(playerPosOnScreen);

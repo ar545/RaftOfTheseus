@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model.projectile;
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.JsonValue;
@@ -18,10 +19,12 @@ public class Spear extends Projectile implements Animated {
         SPEED = objParams.getFloat("speed scale");
         DAMAGE = objParams.getFloat("health cost");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
+        TEXTURE_XO = objParams.getFloat("texture x offset");
+        TEXTURE_YO = objParams.getFloat("texture y offset");
         LENGTH = objParams.getFloat("body length");
         WIDTH = objParams.getFloat("body width");
-        SPEAR_XO = objParams.getFloat("x offset");
-        SPEAR_YO = objParams.getFloat("y offset");
+        SPEAR_XO = objParams.getFloat("raft x offset");
+        SPEAR_YO = objParams.getFloat("raft y offset");
         ANGLE = objParams.getFloat("angle");
         RANGE_FLY = objParams.getInt("range fly");
         RANGE_FALL = objParams.getInt("range fall");
@@ -29,13 +32,13 @@ public class Spear extends Projectile implements Animated {
         FLOAT_SPEED = objParams.getFloat("float speed");
         IDLE_AS = objParams.getFloat("idle as");
         IDLE_SF = objParams.getInt("idle sf");
-        IDLE_FN = objParams.getInt("idle fn");
+        IDLE_FC = objParams.getInt("idle fc");
         FIRED_AS = objParams.getFloat("fired as");
         FIRED_SF = objParams.getInt("fired sf");
-        FIRED_FN = objParams.getInt("fired fn");
+        FIRED_FC = objParams.getInt("fired fc");
         DEST_AS = objParams.getFloat("dest as");
         DEST_SF = objParams.getInt("dest sf");
-        DEST_FN = objParams.getInt("dest fn");
+        DEST_FC = objParams.getInt("dest fc");
     }
 
     // SPEAR
@@ -44,6 +47,8 @@ public class Spear extends Projectile implements Animated {
     public static float DAMAGE;
     /** Size of a spear. */
     public static float TEXTURE_SCALE;
+    private static float TEXTURE_XO;
+    private static float TEXTURE_YO;
     private static float LENGTH;
     private static float WIDTH;
     /** Range of a spear. */
@@ -58,13 +63,13 @@ public class Spear extends Projectile implements Animated {
     // Animation
     private static float IDLE_AS;
     private static int IDLE_SF;
-    private static int IDLE_FN;
+    private static int IDLE_FC;
     private static float FIRED_AS;
     private static int FIRED_SF;
-    private static int FIRED_FN;
+    private static int FIRED_FC;
     private static float DEST_AS;
     private static int DEST_SF;
-    private static int DEST_FN;
+    private static int DEST_FC;
     private FrameCalculator fc = new FrameCalculator();
 
     /** Spear state. */
@@ -121,10 +126,10 @@ public class Spear extends Projectile implements Animated {
         if(isFired()) super.update(delta, RANGE_FLY);
     }
     /** @return whether this spear is set to be destroyed. */
-    public boolean outMaxDistance(){ return isFired() && outMaxDistance(RANGE_FALL); }
+    public boolean outMaxDistance(){ return isFired() && outMaxDistance(RANGE_FALL) && isFired(); }
     /** Deactivate the interactions of this spear before destruction. */
     public void deactivate(){
-        setBody(Vector2.Zero);
+        getBody().setLinearVelocity(0, 0);
         Filter f = physicsObject.getFilterData();
         f.categoryBits = 0;
         f.maskBits = 0;
@@ -135,6 +140,13 @@ public class Spear extends Projectile implements Animated {
     public boolean isToDestroy(){ return toDestroy && spearState == SpearState.DESTROYED; }
 
     // ANIMATION
+
+    @Override
+    public void setTexture(TextureRegion value){
+        texture = value;
+        origin.set(texture.getRegionWidth()/2.0f + TEXTURE_XO, texture.getRegionHeight()/2.0f + TEXTURE_YO);
+        setTextureTransform();
+    }
 
     /** Set Spear to stretch slightly larger than its hitbox. */
     @Override
@@ -162,17 +174,17 @@ public class Spear extends Projectile implements Animated {
         fc.addTime(dt);
         switch (spearState){
             case IDLE:
-                fc.setFrame(IDLE_AS, IDLE_SF, IDLE_FN, false);
+                fc.setFrame(IDLE_AS, IDLE_SF, IDLE_FC, false);
                 break;
             case FIRED:
-                fc.setFrame(FIRED_AS, FIRED_SF, FIRED_FN, false);
+                fc.setFrame(FIRED_AS, FIRED_SF, FIRED_FC, false);
                 break;
             case DESTROYED:
-                if(fc.isFrame(DEST_SF, DEST_FN, false)){
+                if(fc.isFrame(DEST_SF, DEST_FC, false)){
                     toDestroy = true;
                     return;
                 }
-                fc.setFrame(DEST_AS, DEST_SF, DEST_FN, false);
+                fc.setFrame(DEST_AS, DEST_SF, DEST_FC, false);
                 break;
         }
     }
