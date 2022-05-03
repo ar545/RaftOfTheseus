@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.raftoftheseus.model;
+package edu.cornell.gdiac.raftoftheseus.model.util;
 
 public interface Animated {
 

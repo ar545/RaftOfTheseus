@@ -37,8 +37,8 @@
 		"name": "Level 4",
 		"level": 4,
 		"path": "levels/level4.png",
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": false
 	},
 	{
@@ -47,7 +47,7 @@
 		"path": "levels/level5.png",
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 6",
@@ -93,8 +93,8 @@
 		"name": "Level 11",
 		"level": 11,
 		"path": "levels/level11.png",
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 2,
 		"unlocked": false
 	},
 	{
@@ -103,7 +103,7 @@
 		"path": "levels/level12.png",
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 13",

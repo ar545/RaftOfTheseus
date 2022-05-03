@@ -6,8 +6,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.util.TextureHolder;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
-import org.lwjgl.Sys;
 
 /**
  * Base class for all Model objects in the game.

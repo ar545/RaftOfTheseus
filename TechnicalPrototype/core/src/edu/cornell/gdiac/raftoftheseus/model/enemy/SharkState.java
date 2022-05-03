@@ -29,8 +29,8 @@ public enum SharkState implements State<Shark> {
         @Override
         public void update(Shark entity) {
             entity.setDesiredVelocity(0, true);
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Shark.ATTACK_WINDUP_TIME)){
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Shark.ATTACK_WINDUP_TIME, true)){
                 entity.getStateMachine().changeState(ATTACK);
             }
         }
@@ -39,7 +39,6 @@ public enum SharkState implements State<Shark> {
         @Override
         public void update(Shark entity) {
             entity.setDesiredVelocity(Shark.ATTACK_SPEED, false); // shark doesn't change direction mid-charge
-            entity.setTimeStamp();
             if(entity.isDoneWithAttackAnimation()) {
                 entity.getStateMachine().changeState(PAUSE_AFTER_ATTACK);
             }
@@ -49,8 +48,8 @@ public enum SharkState implements State<Shark> {
         @Override
         public void update(Shark entity) {
             entity.setDesiredVelocity(0, false);
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Shark.ATTACK_COOLDOWN_TIME)){
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Shark.ATTACK_COOLDOWN_TIME, true)){
                 entity.getStateMachine().changeState(IDLE);
             }
         }
@@ -59,8 +58,8 @@ public enum SharkState implements State<Shark> {
         @Override
         public void update(Shark entity) {
             entity.setDesiredVelocity(0, false);
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Shark.STUN_TIME)){
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Shark.STUN_TIME, true)){
                 entity.getStateMachine().changeState(IDLE);
             }
         }
@@ -80,7 +79,6 @@ public enum SharkState implements State<Shark> {
 
     @Override
     public void exit(Shark entity) {
-        entity.resetTimeStamp();
         entity.getFrameCalculator().resetIncrement();
         entity.getFrameCalculator().resetTimeElapsed();
     }

@@ -8,6 +8,9 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
+import edu.cornell.gdiac.raftoftheseus.model.util.Animated;
+import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
+import edu.cornell.gdiac.raftoftheseus.model.util.TextureHolder;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -219,10 +222,7 @@ public class Raft extends GameObject implements Animated {
 
 
     private long timeStamp;
-    /**
-     * Apply projectile force
-     * @param force the force applied
-     */
+    /** @param force the force applied to player over a period of time. */
     public void setProjectileForce(Vector2 force){
         externalForce.set(force);
         timeStamp = TimeUtils.millis();

@@ -13,7 +13,7 @@ public enum HydraState implements State<Hydra> {
     ACTIVE(){
         @Override
         public void update(Hydra entity) {
-            entity.setTimeStamp();
+            entity.stateTimer.setTimeStamp();
             if (!entity.inRange(Hydra.FIRING_RANGE) || !entity.canSee()) entity.getStateMachine().changeState(IDLE);
 //            else if(entity.canFire()){
 //                entity.resetTimeStamp();
@@ -32,7 +32,7 @@ public enum HydraState implements State<Hydra> {
         public void update(Hydra entity) {
             if (entity.hasFired()){
                 entity.resetHasFired();
-                entity.resetTimeStamp();
+                entity.stateTimer.resetTimeStamp();
                 entity.getStateMachine().changeState(ACTIVE);
             }
         }
@@ -40,9 +40,8 @@ public enum HydraState implements State<Hydra> {
     STUNNED(){
         @Override
         public void update(Hydra entity) {
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Hydra.STUN_TIME)){
-                entity.resetTimeStamp();
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Hydra.STUN_TIME, true)){
                 entity.getStateMachine().changeState(ACTIVE);
             }
         }

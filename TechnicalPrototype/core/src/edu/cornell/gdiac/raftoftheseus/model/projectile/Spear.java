@@ -5,8 +5,8 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
-import edu.cornell.gdiac.raftoftheseus.model.Animated;
-import edu.cornell.gdiac.raftoftheseus.model.FrameCalculator;
+import edu.cornell.gdiac.raftoftheseus.model.util.Animated;
+import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
