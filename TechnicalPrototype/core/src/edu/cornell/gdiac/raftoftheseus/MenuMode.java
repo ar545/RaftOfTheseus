@@ -112,6 +112,7 @@ public class MenuMode implements Screen {
         active = true;
         isLevelPressed = false;
         selectedLevel = 0;
+        currentPage = 0;
         settingsPressed = false;
         playPressed = false;
         currentScreen = MenuScreen.TITLE;
@@ -135,6 +136,8 @@ public class MenuMode implements Screen {
 
     // BUTTON INITIALIZATION
     private TextButton backButton;
+    private TextButton nextPageButton;
+    private TextButton prevPageButton;
     private Table backTable;
     private Array<TextButton> titleButtons = new Array<>();
     private Array<Table> levelTables = new Array<>();
@@ -159,6 +162,12 @@ public class MenuMode implements Screen {
         backButton = UICreator.createTextButton("BACK", skin, Color.GOLD);
         backButton.addListener(UICreator.createListener(backButton, Color.GRAY, Color.GOLD,
                 "button_enter", "button_click", this::changeScreenTo, MenuScreen.TITLE));
+
+        nextPageButton = UICreator.createTextButton("NEXT", skin, Color.WHITE);
+        nextPageButton.addListener(UICreator.createListener(nextPageButton, Color.GRAY, Color.WHITE, this::scrollPage));
+
+        prevPageButton = UICreator.createTextButton("BACK", skin, Color.WHITE);
+        prevPageButton.addListener(UICreator.createListener(prevPageButton, Color.GRAY, Color.WHITE, this::scrollPage));
 
         backTable = new Table();
         backTable.add(backButton).expandX().align(Align.left).padRight(1500).padTop(10);
@@ -339,8 +348,8 @@ public class MenuMode implements Screen {
                     menuTable.row();
                 }
                 scrollPane = new ScrollPane(addLevelIslands());
-                scrollPane.setFlickScroll(true);
-                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.7f).padTop(-40);
+                scrollPane.setFlickScroll(false);
+                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.7f).padTop(-50);
                 menuTable.row();
                 break;
             case CREDITS:
@@ -357,13 +366,27 @@ public class MenuMode implements Screen {
 
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
+        // TODO - redo this to just have 0 - 9 and recalculate with + 10 for every page other than the first page
+        // page * index -> page 0 * 0 = 0, page 0  * levels per page + number 1 = 1,
+        // formula: page * levels per page + number
         int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
-        int[] buttonPadding = new int[NUM_LEVELS];
-        int padding = (int) stage.getWidth() / 15;
+        int padding = 170;
+        int[][] buttonPadding = new int[][] {
+                new int[] {0, 3},
+                new int[] {1, 2},
+                new int[] {2, 1},
+                new int[] {1, 2},
+                new int[] {2, 0},
+                new int[] {0, 4},
+                new int[] {0, 3},
+                new int[] {1, 2},
+                new int[] {2, 1},
+                new int[] {3, 0},
+        };
         for (int i = 0; i < buttonPadding.length; i++) {
-            buttonPadding[i] = padding * i;
+            buttonPadding[i][0] = buttonPadding[i][0] * padding;
+            buttonPadding[i][1] = buttonPadding[i][1] * padding;
         }
-        System.out.println(Arrays.toString(buttonPadding));
         Table scrollTable = new Table();
         Table pageTable = new Table();
         Table levelTable = new Table();
@@ -374,13 +397,15 @@ public class MenuMode implements Screen {
             levelNumber = levelCounts[i];
             if (i % LEVELS_PER_PAGE == 0) {
                 // one entire page has been completed
+                System.out.println("here i am ");
                 levelTable = new Table();
                 levelTable.align(Align.left);
+                System.out.println("here is 19: " + i);
+                System.out.println("here it is: " + (LEVEL_COUNT + 1));
                 pageTable.add(levelTable).width(stage.getWidth());
                 if (i > 0) {
                     // if it is not the first page
-                    scrollTable.add(pageTable);
-                    pageTable = new Table();
+                    scrollTable.add(pageTable).padLeft(100).padRight(-100);
                 }
             }
             // Create and add textbuttons to screen. Must update each pass to update star displays.
@@ -392,13 +417,35 @@ public class MenuMode implements Screen {
             levelButtons[levelNumber].addListener(UICreator.createListener(levelButtons[levelNumber], canPlay, this::selectlevel, levelNumber));
             //Add button to table
             if (i > 0 && i % NUM_COLS == 0)
-                levelTable.row().width(stage.getWidth()).padTop(-45);
+                levelTable.row().width(stage.getWidth()).padTop(-80);
+            int buttonPaddingLeft = buttonPadding[levelNumber % LEVELS_PER_PAGE][0];
+            int buttonPaddingRight = buttonPadding[levelNumber % LEVELS_PER_PAGE][1];
+            levelTable.add(levelButtons[levelNumber]).size(200).padLeft(buttonPaddingLeft).padRight(buttonPaddingRight);
 
-            int levelPosition = levelNumber % LEVELS_PER_PAGE;
-            levelTable.add(levelButtons[levelNumber]).size(170).padLeft(buttonPadding[levelPosition % 5]).padRight(levelNumber > 5 ? -60 : 0);
+            if ((i + 1) % LEVELS_PER_PAGE == 0) {
+                levelTable.row().padTop(-80);
+                if (i > LEVELS_PER_PAGE) {
+                    levelTable.add(prevPageButton).padTop(-30).padRight(600);
+                    levelTable.add(new Label("", skin)).padTop(-30);
+                } else {
+                    levelTable.add(new Label("", skin)).padTop(-100);
+                    levelTable.add(nextPageButton).padTop(-100).padLeft(500);
+                }
+                levelTable.row();
+            }
         }
 
         return scrollTable;
+    }
+
+    /**
+     * Scrolls to the appropriate page
+     * */
+    private void scrollPage() {
+        float pageWidth = stage.getWidth() * 0.7f;
+        currentPage = currentPage == 0 ? 2 : 0;
+        System.out.println(currentPage);
+        scrollPane.scrollTo(currentPage * pageWidth, scrollPane.getHeight(), pageWidth, scrollPane.getHeight());
     }
 
     /**
