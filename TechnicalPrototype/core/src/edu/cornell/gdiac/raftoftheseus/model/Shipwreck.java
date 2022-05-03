@@ -100,7 +100,14 @@ public class Shipwreck extends GameObject{
 
     @Override
     public void draw(GameCanvas canvas){
-        ((FilmStrip) texture).setFrame((FRAME_COUNT - 1) - (health - 1));
+        switch(health){
+            case 2:
+                ((FilmStrip) texture).setFrame(0);
+                break;
+            case 1:
+                ((FilmStrip) texture).setFrame(2);
+                break;
+        }
         super.draw(canvas);
     }
 }

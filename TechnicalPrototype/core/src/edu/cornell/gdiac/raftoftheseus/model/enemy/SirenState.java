@@ -74,7 +74,6 @@ public enum SirenState implements State<Siren> {
 
     @Override
     public void enter(Siren entity) {
-
     }
 
     @Override

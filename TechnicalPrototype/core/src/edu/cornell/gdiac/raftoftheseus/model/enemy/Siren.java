@@ -252,6 +252,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     }
 
     // Stunned
+    @Override
     public boolean setHit(){
         if (stateMachine.isInState(SirenState.SINGING) || stateMachine.isInState(SirenState.IDLE)){
             stateMachine.changeState(SirenState.STUNNED);
