@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.model.Animated;
 import edu.cornell.gdiac.raftoftheseus.model.FrameCalculator;
@@ -277,19 +276,19 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
 //        System.out.println(stateMachine.getCurrentState());
         switch(stateMachine.getCurrentState()){
             case IDLE:
-                fc.setFrame(IDLE_AS, IDLE_FRAMES, IDLE_SF, false);
+                fc.setFrame(IDLE_AS, IDLE_SF, IDLE_FRAMES, false);
                 break;
             case SINGING:
-                fc.setFrame(SINGING_AS, SINGING_FRAMES, SINGING_SF, false);
+                fc.setFrame(SINGING_AS, SINGING_SF, SINGING_FRAMES, false);
                 break;
             case LANDING:
-                setAnimationDone(fc.setFrame(LANDING_AS, LANDING_FRAMES, LANDING_SF, true));
+                setAnimationDone(fc.setFrame(LANDING_AS, LANDING_SF, LANDING_FRAMES, true));
                 break;
             case TAKEOFF:
-                setAnimationDone(fc.setFrame(TAKE_OFF_AS, TAKE_OFF_FRAMES, TAKE_OFF_SF, false));
+                setAnimationDone(fc.setFrame(TAKE_OFF_AS, TAKE_OFF_SF, TAKE_OFF_FRAMES, false));
                 break;
             case FLYING:
-                fc.setFrame(FLYING_AS, FLYING_FRAMES, FLYING_SF, true);
+                fc.setFrame(FLYING_AS, FLYING_SF, FLYING_FRAMES, true);
                 break;
             case STUNNED:
                 fc.setFrame(SINGING_SF);

@@ -33,19 +33,25 @@ public class FrameCalculator {
     public void resetTimeElapsed(){ timeElapsed = 0; }
     /**@param dt the time change in seconds to be added. */
     public void addTime(float dt){ timeElapsed += dt; }
-    /** Method to reset flash boolean to ensure Siren always turns red first when hit. */
+    /** @return whether this animation should flash */
     public boolean getFlash(){ return flash; }
+    /** @param flash whether this animation should be flashing or not. */
     public void setFlash(boolean flash){ this.flash = flash; }
+    /** Method to reset timeelapsed and increment. */
+    public void resetAll(){
+        resetIncrement();
+        resetTimeElapsed();
+    }
 
     /**
      * Sets the frame of the animation based on the FSM and time given.
      * @param animationSpeed how many seconds should pass between each frame.
-     * @param frames the number of frames this animation has.
      * @param start which frame in the FilmStrip the animation starts on.
+     * @param frames the number of frames this animation has.
      * @param reverse whether the animation should be drawn backwards.
      * @return whether it has reached the last animation image.
      */
-    public boolean setFrame(float animationSpeed, int frames, int start, boolean reverse){
+    public boolean setFrame(float animationSpeed, int start, int frames, boolean reverse){
         if (timeElapsed > animationSpeed){
             resetTimeElapsed();
             increment += 1;
@@ -56,12 +62,12 @@ public class FrameCalculator {
 
     /**
      * Checks whether the current frame is the starting or ending frame.
-     * @param frames the amount of frames for the given animation.
      * @param start the starting index.
+     * @param frames the amount of frames for the given animation.
      * @param beginning whether to check for the starting or ending index.
      * @return whether the current frame is the start or end frame.
      */
-    public boolean isFrame(int frames, int start, boolean beginning){
+    public boolean isFrame(int start, int frames, boolean beginning){
         return beginning ? frame == start : frame == frames - 1 + start;
     }
 

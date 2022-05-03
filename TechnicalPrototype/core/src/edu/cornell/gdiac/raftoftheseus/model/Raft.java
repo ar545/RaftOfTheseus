@@ -270,16 +270,16 @@ public class Raft extends GameObject implements Animated {
     public void setAnimationFrame(float dt) {
         fc.addTime(dt);
         if(fc.getFrame() >= IDLE_SF && !isCharging){
-            fc.setFrame(IDLE_AS, IDLE_F, IDLE_SF, false);
+            fc.setFrame(IDLE_AS, IDLE_SF, IDLE_F, false);
         } else if (fc.getFrame() >= IDLE_SF){ // && isCharging
             fc.resetIncrement();
             fc.resetTimeElapsed();
             fc.setFrame(SHOOTING_SF);
-        } else if (!fc.isFrame(SHOOTING_F, SHOOTING_SF, false) && isCharging){
-            fc.setFrame(SHOOTING_AS, SHOOTING_F, SHOOTING_SF, false);
-            canFire = fc.isFrame(SHOOTING_F, SHOOTING_SF, false);
+        } else if (!fc.isFrame(SHOOTING_SF, SHOOTING_F, false) && isCharging){
+            fc.setFrame(SHOOTING_AS, SHOOTING_SF, SHOOTING_F, false);
+            canFire = fc.isFrame(SHOOTING_SF, SHOOTING_F, false);
             if(canFire) isCharging = false;
-        }  else if (fc.isFrame(SHOOTING_F, SHOOTING_SF, false)){
+        }  else if (fc.isFrame(SHOOTING_SF, SHOOTING_F, false)){
             fc.setFrame(fc.getFrame() + 20);
             fc.resetIncrement();
             fc.resetTimeElapsed();

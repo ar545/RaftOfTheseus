@@ -34,7 +34,7 @@
       "sharp_rock": "images/Spiky_Rock.png",
       "treasure":     "images/Chest.png",
       "target":     "images/Obj_Island_threequarters.png",
-      "spear": "images/Obj_Spear_Aerial.png",
+      "spear": "images/Obj_Spear.png",
       "note" : "images/Obj_MusicNote.png",
       "current": "images/current_square.png",
       "enemy":     "images/Obj_Shark_Combine.png",

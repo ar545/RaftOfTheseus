@@ -8,7 +8,6 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.model.*;
-import edu.cornell.gdiac.raftoftheseus.model.enemy.EnemyRayCast;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -207,18 +206,18 @@ public class Shark extends GameObject implements Animated {
             case PAUSE_AFTER_ATTACK:
             case DYING:
                 fc.setFlash(false);
-                fc.setFrame(SWIM_AS, SWIM_FRAMES, SWIM_SF, false);
+                fc.setFrame(SWIM_AS, SWIM_SF, SWIM_FRAMES, false);
                 break;
             case ATTACK:
                 fc.setFlash(false);
-                fc.setFrame(BITE_AS, BITE_FRAMES, BITE_SF, false);
+                fc.setFrame(BITE_AS, BITE_SF, BITE_FRAMES, false);
                 break;
         }
         setTextureXOrientation(false);
     }
 
     public boolean isDoneWithAttackAnimation() {
-        return stateMachine.isInState(SharkState.ATTACK) && fc.isFrame(BITE_FRAMES, BITE_SF, false);
+        return stateMachine.isInState(SharkState.ATTACK) && fc.isFrame(BITE_SF, BITE_FRAMES, false);
     }
 
     /**

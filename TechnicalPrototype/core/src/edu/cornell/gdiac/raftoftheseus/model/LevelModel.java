@@ -181,7 +181,7 @@ public class LevelModel {
     /** Texture for the Sirens */
     private FilmStrip sirenTexture;
     /** Texture for spear */
-    private TextureRegion spearTexture;
+    private FilmStrip spearTexture;
     /** Texture for note */
     private TextureRegion noteTexture;
     /** Texture for map background */
@@ -834,7 +834,7 @@ public class LevelModel {
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 5);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
-        spearTexture = new TextureRegion(directory.getEntry("spear", Texture.class));
+        spearTexture = new FilmStrip(directory.getEntry("spear", Texture.class), 5, 5);
         noteTexture = new TextureRegion(directory.getEntry("note", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
 //        blueTexture = directory.getEntry("blue_texture", Texture.class);
@@ -1066,8 +1066,11 @@ public class LevelModel {
      * @param s the spear to check for in range */
     public boolean checkProjectile(Spear s){
         if(s.outMaxDistance()){
-           s.setDestroyed(true);
-           return true;
+            s.deactivate();
+            return true;
+        } else if (s.isToDestroy()){
+            s.setDestroyed(true);
+            return false;
         }
         return false;
     }

@@ -27,6 +27,15 @@ public class Spear extends Projectile implements Animated {
         RANGE_FALL = objParams.getInt("range fall");
         FLOAT_RANGE = objParams.getFloat("float range");
         FLOAT_SPEED = objParams.getFloat("float speed");
+        IDLE_AS = objParams.getFloat("idle as");
+        IDLE_SF = objParams.getInt("idle sf");
+        IDLE_FN = objParams.getInt("idle fn");
+        FIRED_AS = objParams.getFloat("fired as");
+        FIRED_SF = objParams.getInt("fired sf");
+        FIRED_FN = objParams.getInt("fired fn");
+        DEST_AS = objParams.getFloat("dest as");
+        DEST_SF = objParams.getInt("dest sf");
+        DEST_FN = objParams.getInt("dest fn");
     }
 
     // SPEAR
@@ -45,10 +54,27 @@ public class Spear extends Projectile implements Animated {
     private static float ANGLE;
     private static float FLOAT_RANGE;
     private static float FLOAT_SPEED;
-    /** Whether it has been fired. */
-    private boolean fired = false;
+
+    // Animation
+    private static float IDLE_AS;
+    private static int IDLE_SF;
+    private static int IDLE_FN;
+    private static float FIRED_AS;
+    private static int FIRED_SF;
+    private static int FIRED_FN;
+    private static float DEST_AS;
+    private static int DEST_SF;
+    private static int DEST_FN;
     private FrameCalculator fc = new FrameCalculator();
 
+    /** Spear state. */
+    private enum SpearState{
+        IDLE,
+        FIRED,
+        DESTROYED
+    }
+    private SpearState spearState = SpearState.IDLE;
+    private boolean toDestroy;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE *=*=*=*=*=*=*=*=*=*/
     @Override
@@ -70,13 +96,52 @@ public class Spear extends Projectile implements Animated {
         setAngle(ANGLE);
     }
 
+    // STATE CHANGES
+
+    /**
+     * Detach the spear from the raft
+     * @param dir which way the spear will head
+     * @param raft_speed the rafts current speed
+     */
     public void fire(Vector2 dir, Vector2 raft_speed){
-        fired = true;
+        spearState = SpearState.FIRED;
         Filter f = physicsObject.getFilterData();
         f.maskBits = MASK_PLAYER_BULLET;
         physicsObject.setFilterData(f);
         setAngle(dir.angleDeg()-90f);
         setBody(dir.scl(SPEED).mulAdd(raft_speed, 0.5f));
+        fc.resetAll();
+    }
+
+    /** @return whether spear is fire state or not. */
+    private boolean isFired(){ return spearState == SpearState.FIRED; }
+    /** Applying drag to slow the projectile down. Depends on how far the spear has traveled. */
+    @Override
+    public void update(float delta) {
+        if(isFired()) super.update(delta, RANGE_FLY);
+    }
+    /** @return whether this spear is set to be destroyed. */
+    public boolean outMaxDistance(){ return isFired() && outMaxDistance(RANGE_FALL); }
+    /** Deactivate the interactions of this spear before destruction. */
+    public void deactivate(){
+        setBody(Vector2.Zero);
+        Filter f = physicsObject.getFilterData();
+        f.categoryBits = 0;
+        f.maskBits = 0;
+        spearState = SpearState.DESTROYED;
+        fc.resetAll();
+    }
+    /** @return whether the death animation of the spear has finished. */
+    public boolean isToDestroy(){ return toDestroy && spearState == SpearState.DESTROYED; }
+
+    // ANIMATION
+
+    /** Set Spear to stretch slightly larger than its hitbox. */
+    @Override
+    protected void setTextureTransform() {
+        float h = TEXTURE_SCALE / texture.getRegionHeight();
+        textureScale = new Vector2(h, h);
+        textureOffset = new Vector2(0, 0);
     }
 
     /**
@@ -90,34 +155,27 @@ public class Spear extends Projectile implements Animated {
         setAngle(dir.sub(getPosition()).rotateDeg(-90f).angleDeg());
     }
 
-    /**
-     * Set Spear to stretch slightly larger than its hitbox.
-     */
-    @Override
-    protected void setTextureTransform() {
-        float h = TEXTURE_SCALE / texture.getRegionHeight();
-        textureScale = new Vector2(h, h);
-        textureOffset = new Vector2(0, 0);
-    }
-
-    /**
-     * Applying drag to slow the projectile down. Depends on how far the spear has traveled.
-     */
-    @Override
-    public void update(float delta) {
-        if(fired) super.update(delta, RANGE_FLY);
-    }
-
-    /** @return whether this spear is set to be destroyed. */
-    public boolean outMaxDistance(){
-        return fired && outMaxDistance(RANGE_FALL);
-    }
-
     @Override
     public FrameCalculator getFrameCalculator(){ return fc; }
-
     @Override
-    public void setAnimationFrame(float dt) {}
+    public void setAnimationFrame(float dt) {
+        fc.addTime(dt);
+        switch (spearState){
+            case IDLE:
+                fc.setFrame(IDLE_AS, IDLE_SF, IDLE_FN, false);
+                break;
+            case FIRED:
+                fc.setFrame(FIRED_AS, FIRED_SF, FIRED_FN, false);
+                break;
+            case DESTROYED:
+                if(fc.isFrame(DEST_SF, DEST_FN, false)){
+                    toDestroy = true;
+                    return;
+                }
+                fc.setFrame(DEST_AS, DEST_SF, DEST_FN, false);
+                break;
+        }
+    }
 
     /**
      * Set the appropriate image frame first before drawing the Siren.
@@ -125,7 +183,7 @@ public class Spear extends Projectile implements Animated {
      */
     @Override
     public void draw(GameCanvas canvas){
-//        ((FilmStrip) texture).setFrame(frame);
+        ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
     }
 }

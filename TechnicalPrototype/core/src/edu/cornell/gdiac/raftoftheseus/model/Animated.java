@@ -7,8 +7,6 @@ public interface Animated {
      */
     void setAnimationFrame(float dt);
 
-    /**
-     * @return this animated object's framecalculator
-     */
+    /** @return this animated object's framecalculator */
     FrameCalculator getFrameCalculator();
 }
