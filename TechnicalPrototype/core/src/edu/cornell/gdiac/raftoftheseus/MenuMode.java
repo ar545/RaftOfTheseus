@@ -15,8 +15,12 @@ import com.badlogic.gdx.utils.Align;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.util.ScreenListener;
+import org.lwjgl.Sys;
+
+import java.util.Arrays;
 
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
+import static edu.cornell.gdiac.raftoftheseus.GDXRoot.NUM_LEVELS;
 
 /**
  * Class that provides the menu screen for the state of the game.
@@ -36,6 +40,7 @@ public class MenuMode implements Screen {
     // https://stackoverflow.com/questions/31794636/clickable-buttons-using-libgdx
     private Stage stage;
     private Skin skin;
+    private ScrollPane scrollPane;
     /** Background texture for menu */
     private Texture menuBackground;
     /** Background texture for credits */
@@ -52,12 +57,13 @@ public class MenuMode implements Screen {
     private static JsonValue saveData;
 
     /** Loads constants from screen */
-    public static void setConstants(JsonValue objParams, int numLevels){
+    public static void setConstants(JsonValue objParams, int numLevels, int levelsPerPage){
         STANDARD_WIDTH = objParams.getInt(0);
         STANDARD_HEIGHT = objParams.getInt(1);
         NUM_COLS = objParams.getInt(2);
         colPadding = objParams.getInt("column padding", 25);
         LEVEL_COUNT = numLevels;
+        LEVELS_PER_PAGE = levelsPerPage;
     }
 
     /** Standard window size (for scaling) */
@@ -85,6 +91,10 @@ public class MenuMode implements Screen {
     private boolean active;
     /** Level count **/
     private static int LEVEL_COUNT;
+    /** Number of levels per page */
+    private static int LEVELS_PER_PAGE;
+    /** Current page */
+    private int currentPage;
     /** Whether the play button was pressed on the main menu */
     private boolean playPressed;
     /** Whether the settings button was pressed on the main menu */
@@ -102,6 +112,7 @@ public class MenuMode implements Screen {
         active = true;
         isLevelPressed = false;
         selectedLevel = 0;
+        currentPage = 0;
         settingsPressed = false;
         playPressed = false;
         currentScreen = MenuScreen.TITLE;
@@ -124,9 +135,11 @@ public class MenuMode implements Screen {
     }
 
     // BUTTON INITIALIZATION
-
     private TextButton backButton;
+    private TextButton nextPageButton;
+    private TextButton prevPageButton;
     private Table backTable;
+    private Table scrollButtonTable;
     private Array<TextButton> titleButtons = new Array<>();
     private Array<Table> levelTables = new Array<>();
     private TextureRegionDrawable[] buttonDrawables = new TextureRegionDrawable[4];
@@ -147,9 +160,18 @@ public class MenuMode implements Screen {
      * Creates all necessary buttons for the menu screen.
      */
     private void initMenuButtons(){
-        backButton = UICreator.createTextButton("BACK", skin, Color.GOLD);
-        backButton.addListener(UICreator.createListener(backButton, Color.GRAY, Color.GOLD,
+        backButton = UICreator.createTextButton("BACK", skin, Color.WHITE);
+        backButton.addListener(UICreator.createListener(backButton, Color.GOLD, Color.WHITE,
                 "button_enter", "button_click", this::changeScreenTo, MenuScreen.TITLE));
+
+        nextPageButton = UICreator.createTextButton("NEXT", skin, Color.WHITE);
+        nextPageButton.addListener(UICreator.createListener(nextPageButton, Color.GOLD, Color.WHITE, this::scrollPage));
+
+        prevPageButton = UICreator.createTextButton("PREV", skin, Color.WHITE);
+        prevPageButton.addListener(UICreator.createListener(prevPageButton, Color.GOLD, Color.WHITE, this::scrollPage));
+
+        nextPageButton.setVisible(currentPage == 0);
+        prevPageButton.setVisible(currentPage == 2);
 
         backTable = new Table();
         backTable.add(backButton).expandX().align(Align.left).padRight(1500).padTop(10);
@@ -172,7 +194,7 @@ public class MenuMode implements Screen {
     private void initLevelTables(){
         Table part2 = new Table();
         part2.row();
-        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, 0.6f)).expandX().align(Align.center);
+        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, 0.85f)).expandX().align(Align.center).padTop(-50);
         levelTables.add(backTable, part2);
 
         // Button styles
@@ -224,7 +246,7 @@ public class MenuMode implements Screen {
         }
 
         tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
-        tb3.add(part3R).expandX().align(Align.center).padTop(-50);
+        tb3.add(part3R).expandX().align(Align.center).padTop(-180);
         creditTables.add(backTable, tb2, tb3);
     }
 
@@ -329,7 +351,15 @@ public class MenuMode implements Screen {
                     menuTable.add(t);
                     menuTable.row();
                 }
-                menuTable.add(addLevelIslands());
+                scrollPane = new ScrollPane(addLevelIslands());
+                scrollPane.setFlickScroll(false);
+                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.7f).padTop(-100);
+                scrollButtonTable = new Table();
+                scrollButtonTable.add(prevPageButton).padRight(stage.getWidth() / 2 - 200);
+                scrollButtonTable.add(nextPageButton).padLeft(stage.getWidth() / 2 - 200);
+                scrollButtonTable.align(Align.center);
+                menuTable.row();
+                menuTable.add(scrollButtonTable).padTop(-50);
                 menuTable.row();
                 break;
             case CREDITS:
@@ -346,22 +376,74 @@ public class MenuMode implements Screen {
 
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
-        Table part3 = new Table();
+        // TODO - redo this to just have 0 - 9 and recalculate with + 10 for every page other than the first page
+        // page * index -> page 0 * 0 = 0, page 0  * levels per page + number 1 = 1,
+        // formula: page * levels per page + number
+        int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
+        int padding = 170;
+        int[][] buttonPadding = new int[][] {
+                new int[] {0, 3},
+                new int[] {1, 2},
+                new int[] {2, 1},
+                new int[] {1, 2},
+                new int[] {2, 0},
+                new int[] {0, 4},
+                new int[] {0, 3},
+                new int[] {1, 2},
+                new int[] {2, 1},
+                new int[] {3, 0},
+        };
+        for (int i = 0; i < buttonPadding.length; i++) {
+            buttonPadding[i][0] = buttonPadding[i][0] * padding;
+            buttonPadding[i][1] = buttonPadding[i][1] * padding;
+        }
+        Table scrollTable = new Table();
+        Table pageTable = new Table();
+        pageTable.align(Align.left);
+
         levelButtons = new TextButton[LEVEL_COUNT];
-        // Create and add textbuttons to screen. Must update each pass to update star displays.
+        int levelNumber = 0;
         for (int i = 0; i < LEVEL_COUNT; i ++) {
-            JsonValue levelData = saveData.get("level_data").get(i);
+            levelNumber = levelCounts[i];
+            // Create and add textbuttons to screen. Must update each pass to update star displays.
+            JsonValue levelData = saveData.get("level_data").get(levelNumber);
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
-            levelButtons[i] = new TextButton(String.valueOf(i), canPlay ? buttonStyles[score] : lockButtonStyle);
-            levelButtons[i].getLabel().setFontScale(0.5f);
-            levelButtons[i].addListener(UICreator.createListener(levelButtons[i], canPlay, this::selectlevel, i));
+            levelButtons[levelNumber] = new TextButton(String.valueOf(levelNumber), canPlay ? buttonStyles[score] : lockButtonStyle);
+            levelButtons[levelNumber].getLabel().setFontScale(0.8f);
+            levelButtons[levelNumber].addListener(UICreator.createListener(levelButtons[levelNumber], canPlay, this::selectlevel, levelNumber));
             //Add button to table
-            if (i > 0 && i % NUM_COLS == 0)
-                part3.row().padTop(colPadding);
-            part3.add(levelButtons[i]).size(170).padLeft(i % NUM_COLS > 0 ? colPadding * 2 : 0);
+            int buttonPaddingLeft = buttonPadding[levelNumber % LEVELS_PER_PAGE][0];
+            int buttonPaddingRight = buttonPadding[levelNumber % LEVELS_PER_PAGE][1];
+            pageTable.add(levelButtons[levelNumber]).size(200).padLeft(buttonPaddingLeft).padRight(buttonPaddingRight);
+
+            if ((i + 1) > 0 && (i + 1) % NUM_COLS == 0) {
+                pageTable.row().width(stage.getWidth()).padTop(-80);
+            }
+
+            if ((i + 1) % LEVELS_PER_PAGE == 0) {
+                scrollTable.add(pageTable)
+                           .width(stage.getWidth() * 0.7f)
+                           .padLeft(i > LEVELS_PER_PAGE ? 440 : 100)
+                           .padRight(i > LEVELS_PER_PAGE ? 400 : 0);
+                pageTable = new Table();
+                pageTable.align(Align.left);
+            }
         }
-        return part3;
+
+        return scrollTable;
+    }
+
+    /**
+     * Scrolls to the appropriate page
+     * */
+    private void scrollPage() {
+        float pageWidth = stage.getWidth() * 0.7f;
+        currentPage = currentPage == 0 ? 2 : 0;
+        nextPageButton.setVisible(currentPage == 0);
+        prevPageButton.setVisible(currentPage == 2);
+        scrollButtonTable.align(currentPage == 0 ? Align.right : Align.left);
+        scrollPane.scrollTo(currentPage * pageWidth, scrollPane.getHeight(), pageWidth, scrollPane.getHeight());
     }
 
     /**
