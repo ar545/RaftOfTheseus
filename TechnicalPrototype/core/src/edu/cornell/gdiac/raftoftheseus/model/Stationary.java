@@ -46,13 +46,15 @@ public class Stationary extends GameObject {
     /* Fields */
     private final StationaryType stationaryType;
     /** 1-13 for texture alas, 0 for default, negative for plants */
-    protected int terrainType = 0;
+    protected int terrainType = REGULAR;
     /** @return whether this rock is plant (pre-req: is terrain) */
     private boolean isPlant(){ return isPlant(terrainType); }
     /** @return Whether this is a sharp rock or not. */
     public boolean isSharp() { return stationaryType == StationaryType.SHARP_ROCK; }
+    /** @return Whether this is a cliff terrain or not. */
+    public boolean hasCliff() { return stationaryType == StationaryType.CLIFF_TERRAIN; }
     /** @return if the stationary type is a terrain type */
-    public static boolean isPlant(int rock_int) { return rock_int < 0; }
+    public static boolean isPlant(int rock_int) { return rock_int < REGULAR; }
     @Override
     public ObjectType getType() { return ObjectType.STATIONARY; }
     public StationaryType getStationaryType() { return stationaryType; }

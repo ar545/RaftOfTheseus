@@ -340,7 +340,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world, adding it to the front of the list, so it gets draw the first
      * @param obj The environmental object (usually are currents only) to add */
-    protected void addCurrentObject(Current obj) {
+    protected void addTopObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(0, obj);
         obj.activatePhysics(world);
@@ -711,9 +711,10 @@ public class LevelModel {
                 }
                 break;
             case Stationary.plantA: case Stationary.plantB: case Stationary.plantC: case Stationary.plantD:
-                this_rock = new Stationary(compute_temp, type, tile_int);
-                temp = plantTexture;
-                break;
+                Stationary plant = new Stationary(compute_temp, type, tile_int);
+                plant.setTexture(plantTexture);
+                addObject(plant);
+                tile_int = 7;
             default: // terrain or cliff terrain
                 this_rock = new Stationary(compute_temp, type, tile_int);
                 temp = terrain[difficulty][tile_int - 1];
@@ -721,7 +722,7 @@ public class LevelModel {
         }
         this_rock.setTexture(temp);
         if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
-        addObject(this_rock);
+        addTopObject(this_rock);
     }
 
     /** Add Enemy Objects to the world, using the Json value for goal.
@@ -815,7 +816,7 @@ public class LevelModel {
         // Update the obstacles, used for enemy AI
         obstacles[col][row] = this_current;
 
-        addCurrentObject(this_current);
+        addTopObject(this_current);
     }
 
     /** Compute the position of the object in the world given the grid location.
