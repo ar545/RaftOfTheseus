@@ -55,4 +55,7 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
         stunTexture.setTextureOffset(new Vector2(0f,
                 (stunTexture.texture.getRegionHeight() * stunTexture.textureScale.y - getHeight())/2f));
     }
+
+    /** Set raft field */
+    public void setRaft(Raft r){ player = r; }
 }
