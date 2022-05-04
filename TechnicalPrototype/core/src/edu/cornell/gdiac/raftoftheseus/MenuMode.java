@@ -316,10 +316,16 @@ public class MenuMode implements Screen {
             draw();
             if (settingsPressed) {
                 resetSettingsState();
+                currentPage = 0;
+                nextPageButton.setVisible(currentPage == 0);
+                prevPageButton.setVisible(currentPage == 2);
                 listener.exitScreen(this, MENU_TO_SETTINGS);
             } else if ((isReady() && listener != null) || playPressed) {
                 resetPressedState();
                 resetPlayState();
+                currentPage = 0;
+                nextPageButton.setVisible(currentPage == 0);
+                prevPageButton.setVisible(currentPage == 2);
                 currentScreen = MenuScreen.TITLE;
                 listener.exitScreen(this, 0);
             }
@@ -442,6 +448,7 @@ public class MenuMode implements Screen {
         currentPage = currentPage == 0 ? 2 : 0;
         nextPageButton.setVisible(currentPage == 0);
         prevPageButton.setVisible(currentPage == 2);
+        System.out.println("currentPage: " + currentPage);
         scrollButtonTable.align(currentPage == 0 ? Align.right : Align.left);
         scrollPane.scrollTo(currentPage * pageWidth, scrollPane.getHeight(), pageWidth, scrollPane.getHeight());
     }
