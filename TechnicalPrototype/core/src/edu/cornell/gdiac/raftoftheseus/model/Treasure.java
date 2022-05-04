@@ -57,16 +57,15 @@ public class Treasure extends GameObject {
         }
     }
 
-//    @Override
-//    protected void setTextureTransform() {
-//        float w = getWidth() / texture.getRegionWidth() * TEXTURE_SCALE;
-//        textureScale = new Vector2(w, w);
-//        textureOffset = new Vector2(0, 0);
-//    }
+    @Override
+    protected void setTextureTransform() {
+        float w = getWidth() / texture.getRegionWidth() * 1.5f;
+        textureScale = new Vector2(w, w);
+        textureOffset = new Vector2(0, 0);
+    }
 
 
     public void setAnimationFrame(float dt) {
-
         if(collected) {
             fc.addTime(dt);
             fc.setFrame(OPEN_AS, OPEN_SF, OPEN_FC, false);

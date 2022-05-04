@@ -5,7 +5,12 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
+/**
+ * Class that represents the objective of each level.
+ */
 public class Goal extends GameObject {
+
+    @Override
     public ObjectType getType() {
         return ObjectType.GOAL;
     }

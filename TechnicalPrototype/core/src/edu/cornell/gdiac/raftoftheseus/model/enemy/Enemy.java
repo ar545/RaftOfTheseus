@@ -4,7 +4,6 @@ import com.badlogic.gdx.ai.fsm.State;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.Raft;
@@ -15,10 +14,6 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** The player */
     protected Raft player;
-    private long timeStamp = 0L;
-    private boolean timeStamped = false;
-    private long attackStamp = 0L;
-    private boolean attackStamped = false;
 
     /** Timers */
     protected Timer stateTimer = new Timer();
@@ -52,7 +47,14 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
     public abstract boolean setHit();
 
     /** Method to ensure that each enemy has their stun texture set. */
-    public abstract void setStunTexture(TextureRegion value);
+    public void setStunTexture(TextureRegion value){
+        stunTexture.texture = value;
+        stunTexture.setTextureScale(new Vector2(
+                getWidth() * 2/ this.stunTexture.texture.getRegionWidth(),
+                getWidth() * 2/ this.stunTexture.texture.getRegionHeight()));
+        stunTexture.setTextureOffset(new Vector2(0f,
+                (stunTexture.texture.getRegionHeight() * stunTexture.textureScale.y - getHeight())/2f));
+    }
 
     /** Set raft field */
     public void setRaft(Raft r){ player = r; }

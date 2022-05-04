@@ -316,10 +316,16 @@ public class MenuMode implements Screen {
             draw();
             if (settingsPressed) {
                 resetSettingsState();
+                currentPage = 0;
+                nextPageButton.setVisible(currentPage == 0);
+                prevPageButton.setVisible(currentPage == 2);
                 listener.exitScreen(this, MENU_TO_SETTINGS);
             } else if ((isReady() && listener != null) || playPressed) {
                 resetPressedState();
                 resetPlayState();
+                currentPage = 0;
+                nextPageButton.setVisible(currentPage == 0);
+                prevPageButton.setVisible(currentPage == 2);
                 currentScreen = MenuScreen.TITLE;
                 listener.exitScreen(this, 0);
             }
@@ -376,9 +382,6 @@ public class MenuMode implements Screen {
 
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
-        // TODO - redo this to just have 0 - 9 and recalculate with + 10 for every page other than the first page
-        // page * index -> page 0 * 0 = 0, page 0  * levels per page + number 1 = 1,
-        // formula: page * levels per page + number
         int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
         int padding = 170;
         int[][] buttonPadding = new int[][] {
@@ -407,6 +410,8 @@ public class MenuMode implements Screen {
             levelNumber = levelCounts[i];
             // Create and add textbuttons to screen. Must update each pass to update star displays.
             JsonValue levelData = saveData.get("level_data").get(levelNumber);
+            if (levelData == null)
+                continue;
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
             levelButtons[levelNumber] = new TextButton(String.valueOf(levelNumber), canPlay ? buttonStyles[score] : lockButtonStyle);
@@ -442,6 +447,7 @@ public class MenuMode implements Screen {
         currentPage = currentPage == 0 ? 2 : 0;
         nextPageButton.setVisible(currentPage == 0);
         prevPageButton.setVisible(currentPage == 2);
+        System.out.println("currentPage: " + currentPage);
         scrollButtonTable.align(currentPage == 0 ? Align.right : Align.left);
         scrollPane.scrollTo(currentPage * pageWidth, scrollPane.getHeight(), pageWidth, scrollPane.getHeight());
     }

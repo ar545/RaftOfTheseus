@@ -3,7 +3,6 @@ package edu.cornell.gdiac.raftoftheseus.model.enemy;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Array;
@@ -260,11 +259,6 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
             return true;
         }
         return false;
-    }
-
-    @Override
-    public void setStunTexture(TextureRegion value) {
-
     }
 
     // Animation

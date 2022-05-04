@@ -89,9 +89,4 @@ public class Hydra extends Enemy<Hydra, HydraState> {
         }
         return false;
     }
-
-    @Override
-    public void setStunTexture(TextureRegion value) {
-
-    }
 }
