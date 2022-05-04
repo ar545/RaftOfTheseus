@@ -15,7 +15,7 @@
 		"path": "levels/level1.png",
 		"complete": false,
 		"score": 0,
-		"unlocked": true
+		"unlocked": false
 	},
 	{
 		"name": "Level 2",
@@ -37,7 +37,7 @@
 		"name": "Level 4",
 		"level": 4,
 		"path": "levels/level4.png",
-		"complete": true,
+		"complete": false,
 		"score": 3,
 		"unlocked": false
 	},
@@ -45,14 +45,9 @@
 		"name": "Level 5",
 		"level": 5,
 		"path": "levels/level5.png",
-<<<<<<< HEAD
-		"complete": true,
-		"score": 3,
-=======
 		"complete": false,
-		"score": 0,
->>>>>>> c6bfeb2898d1eb810362c2259edc4ce656238753
-		"unlocked": true
+		"score": 3,
+		"unlocked": false
 	},
 	{
 		"name": "Level 6",
@@ -66,15 +61,9 @@
 		"name": "Level 7",
 		"level": 7,
 		"path": "levels/level7.png",
-<<<<<<< HEAD
-		"complete": true,
-		"score": 0,
-		"unlocked": true
-=======
 		"complete": false,
 		"score": 0,
 		"unlocked": false
->>>>>>> c6bfeb2898d1eb810362c2259edc4ce656238753
 	},
 	{
 		"name": "Level 8",
@@ -104,7 +93,7 @@
 		"name": "Level 11",
 		"level": 11,
 		"path": "levels/level11.png",
-		"complete": true,
+		"complete": false,
 		"score": 2,
 		"unlocked": false
 	},
@@ -114,7 +103,7 @@
 		"path": "levels/level12.png",
 		"complete": false,
 		"score": 0,
-		"unlocked": true
+		"unlocked": false
 	},
 	{
 		"name": "Level 13",
