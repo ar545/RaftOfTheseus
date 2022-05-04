@@ -17,7 +17,6 @@ import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
-//import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
@@ -38,15 +37,15 @@ public class WorldController implements Screen, ContactListener {
      * @param objParams JsonValue of object_parameters instance.
      */
     public static void setConstants(JsonValue objParams){
-//        EXIT_QUIT = objParams.getInt("exit quit", 0);
         Raft.setConstants(objParams.get("raft"));
         Spear.setConstants(objParams.get("spear"));
         Note.setConstants(objParams.get("note"));
         Shark.setConstants(objParams.get("shark"));
-//        Hydra.setConstants(objParams.get("hydra"));
+        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
         Stationary.setConstants(objParams.get("stationary"));
         Shipwreck.setConstants(objParams.get("shipwreck"));
+        Current.setConstants(objParams.get("current"));
         JsonValue world = objParams.get("world");
         EXIT_COUNT = world.getInt("exit count", 1000);
         WORLD_STEP = 1/world.getFloat("world step", 60f);

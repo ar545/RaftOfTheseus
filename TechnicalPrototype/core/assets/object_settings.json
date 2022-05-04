@@ -171,9 +171,14 @@
     "hit box width" : 3,
     "hit box height" : 2
   },
-  "stun" : {
+  "stun animation" : {
     "as" : 0.0666,
     "sf" : 0,
     "fc" : 4
+  },
+  "current" : {
+    "size" : 3,
+    "weak" : 5,
+    "strong" : 11
   }
 }
