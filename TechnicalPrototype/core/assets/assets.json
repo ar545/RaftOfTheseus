@@ -48,11 +48,12 @@
       "grey_bar":     "images/UI_HealthBar.png",
       "radial_bar" : "images/radial_bar_filled.png",
       "reticle" : "images/reticle.png",
-      "star":     "images/star.png",
+      "empty_star":     "images/empty_star.png",
+      "filled_star":     "images/filled_star.png",
       "plant":     "images/plant.png",
       "fuel": "images/fuel.png",
       "shipwreck" : "images/Obj_Shipwreck.png",
-      "terrain": "images/terrain_demian.png",
+      "terrain": "images/terrain_dark.png",
       "hint_movement": "images/hint_move.png",
       "hint_attack": "images/hint_fire.png",
       "hint_map": "images/hint_map.png",
@@ -134,6 +135,11 @@
     "level:11" : "levels/11Combined.json",
     "level:12" : "levels/12Maze.json",
     "level:13" : "levels/13Spring.json",
-    "level:14" : "levels/14SirenHard.json"
+    "level:14" : "levels/14SirenHard.json",
+    "level:15": "levels/14SirenHard.json",
+    "level:16": "levels/14SirenHard.json",
+    "level:17": "levels/14SirenHard.json",
+    "level:18": "levels/14SirenHard.json",
+    "level:19": "levels/14SirenHard.json"
   }
 }

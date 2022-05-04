@@ -146,8 +146,8 @@ public class SettingsMode implements Screen {
 
         Table part1 = new Table();
         part1.align(Align.left);
-        TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.GOLD);
-        menuButton.addListener(UICreator.createListener(menuButton, Color.GRAY, Color.GOLD, this::setExitPressed));
+        TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.WHITE);
+        menuButton.addListener(UICreator.createListener(menuButton, Color.GOLD, Color.WHITE, this::setExitPressed));
         part1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
         table.add(part1);
         table.row();

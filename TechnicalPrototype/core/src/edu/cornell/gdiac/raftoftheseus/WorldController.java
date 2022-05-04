@@ -91,8 +91,10 @@ public class WorldController implements Screen, ContactListener {
     private Skin skin;
 
     // TEXTURE
-    /** The texture for the star */
-    protected TextureRegion star;
+    /** The texture for the empty star */
+    protected TextureRegion emptyStar;
+    /** The texture for the filled star */
+    protected TextureRegion filledStar;
     /** The hint image for movement and exit/reset controls */
     protected TextureRegion hintMovement;
     /** The hint image for firing controls */
@@ -477,15 +479,20 @@ public class WorldController implements Screen, ContactListener {
      * Precondition: the game canvas has not begun; Post-condition: the game canvas will end after this function */
     private void drawStar(int star) {
         canvas.begin();
-        if(star > 0){
-            canvas.draw(this.star, 0, canvas.getHeight() - this.star.getRegionHeight());
-        }
-        if(star > 1){
-            canvas.draw(this.star, this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
-        }
-        if(star > 2){
-            canvas.draw(this.star, 2 * this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
-        }
+        int size = 70;
+        int padding = 10;
+        canvas.draw(star > 0 ? filledStar : emptyStar, padding, canvas.getHeight() - size);
+        canvas.draw(star > 1 ? filledStar : emptyStar, size + padding, canvas.getHeight() - size);
+        canvas.draw(star > 2 ? filledStar : emptyStar, 2 * size + padding, canvas.getHeight() - size);
+//        if(star > 0){
+//            canvas.draw(this.star, 0, canvas.getHeight() - this.star.getRegionHeight());
+//        }
+//        if(star > 1){
+//            canvas.draw(this.star, this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
+//        }
+//        if(star > 2){
+//            canvas.draw(this.star, 2 * this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
+//        }
         canvas.end();
     }
 
@@ -499,7 +506,8 @@ public class WorldController implements Screen, ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         // UI things
-        star = new TextureRegion(directory.getEntry( "star", Texture.class ));
+        emptyStar = new TextureRegion(directory.getEntry("empty_star", Texture.class));
+        filledStar = new TextureRegion(directory.getEntry("filled_star", Texture.class));
         pauseBackground = directory.getEntry("pause_background", Texture.class);
         failedBackground = directory.getEntry("failed_background", Texture.class);
         successBackgrounds = new Texture[4];
@@ -592,7 +600,6 @@ public class WorldController implements Screen, ContactListener {
             listener.exitScreen(this, WORLD_TO_SETTINGS);
             return false;
         } else if ((input.didPause() || pausePressed) && (!complete && !failed))  {
-            System.out.println("here");
             pause();
             pausePressed = true;
             return false;
@@ -954,16 +961,18 @@ public class WorldController implements Screen, ContactListener {
                     return; // ignore collisions with underwater shark
             }
             // update player health
-            r.addHealth(Shark.CONTACT_DAMAGE);
-            SfxController.getInstance().playSFX("raft_damage");
+            if(!r.isDamaged()) {
+                r.addHealth(Shark.CONTACT_DAMAGE);
+                SfxController.getInstance().playSFX("raft_damage");
 //            g.setDestroyed(true);
-            r.setDamaged(true);
-            Timer.schedule(new Timer.Task(){
-                @Override
-                public void run() {
-                    r.setDamaged(false);
-                }
-            }, .1f, 1, 1);
+                r.setDamaged(true);
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        r.setDamaged(false);
+                    }
+                }, 2f, 1, 1);
+            }
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             addScore();
@@ -972,7 +981,18 @@ public class WorldController implements Screen, ContactListener {
             // Check player win
             if (!complete && !failed) setComplete(true);
         } else if(g.getType() == GameObject.ObjectType.ROCK){
-            if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
+            if(((Rock) g).isSharp()) {
+                if (!r.isDamaged()) {
+                    r.addHealth(Rock.getDAMAGE());
+                    r.setDamaged(true);
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            r.setDamaged(false);
+                        }
+                    }, 2, 1, 1);
+                }
+            }
         } else if(g.getType() == GameObject.ObjectType.NOTE){
             r.setProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);
