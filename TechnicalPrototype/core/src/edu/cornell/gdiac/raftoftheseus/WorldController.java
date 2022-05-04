@@ -45,7 +45,7 @@ public class WorldController implements Screen, ContactListener {
         Shark.setConstants(objParams.get("shark"));
 //        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
-        Stationary.setConstants(objParams.get("rock"));
+        Stationary.setConstants(objParams.get("stationary"));
         Shipwreck.setConstants(objParams.get("shipwreck"));
         JsonValue world = objParams.get("world");
         EXIT_COUNT = world.getInt("exit count", 1000);

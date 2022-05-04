@@ -12,11 +12,12 @@ public class Stationary extends GameObject {
      * @param objParams is the "rock" child of object_settings.json
      */
     public static void setConstants(JsonValue objParams){
-        TERRAIN_WIDTH = objParams.getFloat("width");
-        TERRAIN_HEIGHT = objParams.getFloat("height");
-        SHARP_ROCK_DAMAGE = objParams.getFloat("damage");
-        ROCK_HEIGHT = 1.4f;
-        ROCK_WIDTH = 2.5f;
+        TERRAIN_WIDTH = objParams.getFloat("terrain width");
+        TERRAIN_HEIGHT = objParams.getFloat("terrain height");
+        SHARP_ROCK_DAMAGE = objParams.getFloat("sharp rock damage");
+        SHARP_ROCK_BOUNCE = objParams.getFloat("sharp rock restitution");
+        ROCK_WIDTH = objParams.getFloat("rock width");
+        ROCK_HEIGHT = objParams.getFloat("rock height");
     }
 
     // Constants

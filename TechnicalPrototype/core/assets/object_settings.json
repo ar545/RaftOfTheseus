@@ -103,11 +103,13 @@
     "force" : 30,
     "width" : 0.8
   },
-  "rock": {
-    "width": 3,
-    "height": 3,
-    "damage": -15,
-    "radius": 0.8
+  "stationary": {
+    "rock width": 2.5,
+    "rock height": 1.4,
+    "terrain width": 3,
+    "terrain height": 3,
+    "sharp rock damage": -15,
+    "sharp rock restitution" : 0.7
   },
   "terrain": {
   },
@@ -118,9 +120,9 @@
     "max health" : 100,
     "initial health" : 100,
     "damping" : 5,
-    "thrust" : 0.3,
+    "thrust" : 0.25,
     "min speed": 0.01,
-    "max speed" : 10,
+    "max speed" : 8,
     "width" : 2.4,
     "height" : 0.7,
     "sensor size" : 1.45,
