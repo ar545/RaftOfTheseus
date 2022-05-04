@@ -597,7 +597,6 @@ public class WorldController implements Screen, ContactListener {
             listener.exitScreen(this, WORLD_TO_SETTINGS);
             return false;
         } else if ((input.didPause() || pausePressed) && (!complete && !failed))  {
-            System.out.println("here");
             pause();
             pausePressed = true;
             return false;

@@ -440,7 +440,6 @@ public class MenuMode implements Screen {
     private void scrollPage() {
         float pageWidth = stage.getWidth() * 0.7f;
         currentPage = currentPage == 0 ? 2 : 0;
-        System.out.println(currentPage);
         nextPageButton.setVisible(currentPage == 0);
         prevPageButton.setVisible(currentPage == 2);
         scrollButtonTable.align(currentPage == 0 ? Align.right : Align.left);
