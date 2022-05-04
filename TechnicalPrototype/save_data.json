@@ -46,8 +46,8 @@
 	{
 		"name": "Level 6",
 		"level": 6,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": false
 	},
 	{
@@ -55,7 +55,7 @@
 		"level": 7,
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 8",

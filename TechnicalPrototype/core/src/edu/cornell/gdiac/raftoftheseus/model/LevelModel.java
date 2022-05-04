@@ -662,7 +662,11 @@ public class LevelModel {
      * @param tile_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Rock this_rock = new Rock(compute_temp, (tile_int == ROCK_SHARP));
+        Stationary.RockType rt;
+        if (tile_int == ROCK_SHARP) { rt = Stationary.RockType.SHARP_ROCK; }
+        else if (tile_int == ROCK_REGULAR) { rt = Stationary.RockType.ROCK; }
+        else rt = Stationary.RockType.TERRAIN;
+        Stationary this_rock = new Stationary(compute_temp, rt);
         if (tile_int == ROCK_PLANT) { this_rock.setTexture(plantTexture); }
         else if (tile_int == ROCK_SHARP) { this_rock.setTexture(sharpRockTexture); }
         else if (tile_int == ROCK_REGULAR) { this_rock.setTexture(regularRockTexture); }

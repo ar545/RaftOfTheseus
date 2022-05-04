@@ -1,7 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -11,7 +10,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
@@ -25,14 +23,8 @@ import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
-import org.lwjgl.Sys;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
-import java.util.concurrent.TimeUnit;
 
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
 
@@ -53,7 +45,7 @@ public class WorldController implements Screen, ContactListener {
         Shark.setConstants(objParams.get("shark"));
 //        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
-        Rock.setConstants(objParams.get("rock"));
+        Stationary.setConstants(objParams.get("rock"));
         Shipwreck.setConstants(objParams.get("shipwreck"));
         JsonValue world = objParams.get("world");
         EXIT_COUNT = world.getInt("exit count", 1000);
@@ -977,9 +969,9 @@ public class WorldController implements Screen, ContactListener {
             // Check player win
             if (!complete && !failed) setComplete(true);
         } else if(g.getType() == GameObject.ObjectType.ROCK){
-            if(((Rock) g).isSharp()) {
+            if(((Stationary) g).isSharp()) {
                 if (!r.isDamaged()) {
-                    r.addHealth(Rock.getDAMAGE());
+                    r.addHealth(Stationary.getSharpRockDamage());
                     r.setDamaged(true);
                     Timer.schedule(new Timer.Task() {
                         @Override
