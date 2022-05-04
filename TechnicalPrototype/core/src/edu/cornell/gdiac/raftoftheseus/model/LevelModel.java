@@ -447,7 +447,7 @@ public class LevelModel {
         // Add wall to the world
         computeWall(bounds.width, bounds.height);
         // Set current field
-        currentField = new CurrentField(bounds.width, bounds.height, 3);
+        currentField = new  CurrentField(bounds.width, bounds.height, 3);
         // Populate game objects
         populateLevel();
 
@@ -1078,10 +1078,10 @@ public class LevelModel {
     public void updateAllCurrentEffects(float dt){
         for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o, dt); } }
     }
-
-    /** return the current velocity that the player is experiencing */
+    /** @return the current velocity that the player is experiencing */
     public Vector2 getPlayerCurrentVelocity(){ return currentField.getCurrentVelocity(raft.getPosition()); }
-
+    /** @return true if the current velocity where the player is non-zero. */
+    public boolean playerOnCurrent(){ return !getPlayerCurrentVelocity().equals(Vector2.Zero); }
     // PROJECTILE MANIPULATION
 
     /**

@@ -27,14 +27,15 @@ public class Raft extends GameObject implements Animated {
      * */
     public static void setConstants(JsonValue objParams){
         MOVE_COST = objParams.getFloat("move cost");
-        WITH_CURRENT = objParams.getFloat("with current");
-        AGAINST_CURRENT = objParams.getFloat("against current");
+        CURRENT_MOVEMENT_BUFF = objParams.getFloat("current movement buff");
+        CURRENT_BUFF_SCOPE = objParams.getFloat("current buff scope");
         MAXIMUM_PLAYER_HEALTH = objParams.getFloat("max health");
         INITIAL_PLAYER_HEALTH = objParams.getFloat("initial health");
         DAMPING = objParams.getFloat("damping");
         THRUST = objParams.getFloat("thrust");
         MIN_SPEED = objParams.getFloat("min speed");
         MAX_SPEED = objParams.getFloat("max speed");
+        MAX_SPEED_AGAINST_CURRENT = objParams.getFloat("max speed against current");
         OBJ_WIDTH = objParams.getFloat("width");
         OBJ_HEIGHT = objParams.getFloat("height");
         SENSOR_RADIUS = objParams.getFloat("sensor size");
@@ -56,9 +57,8 @@ public class Raft extends GameObject implements Animated {
     /** Movement cost for a unit distance **/
     private static float MOVE_COST;
     /** Movement cost multiplier for moving with the current */
-    private static float WITH_CURRENT;
-    /** Movement cost increase for moving with the current */
-    private static float AGAINST_CURRENT;
+    private static float CURRENT_MOVEMENT_BUFF;
+    private static float CURRENT_BUFF_SCOPE;
 
     // ATTRIBUTES
     /** A physics object used for collisions with interactable objects which shouldn't push the player (wood, goal, etc) */
@@ -81,6 +81,7 @@ public class Raft extends GameObject implements Animated {
     /** The amount to accelerate the character */
     private static float THRUST;
     /** The maximum character speed allowed */
+    private static float MAX_SPEED_AGAINST_CURRENT;
     private static float MAX_SPEED;
     private static float MIN_SPEED;
     /** Cache for internal force calculations */
@@ -200,10 +201,15 @@ public class Raft extends GameObject implements Animated {
      * Applies the force to the body
      * This method should be called after the force attribute is set.
      */
-    public void applyInputForce() {
-        if (super.isDestroyed()) {
-            return;
+    public void applyInputForce(boolean onCurrent, Vector2 currentVelocity) {
+        // Determine whether the give small buff to player
+        boolean againstCurrent = false;
+        if(onCurrent){
+            float angle = Math.abs(movementInput.angleDeg() - currentVelocity.angleDeg());
+            System.out.println(angle);
+            againstCurrent = (180 - CURRENT_BUFF_SCOPE) < angle && angle < (180 + CURRENT_BUFF_SCOPE);
         }
+        if (super.isDestroyed()) return;
         if (movementInput.isZero()) {
             // Damp out player motion
             forceCache.set(physicsObject.getLinearVelocity()).scl(-DAMPING);
@@ -211,10 +217,12 @@ public class Raft extends GameObject implements Animated {
         } else {
             // Accelerate player based on input
             forceCache.set(movementInput).scl(THRUST);
+            // Small buff going against currents
+            if(againstCurrent) forceCache.add(movementInput.cpy().nor().scl(CURRENT_MOVEMENT_BUFF));
             physicsObject.getBody().applyLinearImpulse(forceCache,getPosition(),true);
         }
         // Velocity too high, clamp it
-        float speedRatio = MAX_SPEED / physicsObject.getLinearVelocity().len();
+        float speedRatio = (againstCurrent ? MAX_SPEED_AGAINST_CURRENT : MAX_SPEED) / physicsObject.getLinearVelocity().len();
         if (speedRatio < 1) {
             physicsObject.setLinearVelocity(physicsObject.getLinearVelocity().scl(speedRatio));
         }

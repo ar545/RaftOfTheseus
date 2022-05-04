@@ -116,14 +116,15 @@
   },
   "raft" : {
     "move cost" : 1.0,
-    "with current" : 0.45,
-    "against current" : 1.75,
+    "current movement buff" : 0.1,
+    "current buff scope": 50,
     "max health" : 100,
     "initial health" : 100,
     "damping" : 5,
-    "thrust" : 0.2,
+    "thrust" : 0.18,
     "min speed": 0.01,
-    "max speed" : 7,
+    "max speed" : 6,
+    "max speed against current" : 9,
     "width" : 2.4,
     "height" : 0.7,
     "sensor size" : 1.45,
@@ -178,7 +179,7 @@
   },
   "current" : {
     "size" : 3,
-    "weak" : 5,
+    "weak" : 7,
     "strong" : 11
   }
 }
