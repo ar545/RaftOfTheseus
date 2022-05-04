@@ -81,6 +81,7 @@ public class LevelModel {
         private static final int SAND_OFFSET = 42;
         /** Index of the representation of plant in tile set texture */
         private static final int PLANT = 56;
+        public static final int CAPYBARA = 59;
         /** Index of the representation of plant in tile set texture */
         private static final int PLANT_END = 62;
         /** Index of the representation of plant in tile set texture */
@@ -121,10 +122,7 @@ public class LevelModel {
     private static final int LAYER_SIREN = 2;
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.05f;
-    private static final int ROCK_NOT = Integer.MAX_VALUE;
-    private static final int ROCK_REGULAR = 0;
-    private static final int ROCK_SHARP = -1;
-    private static final int ROCK_PLANT = -2;
+
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -342,7 +340,7 @@ public class LevelModel {
 
     /** Immediately adds the object to the physics world, adding it to the front of the list, so it gets draw the first
      * @param obj The environmental object (usually are currents only) to add */
-    protected void addCurrentObject(Current obj) {
+    protected void addTopObject(GameObject obj) {
         assert inBounds(obj) : "Object is not in bounds";
         objects.add(0, obj);
         obj.activatePhysics(world);
@@ -632,9 +630,10 @@ public class LevelModel {
     private void populateEnv(int row, int col, int tile_int, boolean top_row) {
         currentField.field[col][row] = ZERO_VECTOR_2;
         int rockInt = computeRockInt(tile_int);
-        if(rockInt != ROCK_NOT){
-            if(top_row) { populateExtendLand(row, col, rockInt); }
-            addRock(row, col, rockInt);
+        if(rockInt != Stationary.NON_ROCK){
+            Stationary.StationaryType type = computeRockType(tile_int);
+            if(top_row) { populateExtendLand(row, col, type, rockInt); }
+            addRock(row, col, type, rockInt);
         }else{
             if (tile_int == Tiled.DEFAULT || tile_int == Tiled.SEA){ return; }
             if (tile_int == Tiled.START) { addRaft(row, col); return; }
@@ -646,6 +645,17 @@ public class LevelModel {
         }
     }
 
+    /** compute the stationary type */
+    private Stationary.StationaryType computeRockType(int tile_int) {
+        switch(tile_int){
+            case Tiled.ROCK_ALONE: return Stationary.StationaryType.REGULAR_ROCK;
+            case Tiled.ROCK_SHARP: return Stationary.StationaryType.SHARP_ROCK;
+            default:
+                if(tile_int > Tiled.SEA && tile_int < Tiled.CAPYBARA) { return Stationary.StationaryType.TERRAIN; }
+                else{ return Stationary.StationaryType.CLIFF_TERRAIN; }
+        }
+    }
+
     private boolean isStrongCurrent(int tile_int){
         int div = tile_int % 7;
         if(div == 1 || div == 2 || div == 3) {return false;}
@@ -654,12 +664,14 @@ public class LevelModel {
 
     /** Compute the rock_int according to the tile_int: 0 for reg, 1-13 for land, -1 for sharp, -2 for plant */
     private int computeRockInt(int tile_int){
+        if (tile_int == Tiled.ROCK_ALONE || tile_int == Tiled.ROCK_SHARP){ return Stationary.REGULAR; }
         if (tile_int > Tiled.LAND_OFFSET && tile_int < Tiled.SEA){ return tile_int - Tiled.LAND_OFFSET; }
-        if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.PLANT){ return tile_int - Tiled.SAND_OFFSET; } // TODO: differ
-        if (tile_int >= Tiled.PLANT && tile_int <= Tiled.PLANT_END){ return ROCK_PLANT; } // TODO: differ
-        if (tile_int == Tiled.ROCK_ALONE){ return ROCK_REGULAR; }
-        if (tile_int == Tiled.ROCK_SHARP){ return ROCK_SHARP; }
-        return ROCK_NOT;
+        if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.PLANT){ return tile_int - Tiled.SAND_OFFSET; }
+        if (tile_int == Tiled.PLANT || tile_int == Tiled.PLANT + 4){ return Stationary.plantA; }
+        if (tile_int == Tiled.PLANT + 1 || tile_int == Tiled.PLANT + 5){ return Stationary.plantB; }
+        if (tile_int == Tiled.PLANT + 2 || tile_int == Tiled.PLANT + 6){ return Stationary.plantC; }
+        if (tile_int == Tiled.PLANT + 3){ return Stationary.plantD; }
+        return Stationary.NON_ROCK;
     }
 
     /** Compute the direction of the current base on the level json input
@@ -685,32 +697,32 @@ public class LevelModel {
      * @param row the row gird position
      * @param col the column grid position
      * @param tile_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
-    private void addRock(int row, int col, int tile_int) {
+    private void addRock(int row, int col, Stationary.StationaryType type, int tile_int) {
         computePosition(col, row);
-        Stationary.StationaryType rt;
         TextureRegion temp;
+        Stationary this_rock;
         switch(tile_int){
-            case ROCK_PLANT:
-                rt = Stationary.StationaryType.PLANT;
-                temp = plantTexture;
+            case Stationary.REGULAR:
+                this_rock = new Stationary(compute_temp, type);
+                if(type == Stationary.StationaryType.SHARP_ROCK){
+                    temp = sharpRockTexture;
+                }else{
+                    temp = regularRockTexture;
+                }
                 break;
-            case ROCK_SHARP:
-                rt = Stationary.StationaryType.SHARP_ROCK;
-                temp = sharpRockTexture;
-                break;
-            case ROCK_REGULAR:
-                rt = Stationary.StationaryType.REGULAR_ROCK;
-                temp = regularRockTexture;
-                break;
-            default:
-                rt = Stationary.StationaryType.TERRAIN;
+            case Stationary.plantA: case Stationary.plantB: case Stationary.plantC: case Stationary.plantD:
+                Stationary plant = new Stationary(compute_temp, type, tile_int);
+                plant.setTexture(plantTexture);
+                addObject(plant);
+                tile_int = 7;
+            default: // terrain or cliff terrain
+                this_rock = new Stationary(compute_temp, type, tile_int);
                 temp = terrain[difficulty][tile_int - 1];
                 break;
         }
-        Stationary this_rock = new Stationary(compute_temp, rt);
         this_rock.setTexture(temp);
         if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
-        addObject(this_rock);
+        addTopObject(this_rock);
     }
 
     /** Add Enemy Objects to the world, using the Json value for goal.
@@ -804,7 +816,7 @@ public class LevelModel {
         // Update the obstacles, used for enemy AI
         obstacles[col][row] = this_current;
 
-        addCurrentObject(this_current);
+        addTopObject(this_current);
     }
 
     /** Compute the position of the object in the world given the grid location.
@@ -1402,19 +1414,20 @@ public class LevelModel {
     }
 
     /* Fix extend land into invisible border */
-    private void populateExtendLand(int row, int col, int tile_int) {
-        int extend = computeExtend(tile_int);
-        if(extend != -1){
-            addRock(row + 1, col, extend);
-        }
+    private void populateExtendLand(int row, int col, Stationary.StationaryType type, int rock_int) {
+        int extend = computeExtend(rock_int);
+        if(extend != Stationary.NON_ROCK){ addRock(row + 1, col, type, extend); }
     }
 
     /**  */
-    private int computeExtend(int tile_int){
-        switch (tile_int){
+    private int computeExtend(int rock_int){
+        if(Stationary.isPlant(rock_int)) {return 7;}
+        switch (rock_int){
+            case Stationary.REGULAR:
+                return Stationary.REGULAR;
             case 1: case 2:
-                return tile_int + 7;
-            case 3: case 4: case 7: case 13: case ROCK_PLANT:
+                return rock_int + 7;
+            case 3: case 4: case 7: case 13:
                 return 7;
             case 5:
                 return 13;
@@ -1422,10 +1435,8 @@ public class LevelModel {
                 return 6;
             case 8: case 11: case 12:
                 return 12;
-            case ROCK_REGULAR: case ROCK_SHARP:
-                return 0;
             default:
-                return -1;
+                return Stationary.NON_ROCK;
         }
     }
 }
