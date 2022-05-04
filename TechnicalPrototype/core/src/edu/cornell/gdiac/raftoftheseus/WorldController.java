@@ -652,7 +652,7 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // update forces for enemies, players, objects
-        player.applyInputForce();
+        player.applyInputForce(levelModel.playerOnCurrent(), levelModel.getPlayerCurrentVelocity());
         player.applyProjectileForce();
         resolveEnemies(dt);
 

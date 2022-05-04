@@ -22,6 +22,8 @@ public class Shipwreck extends GameObject{
         DROPS = objParams.getInt("drops");
         HIT_WIDTH = objParams.getFloat("hit box width");
         HIT_HEIGHT = objParams.getFloat("hit box height");
+        DRAW_SCALE = objParams.getFloat("draw size");
+        Y_ADJUSTMENT = objParams.getFloat("y adjustment");
     }
 
     // Constants
@@ -29,6 +31,8 @@ public class Shipwreck extends GameObject{
     private static float HEIGHT;
     private static float HIT_WIDTH;
     private static float HIT_HEIGHT;
+    private static float DRAW_SCALE;
+    private static float Y_ADJUSTMENT;
     private static int HEALTH;
     private static int DROPS;
     private static int FRAME_COUNT;
@@ -55,7 +59,7 @@ public class Shipwreck extends GameObject{
         physicsObject.getFilterData().maskBits = MASK_TERRAIN;
 
         hitbox = new BoxObstacle(HIT_WIDTH, HIT_HEIGHT);
-        hitbox.setPosition(physicsObject.getPosition());
+        hitbox.setPosition(physicsObject.getX(), physicsObject.getY() + HIT_HEIGHT/2 - HEIGHT/2);
         hitbox.setSensor(true);
         hitbox.setBodyType(BodyDef.BodyType.StaticBody);
         hitbox.getFilterData().categoryBits = CATEGORY_DESTRUCTIBLE;
@@ -74,9 +78,10 @@ public class Shipwreck extends GameObject{
 
     @Override
     protected void setTextureTransform() {
-        float w = WIDTH / texture.getRegionWidth();
-        textureScale = new Vector2(w, w);
-        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - HEIGHT)/2f + 0.5f);
+        float w = DRAW_SCALE / texture.getRegionWidth();
+        float h = DRAW_SCALE / texture.getRegionHeight();
+        textureScale = new Vector2(w, h);
+        textureOffset = new Vector2(0, DRAW_SCALE/2 - HEIGHT/2 + Y_ADJUSTMENT);
     }
 
     @Override
@@ -100,7 +105,13 @@ public class Shipwreck extends GameObject{
 
     @Override
     public void draw(GameCanvas canvas){
-        ((FilmStrip) texture).setFrame((FRAME_COUNT - 1) - (health - 1));
+        int frame;
+        if (health == 2) {
+            frame = 0;
+        } else {
+            frame = 2;
+        }
+        ((FilmStrip) texture).setFrame(frame);
         super.draw(canvas);
     }
 }

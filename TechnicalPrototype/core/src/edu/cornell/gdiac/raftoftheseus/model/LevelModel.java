@@ -466,7 +466,7 @@ public class LevelModel {
         // Add wall to the world
         computeWall(bounds.width, bounds.height);
         // Set current field
-        currentField = new CurrentField(bounds.width, bounds.height, 3);
+        currentField = new  CurrentField(bounds.width, bounds.height, 3);
         // Populate game objects
         populateLevel();
 
@@ -929,7 +929,7 @@ public class LevelModel {
         lightSettings = directory.getEntry("lights", JsonValue.class);
         canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
-        shipwreckTexture = new FilmStrip(directory.getEntry("shipwreck", Texture.class), 1, 3);
+        shipwreckTexture = new FilmStrip(directory.getEntry("shipwreck", Texture.class), 3, 1);
         gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
     }
 
@@ -1123,10 +1123,10 @@ public class LevelModel {
     public void updateAllCurrentEffects(float dt){
         for(GameObject o : objects){ if(o.AffectedByCurrent()){ currentField.updateCurrentEffects(o, dt); } }
     }
-
-    /** return the current velocity that the player is experiencing */
+    /** @return the current velocity that the player is experiencing */
     public Vector2 getPlayerCurrentVelocity(){ return currentField.getCurrentVelocity(raft.getPosition()); }
-
+    /** @return true if the current velocity where the player is non-zero. */
+    public boolean playerOnCurrent(){ return !getPlayerCurrentVelocity().equals(Vector2.Zero); }
     // PROJECTILE MANIPULATION
 
     /**
