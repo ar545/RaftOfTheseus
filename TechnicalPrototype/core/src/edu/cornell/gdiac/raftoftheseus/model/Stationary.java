@@ -24,7 +24,7 @@ public class Stationary extends GameObject {
     private static float TERRAIN_WIDTH;
     private static float TERRAIN_HEIGHT;
     private static float SHARP_ROCK_DAMAGE;
-    private static float SHARP_ROCK_BOUNCE = 0.6f;
+    private static float SHARP_ROCK_BOUNCE;
     private static float ROCK_WIDTH;
     private static float ROCK_HEIGHT;
 
@@ -47,27 +47,31 @@ public class Stationary extends GameObject {
     public Stationary(Vector2 position, RockType rt) {
         switch(rt){
             case ROCK:
-                initBody(position, false, ROCK_WIDTH, ROCK_HEIGHT);
+                initBody(position, ROCK_WIDTH, ROCK_HEIGHT);
                 break;
             case SHARP_ROCK:
-                initBody(position, true, ROCK_WIDTH, ROCK_HEIGHT);
+                initBody(position, ROCK_WIDTH, ROCK_HEIGHT);
+                physicsObject.setRestitution(SHARP_ROCK_BOUNCE);
+                this.sharp = true;
                 break;
             case TERRAIN:
-                initBody(position, false, TERRAIN_WIDTH, TERRAIN_HEIGHT);
+                initBody(position, TERRAIN_WIDTH, TERRAIN_HEIGHT);
                 break;
         }
-
     }
 
-    private void initBody(Vector2 position, boolean sharp, float width, float height){
+    /**
+     *
+     * @param position where it's located
+     * @param width of box obstacle
+     * @param height of box obstacle
+     */
+    private void initBody(Vector2 position, float width, float height){
         physicsObject = new BoxObstacle(width, height);
-        this.sharp = sharp;
         setPosition(position);
-        if(sharp) physicsObject.setRestitution(SHARP_ROCK_BOUNCE);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
         physicsObject.getFilterData().maskBits = MASK_TERRAIN;
-        this.sharp = sharp;
     }
 
     @Override

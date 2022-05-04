@@ -180,8 +180,10 @@ public class LevelModel {
     private TextureRegion plantTexture;
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
+    /** Stun overlay for enemies */
+    private FilmStrip stunTexture;
     /** Texture for current placeholder: texture atlas in future */
-    private FilmStrip enemyTexture;
+    private FilmStrip sharkTexture;
     /** Texture for the Sirens */
     private FilmStrip sirenTexture;
     /** Texture for spear */
@@ -378,13 +380,6 @@ public class LevelModel {
         return new Affine2().set(cameraTransform);
     }
 
-    /** add siren to the world */
-    protected void addSirenObject(Siren this_siren) {
-        assert inBounds(this_siren) : "Object is not in bounds";
-        objects.add(this_siren);
-        this_siren.activatePhysics(world);
-        sirens.add(this_siren);
-    }
 
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
 
@@ -583,7 +578,16 @@ public class LevelModel {
             this_siren = new Siren(compute_temp, siren_compute_temp, raft);
         }
         this_siren.setTexture(sirenTexture);
-        addSirenObject(this_siren);
+        this_siren.setStunTexture(stunTexture);
+        addSiren(this_siren);
+    }
+
+    /** add siren to the world */
+    protected void addSiren(Siren this_siren) {
+        assert inBounds(this_siren) : "Object is not in bounds";
+        objects.add(this_siren);
+        this_siren.activatePhysics(world);
+        sirens.add(this_siren);
     }
 
     /** This is the level editor JSON parser that populate the collectable layer
@@ -682,19 +686,15 @@ public class LevelModel {
         computePosition(col, row);
         if(is_shark){
             Shark this_shark = new Shark(compute_temp, getPlayer());
-            this_shark.setTexture(enemyTexture);
+            this_shark.setTexture(sharkTexture);
+            this_shark.setStunTexture(stunTexture);
             addSharkObject(this_shark);
+        } else {
+            Hydra h = new Hydra(compute_temp, getPlayer());
+            h.setTexture(sharkTexture);
+            h.setStunTexture(stunTexture);
+            addHydraObject(h);
         }
-        else{
-            Hydra hydra = new Hydra(compute_temp, null);
-            hydra.setTexture(enemyTexture);
-            addHydraObject(hydra);
-        }
-//        else{
-//            Siren ts = new Siren(compute_temp, compute_temp, raft);
-//            ts.setTexture(sirenTexture);
-//            addSirenObject(ts);
-//        }
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -853,7 +853,8 @@ public class LevelModel {
         plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
-        enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
+        stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
+        sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
         sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 5);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
         spearTexture = new FilmStrip(directory.getEntry("spear", Texture.class), 5, 5);

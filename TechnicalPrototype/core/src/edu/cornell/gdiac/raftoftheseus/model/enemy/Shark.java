@@ -175,11 +175,6 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
     }
 
     @Override
-    public void setStunTexture(TextureRegion value) {
-
-    }
-
-    @Override
     public FrameCalculator getFrameCalculator() { return fc; }
     @Override
     public void setAnimationFrame(float dt) {
