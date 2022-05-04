@@ -18,7 +18,6 @@ public class CurrentField implements FlowField<Vector2> {
      * @param resolution the size of grid in pixels */
     public CurrentField (float width, float height, int resolution, Array<SteeringActor> obstacles) {
         this(width, height, resolution);
-
         for (int i = 0; i < columns; i++) {
             ROWS:
             for (int j = 0; j < rows; j++) {

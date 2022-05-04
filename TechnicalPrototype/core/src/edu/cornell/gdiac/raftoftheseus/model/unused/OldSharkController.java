@@ -242,7 +242,7 @@ public class OldSharkController {
     private boolean isSafe(int[] position){
         if (level.inBounds(position[0], position[1])) {
             GameObject go = level.obstacles()[position[0]][position[1]];
-            return (go == null || go.getType() != GameObject.ObjectType.ROCK);
+            return (go == null || go.getType() != GameObject.ObjectType.STATIONARY);
         }
         return false;
     }

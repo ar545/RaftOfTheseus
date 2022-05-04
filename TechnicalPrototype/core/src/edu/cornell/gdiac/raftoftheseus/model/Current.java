@@ -1,13 +1,23 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
+import edu.cornell.gdiac.raftoftheseus.GameCanvas;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 
 public class Current extends GameObject {
 
-    private static void setConstants(JsonValue objParams){
+    /**
+     * Set the strength and size of currents
+     * @param objParams current child
+     */
+    public static void setConstants(JsonValue objParams){
+        SIZE = objParams.getFloat("size");
+        WEAK_MAGNITUDE = objParams.getFloat("weak");
+        STRONG_MAGNITUDE = objParams.getFloat("strong");
     }
 
     /**
@@ -39,56 +49,66 @@ public class Current extends GameObject {
     private final Direction direction;
     /** Magnitude of the current. The speed at which a current flows = factor * magnitude, in units per second
      * Current Magnitude Ratio Constant, used in current constructor calls */
-    private static final float WEAK_MAGNITUDE = 4f;
-    private static final float STRONG_MAGNITUDE = 9f;
-    boolean isStrong;
+    private static float SIZE;
+    private static float WEAK_MAGNITUDE;
+    private static float STRONG_MAGNITUDE;
+    private float drawAngle;
+    private boolean isStrong;
 
     // METHODS
     public ObjectType getType() {
         return ObjectType.CURRENT;
     }
 
-    /** constructor with known direction */
+    /**
+     * Constructor with known direction
+     * Note that the map representation of the Current is rotated but the current itself is not.
+     */
     public Current(Vector2 position, Direction direction, boolean isStrong){
-        physicsObject = new BoxObstacle(3f, 3f);
+        physicsObject = new BoxObstacle(SIZE, SIZE);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.setSensor(true);
         this.direction = direction;
-        setRotationFromDirection();
+        drawAngle = getDrawAngle();
         physicsObject.getFilterData().categoryBits = CATEGORY_CURRENT;
         physicsObject.getFilterData().maskBits = MASK_CURRENT;
         this.isStrong = isStrong;
     }
 
-    private void setRotationFromDirection() {
+    @Override
+    public void draw(GameCanvas canvas) {
+        draw(canvas, Color.WHITE);
+    }
+
+    @Override
+    public void draw(GameCanvas canvas, Color color) {
+        if (texture != null) {
+            canvas.draw(texture, color, origin.x, origin.y, getX() + textureOffset.x, getY() + textureOffset.y, drawAngle, textureScale.x, textureScale.y);
+        }
+    }
+
+    /** Returns how many degrees to rotate the graphic based on the direction. */
+    private float getDrawAngle() {
         switch(direction){
             case EAST:
-                setAngle(0.0f);
-                break;
+                return 0.0f;
             case NORTH:
-                setAngle(90.0f);
-                break;
+                return 90.0f;
             case WEST:
-                setAngle(180.0f);
-                break;
+                return 180.0f;
             case SOUTH:
-                setAngle(-90.0f);
-                break;
+                return -90.0f;
             case NORTH_EAST:
-                setAngle(45.0f);
-                break;
+                return 45.0f;
             case WEST_NORTH:
-                setAngle(135.0f);
-                break;
+                return 135.0f;
             case SOUTH_WEST:
-                setAngle(-135.0f);
-                break;
+                return -135.0f;
             case EAST_SOUTH:
-                setAngle(-45.0f);
-                break;
+                return -45.0f;
             default:
-                break;
+                throw new RuntimeException("Direction mismatch");
         }
     }
 

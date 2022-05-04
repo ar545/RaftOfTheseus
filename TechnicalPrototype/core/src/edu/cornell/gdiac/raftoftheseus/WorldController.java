@@ -10,27 +10,21 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.model.enemy.*;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
-//import edu.cornell.gdiac.raftoftheseus.model.unused.Hydra;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
-import org.lwjgl.Sys;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Iterator;
+
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
 
 public class WorldController implements Screen, ContactListener {
@@ -43,15 +37,15 @@ public class WorldController implements Screen, ContactListener {
      * @param objParams JsonValue of object_parameters instance.
      */
     public static void setConstants(JsonValue objParams){
-//        EXIT_QUIT = objParams.getInt("exit quit", 0);
         Raft.setConstants(objParams.get("raft"));
         Spear.setConstants(objParams.get("spear"));
         Note.setConstants(objParams.get("note"));
         Shark.setConstants(objParams.get("shark"));
-//        Hydra.setConstants(objParams.get("hydra"));
+        Hydra.setConstants(objParams.get("hydra"));
         Siren.setConstants(objParams.get("siren"));
-        Rock.setConstants(objParams.get("rock"));
+        Stationary.setConstants(objParams.get("stationary"));
         Shipwreck.setConstants(objParams.get("shipwreck"));
+        Current.setConstants(objParams.get("current"));
         JsonValue world = objParams.get("world");
         EXIT_COUNT = world.getInt("exit count", 1000);
         WORLD_STEP = 1/world.getFloat("world step", 60f);
@@ -95,6 +89,8 @@ public class WorldController implements Screen, ContactListener {
     protected TextureRegion emptyStar;
     /** The texture for the filled star */
     protected TextureRegion filledStar;
+    /** The texture for the pause button */
+    protected Texture pauseButton;
     /** The hint image for movement and exit/reset controls */
     protected TextureRegion hintMovement;
     /** The hint image for firing controls */
@@ -265,7 +261,7 @@ public class WorldController implements Screen, ContactListener {
                 wasComplete = true;
                 saveGame();
             }
-            SfxController.getInstance().fadeMusic();
+//            SfxController.getInstance().fadeMusic();
             drawTransition();
         }
     }
@@ -484,15 +480,6 @@ public class WorldController implements Screen, ContactListener {
         canvas.draw(star > 0 ? filledStar : emptyStar, padding, canvas.getHeight() - size);
         canvas.draw(star > 1 ? filledStar : emptyStar, size + padding, canvas.getHeight() - size);
         canvas.draw(star > 2 ? filledStar : emptyStar, 2 * size + padding, canvas.getHeight() - size);
-//        if(star > 0){
-//            canvas.draw(this.star, 0, canvas.getHeight() - this.star.getRegionHeight());
-//        }
-//        if(star > 1){
-//            canvas.draw(this.star, this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
-//        }
-//        if(star > 2){
-//            canvas.draw(this.star, 2 * this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
-//        }
         canvas.end();
     }
 
@@ -927,7 +914,7 @@ public class WorldController implements Screen, ContactListener {
                 s.setDestroyed(true);
                 SfxController.getInstance().playSFX("spear_enemy_hit");
             }
-        } else if (g.getType() == GameObject.ObjectType.ROCK || g.getType() == GameObject.ObjectType.OBSTACLE) {
+        } else if (g.getType() == GameObject.ObjectType.STATIONARY) {
             SfxController.getInstance().playSFX("spear_break");
             s.setDestroyed(true);
         } else if (g.getType() == GameObject.ObjectType.SHIPWRECK){
@@ -980,10 +967,10 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
-        } else if(g.getType() == GameObject.ObjectType.ROCK){
-            if(((Rock) g).isSharp()) {
+        } else if(g.getType() == GameObject.ObjectType.STATIONARY){
+            if(((Stationary) g).isSharp()) {
                 if (!r.isDamaged()) {
-                    r.addHealth(Rock.getDAMAGE());
+                    r.addHealth(Stationary.getSharpRockDamage());
                     r.setDamaged(true);
                     Timer.schedule(new Timer.Task() {
                         @Override
@@ -1116,9 +1103,11 @@ public class WorldController implements Screen, ContactListener {
         }
 
         // update shader color palette
-        String pref_palette = level_int < 6 ? "colors_light" :
-                              level_int < 10 ? "colors_natural" :
-                              "colors_purple";
+        int diff = levelModel.getDifficulty();
+        String pref_palette = diff == 0 ? "colors_light" :
+                              diff == 1 ? "colors_natural" :
+                              diff == 2 ? "colors_purple" :
+                              "colors_natural";
         String[] shaderColorStrings = shaderData.get(pref_palette).asStringArray();
         float[] shaderColors = new float[3*shaderColorStrings.length];
         for (int i = 0; i < shaderColorStrings.length; i ++) {
@@ -1142,5 +1131,4 @@ public class WorldController implements Screen, ContactListener {
         SfxController.getInstance().haltMusic();
         setLevel(level_id);
     }
-
 }

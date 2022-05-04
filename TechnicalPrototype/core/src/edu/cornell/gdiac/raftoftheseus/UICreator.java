@@ -1,12 +1,15 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import edu.cornell.gdiac.raftoftheseus.MenuMode;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 
@@ -28,6 +31,18 @@ public class UICreator {
 
     public static TextButton createTextButton(String name, Skin skin, float fontSize, Color c){
         TextButton button = new TextButton(name, skin);
+        button.getLabel().setFontScale(fontSize);
+        button.getLabel().setColor(c);
+        return button;
+    }
+
+    public static TextButton createTextButton(String name, Skin skin, float fontSize, Color c, Texture background) {
+        TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(background));
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.up = drawable;
+        buttonStyle.down = drawable.tint(Color.GRAY);
+        buttonStyle.font = skin.getFont("default-font");
+        TextButton button = new TextButton(name, buttonStyle);
         button.getLabel().setFontScale(fontSize);
         button.getLabel().setColor(c);
         return button;
