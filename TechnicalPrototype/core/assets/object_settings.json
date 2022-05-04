@@ -106,11 +106,11 @@
   "stationary": {
     "rock width": 2.5,
     "rock height": 1.4,
-    "terrain width": 3,
-    "terrain height": 3,
+    "terrain size": 3,
+    "plant size" : 2,
     "sharp rock damage": -15,
-    "sharp rock restitution" : 0.7,
-    "plant radius" : 2
+    "sharp rock restitution" : 0.7
+
   },
   "terrain": {
   },
