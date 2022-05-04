@@ -151,6 +151,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
      */
     private void setParameters(){
         physicsObject = new WheelObstacle(RADIUS);
+        physicsObject.setRestitution(.75f);
         setPosition(waypoints.get(0));
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;

@@ -964,7 +964,7 @@ public class WorldController implements Screen, ContactListener {
                     public void run() {
                         r.setDamaged(false);
                     }
-                }, 1.5f, 1, 1);
+                }, 2f, 1, 1);
             }
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
@@ -983,7 +983,7 @@ public class WorldController implements Screen, ContactListener {
                         public void run() {
                             r.setDamaged(false);
                         }
-                    }, 1.5f, 1, 1);
+                    }, 2, 1, 1);
                 }
             }
         } else if(g.getType() == GameObject.ObjectType.NOTE){

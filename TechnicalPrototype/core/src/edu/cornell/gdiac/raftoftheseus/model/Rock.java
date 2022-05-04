@@ -38,6 +38,7 @@ public class Rock extends GameObject {
         physicsObject = new BoxObstacle(WIDTH, HEIGHT);
 //        physicsObject = new WheelObstacle(RADIUS);
         setPosition(position);
+        physicsObject.setRestitution(.75f);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
         physicsObject.getFilterData().maskBits = MASK_TERRAIN;

@@ -84,6 +84,7 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
         super(raft);
         physicsObject = new WheelObstacle(RADIUS);
         setPosition(position);
+        physicsObject.setRestitution(.75f);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
         physicsObject.getFilterData().maskBits = MASK_ENEMY;
