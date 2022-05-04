@@ -180,9 +180,13 @@ public class LevelModel {
     /** Texture for all treasures */
     private FilmStrip treasureTexture;
     /** Texture for wood pieces that represent single pile of log */
-    private TextureRegion woodTexture;
+    private TextureRegion woodSTexture;
     /** Texture for wood pieces that represents double pile of logs */
-    private TextureRegion doubleTexture;
+    private TextureRegion woodMTexture;
+    /** Texture for wood pieces that represent single pile of log */
+    private TextureRegion woodRTexture;
+    /** Texture for wood pieces that represents double pile of logs */
+    private TextureRegion woodLTexture;
     /** Texture for all target, as they look the same */
     private TextureRegion targetTexture;
     /** Texture for all rock, as they look the same */
@@ -721,17 +725,21 @@ public class LevelModel {
     private void addWood(int row, int col, int value) {
         computePosition(col, row);
         Wood wood = new Wood(compute_temp, value);
+        wood.setTexture(findWoodTexture(value));
+        addObject(wood);
+    }
+
+    private TextureRegion findWoodTexture(int value){
         switch (value){
             case Wood.LOW_WOOD:
-                wood.setTexture(woodTexture); break;
+                return woodSTexture;
             case Wood.MIDDLE_WOOD:
-                wood.setTexture(doubleTexture); break;
+                return woodMTexture;
             case Wood.HIGH_WOOD:
-                wood.setTexture(doubleTexture); break;
+                return woodLTexture;
             case Wood.REGULAR_WOOD: default:
-                wood.setTexture(woodTexture); break;
+                return woodRTexture;
         }
-        addObject(wood);
     }
 
     /** Add wood Objects to the world, using the Json value for goal
@@ -859,8 +867,10 @@ public class LevelModel {
     public void gatherAssets() {
         raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 8, 5, 40);// TODO: use data-driven design for rows/cols/size
         raftAura = new FilmStrip(directory.getEntry("raft_aura", Texture.class), 2, 5);
-        woodTexture = new TextureRegion(directory.getEntry("wood", Texture.class));
-        doubleTexture = new TextureRegion(directory.getEntry("double", Texture.class));
+        woodSTexture = new TextureRegion(directory.getEntry("woodS", Texture.class));
+        woodMTexture = new TextureRegion(directory.getEntry("woodM", Texture.class));
+        woodRTexture = new TextureRegion(directory.getEntry("woodR", Texture.class));
+        woodLTexture = new TextureRegion(directory.getEntry("woodL", Texture.class));
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
@@ -962,7 +972,7 @@ public class LevelModel {
     /** Add wood Objects to random location in the world */
     public void addWood(Vector2 pos, int value) {
         Wood this_wood = new Wood(pos, value);
-        this_wood.setTexture(doubleTexture); // TODO use correct wood texture
+        this_wood.setTexture(findWoodTexture(value));
         addQueuedObject(this_wood);
     }
 
