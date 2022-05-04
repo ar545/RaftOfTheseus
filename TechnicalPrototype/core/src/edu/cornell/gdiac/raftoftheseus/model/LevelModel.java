@@ -90,6 +90,7 @@ public class LevelModel {
         public static final int PLANT_COUNT = CAPYBARA - PLANT + 1;
         /** Total variation of terrains */
         private static final int TERRAIN_TYPES = SEA - LAND_OFFSET - 1;
+        private static final int FULL_LAND = 7;
     }
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
@@ -111,6 +112,7 @@ public class LevelModel {
     public static final int BAR_PLAYER_OFFSET = 70;
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
+    private static final int DIFFICULTY_COUNT = 3;
 
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
@@ -651,8 +653,8 @@ public class LevelModel {
             case Tiled.ROCK_ALONE: return Stationary.StationaryType.REGULAR_ROCK;
             case Tiled.ROCK_SHARP: return Stationary.StationaryType.SHARP_ROCK;
             default:
-                if(tile_int > Tiled.SEA && tile_int < Tiled.CAPYBARA) { return Stationary.StationaryType.TERRAIN; }
-                else{ return Stationary.StationaryType.CLIFF_TERRAIN; }
+                if(tile_int > Tiled.SEA && tile_int < Tiled.CAPYBARA) { return Stationary.StationaryType.CLIFF_TERRAIN; }
+                else{ return Stationary.StationaryType.TERRAIN; }
         }
     }
 
@@ -714,10 +716,10 @@ public class LevelModel {
                 Stationary plant = new Stationary(compute_temp, type, rock_int);
                 plant.setTexture(plantTexture[-rock_int - 1]);
                 addObject(plant);
-                rock_int = 7;
+                rock_int = Tiled.FULL_LAND;
             default: // terrain or cliff terrain
                 this_rock = new Stationary(compute_temp, type, rock_int);
-                temp = terrain[difficulty][rock_int - 1];
+                temp = terrain[(type == Stationary.StationaryType.TERRAIN ? difficulty : difficulty + DIFFICULTY_COUNT)][rock_int - 1];
                 break;
         }
         this_rock.setTexture(temp);
@@ -949,14 +951,15 @@ public class LevelModel {
     }
 
     private void gatherTerrainAssets(Texture terrainTexture) {
-        terrain = new TextureRegion[3][Tiled.TERRAIN_TYPES];
+        terrain = new TextureRegion[2 * DIFFICULTY_COUNT][Tiled.TERRAIN_TYPES];
         int width = terrainTexture.getWidth() / Tiled.TERRAIN_TYPES;
-        int height = width;
-        for(int row = 0; row < 3; row ++) {
-            boolean high_terrain = (row == 2);
+        int height = width; // known to be square
+        for(int row = 0; row < DIFFICULTY_COUNT; row ++) {
             for(int col = 0; col < Tiled.TERRAIN_TYPES; col++){
                 terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
-                        width - 2, height*(high_terrain ? 2 : 1) - 2);
+                        width - 2, height - 2); // low terrain
+                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                        width - 2, height*(2) - 2); // high terrain
             }
         }
     }
@@ -1282,6 +1285,9 @@ public class LevelModel {
                 return 1;
             } else if (b.getType() == GameObject.ObjectType.SIREN || b.getType() == GameObject.ObjectType.NOTE){
                 return -1;
+            } else if (a.getType() == GameObject.ObjectType.STATIONARY && b.getType() == GameObject.ObjectType.STATIONARY){
+                Stationary sa = (Stationary) a; Stationary sb = (Stationary) b;
+                if(sa.isPlant()){return 1;} if(sb.isPlant()){return -1;}
             }
             return (int) Math.signum(b.getY() - a.getY());
         }
