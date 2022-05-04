@@ -4,22 +4,22 @@
 	{
 		"name": "Level 0",
 		"level": 0,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": true
 	},
 	{
 		"name": "Level 1",
 		"level": 1,
-		"complete": false,
-		"score": 0,
-		"unlocked": false
+		"complete": true,
+		"score": 3,
+		"unlocked": true
 	},
 	{
 		"name": "Level 2",
 		"level": 2,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": true
 	},
 	{
@@ -32,8 +32,8 @@
 	{
 		"name": "Level 4",
 		"level": 4,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": false
 	},
 	{
@@ -41,7 +41,7 @@
 		"level": 5,
 		"complete": true,
 		"score": 3,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 6",

@@ -14,7 +14,7 @@ public class Wood extends GameObject {
 
     // CONSTANTS
     /** the wood health scale */
-    private final static float WOOD_HEALTH_SCALE = 4f;
+    private final static float WOOD_HEALTH_SCALE = 3f;
     /** the maximum log generated for each pile of wood */
     private final static int RANDOM_WOOD_GENERATION = 5;
 

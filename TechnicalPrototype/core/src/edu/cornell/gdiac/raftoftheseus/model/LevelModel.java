@@ -79,21 +79,32 @@ public class LevelModel {
     private static final int TILE_WEST_NORTH = 13;
     /** Offset of north current in tile set index */
     private static final int TILE_NORTH = 14;
+    /** Strong current offset */
+    private static final int TILE_STRONG_CURRENT = 14;
     /** Index of the representation of treasure in tile set texture */
     private static final int TILE_TREASURE = 15;
-    /** Index of the representation of default wood in tile set texture */
-    private static final int TILE_WOOD_OFFSET = 15;
+    /** Index of the representation of wood with the lowest amount in tile set texture */
+    private static final int TILE_WOOD_LOW = 16;
+    /** Index of the representation of wood with the second-lowest amount  in tile set texture */
+    private static final int TILE_WOOD_MIDDLE = 17;
     /** Index of the representation of wreck in tile set texture */
-    private static final int TILE_WRECK = 28;
+    private static final int TILE_WRECK = 22;
+    /** Index of the representation of wood with the default amount  in tile set texture */
+    private static final int TILE_WOOD_DEFAULT = 23;
+    /** Index of the representation of wood with the highest amount  in tile set texture */
+    private static final int TILE_WOOD_HIGH = 24;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_LAND_OFFSET = 28;
     /** Index of the representation of default current in tile set texture */
     private static final int TILE_SEA = 42;
-    private static final int TILE_STRONG_CURRENT = 42;
+    /** the offset for sand textures */
+    private static final int TILE_SAND_OFFSET = 42;
     /** Index of the representation of plant in tile set texture */
-    private static final int TILE_PLANT = 45;
+    private static final int TILE_PLANT = 56;
     /** Index of the representation of plant in tile set texture */
-    private static final int TILE_HYDRA = 50;
+    private static final int TILE_PLANT_END = 62;
+    /** Index of the representation of plant in tile set texture */
+    private static final int TILE_HYDRA = 63;
     /** Total variation of terrains */
     private static final int TERRAIN_TYPES = TILE_SEA - TILE_LAND_OFFSET - 1;
 
@@ -106,7 +117,7 @@ public class LevelModel {
     private static final int LAYER_SIREN = 2;
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.05f;
-    private static final int TILE_NON_ROCK = 16;
+    private static final int ROCK_NOT = Integer.MAX_VALUE;
     private static final int ROCK_REGULAR = 0;
     private static final int ROCK_SHARP = -1;
     private static final int ROCK_PLANT = -2;
@@ -584,13 +595,11 @@ public class LevelModel {
         if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
         if (tile_int == TILE_ENEMY_SIREN){ return; } // TODO: undefined behavior
         if (tile_int == TILE_HYDRA){ addEnemy(row, col, false); return; }
-        if (tile_int == TILE_WRECK){ addWood(row, col, 40); return; }
-        if (tile_int == TILE_LAND_OFFSET - 1){ addWood(row, col, 20); return; }
-        if (tile_int == TILE_LAND_OFFSET - 2){ addWood(row, col, 15); return; }
-        if (tile_int > TILE_WOOD_OFFSET && tile_int < TILE_LAND_OFFSET){
-            addWood(row, col, tile_int - TILE_WOOD_OFFSET);
-            return;
-        }
+        if (tile_int == TILE_WRECK){ addWood(row, col, 30); return; }
+        if (tile_int == TILE_WOOD_LOW){ addWood(row, col, 10); return; }
+        if (tile_int == TILE_WOOD_MIDDLE){ addWood(row, col, 15); return; }
+        if (tile_int == TILE_WOOD_DEFAULT){ addWood(row, col, 20); return; }
+        if (tile_int == TILE_WOOD_HIGH){ addWood(row, col, 25); return; }
         // This function should never reach here.
         System.out.println("Un-parse-able information detected in collectable layer:" + tile_int);
         addWood(row, col, 1);
@@ -603,26 +612,34 @@ public class LevelModel {
     private void populateEnv(int row, int col, int tile_int, boolean top_row) {
         currentField.field[col][row] = ZERO_VECTOR_2;
         int rockInt = computeRockInt(tile_int);
-        if(rockInt != TILE_NON_ROCK){
+        if(rockInt != ROCK_NOT){
             if(top_row) { populateExtendLand(row, col, rockInt); }
             addRock(row, col, rockInt);
         }else{
             if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
             if (tile_int == TILE_START) { addRaft(row, col); return; }
             if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
-            if (tile_int < TILE_WOOD_OFFSET) {addCurrent(row, col, compute_direction(tile_int), false); return;}
-            if (tile_int > TILE_PLANT) {addCurrent(row, col, compute_direction(tile_int - TILE_STRONG_CURRENT), true); return; }
+            if (tile_int == TILE_WRECK){ addWood(row, col, 30); return; }
+            if (tile_int < TILE_TREASURE) {addCurrent(row, col, compute_direction(tile_int), false); return;}
+            if (isStrongCurrent(tile_int)) {addCurrent(row, col, compute_direction(tile_int - TILE_STRONG_CURRENT), true); return; }
             System.out.println("Un-parse-able information detected in environment layer:" + tile_int);
         }
+    }
+
+    private boolean isStrongCurrent(int tile_int){
+        int div = tile_int % 7;
+        if(div == 1 || div == 2 || div == 3) {return false;}
+        return (tile_int <= TILE_LAND_OFFSET && tile_int > TILE_TREASURE);
     }
 
     /** Compute the rock_int according to the tile_int: 0 for reg, 1-13 for land, -1 for sharp, -2 for plant */
     private int computeRockInt(int tile_int){
         if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){ return tile_int - TILE_LAND_OFFSET; }
+        if (tile_int > TILE_SAND_OFFSET && tile_int < TILE_PLANT){ return tile_int - TILE_SAND_OFFSET; } // TODO: differ
+        if (tile_int >= TILE_PLANT && tile_int <= TILE_PLANT_END){ return ROCK_PLANT; } // TODO: differ
         if (tile_int == TILE_ROCK_ALONE){ return ROCK_REGULAR; }
         if (tile_int == TILE_ROCK_SHARP){ return ROCK_SHARP; }
-        if (tile_int <= TILE_PLANT && tile_int > TILE_SEA){ return ROCK_PLANT; }
-        return TILE_NON_ROCK;
+        return ROCK_NOT;
     }
 
     /** Compute the direction of the current base on the level json input
@@ -1330,7 +1347,7 @@ public class LevelModel {
         switch (tile_int){
             case 1: case 2:
                 return tile_int + 7;
-            case 3: case 4: case 7: case 13:
+            case 3: case 4: case 7: case 13: case ROCK_PLANT:
                 return 7;
             case 5:
                 return 13;
@@ -1338,7 +1355,7 @@ public class LevelModel {
                 return 6;
             case 8: case 11: case 12:
                 return 12;
-            case 0: case -1:
+            case ROCK_REGULAR: case ROCK_SHARP:
                 return 0;
             default:
                 return -1;
