@@ -18,6 +18,7 @@ import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 
 public class SettingsMode implements Screen {
 
@@ -35,14 +36,15 @@ public class SettingsMode implements Screen {
     private Slider musicSlider;
     /** Slider for sound effects */
     private Slider soundEffectsSlider;
-    /** Texture for the WASD icon */
-    private Texture wasdIcon;
-    /** Texture for the arrows icon */
-    private Texture arrrowsIcon;
-    /** Texture for the key (pt 1) */
-    private Texture keysIcon1;
-    /** Texture for the key (pt 2) */
-    private Texture keysIcon2;
+    /** Background for single key */
+    private Texture singleKeyBackground;
+    /** Background for short text key  */
+    private Texture shortTextKeyBackground;
+    /** Background for long text key */
+    private Texture longTextKeyBackground;
+
+    /** TextButton for accessibility */
+    TextButton accessibilityButton;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
@@ -75,6 +77,8 @@ public class SettingsMode implements Screen {
     private int EXIT_MENU;
     /** Whether this player mode is still active */
     private boolean active;
+    /** Whether accessibility mode is turned on */
+    private boolean accessibilityModeActive;
 
     /**
      * Creates a SettingsMode with the default size and position.
@@ -87,6 +91,7 @@ public class SettingsMode implements Screen {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
+        accessibilityModeActive = true;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
     }
 
@@ -97,10 +102,9 @@ public class SettingsMode implements Screen {
      */
     public void populate(AssetDirectory directory) {
         background = directory.getEntry("sea_background", Texture.class);
-        wasdIcon = directory.getEntry("settings_wasd", Texture.class);
-        arrrowsIcon = directory.getEntry("settings_arrows", Texture.class);
-        keysIcon1 = directory.getEntry("settings_keys_1", Texture.class);
-        keysIcon2 = directory.getEntry("settings_keys_2", Texture.class);
+        singleKeyBackground = directory.getEntry("single_key_background", Texture.class);
+        shortTextKeyBackground = directory.getEntry("short_text_key_background", Texture.class);
+        longTextKeyBackground = directory.getEntry("long_text_key_background", Texture.class);
         sliderKnob = directory.getEntry("slider_knob", Texture.class);
         sliderBar = directory.getEntry("slider_bar", Texture.class);
     }
@@ -153,12 +157,12 @@ public class SettingsMode implements Screen {
         table.row();
 
         Table part2 = new Table();
-        part2.add(UICreator.createLabel("SETTINGS", skin, 0.6f)).expandX().align(Align.center);
+        part2.add(UICreator.createLabel("SETTINGS", skin, 0.85f)).expandX().align(Align.center);
         table.add(part2).padTop(-50);
         table.row();
 
         Table part3 = new Table();
-        part3.add(UICreator.createLabel("VOLUME", skin, 0.5f)).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("VOLUME", skin, 0.6f)).padLeft(80).expandX().align(Align.left);
         part3.row();
         part3.add(UICreator.createLabel("MUSIC", skin, 0.4f)).padLeft(100).expandX().align(Align.left);
 
@@ -204,25 +208,60 @@ public class SettingsMode implements Screen {
         part3.add(soundEffectsValueLabel).align(Align.left).width(80).padLeft(60);
         part3.row();
 
-        part3.add(UICreator.createLabel("KEYBOARD SCHEME", skin, 0.5f)).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("ACCESSIBILITY", skin, 0.6f)).padLeft(80).expandX().align(Align.left);
         part3.row();
 
-        Image wasdImage = new Image(wasdIcon);
-        Image arrowsImage = new Image(arrrowsIcon);
-        part3.add(wasdImage).size(212, 130).expandX().padLeft(100).align(Align.left);
-        part3.add(arrowsImage).size(212, 130).align(Align.left).padLeft(-200);
+        Table part3a = new Table();
+        part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin, 0.4f));
+        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, 0.4f, Color.WHITE, shortTextKeyBackground);
+        accessibilityButton.addListener(UICreator.createListener(accessibilityButton, Color.GRAY, Color.WHITE, this::changeAccessibilityMode));
+        part3a.add(accessibilityButton).padLeft(30).width(100);
+        part3.add(part3a).padLeft(-30);
         part3.row();
 
-        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin, 0.5f)).padLeft(80);
+        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin, 0.6f)).padLeft(80);
         part3.row();
+        table.add(part3).padTop(-50);
+        table.row();
 
-        Image keysImage1 = new Image(keysIcon1);
-        part3.add(keysImage1).size(412, 78).padLeft(100).align(Align.left).expandX();
-        Image keysImage2 = new Image(keysIcon2);
-        part3.add(keysImage2).size(412, 78).expandX().align(Align.left).padLeft(-80);;
-        table.add(part3);
+        Table part4 = new Table();
+        int keysPadding = 30;
+        part4.add(UICreator.createLabel("MAP", skin, 0.4f)).padRight(keysPadding);
+        TextButton mapKeyButton = UICreator.createTextButton("M", skin, 0.4f, Color.WHITE, singleKeyBackground);
+        mapKeyButton.addListener(UICreator.createListener(mapKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        part4.add(mapKeyButton).padRight(keysPadding);
+
+        part4.add(UICreator.createLabel("FIRE", skin, 0.4f)).padRight(keysPadding);
+        TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, 0.4f, Color.WHITE, longTextKeyBackground);
+        fireKeyButton.addListener(UICreator.createListener(fireKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        part4.add(fireKeyButton).padRight(keysPadding);
+
+        part4.add(UICreator.createLabel("RESTART", skin, 0.4f)).padRight(keysPadding);
+        TextButton restartKeyButton = UICreator.createTextButton("R", skin, 0.4f, Color.WHITE, singleKeyBackground);
+        restartKeyButton.addListener(UICreator.createListener(restartKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        part4.add(restartKeyButton).padRight(keysPadding);
+
+        part4.add(UICreator.createLabel("PAUSE", skin, 0.4f)).padRight(keysPadding);
+        TextButton pauseKeyButton = UICreator.createTextButton("Esc", skin, 0.4f, Color.WHITE, shortTextKeyBackground);
+        pauseKeyButton.addListener(UICreator.createListener(pauseKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        part4.add(pauseKeyButton).padRight(keysPadding);
+        table.add(part4);
         table.row();
     }
+
+    /** Change the appropriate key mapping */
+    private void changeKeyMapping() {
+        System.out.println("TODO : change key mapping");
+    }
+
+    /** Set accessibility mode */
+    private void changeAccessibilityMode() {
+        // TODO
+        accessibilityModeActive = !accessibilityModeActive;
+        accessibilityButton.setText(accessibilityModeActive ? "ON" : "OFF");
+    }
+
+
 
     /** Draw the status of this player mode. */
     private void draw() {

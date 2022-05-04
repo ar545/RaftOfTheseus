@@ -382,9 +382,6 @@ public class MenuMode implements Screen {
 
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
-        // TODO - redo this to just have 0 - 9 and recalculate with + 10 for every page other than the first page
-        // page * index -> page 0 * 0 = 0, page 0  * levels per page + number 1 = 1,
-        // formula: page * levels per page + number
         int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
         int padding = 170;
         int[][] buttonPadding = new int[][] {

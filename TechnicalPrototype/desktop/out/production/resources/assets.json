@@ -47,6 +47,7 @@
       "radial_bar" : "images/radial_bar_filled.png",
       "reticle" : "images/reticle.png",
       "empty_star": "images/empty_star.png",
+      "pause_button": "images/pause_button.png",
       "filled_star": "images/filled_star.png",
       "plant":     "images/plant.png",
       "fuel": "images/fuel.png",
