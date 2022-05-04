@@ -48,10 +48,12 @@ public class Stationary extends GameObject {
         REGULAR_ROCK,
         SHARP_ROCK,
         TERRAIN,
+        CLIFF_TERRAIN,
         PLANT,
         WALL
     }
     private final StationaryType stationaryType;
+    protected final int terrainType = 0;
 
     @Override
     public ObjectType getType() {
@@ -75,7 +77,7 @@ public class Stationary extends GameObject {
                 physicsObject.setRestitution(SHARP_ROCK_BOUNCE);
                 this.sharp = true;
                 break;
-            case TERRAIN:
+            case TERRAIN: case CLIFF_TERRAIN:
                 initBoxBody(TERRAIN_WIDTH, TERRAIN_HEIGHT);
                 break;
             case PLANT:
