@@ -128,6 +128,8 @@ public class LevelModel {
     private Rectangle bounds;
     /** The amount of treasure in the level */
     private int treasureCount;
+    /** The difficulty of the level (0 = easy, 1 = medium, 2 = hard) */
+    private int difficulty;
     /** The map size in grid */
     protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
     /** Vector 2 holding the temp position vector for the game object to create */
@@ -189,7 +191,7 @@ public class LevelModel {
     /** Texture for map background */
     protected Texture mapBackground;
     /** an array of texture region representing the terrain */
-    protected TextureRegion[] terrain;
+    protected TextureRegion[][] terrain;
     /** Texture for water */
     protected Texture waterTexture;
     /** Texture for wall */
@@ -443,6 +445,8 @@ public class LevelModel {
             // Reset boundary of world
             setBound();
         }
+        // set difficulty
+        setDifficulty(level_int);
         // Add wall to the world
         computeWall(bounds.width, bounds.height);
         // Set current field
@@ -455,6 +459,14 @@ public class LevelModel {
         if (USE_SHADER) {
             canvas.setDataMaps(recalculateFlowMap(), recalculateSurfMap());
         }
+    }
+
+    private void setDifficulty(int level_int) {
+        difficulty = level_int < 6 ? 0 : (level_int < 10 ? 1 : 2);
+    }
+
+    public int getDifficulty() {
+        return difficulty;
     }
 
     /** Calculate the world bounds base on the grid map. Set the physical boundary of the level and the world.
@@ -654,7 +666,7 @@ public class LevelModel {
         if (tile_int == ROCK_PLANT) { this_rock.setTexture(plantTexture); }
         else if (tile_int == ROCK_SHARP) { this_rock.setTexture(sharpRockTexture); }
         else if (tile_int == ROCK_REGULAR) { this_rock.setTexture(regularRockTexture); }
-        else { this_rock.setTexture(terrain[tile_int - 1]); }
+        else { this_rock.setTexture(terrain[difficulty][tile_int - 1]); }
         if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
         addObject(this_rock);
     }
@@ -856,10 +868,15 @@ public class LevelModel {
     }
 
     private void gatherTerrainAssets(Texture terrainTexture) {
-        terrain = new TextureRegion[TERRAIN_TYPES];
+        terrain = new TextureRegion[3][TERRAIN_TYPES];
         int width = terrainTexture.getWidth() / TERRAIN_TYPES;
-        for(int i = 0; i < TERRAIN_TYPES; i++){
-            terrain[i] = new TextureRegion(terrainTexture, width * i + 1, 0, width - 2, terrainTexture.getHeight());
+        int height = width;
+        for(int row = 0; row < 3; row ++) {
+            boolean high_terrain = (row == 2);
+            for(int col = 0; col < TERRAIN_TYPES; col++){
+                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                        width - 2, height*(high_terrain ? 2 : 1) - 2);
+            }
         }
     }
 
