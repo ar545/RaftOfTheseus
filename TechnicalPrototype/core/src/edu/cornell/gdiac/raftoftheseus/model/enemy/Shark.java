@@ -3,16 +3,18 @@ package edu.cornell.gdiac.raftoftheseus.model.enemy;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.TimeUtils;
 import edu.cornell.gdiac.raftoftheseus.model.*;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.util.Animated;
+import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class Shark extends GameObject implements Animated {
+public class Shark extends Enemy<Shark, SharkState> implements Animated {
     /**
      * Method to fill in all constants for the Shark
      * @param objParams the JsonValue with heading "shark".
@@ -40,7 +42,6 @@ public class Shark extends GameObject implements Animated {
     }
 
     /** The player for targeting. */
-    private Raft targetRaft;
     private Vector2 aimDirection = new Vector2(0, 0);
     /** How the Shark wants to move. */
     private Vector2 desiredVelocity = new Vector2();
@@ -80,14 +81,15 @@ public class Shark extends GameObject implements Animated {
      * @param raft the player
      */
     public Shark(Vector2 position, Raft raft){
+        super(raft);
         physicsObject = new WheelObstacle(RADIUS);
         setPosition(position);
+        physicsObject.setRestitution(.75f);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
         physicsObject.getFilterData().maskBits = MASK_ENEMY;
         desiredVelocity.set(0.0f, 0.0f);
         stateMachine = new DefaultStateMachine<>(this, SharkState.IDLE);
-        this.targetRaft = raft;
         canSee = false;
     }
 
@@ -118,20 +120,6 @@ public class Shark extends GameObject implements Animated {
         return ObjectType.SHARK;
     }
 
-    // Timing
-    /** Method to start recording time for transitioning between states. */
-    public void setTimeStamp(){
-        if(!timeStamped) {
-            timeStamp = TimeUtils.millis();
-            timeStamped = true;
-        }
-    }
-    /** Method to allow a new time stamp. */
-    public void resetTimeStamp(){ timeStamped = false; }
-
-    /** @return Whether the given period of time (in seconds) has elapsed since the last call to resetTimeStamp. */
-    public boolean hasTimeElapsed(float time){ return TimeUtils.timeSinceMillis(timeStamp) > time*1000; }
-
     // Attacking player
     public boolean isAggressive() {
         return stateMachine.isInState(SharkState.APPROACH) || stateMachine.isInState(SharkState.PAUSE_BEFORE_ATTACK)
@@ -159,19 +147,16 @@ public class Shark extends GameObject implements Animated {
     }
 
     /**  */
-    public Vector2 getTargetDirection() {
-        return targetRaft.getPosition().cpy().add(targetRaft.getLinearVelocity().cpy().scl(0.25f)).sub(getPosition()).nor();
-    }
-
-    public float getTargetDistance() {
-        return targetRaft.getPosition().cpy().sub(getPosition()).len();
+    @Override
+    public Vector2 getTargetDirection(Vector2 playerCurrentVelocity) {
+        return player.getPosition().cpy().add(player.getLinearVelocity().cpy().scl(0.25f)).sub(getPosition()).nor();
     }
 
     public void setDesiredVelocity(float speed, boolean aimingAtPlayer) {
         if (speed == 0.0f)
             desiredVelocity.set(0,0);
         else if(aimingAtPlayer) {
-            aimDirection = getTargetDirection();
+            aimDirection = getTargetDirection(null);
             desiredVelocity.set(aimDirection).scl(speed);
         } else {
             // aim using last-used direction
@@ -187,6 +172,11 @@ public class Shark extends GameObject implements Animated {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setStunTexture(TextureRegion value) {
+
     }
 
     @Override
@@ -213,7 +203,7 @@ public class Shark extends GameObject implements Animated {
                 fc.setFrame(BITE_AS, BITE_SF, BITE_FRAMES, false);
                 break;
         }
-        setTextureXOrientation(false);
+        setTextureXOrientation(true);
     }
 
     public boolean isDoneWithAttackAnimation() {

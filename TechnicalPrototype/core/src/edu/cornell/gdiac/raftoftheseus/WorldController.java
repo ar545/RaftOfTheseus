@@ -232,6 +232,9 @@ public class WorldController implements Screen, ContactListener {
         for(Shark s : levelModel.getSharks()){
             s.setAnimationFrame(dt);
         }
+        for(Treasure s: levelModel.getTreasure()){
+            s.setAnimationFrame(dt);
+        }
 
         // Update raft samples (for displaying the wake in the shader) before drawing water
         updateRaftWakeSamples();
@@ -958,25 +961,38 @@ public class WorldController implements Screen, ContactListener {
                     return; // ignore collisions with underwater shark
             }
             // update player health
-            r.addHealth(Shark.CONTACT_DAMAGE);
-            SfxController.getInstance().playSFX("raft_damage");
+            if(!r.isDamaged()) {
+                r.addHealth(Shark.CONTACT_DAMAGE);
+                SfxController.getInstance().playSFX("raft_damage");
 //            g.setDestroyed(true);
-            r.setDamaged(true);
-            Timer.schedule(new Timer.Task(){
-                @Override
-                public void run() {
-                    r.setDamaged(false);
-                }
-            }, .1f, 1, 1);
+                r.setDamaged(true);
+                Timer.schedule(new Timer.Task() {
+                    @Override
+                    public void run() {
+                        r.setDamaged(false);
+                    }
+                }, 2f, 1, 1);
+            }
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             addScore();
-            g.setDestroyed(true);
+            ((Treasure) g).setCollected(true);
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
         } else if(g.getType() == GameObject.ObjectType.ROCK){
-            if(((Rock) g).isSharp()) r.addHealth(Rock.getDAMAGE());
+            if(((Rock) g).isSharp()) {
+                if (!r.isDamaged()) {
+                    r.addHealth(Rock.getDAMAGE());
+                    r.setDamaged(true);
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            r.setDamaged(false);
+                        }
+                    }, 2, 1, 1);
+                }
+            }
         } else if(g.getType() == GameObject.ObjectType.NOTE){
             r.setProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);

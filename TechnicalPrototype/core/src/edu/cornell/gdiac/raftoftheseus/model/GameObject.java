@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
+import edu.cornell.gdiac.raftoftheseus.model.util.TextureHolder;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 
 /**
@@ -142,16 +143,13 @@ public abstract class GameObject {
     }
 
 
-    /**
-     * Returns true if this object is destroyed.
-     */
+    /** Returns true if this object is destroyed. */
     public boolean isDestroyed() {
         return physicsObject.isRemoved();
     }
 
     /**
      * Sets whether this object is destroyed.
-     *
      * @param value whether this object is destroyed
      */
     public void setDestroyed(boolean value) {
@@ -160,7 +158,6 @@ public abstract class GameObject {
 
     /**
      * Draws the texture physics object.
-     *
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
@@ -169,12 +166,25 @@ public abstract class GameObject {
 
     /**
      * Draws the texture physics object.
-     *
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas, Color color) {
         if (texture != null) {
             canvas.draw(texture, color, origin.x, origin.y, getX() + textureOffset.x, getY() + textureOffset.y, getAngle(), textureScale.x, textureScale.y);
+        }
+    }
+
+    /**
+     * Drawing an additional texture for a GameObject.
+     * @param canvas drawing context
+     * @param holder the additional texture
+     * @param color the color
+     */
+    public void draw(GameCanvas canvas, TextureHolder holder) {
+        if (holder.texture != null) {
+            canvas.draw(holder.texture, holder.color, holder.origin.x, holder.origin.y,
+                    getX() + holder.textureOffset.x, getY() + holder.textureOffset.y,
+                    getAngle(), holder.textureScale.x, holder.textureScale.y);
         }
     }
 
@@ -214,10 +224,10 @@ public abstract class GameObject {
     public boolean negXVel(){ return getLinearVelocity().x < 0; }
     public int setTextureXOrientation(boolean reverse){
         if(posXVel()){
-            textureScale.x = reverse ? -1 : 1 * Math.abs(textureScale.x);
+            textureScale.x = (reverse ? -1 : 1) * Math.abs(textureScale.x);
             return 1;
         } else if(negXVel()){
-            textureScale.x = reverse ? 1 : -1 * Math.abs(textureScale.x);
+            textureScale.x = (reverse ? 1 : -1) * Math.abs(textureScale.x);
             return -1;
         }
         return 1;

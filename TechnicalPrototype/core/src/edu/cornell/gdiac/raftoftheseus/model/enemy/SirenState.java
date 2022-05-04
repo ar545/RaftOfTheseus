@@ -8,19 +8,23 @@ public enum SirenState implements State<Siren> {
     IDLE() {
         @Override
         public void update (Siren entity){
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Siren.IDLE_TIME)) {
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Siren.IDLE_TIME, true)) {
                 entity.getStateMachine().changeState(SINGING);
             }
         }
     },
     SINGING() {
         @Override
+        public void enter(Siren entity) {
+        }
+
+        @Override
         public void update (Siren entity){
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Siren.SINGING_TIME)) {
-                entity.resetAttackStamp();
-                entity.resetTimeStamp();
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Siren.SINGING_TIME, true)) {
+                entity.attackTimer.resetTimeStamp();
+                entity.attackTimer.setTimeStamp();
                 if(entity.isStationary()) entity.getStateMachine().changeState(IDLE);
                 else {
                     entity.setMoveVector();
@@ -60,10 +64,9 @@ public enum SirenState implements State<Siren> {
     STUNNED(){
         @Override
         public void update(Siren entity) {
-            entity.setTimeStamp();
-            if(entity.hasTimeElapsed(Siren.STUN_TIME)){
+            entity.stateTimer.setTimeStamp();
+            if(entity.stateTimer.hasTimeElapsed(Siren.STUN_TIME, true)){
                 entity.getFrameCalculator().setFlash(false);
-                entity.resetTimeStamp();
                 entity.getStateMachine().changeState(SINGING);
             }
         }
@@ -76,7 +79,7 @@ public enum SirenState implements State<Siren> {
 
     @Override
     public void exit(Siren entity) {
-        entity.resetTimeStamp();
+        entity.stateTimer.resetTimeStamp();
         entity.getFrameCalculator().resetIncrement();
         entity.getFrameCalculator().resetTimeElapsed();
     }

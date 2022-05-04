@@ -2,6 +2,7 @@ package edu.cornell.gdiac.raftoftheseus.model.enemy;
 
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
@@ -45,7 +46,6 @@ public class Hydra extends Enemy<Hydra, HydraState> {
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
         physicsObject.getFilterData().maskBits = MASK_ENEMY;
-
         stateMachine = new DefaultStateMachine<>(this, HydraState.IDLE);
     }
 
@@ -64,10 +64,11 @@ public class Hydra extends Enemy<Hydra, HydraState> {
 
     // Firing
     public boolean canFire(){
-        return canSee && inRange(FIRING_RANGE) && hasAttackTimeElapsed(COOL_DOWN);
+        return canSee && inRange(FIRING_RANGE) && attackTimer.hasTimeElapsed(COOL_DOWN, false);
     }
     public boolean willFire(){
         hasFired = canFire() && stateMachine.isInState(HydraState.SPLASHING);
+        attackTimer.setTimeStamp();
         return hasFired;
     }
     public boolean hasFired(){ return hasFired; }
@@ -87,5 +88,10 @@ public class Hydra extends Enemy<Hydra, HydraState> {
             stateMachine.changeState(HydraState.STUNNED);
         }
         return false;
+    }
+
+    @Override
+    public void setStunTexture(TextureRegion value) {
+
     }
 }

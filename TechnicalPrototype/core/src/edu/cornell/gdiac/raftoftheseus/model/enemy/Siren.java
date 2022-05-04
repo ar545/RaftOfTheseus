@@ -3,13 +3,14 @@ package edu.cornell.gdiac.raftoftheseus.model.enemy;
 import com.badlogic.gdx.ai.fsm.DefaultStateMachine;
 import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
-import edu.cornell.gdiac.raftoftheseus.model.Animated;
-import edu.cornell.gdiac.raftoftheseus.model.FrameCalculator;
+import edu.cornell.gdiac.raftoftheseus.model.util.Animated;
+import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
 import edu.cornell.gdiac.raftoftheseus.model.Raft;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -150,6 +151,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
      */
     private void setParameters(){
         physicsObject = new WheelObstacle(RADIUS);
+        physicsObject.setRestitution(.75f);
         setPosition(waypoints.get(0));
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
@@ -158,6 +160,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         moveVector.set(0.0f, 0.0f);
         stateMachine = new DefaultStateMachine<>(this, SirenState.IDLE);
         waypoint = 1;
+        attackTimer.setTimeStamp();
     }
 
     /** Set the texture location relative to the physics body. */
@@ -231,10 +234,12 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     public boolean inAttackRange(){ return inRange(ATTACK_RANGE); }
     /** @return whether the player is in range and the Siren is attack mode. */
     public boolean willAttack(){
-        hasAttacked = stateMachine.getCurrentState() == SirenState.SINGING && inAttackRange() && hasAttackTimeElapsed(COOL_DOWN);
+        hasAttacked = stateMachine.getCurrentState() == SirenState.SINGING && inAttackRange() && attackTimer.hasTimeElapsed(COOL_DOWN, false);
+        System.out.println(attackTimer.hasTimeElapsed(COOL_DOWN, false));
+        System.out.println(hasAttacked);
         if(hasAttacked) {
-            resetAttackStamp();
-            setAttackStamp();
+            attackTimer.resetTimeStamp();
+            attackTimer.setTimeStamp();
         }
         return hasAttacked;
     }
@@ -255,6 +260,11 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void setStunTexture(TextureRegion value) {
+
     }
 
     // Animation
