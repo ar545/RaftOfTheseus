@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.4" name="updatedTiledSet" tilewidth="50" tileheight="50" tilecount="56" columns="7">
- <image source="update.png" width="350" height="400"/>
+<tileset version="1.8" tiledversion="1.8.4" name="updatedTiledSet" tilewidth="50" tileheight="50" tilecount="63" columns="7">
+ <image source="betaTiled.png" width="350" height="450"/>
  <tile id="0" type="Raft"/>
  <tile id="1" type="Siren"/>
  <tile id="2" type="Enemy"/>
@@ -17,17 +17,17 @@
  <tile id="14" type="Treasure"/>
  <tile id="15" type="Wood"/>
  <tile id="16" type="Wood"/>
- <tile id="17" type="Wood"/>
- <tile id="18" type="Wood"/>
- <tile id="19" type="Wood"/>
- <tile id="20" type="Wood"/>
+ <tile id="17" type="Current"/>
+ <tile id="18" type="Current"/>
+ <tile id="19" type="Current"/>
+ <tile id="20" type="Current"/>
  <tile id="21" type="Wood"/>
  <tile id="22" type="Wood"/>
  <tile id="23" type="Wood"/>
- <tile id="24" type="Wood"/>
- <tile id="25" type="Wood"/>
- <tile id="26" type="Wood"/>
- <tile id="27" type="Wood"/>
+ <tile id="24" type="Current"/>
+ <tile id="25" type="Current"/>
+ <tile id="26" type="Current"/>
+ <tile id="27" type="Current"/>
  <tile id="28" type="Rock"/>
  <tile id="29" type="Rock"/>
  <tile id="30" type="Rock"/>
@@ -41,24 +41,33 @@
  <tile id="38" type="Rock"/>
  <tile id="39" type="Rock"/>
  <tile id="40" type="Rock"/>
+ <tile id="41" type="Rock"/>
  <tile id="42" type="Rock"/>
  <tile id="43" type="Rock"/>
  <tile id="44" type="Rock"/>
- <tile id="45" type="Current"/>
- <tile id="46" type="Current"/>
- <tile id="47" type="Current"/>
- <tile id="48" type="Current"/>
- <tile id="49" type="Enemy"/>
- <tile id="50" type="Enemy"/>
- <tile id="51" type="Enemy"/>
- <tile id="52" type="Current"/>
- <tile id="53" type="Current"/>
- <tile id="54" type="Current"/>
- <tile id="55" type="Current"/>
+ <tile id="45" type="Rock"/>
+ <tile id="46" type="Rock"/>
+ <tile id="47" type="Rock"/>
+ <tile id="48" type="Rock"/>
+ <tile id="49" type="Rock"/>
+ <tile id="50" type="Rock"/>
+ <tile id="51" type="Rock"/>
+ <tile id="52" type="Rock"/>
+ <tile id="53" type="Rock"/>
+ <tile id="54" type="Rock"/>
+ <tile id="55" type="Rock" probability="0.1"/>
+ <tile id="56" type="Rock" probability="0.1"/>
+ <tile id="57" type="Rock" probability="0.1"/>
+ <tile id="58" type="Rock"/>
+ <tile id="59" type="Rock" probability="0.1"/>
+ <tile id="60" type="Rock" probability="0.1"/>
+ <tile id="61" type="Rock" probability="0.1"/>
+ <tile id="62" type="Enemy"/>
  <wangsets>
   <wangset name="Land Set" type="corner" tile="28">
-   <wangcolor name="Land" color="#ff0000" tile="34" probability="1"/>
+   <wangcolor name="Cliff" color="#ff0000" tile="34" probability="1"/>
    <wangcolor name="Sea" color="#00ff00" tile="41" probability="1"/>
+   <wangcolor name="Sand" color="#0000ff" tile="48" probability="1"/>
    <wangtile tileid="28" wangid="0,2,0,1,0,2,0,2"/>
    <wangtile tileid="29" wangid="0,2,0,2,0,1,0,2"/>
    <wangtile tileid="30" wangid="0,1,0,2,0,1,0,1"/>
@@ -73,6 +82,25 @@
    <wangtile tileid="39" wangid="0,1,0,1,0,2,0,2"/>
    <wangtile tileid="40" wangid="0,1,0,2,0,2,0,1"/>
    <wangtile tileid="41" wangid="0,2,0,2,0,2,0,2"/>
+   <wangtile tileid="42" wangid="0,2,0,3,0,2,0,2"/>
+   <wangtile tileid="43" wangid="0,2,0,2,0,3,0,2"/>
+   <wangtile tileid="44" wangid="0,3,0,2,0,3,0,3"/>
+   <wangtile tileid="45" wangid="0,3,0,3,0,2,0,3"/>
+   <wangtile tileid="46" wangid="0,2,0,3,0,3,0,2"/>
+   <wangtile tileid="47" wangid="0,2,0,2,0,3,0,3"/>
+   <wangtile tileid="48" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="49" wangid="0,3,0,2,0,2,0,2"/>
+   <wangtile tileid="50" wangid="0,2,0,2,0,2,0,3"/>
+   <wangtile tileid="51" wangid="0,2,0,3,0,3,0,3"/>
+   <wangtile tileid="52" wangid="0,3,0,3,0,3,0,2"/>
+   <wangtile tileid="53" wangid="0,3,0,3,0,2,0,2"/>
+   <wangtile tileid="54" wangid="0,3,0,2,0,2,0,3"/>
+   <wangtile tileid="55" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="56" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="57" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="59" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="60" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="61" wangid="0,1,0,1,0,1,0,1"/>
   </wangset>
  </wangsets>
 </tileset>
