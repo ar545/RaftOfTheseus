@@ -53,4 +53,7 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** Method to ensure that each enemy has their stun texture set. */
     public abstract void setStunTexture(TextureRegion value);
+
+    /** Set raft field */
+    public void setRaft(Raft r){ player = r; }
 }

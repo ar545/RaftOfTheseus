@@ -28,6 +28,65 @@ import java.util.HashMap;
 
 public class LevelModel {
 
+    public static class Tiled {
+        /** Index of the representation of default in tile set texture */
+        private static final int DEFAULT = 0;
+        /** Index of the representation of start in tile set texture */
+        private static final int START = 1;
+        /** Index of the representation of enemy in tile set texture */
+        private static final int ENEMY_SIREN = 2;
+        /** Index of the representation of enemy in tile set texture */
+        private static final int ENEMY_SHARK = 3;
+        /** Offset of north current in tile set index */
+        private static final int NORTH_EAST = 4;
+        /** Offset of east current in tile set index */
+        private static final int EAST = 5;
+        /** Offset of east current in tile set index */
+        private static final int EAST_SOUTH = 6;
+        /** Offset of south current in tile set index */
+        private static final int SOUTH = 7;
+        /** Index of the representation of rock in tile set texture */
+        private static final int ROCK_ALONE = 8;
+        /** Index of the representation of rock in tile set texture */
+        private static final int ROCK_SHARP = 9;
+        /** Index of the representation of goal in tile set texture */
+        private static final int GOAL = 10;
+        /** Offset of south current in tile set index */
+        private static final int SOUTH_WEST = 11;
+        /** Offset of west current in tile set index */
+        private static final int WEST = 12;
+        /** Offset of west current in tile set index */
+        private static final int WEST_NORTH = 13;
+        /** Offset of north current in tile set index */
+        private static final int NORTH = 14;
+        /** Strong current offset */
+        private static final int STRONG_CURRENT = 14;
+        /** Index of the representation of treasure in tile set texture */
+        private static final int TREASURE = 15;
+        /** Index of the representation of wood with the lowest amount in tile set texture */
+        private static final int WOOD_LOW = 16;
+        /** Index of the representation of wood with the second-lowest amount  in tile set texture */
+        private static final int WOOD_MIDDLE = 17;
+        /** Index of the representation of wreck in tile set texture */
+        private static final int WRECK = 22;
+        /** Index of the representation of wood with the default amount  in tile set texture */
+        private static final int WOOD_DEFAULT = 23;
+        /** Index of the representation of wood with the highest amount  in tile set texture */
+        private static final int WOOD_HIGH = 24;
+        /** Index of the representation of default current in tile set texture */
+        private static final int LAND_OFFSET = 28;
+        /** Index of the representation of default current in tile set texture */
+        private static final int SEA = 42;
+        /** the offset for sand textures */
+        private static final int SAND_OFFSET = 42;
+        /** Index of the representation of plant in tile set texture */
+        private static final int PLANT = 56;
+        /** Index of the representation of plant in tile set texture */
+        private static final int PLANT_END = 62;
+        /** Index of the representation of plant in tile set texture */
+        private static final int HYDRA = 63;
+    }
+
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Width and height of a single grid square in Box-2d units. A grid is 3 meter wide. */
     private static final float GRID_SIZE = 3.0f;
@@ -49,64 +108,9 @@ public class LevelModel {
     protected static final int LEVEL_RESTART_CODE = -1;
 
     /*=*=*=*=*=*=*=*=*=* TILED CONSTANTS *=*=*=*=*=*=*=*=*=*/
-    /** Index of the representation of default in tile set texture */
-    private static final int TILE_DEFAULT = 0;
-    /** Index of the representation of start in tile set texture */
-    private static final int TILE_START = 1;
-    /** Index of the representation of enemy in tile set texture */
-    private static final int TILE_ENEMY_SIREN = 2;
-    /** Index of the representation of enemy in tile set texture */
-    private static final int TILE_ENEMY_SHARK = 3;
-    /** Offset of north current in tile set index */
-    private static final int TILE_NORTH_EAST = 4;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST = 5;
-    /** Offset of east current in tile set index */
-    private static final int TILE_EAST_SOUTH = 6;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH = 7;
-    /** Index of the representation of rock in tile set texture */
-    private static final int TILE_ROCK_ALONE = 8;
-    /** Index of the representation of rock in tile set texture */
-    private static final int TILE_ROCK_SHARP = 9;
-    /** Index of the representation of goal in tile set texture */
-    private static final int TILE_GOAL = 10;
-    /** Offset of south current in tile set index */
-    private static final int TILE_SOUTH_WEST = 11;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST = 12;
-    /** Offset of west current in tile set index */
-    private static final int TILE_WEST_NORTH = 13;
-    /** Offset of north current in tile set index */
-    private static final int TILE_NORTH = 14;
-    /** Strong current offset */
-    private static final int TILE_STRONG_CURRENT = 14;
-    /** Index of the representation of treasure in tile set texture */
-    private static final int TILE_TREASURE = 15;
-    /** Index of the representation of wood with the lowest amount in tile set texture */
-    private static final int TILE_WOOD_LOW = 16;
-    /** Index of the representation of wood with the second-lowest amount  in tile set texture */
-    private static final int TILE_WOOD_MIDDLE = 17;
-    /** Index of the representation of wreck in tile set texture */
-    private static final int TILE_WRECK = 22;
-    /** Index of the representation of wood with the default amount  in tile set texture */
-    private static final int TILE_WOOD_DEFAULT = 23;
-    /** Index of the representation of wood with the highest amount  in tile set texture */
-    private static final int TILE_WOOD_HIGH = 24;
-    /** Index of the representation of default current in tile set texture */
-    private static final int TILE_LAND_OFFSET = 28;
-    /** Index of the representation of default current in tile set texture */
-    private static final int TILE_SEA = 42;
-    /** the offset for sand textures */
-    private static final int TILE_SAND_OFFSET = 42;
-    /** Index of the representation of plant in tile set texture */
-    private static final int TILE_PLANT = 56;
-    /** Index of the representation of plant in tile set texture */
-    private static final int TILE_PLANT_END = 62;
-    /** Index of the representation of plant in tile set texture */
-    private static final int TILE_HYDRA = 63;
+
     /** Total variation of terrains */
-    private static final int TERRAIN_TYPES = TILE_SEA - TILE_LAND_OFFSET - 1;
+    private static final int TERRAIN_TYPES = Tiled.SEA - Tiled.LAND_OFFSET - 1;
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** layer of environment and land */
@@ -522,23 +526,17 @@ public class LevelModel {
             else { System.out.println("Un-parse-able information: layer name not recognized." + layer.getString("name"));}
         }
 
+        int[] env_array = environment.get("data").asIntArray();
+        int[] col_array = collectables.get("data").asIntArray();
         // Loop through all index: for(int index = 0; index < map_size.x * map_size.y; index++)
         for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
             int row = rows() - row_reversed - 1;
             for(int col = 0; col < cols(); col ++){
                 int index = row_reversed * cols() + col;
-                populateEnv(row, col, environment.get("data").getInt(index), row_reversed == 0);
+                populateEnv(row, col, env_array[index], row_reversed == 0);
+                populateCollect(row, col, col_array[index]);
             }
         }
-        // populate collectables AFTER environment, so that sharks have a non-null Raft to use in their constructor
-        for(int row_reversed = 0; row_reversed < rows(); row_reversed ++){
-            int row = rows() - row_reversed - 1;
-            for(int col = 0; col < cols(); col ++){
-                int index = row_reversed * cols() + col;
-                populateCollect(row, col, collectables.get("data").getInt(index));
-            }
-        }
-
         populateSiren(sirenLayer.get("objects"));
     }
 
@@ -590,16 +588,16 @@ public class LevelModel {
      * @param col the column the collectable is in the world
      * @param tile_int whether this tile is a wood or treasure */
     private void populateCollect(int row, int col, int tile_int) {
-        if (tile_int == TILE_DEFAULT){ return; }
-        if (tile_int == TILE_TREASURE){ addTreasure(row, col); return; }
-        if (tile_int == TILE_ENEMY_SHARK){ addEnemy(row, col, true); return; }
-        if (tile_int == TILE_ENEMY_SIREN){ return; } // TODO: undefined behavior
-        if (tile_int == TILE_HYDRA){ addEnemy(row, col, false); return; }
-        if (tile_int == TILE_WRECK){ addWood(row, col, 30); return; }
-        if (tile_int == TILE_WOOD_LOW){ addWood(row, col, 10); return; }
-        if (tile_int == TILE_WOOD_MIDDLE){ addWood(row, col, 15); return; }
-        if (tile_int == TILE_WOOD_DEFAULT){ addWood(row, col, 20); return; }
-        if (tile_int == TILE_WOOD_HIGH){ addWood(row, col, 25); return; }
+        if (tile_int == Tiled.DEFAULT){ return; }
+        if (tile_int == Tiled.TREASURE){ addTreasure(row, col); return; }
+        if (tile_int == Tiled.ENEMY_SHARK){ addEnemy(row, col, true); return; }
+        if (tile_int == Tiled.ENEMY_SIREN){ return; } // TODO: undefined behavior
+        if (tile_int == Tiled.HYDRA){ addEnemy(row, col, false); return; }
+        if (tile_int == Tiled.WRECK){ addWreck(row, col); return; }
+        if (tile_int == Tiled.WOOD_LOW){ addWood(row, col, Wood.LOW_WOOD); return; }
+        if (tile_int == Tiled.WOOD_MIDDLE){ addWood(row, col, Wood.MIDDLE_WOOD); return; }
+        if (tile_int == Tiled.WOOD_DEFAULT){ addWood(row, col, Wood.REGULAR_WOOD); return; }
+        if (tile_int == Tiled.WOOD_HIGH){ addWood(row, col, Wood.HIGH_WOOD); return; }
         // This function should never reach here.
         System.out.println("Un-parse-able information detected in collectable layer:" + tile_int);
         addWood(row, col, 1);
@@ -616,12 +614,12 @@ public class LevelModel {
             if(top_row) { populateExtendLand(row, col, rockInt); }
             addRock(row, col, rockInt);
         }else{
-            if (tile_int == TILE_DEFAULT || tile_int == TILE_SEA){ return; }
-            if (tile_int == TILE_START) { addRaft(row, col); return; }
-            if (tile_int == TILE_GOAL){ addGoal(row, col); return; }
-            if (tile_int == TILE_WRECK){ addWood(row, col, 30); return; }
-            if (tile_int < TILE_TREASURE) {addCurrent(row, col, compute_direction(tile_int), false); return;}
-            if (isStrongCurrent(tile_int)) {addCurrent(row, col, compute_direction(tile_int - TILE_STRONG_CURRENT), true); return; }
+            if (tile_int == Tiled.DEFAULT || tile_int == Tiled.SEA){ return; }
+            if (tile_int == Tiled.START) { addRaft(row, col); return; }
+            if (tile_int == Tiled.GOAL){ addGoal(row, col); return; }
+            if (tile_int == Tiled.WRECK){ addWreck(row, col); return; }
+            if (tile_int < Tiled.TREASURE) {addCurrent(row, col, compute_direction(tile_int), false); return;}
+            if (isStrongCurrent(tile_int)) {addCurrent(row, col, compute_direction(tile_int - Tiled.STRONG_CURRENT), true); return; }
             System.out.println("Un-parse-able information detected in environment layer:" + tile_int);
         }
     }
@@ -629,16 +627,16 @@ public class LevelModel {
     private boolean isStrongCurrent(int tile_int){
         int div = tile_int % 7;
         if(div == 1 || div == 2 || div == 3) {return false;}
-        return (tile_int <= TILE_LAND_OFFSET && tile_int > TILE_TREASURE);
+        return (tile_int <= Tiled.LAND_OFFSET && tile_int > Tiled.TREASURE);
     }
 
     /** Compute the rock_int according to the tile_int: 0 for reg, 1-13 for land, -1 for sharp, -2 for plant */
     private int computeRockInt(int tile_int){
-        if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){ return tile_int - TILE_LAND_OFFSET; }
-        if (tile_int > TILE_SAND_OFFSET && tile_int < TILE_PLANT){ return tile_int - TILE_SAND_OFFSET; } // TODO: differ
-        if (tile_int >= TILE_PLANT && tile_int <= TILE_PLANT_END){ return ROCK_PLANT; } // TODO: differ
-        if (tile_int == TILE_ROCK_ALONE){ return ROCK_REGULAR; }
-        if (tile_int == TILE_ROCK_SHARP){ return ROCK_SHARP; }
+        if (tile_int > Tiled.LAND_OFFSET && tile_int < Tiled.SEA){ return tile_int - Tiled.LAND_OFFSET; }
+        if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.PLANT){ return tile_int - Tiled.SAND_OFFSET; } // TODO: differ
+        if (tile_int >= Tiled.PLANT && tile_int <= Tiled.PLANT_END){ return ROCK_PLANT; } // TODO: differ
+        if (tile_int == Tiled.ROCK_ALONE){ return ROCK_REGULAR; }
+        if (tile_int == Tiled.ROCK_SHARP){ return ROCK_SHARP; }
         return ROCK_NOT;
     }
 
@@ -647,14 +645,14 @@ public class LevelModel {
      * @return the direction of the current */
     private Current.Direction compute_direction(int i) {
         switch (i){
-            case TILE_NORTH: return Current.Direction.NORTH;
-            case TILE_SOUTH: return Current.Direction.SOUTH;
-            case TILE_EAST: return Current.Direction.EAST;
-            case TILE_WEST: return Current.Direction.WEST;
-            case TILE_NORTH_EAST: return Current.Direction.NORTH_EAST;
-            case TILE_SOUTH_WEST: return Current.Direction.SOUTH_WEST;
-            case TILE_EAST_SOUTH: return Current.Direction.EAST_SOUTH;
-            case TILE_WEST_NORTH: return Current.Direction.WEST_NORTH;
+            case Tiled.NORTH: return Current.Direction.NORTH;
+            case Tiled.SOUTH: return Current.Direction.SOUTH;
+            case Tiled.EAST: return Current.Direction.EAST;
+            case Tiled.WEST: return Current.Direction.WEST;
+            case Tiled.NORTH_EAST: return Current.Direction.NORTH_EAST;
+            case Tiled.SOUTH_WEST: return Current.Direction.SOUTH_WEST;
+            case Tiled.EAST_SOUTH: return Current.Direction.EAST_SOUTH;
+            case Tiled.WEST_NORTH: return Current.Direction.WEST_NORTH;
             default: return Current.Direction.NONE;
         }
     }
@@ -687,15 +685,10 @@ public class LevelModel {
             addSharkObject(this_shark);
         }
         else{
-            Hydra hydra = new Hydra(compute_temp, null);
+            Hydra hydra = new Hydra(compute_temp, getPlayer());
             hydra.setTexture(enemyTexture);
             addHydraObject(hydra);
         }
-//        else{
-//            Siren ts = new Siren(compute_temp, compute_temp, raft);
-//            ts.setTexture(sirenTexture);
-//            addSirenObject(ts);
-//        }
     }
 
     /** Add Treasure Objects to the world, using the Json value for goal.
@@ -727,12 +720,28 @@ public class LevelModel {
      * @param value the JS value that represents the goal */
     private void addWood(int row, int col, int value) {
         computePosition(col, row);
-        Wood this_wood = new Wood(compute_temp, value);
-        this_wood.setTexture(woodTexture); // TODO use correct wood texture
-        if(value > 3){
-            this_wood.setTexture(doubleTexture);
+        Wood wood = new Wood(compute_temp, value);
+        switch (value){
+            case Wood.LOW_WOOD:
+                wood.setTexture(woodTexture); break;
+            case Wood.MIDDLE_WOOD:
+                wood.setTexture(doubleTexture); break;
+            case Wood.HIGH_WOOD:
+                wood.setTexture(doubleTexture); break;
+            case Wood.REGULAR_WOOD: default:
+                wood.setTexture(woodTexture); break;
         }
-        addObject(this_wood);
+        addObject(wood);
+    }
+
+    /** Add wood Objects to the world, using the Json value for goal
+     * @param row the row gird position
+     * @param col the column grid position */
+    private void addWreck(int row, int col) {
+        computePosition(col, row);
+        Shipwreck sw = new Shipwreck(compute_temp);
+        sw.setTexture(shipwreckTexture);
+        addObject(sw);
     }
 
     /** Add current Objects to the world, using the Json value for goal
@@ -786,7 +795,11 @@ public class LevelModel {
         addObject(this_raft);
         raft = this_raft;
         prepareLights(this_raft);
+        populateEnemyRaftField();
     }
+
+    /** populate the raft field for existing enemies */
+    private void populateEnemyRaftField(){ for(Shark s : getSharks()){ s.setRaft(getPlayer()); } }
 
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(Raft r){

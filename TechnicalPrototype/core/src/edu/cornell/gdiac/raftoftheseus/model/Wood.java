@@ -11,6 +11,10 @@ public class Wood extends GameObject {
     // ATTRIBUTES
     /** How many logs is in this pile of wood. player health will add correspondingly */
     private final float wood;
+    protected static final int LOW_WOOD = 10;
+    protected static final int MIDDLE_WOOD = 15;
+    protected static final int REGULAR_WOOD = 20;
+    protected static final int HIGH_WOOD = 25;
 
     // CONSTANTS
     /** the wood health scale */
