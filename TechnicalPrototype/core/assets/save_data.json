@@ -21,8 +21,8 @@
 		"name": "Level 2",
 		"level": 2,
 		"path": "levels/level2.png",
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 3,
 		"unlocked": true
 	},
 	{
@@ -31,7 +31,7 @@
 		"path": "levels/level3.png",
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 4",
