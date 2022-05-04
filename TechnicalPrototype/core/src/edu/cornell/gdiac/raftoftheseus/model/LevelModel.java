@@ -868,12 +868,14 @@ public class LevelModel {
     }
 
     private void gatherTerrainAssets(Texture terrainTexture) {
-        terrain = new TextureRegion[4][TERRAIN_TYPES];
+        terrain = new TextureRegion[3][TERRAIN_TYPES];
         int width = terrainTexture.getWidth() / TERRAIN_TYPES;
-        int height = terrainTexture.getHeight() / 4;
-        for(int row = 0; row < 4; row ++) {
+        int height = width;
+        for(int row = 0; row < 3; row ++) {
+            boolean high_terrain = (row == 2);
             for(int col = 0; col < TERRAIN_TYPES; col++){
-                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1, width - 2, height - 2);
+                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                        width - 2, height*(high_terrain ? 2 : 1) - 2);
             }
         }
     }
