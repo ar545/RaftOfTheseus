@@ -1,11 +1,11 @@
 {
-"debug": true,
+"debug": false,
 "level_data": [
 	{
 		"name": "Level 0",
 		"level": 0,
-		"complete": true,
-		"score": 3,
+		"complete": false,
+		"score": 0,
 		"unlocked": true
 	},
 	{
@@ -13,7 +13,7 @@
 		"level": 1,
 		"complete": false,
 		"score": 0,
-		"unlocked": true
+		"unlocked": false
 	},
 	{
 		"name": "Level 2",
