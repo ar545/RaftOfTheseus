@@ -265,7 +265,7 @@ public class WorldController implements Screen, ContactListener {
                 wasComplete = true;
                 saveGame();
             }
-            SfxController.getInstance().fadeMusic();
+//            SfxController.getInstance().fadeMusic();
             drawTransition();
         }
     }

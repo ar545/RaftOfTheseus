@@ -407,6 +407,7 @@ public class MenuMode implements Screen {
             levelNumber = levelCounts[i];
             // Create and add textbuttons to screen. Must update each pass to update star displays.
             JsonValue levelData = saveData.get("level_data").get(levelNumber);
+            System.out.println(levelNumber);
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
             levelButtons[levelNumber] = new TextButton(String.valueOf(levelNumber), canPlay ? buttonStyles[score] : lockButtonStyle);
