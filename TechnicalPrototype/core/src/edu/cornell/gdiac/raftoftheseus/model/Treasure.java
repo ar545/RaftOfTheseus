@@ -66,7 +66,6 @@ public class Treasure extends GameObject {
 
 
     public void setAnimationFrame(float dt) {
-
         if(collected) {
             fc.addTime(dt);
             fc.setFrame(OPEN_AS, OPEN_SF, OPEN_FC, false);

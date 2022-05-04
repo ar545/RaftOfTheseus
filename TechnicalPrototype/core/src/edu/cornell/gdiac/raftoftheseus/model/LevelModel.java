@@ -109,7 +109,7 @@ public class LevelModel {
     private static final int TILE_NON_ROCK = 16;
     private static final int ROCK_REGULAR = 0;
     private static final int ROCK_SHARP = -1;
-    private static final int ROCK_PLANT = -2;
+    private static final int PLANT = -2;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -639,7 +639,7 @@ public class LevelModel {
         if (tile_int > TILE_LAND_OFFSET && tile_int < TILE_SEA){ return tile_int - TILE_LAND_OFFSET; }
         if (tile_int == TILE_ROCK_ALONE){ return ROCK_REGULAR; }
         if (tile_int == TILE_ROCK_SHARP){ return ROCK_SHARP; }
-        if (tile_int <= TILE_PLANT && tile_int > TILE_SEA){ return ROCK_PLANT; }
+        if (tile_int <= TILE_PLANT && tile_int > TILE_SEA){ return PLANT; }
         return TILE_NON_ROCK;
     }
 
@@ -669,14 +669,27 @@ public class LevelModel {
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
         Stationary.StationaryType rt;
-        if (tile_int == ROCK_SHARP) { rt = Stationary.StationaryType.SHARP_ROCK; }
-        else if (tile_int == ROCK_REGULAR) { rt = Stationary.StationaryType.REGULAR_ROCK; }
-        else rt = Stationary.StationaryType.TERRAIN;
+        TextureRegion temp;
+        switch(tile_int){
+            case PLANT:
+                rt = Stationary.StationaryType.PLANT;
+                temp = plantTexture;
+                break;
+            case ROCK_SHARP:
+                rt = Stationary.StationaryType.SHARP_ROCK;
+                temp = sharpRockTexture;
+                break;
+            case ROCK_REGULAR:
+                rt = Stationary.StationaryType.REGULAR_ROCK;
+                temp = regularRockTexture;
+                break;
+            default:
+                rt = Stationary.StationaryType.TERRAIN;
+                temp = terrain[difficulty][tile_int - 1];
+                break;
+        }
         Stationary this_rock = new Stationary(compute_temp, rt);
-        if (tile_int == ROCK_PLANT) { this_rock.setTexture(plantTexture); }
-        else if (tile_int == ROCK_SHARP) { this_rock.setTexture(sharpRockTexture); }
-        else if (tile_int == ROCK_REGULAR) { this_rock.setTexture(regularRockTexture); }
-        else { this_rock.setTexture(terrain[difficulty][tile_int - 1]); }
+        this_rock.setTexture(temp);
         if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
         addObject(this_rock);
     }

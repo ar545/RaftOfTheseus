@@ -31,8 +31,8 @@
     "flying frames" : 2,
     "idle start frame" : 0,
     "singing start frame" : 5,
-    "take off start frame" : 10,
-    "landing start frame" : 10,
+    "take off start frame" : 11,
+    "landing start frame" : 11,
     "flying start frame" : 15
   },
   "hydra" : {

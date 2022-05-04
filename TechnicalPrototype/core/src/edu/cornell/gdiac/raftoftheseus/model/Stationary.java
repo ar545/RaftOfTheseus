@@ -40,10 +40,10 @@ public class Stationary extends GameObject {
     private static float ROCK_HEIGHT;
     private static float PLANT_RADIUS;
 
-    // If this object is sharp
+    // If this object is sharp (must be a sharp rock)
     private boolean sharp = false;
 
-    // Enum
+    // Enum to represent the different types of stationary objects.
     public enum StationaryType {
         REGULAR_ROCK,
         SHARP_ROCK,
