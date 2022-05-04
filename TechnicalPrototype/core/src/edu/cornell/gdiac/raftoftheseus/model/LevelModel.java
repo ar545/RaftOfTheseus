@@ -28,6 +28,7 @@ import java.util.HashMap;
 
 public class LevelModel {
 
+    /** TILED CONSTANTS */
     public static class Tiled {
         /** Index of the representation of default in tile set texture */
         private static final int DEFAULT = 0;
@@ -86,6 +87,9 @@ public class LevelModel {
         private static final int PLANT_END = 62;
         /** Index of the representation of plant in tile set texture */
         private static final int HYDRA = 63;
+        public static final int PLANT_COUNT = CAPYBARA - PLANT + 1;
+        /** Total variation of terrains */
+        private static final int TERRAIN_TYPES = SEA - LAND_OFFSET - 1;
     }
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
@@ -108,10 +112,6 @@ public class LevelModel {
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
 
-    /*=*=*=*=*=*=*=*=*=* TILED CONSTANTS *=*=*=*=*=*=*=*=*=*/
-
-    /** Total variation of terrains */
-    private static final int TERRAIN_TYPES = Tiled.SEA - Tiled.LAND_OFFSET - 1;
 
     /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** layer of environment and land */
@@ -194,7 +194,7 @@ public class LevelModel {
     /** Texture for all rock, as they look the same */
     private TextureRegion sharpRockTexture;
     /** Texture for all the plant which has the same hit-box as the rock */
-    private TextureRegion plantTexture;
+    private TextureRegion[] plantTexture = new TextureRegion[Tiled.PLANT_COUNT];
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Stun overlay for enemies */
@@ -696,12 +696,12 @@ public class LevelModel {
     /** Add Rock Objects to the world, using the Json value for goal.
      * @param row the row gird position
      * @param col the column grid position
-     * @param tile_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
-    private void addRock(int row, int col, Stationary.StationaryType type, int tile_int) {
+     * @param rock_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
+    private void addRock(int row, int col, Stationary.StationaryType type, int rock_int) {
         computePosition(col, row);
         TextureRegion temp;
         Stationary this_rock;
-        switch(tile_int){
+        switch(rock_int){
             case Stationary.REGULAR:
                 this_rock = new Stationary(compute_temp, type);
                 if(type == Stationary.StationaryType.SHARP_ROCK){
@@ -711,13 +711,13 @@ public class LevelModel {
                 }
                 break;
             case Stationary.plantA: case Stationary.plantB: case Stationary.plantC: case Stationary.plantD:
-                Stationary plant = new Stationary(compute_temp, type, tile_int);
-                plant.setTexture(plantTexture);
+                Stationary plant = new Stationary(compute_temp, type, rock_int);
+                plant.setTexture(plantTexture[-rock_int - 1]);
                 addObject(plant);
-                tile_int = 7;
+                rock_int = 7;
             default: // terrain or cliff terrain
-                this_rock = new Stationary(compute_temp, type, tile_int);
-                temp = terrain[difficulty][tile_int - 1];
+                this_rock = new Stationary(compute_temp, type, rock_int);
+                temp = terrain[difficulty][rock_int - 1];
                 break;
         }
         this_rock.setTexture(temp);
@@ -922,7 +922,10 @@ public class LevelModel {
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
-        plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
+        plantTexture[0] = new TextureRegion(directory.getEntry("plantA", Texture.class));
+        plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
+        plantTexture[2] = new TextureRegion(directory.getEntry("plantC", Texture.class));
+        plantTexture[3] = new TextureRegion(directory.getEntry("plantD", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
@@ -946,12 +949,12 @@ public class LevelModel {
     }
 
     private void gatherTerrainAssets(Texture terrainTexture) {
-        terrain = new TextureRegion[3][TERRAIN_TYPES];
-        int width = terrainTexture.getWidth() / TERRAIN_TYPES;
+        terrain = new TextureRegion[3][Tiled.TERRAIN_TYPES];
+        int width = terrainTexture.getWidth() / Tiled.TERRAIN_TYPES;
         int height = width;
         for(int row = 0; row < 3; row ++) {
             boolean high_terrain = (row == 2);
-            for(int col = 0; col < TERRAIN_TYPES; col++){
+            for(int col = 0; col < Tiled.TERRAIN_TYPES; col++){
                 terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
                         width - 2, height*(high_terrain ? 2 : 1) - 2);
             }
