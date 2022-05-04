@@ -53,7 +53,7 @@
       "plant":     "images/plant.png",
       "fuel": "images/fuel.png",
       "shipwreck" : "images/Obj_Shipwreck.png",
-      "terrain": "images/terrain_dark.png",
+      "terrain": "images/terrain_combined.png",
       "hint_movement": "images/hint_move.png",
       "hint_attack": "images/hint_fire.png",
       "hint_map": "images/hint_map.png",
