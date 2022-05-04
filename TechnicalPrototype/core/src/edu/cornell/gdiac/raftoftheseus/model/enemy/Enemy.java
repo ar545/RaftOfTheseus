@@ -54,6 +54,5 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
                 getWidth() * 2/ this.stunTexture.texture.getRegionHeight()));
         stunTexture.setTextureOffset(new Vector2(0f,
                 (stunTexture.texture.getRegionHeight() * stunTexture.textureScale.y - getHeight())/2f));
-
     }
 }

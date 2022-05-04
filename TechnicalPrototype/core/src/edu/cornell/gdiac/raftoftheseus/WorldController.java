@@ -915,7 +915,7 @@ public class WorldController implements Screen, ContactListener {
                 s.setDestroyed(true);
                 SfxController.getInstance().playSFX("spear_enemy_hit");
             }
-        } else if (g.getType() == GameObject.ObjectType.ROCK || g.getType() == GameObject.ObjectType.OBSTACLE) {
+        } else if (g.getType() == GameObject.ObjectType.STATIONARY) {
             SfxController.getInstance().playSFX("spear_break");
             s.setDestroyed(true);
         } else if (g.getType() == GameObject.ObjectType.SHIPWRECK){
@@ -968,7 +968,7 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
             if (!complete && !failed) setComplete(true);
-        } else if(g.getType() == GameObject.ObjectType.ROCK){
+        } else if(g.getType() == GameObject.ObjectType.STATIONARY){
             if(((Stationary) g).isSharp()) {
                 if (!r.isDamaged()) {
                     r.addHealth(Stationary.getSharpRockDamage());

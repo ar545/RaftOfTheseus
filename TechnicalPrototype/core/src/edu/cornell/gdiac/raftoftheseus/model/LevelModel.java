@@ -186,6 +186,8 @@ public class LevelModel {
     private FilmStrip sharkTexture;
     /** Texture for the Sirens */
     private FilmStrip sirenTexture;
+    /** Texture for Water Splash*/
+    private FilmStrip splashTexture;
     /** Texture for spear */
     private FilmStrip spearTexture;
     /** Texture for note */
@@ -498,7 +500,7 @@ public class LevelModel {
         y1 += -DEFAULT_BOUNDARY;
         y2 += -DEFAULT_BOUNDARY;
         float[] polygonVertices = new float[] {x1, y1, x2, y1, x2, y2, x1, y2};
-        Wall this_wall = new Wall(polygonVertices); /* The wall of the level */
+        Stationary this_wall = new Stationary(polygonVertices); /* The wall of the level */
         this_wall.setTexture(earthTile);
         addObject(this_wall);
     }
@@ -666,10 +668,10 @@ public class LevelModel {
      * @param tile_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
     private void addRock(int row, int col, int tile_int) {
         computePosition(col, row);
-        Stationary.RockType rt;
-        if (tile_int == ROCK_SHARP) { rt = Stationary.RockType.SHARP_ROCK; }
-        else if (tile_int == ROCK_REGULAR) { rt = Stationary.RockType.ROCK; }
-        else rt = Stationary.RockType.TERRAIN;
+        Stationary.StationaryType rt;
+        if (tile_int == ROCK_SHARP) { rt = Stationary.StationaryType.SHARP_ROCK; }
+        else if (tile_int == ROCK_REGULAR) { rt = Stationary.StationaryType.REGULAR_ROCK; }
+        else rt = Stationary.StationaryType.TERRAIN;
         Stationary this_rock = new Stationary(compute_temp, rt);
         if (tile_int == ROCK_PLANT) { this_rock.setTexture(plantTexture); }
         else if (tile_int == ROCK_SHARP) { this_rock.setTexture(sharpRockTexture); }
@@ -857,6 +859,7 @@ public class LevelModel {
         sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
         sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 5);
         earthTile = new TextureRegion(directory.getEntry("earth", Texture.class));
+        splashTexture = new FilmStrip(directory.getEntry("splash", Texture.class), 1, 15);
         spearTexture = new FilmStrip(directory.getEntry("spear", Texture.class), 5, 5);
         noteTexture = new TextureRegion(directory.getEntry("note", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
@@ -1003,8 +1006,8 @@ public class LevelModel {
         pix.fill();
         for (GameObject o : getObjects()) {
             GameObject.ObjectType oType = o.getType();
-            if (oType == GameObject.ObjectType.ROCK || oType == GameObject.ObjectType.GOAL) {
-                boolean isRock = (oType == GameObject.ObjectType.ROCK);
+            if (oType == GameObject.ObjectType.STATIONARY || oType == GameObject.ObjectType.GOAL) {
+                boolean isRock = (oType == GameObject.ObjectType.STATIONARY);
                 Vector2 pos = o.getPosition(); // in box2d units (3 per tile)
                 pos.scl(1.0f/GRID_SIZE); // in tiles
                 pos.add(1, 1); // offset one tile
@@ -1174,8 +1177,9 @@ public class LevelModel {
                 bounds().width/mapBackground.getWidth()*1.349f, bounds().height/mapBackground.getHeight()*1.149f);
         for(GameObject obj : getObjects()) {
             GameObject.ObjectType type = obj.getType();
-            if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.ROCK
+            if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.STATIONARY
                     || type == GameObject.ObjectType.GOAL) {
+                System.out.println(type);
                 obj.draw(canvas, Color.valueOf("a08962"));
             }
         }

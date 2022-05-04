@@ -35,6 +35,7 @@
       "treasure":     "images/chest_sprite.png",
       "target":     "images/Obj_Island_threequarters.png",
       "spear": "images/Obj_Spear.png",
+      "splash" : "images/Obj_WaterSplash.png",
       "note" : "images/Obj_MusicNote.png",
       "current": "images/current_square.png",
       "stun_overlay" : "images/Obj_Enemy_StunOverlay.png",

@@ -90,7 +90,7 @@
     "fired as" : 0.06,
     "fired sf" : 10,
     "fired fc" : 4,
-    "dest as" : 0.1,
+    "dest as" : 0.06,
     "dest sf" : 15,
     "dest fc" : 7
   },
@@ -109,7 +109,8 @@
     "terrain width": 3,
     "terrain height": 3,
     "sharp rock damage": -15,
-    "sharp rock restitution" : 0.7
+    "sharp rock restitution" : 0.7,
+    "plant radius" : 2
   },
   "terrain": {
   },

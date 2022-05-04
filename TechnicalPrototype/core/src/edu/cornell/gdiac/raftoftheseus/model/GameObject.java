@@ -19,8 +19,7 @@ public abstract class GameObject {
     public enum ObjectType {
         RAFT, // aka Player
         WOOD,
-        ROCK,
-        OBSTACLE, // aka Wall or Terrain
+        STATIONARY, // Rock, Plants, Terrain
         CURRENT,
         SHARK,
         GOAL,
@@ -178,7 +177,6 @@ public abstract class GameObject {
      * Drawing an additional texture for a GameObject.
      * @param canvas drawing context
      * @param holder the additional texture
-     * @param color the color
      */
     public void draw(GameCanvas canvas, TextureHolder holder) {
         if (holder.texture != null) {
