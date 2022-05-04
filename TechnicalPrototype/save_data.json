@@ -46,7 +46,7 @@
 		"level": 5,
 		"path": "levels/level5.png",
 		"complete": true,
-		"score": 2,
+		"score": 3,
 		"unlocked": true
 	},
 	{
@@ -62,7 +62,7 @@
 		"level": 7,
 		"path": "levels/level7.png",
 		"complete": true,
-		"score": 1,
+		"score": 0,
 		"unlocked": true
 	},
 	{
