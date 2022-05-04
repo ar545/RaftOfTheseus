@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
@@ -10,10 +11,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.model.*;
@@ -28,9 +27,13 @@ import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
 import org.lwjgl.Sys;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
+
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.*;
 
 public class WorldController implements Screen, ContactListener {
@@ -95,6 +98,8 @@ public class WorldController implements Screen, ContactListener {
     protected TextureRegion emptyStar;
     /** The texture for the filled star */
     protected TextureRegion filledStar;
+    /** The texture for the pause button */
+    protected Texture pauseButton;
     /** The hint image for movement and exit/reset controls */
     protected TextureRegion hintMovement;
     /** The hint image for firing controls */
@@ -484,15 +489,6 @@ public class WorldController implements Screen, ContactListener {
         canvas.draw(star > 0 ? filledStar : emptyStar, padding, canvas.getHeight() - size);
         canvas.draw(star > 1 ? filledStar : emptyStar, size + padding, canvas.getHeight() - size);
         canvas.draw(star > 2 ? filledStar : emptyStar, 2 * size + padding, canvas.getHeight() - size);
-//        if(star > 0){
-//            canvas.draw(this.star, 0, canvas.getHeight() - this.star.getRegionHeight());
-//        }
-//        if(star > 1){
-//            canvas.draw(this.star, this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
-//        }
-//        if(star > 2){
-//            canvas.draw(this.star, 2 * this.star.getRegionWidth(), canvas.getHeight() - this.star.getRegionHeight());
-//        }
         canvas.end();
     }
 
@@ -1144,5 +1140,4 @@ public class WorldController implements Screen, ContactListener {
         SfxController.getInstance().haltMusic();
         setLevel(level_id);
     }
-
 }
