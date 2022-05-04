@@ -20,7 +20,7 @@ public class Goal extends GameObject {
 
     @Override
     protected void setTextureTransform() {
-        float w = getWidth() / texture.getRegionWidth() * 1.31f;
+        float w = getWidth() / texture.getRegionWidth();
         textureScale = new Vector2(w, w);
         textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
     }
