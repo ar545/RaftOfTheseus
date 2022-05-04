@@ -122,14 +122,14 @@ public class Stationary extends GameObject {
 
     @Override
     protected void setTextureTransform() {
+        float w = TERRAIN_WIDTH / texture.getRegionWidth();
+        textureScale = new Vector2(w, w);
         switch(stationaryType){
             case PLANT:
                 textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - PLANT_RADIUS)/2f + 0.5f);
             case WALL:
                 break;
             default:
-                float w = TERRAIN_WIDTH / texture.getRegionWidth();
-                textureScale = new Vector2(w, w);
                 textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - TERRAIN_HEIGHT)/2f + 0.5f);
         }
     }

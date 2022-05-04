@@ -55,7 +55,7 @@
     "hearing range" : 15,
     "approach speed" : 5.0,
     "approach range" : 20.0,
-    "warm up" : 0.25,
+    "warm up" : 0.5,
     "cool down" : 0.5,
     "attack speed" : 20.0,
     "attack range" : 10.0,
@@ -165,12 +165,14 @@
     ]
   },
   "shipwreck" : {
-    "width" : 3,
+    "width" : 2.8,
     "height" : 0.5,
-    "health" : 3,
+    "health" : 2,
     "drops" : 15,
-    "hit box width" : 3,
-    "hit box height" : 2
+    "hit box width" : 2.8,
+    "hit box height" : 2,
+    "draw size" : 3,
+    "y adjustment" : -0.2
   },
   "stun animation" : {
     "as" : 0.0666,
