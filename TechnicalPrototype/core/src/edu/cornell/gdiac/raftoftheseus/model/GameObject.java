@@ -202,12 +202,22 @@ public abstract class GameObject {
         setTextureTransform();
 	}
 
+    public void setTexture(TextureRegion value, float scale) {
+        texture = value;
+        origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);
+        textureScale = new Vector2(scale,scale);
+        textureOffset = new Vector2(0,0);
+    }
+
+
+
     /**
      * Sets textureScale and textureOffset. May be overridden by subclasses to display textures that aren't
      * stretched to fit the hitbox.
      */
     protected void setTextureTransform() {
         textureScale = new Vector2(getWidth() / texture.getRegionWidth(), getHeight() / texture.getRegionHeight());
+//        System.out.println(textureScale);
         textureOffset = new Vector2(0,0);
     }
 
