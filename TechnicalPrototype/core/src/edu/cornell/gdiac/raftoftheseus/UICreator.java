@@ -12,6 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import edu.cornell.gdiac.raftoftheseus.MenuMode;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
+import org.lwjgl.Sys;
+import org.w3c.dom.Text;
 
 //import javax.xml.soap.Text;
 import java.util.function.Consumer;
@@ -46,6 +48,17 @@ public class UICreator {
         button.getLabel().setFontScale(fontSize);
         button.getLabel().setColor(c);
         return button;
+    }
+
+    public static void setTextButtonStyle(TextButton button, Skin skin, float fontSize, Color c, Texture background) {
+        TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(background));
+        TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
+        buttonStyle.up = drawable;
+        buttonStyle.down = drawable.tint(Color.GRAY);
+        buttonStyle.font = skin.getFont("default-font");
+        button.setStyle(buttonStyle);
+        button.getLabel().setFontScale(fontSize);
+        button.getLabel().setColor(c);
     }
 
     public static TextButton createTextButton(String name, Skin skin, float fontSize){
@@ -136,6 +149,38 @@ public class UICreator {
 
     public static  ClickListener createListener(TextButton button, Color c1, Color c2, Runnable function){
         return createListener(button, c1, c2, "button_enter", "button_click", function);
+    }
+
+    // SETTINGS BUTTONS
+    public static ClickListener createListener(TextButton button, Consumer<TextButton> function) {
+
+        return new ClickListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                super.enter(event, x, y, pointer, fromActor);
+                if (!button.getText().toString().equals("left mouse")) {
+                    if (pointer == -1) SfxController.getInstance().playSFX("button_enter");
+                    button.getLabel().setColor(Color.LIGHT_GRAY);
+                }
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                super.exit(event, x, y, pointer, toActor);
+                if (!button.getText().toString().equals("left mouse")) {
+                    button.getLabel().setColor(Color.WHITE);
+                }
+            }
+
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                super.clicked(event, x, y);
+                if (!button.getText().toString().equals("left mouse")) {
+                    SfxController.getInstance().playSFX("button_click");
+                    function.accept(button);
+                }
+            }
+        };
     }
 
     // LEVEL BUTTONS

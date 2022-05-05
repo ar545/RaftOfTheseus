@@ -223,6 +223,9 @@ public class InputController {
 
 	/** Reads input from the keyboard for movement. */
 	private void readKeys() {
+		// Update the mappings
+		populateMap("mouse keyboard");
+
 		// Navigation keys
 		nextPressed = Gdx.input.isKeyPressed(mappings.get("next"));
 		prevPressed = Gdx.input.isKeyPressed(mappings.get("previous"));
@@ -262,4 +265,5 @@ public class InputController {
 		firePressed = Gdx.input.isButtonPressed(mappings.get("fire")) || Gdx.input.isKeyPressed(mappings.get("fireKey"));
 		fire_location.set(Gdx.input.getX(), Gdx.graphics.getHeight() - Gdx.input.getY());
 	}
+
 }
