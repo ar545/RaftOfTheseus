@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 public class UICreator {
 
     /** The standard size for fonts */
-    private static float FONT_SIZE = 0.4f;
+    private static float FONT_SIZE = 0.3f;
     /** The color for inactive buttons */
     private static Color inactiveColor = Color.WHITE;
     /** The color for hovered buttons */
