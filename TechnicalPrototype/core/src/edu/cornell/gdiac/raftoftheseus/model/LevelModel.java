@@ -164,6 +164,7 @@ public class LevelModel {
     private FilmStrip raftAura;
     /** Texture for all treasures */
     private FilmStrip treasureTexture;
+    private FilmStrip starburstTexture;
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodTexture;
     /** Texture for wood pieces that represents double pile of logs */
@@ -686,8 +687,9 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-        Treasure this_treasure = new Treasure(compute_temp, raft);
+        Treasure this_treasure = new Treasure(compute_temp);
         this_treasure.setTexture(treasureTexture);
+        this_treasure.initSB(starburstTexture);
         obstacles[col][row] = this_treasure;
         treasure.add(this_treasure);
         addObject(this_treasure);
@@ -836,6 +838,7 @@ public class LevelModel {
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
         plantTexture = new TextureRegion(directory.getEntry("plant", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
+        starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         enemyTexture = new FilmStrip(directory.getEntry("enemy", Texture.class), 1, 17);
         sirenTexture = new FilmStrip(directory.getEntry("siren", Texture.class), 4, 5);
