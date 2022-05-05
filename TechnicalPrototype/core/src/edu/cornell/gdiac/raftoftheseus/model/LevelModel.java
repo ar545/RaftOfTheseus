@@ -129,6 +129,8 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
     private Raft raft;
+    /** The goal of the level */
+    private Goal goal;
     /** The vertices of the wall */
     private float[] polygonVertices;
     /** Reference to the game assets directory */
@@ -166,8 +168,10 @@ public class LevelModel {
     private PooledList<Treasure> treasure = new PooledList<>();
     /** Reference to the current field */
     private CurrentField currentField;
-    /** The light source of this level */
+    /** The light source coming from the player */
     private PointSource light;
+    /** The light source coming from the goal */
+    private PointSource goalLight;
     /** The ray-handler for storing lights, and drawing them (SIGH) */
     protected RayHandler rayhandler;
     /** what light effect to show the player */
@@ -470,6 +474,7 @@ public class LevelModel {
         currentField = new  CurrentField(bounds.width, bounds.height, 3);
         // Populate game objects
         populateLevel();
+        prepareLights();
 
         // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
@@ -768,6 +773,7 @@ public class LevelModel {
         Goal this_goal = new Goal(compute_temp);
         this_goal.setTexture(targetTexture);
         addObject(this_goal);
+        goal = this_goal;
     }
 
     /** Add wood Objects to the world, using the Json value for goal
@@ -854,7 +860,6 @@ public class LevelModel {
         this_raft.setTexture(raftTexture, raftAura);
         addObject(this_raft);
         raft = this_raft;
-        prepareLights(this_raft);
         populateEnemyRaftField();
     }
 
@@ -862,10 +867,12 @@ public class LevelModel {
     private void populateEnemyRaftField(){ for(Shark s : getSharks()){ s.setRaft(getPlayer()); } }
 
     /** Prepare the box2d light settings once raft is ready */
-    private void prepareLights(Raft r){
+    private void prepareLights(){
         initLighting(lightSettings.get("init")); // Box2d lights initialization
         light = createPointLights(lightSettings.get("point")); // Box2d lights information
-        attachLights(r);
+        goalLight = createPointLights(lightSettings.get("point")); // Box2d lights information
+        attachLights(light, raft);
+        attachLights(goalLight, goal);
     }
 
     /** Update the light effect of the world */
@@ -1027,8 +1034,8 @@ public class LevelModel {
      * offset outside the bodies fixtures, then they will cast a shadow.
      * The activeLight is set to be the first element of lights, assuming it is not empty.
      */
-    public void attachLights(Raft avatar) {
-        light.attachToBody(avatar.physicsObject.getBody(), light.getX(), light.getY(), light.getDirection());
+    public void attachLights(PointSource source, GameObject go) {
+        source.attachToBody(go.physicsObject.getBody(), source.getX(), source.getY(), source.getDirection());
     }
 
     /*=*=*=*=*=*=*=*=*=* New-added current and wood methods *=*=*=*=*=*=*=*=*=*/
