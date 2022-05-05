@@ -117,6 +117,10 @@ public class Raft extends GameObject implements Animated {
     private static int AURA_SF;
     private static int AURA_FC;
     private TextureHolder attackAura;
+
+    /** restore the player health to half life */
+    public void halfLife() { if(health < MAXIMUM_PLAYER_HEALTH / 2) {health = MAXIMUM_PLAYER_HEALTH / 2;} }
+
     private enum RaftState{
         IDLE,
         CHARGING,

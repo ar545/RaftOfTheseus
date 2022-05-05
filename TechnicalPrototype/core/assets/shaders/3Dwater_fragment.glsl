@@ -1,12 +1,40 @@
+/* ================================================================================================================== //
+Author: Demian Yutin
+
+Last Revised: 5/5/2022
+
+Purpose: This shader displays a continuous moving water texture, including moving currents, breaking waves around
+terrain (surf), a big slow rolling wave, and a wake pattern following the raft when it moves. The shader creates the
+illusion of the water being viewed at an angle, to complement the game's 3/4-perspective artstyle.
+
+Sources: The vast majority of this code and its documentation was written by Demian from scratch, and a small amount was
+adapted with modification from online tutorials.
+I used https://docs.godotengine.org/en/3.1/tutorials/shading/intro_to_shaders_water_workshop.html for texture-based UV
+deformation and the idea of a rolling wave, although the code was mostly rewritten to fit my unique architecture for
+this shader.
+I used https://gamedev.stackexchange.com/a/150389 as a guide for displaying moving currents, although this code also
+had to be mostly rewritten (as well as translated from a different shader language).
+The implementation of surf was inspired by Sebastian Lague's video series on procedural planet generation, specifically
+the timestamp at 15:40 in https://www.youtube.com/watch?v=vTMEdHcKgM4&t=940s. No code was used from this source.
+The remainder of the code and design is original: using a normal map to simulate the 3D surface of the water, using the
+angle between the camera and normal vector to simulate raytraced reflections, mapping a continuous value to a
+discrete color palette, using a record of the player's movements to create a wake pattern, using a root-finding
+algorithm to go from a 2D texture space to a virtual 3D world space -- all of these were things I came up with and wrote
+by myself without consulting tutorials (aside from using Wikipedia as a reference for the math and physics). Any
+documentation which "does not look like something a student wrote" was written by me to try to explain this overly
+complicated shader to someone without the requisite math and physics background. 100% of what you see here was written
+by me.
+Wikipedia sources for reference:
+https://en.wikipedia.org/wiki/Wake_(physics)
+https://en.wikipedia.org/wiki/Fresnel_equations
+https://en.wikipedia.org/wiki/Schlick%27s_approximation
+https://en.wikipedia.org/wiki/Newton%27s_method
+// ================================================================================================================== */
+
 #version 120
 
-// ========================================================..======================================================== //
 uniform sampler2D u_texture;
 varying vec2 v_texCoords;
-
-/*
-A generic moving wave with speed s and wavelength w is sin(2*PI*(s*t-x)/w).
-*/
 
 // =================================================== CONSTANTS  =================================================== //
 

@@ -10,60 +10,71 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
 import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  * Class that represents objects that do not move and cannot be collected or destroyed by the player.
  */
 public class Stationary extends GameObject {
 
-    /**
-     * Load the constants for the rock
-     * @param objParams is the "rock" child of object_settings.json
-     */
-    public static void setConstants(JsonValue objParams){
-        TERRAIN_WIDTH = objParams.getFloat("terrain width");
-        TERRAIN_HEIGHT = objParams.getFloat("terrain height");
-        SHARP_ROCK_DAMAGE = objParams.getFloat("sharp rock damage");
-        SHARP_ROCK_BOUNCE = objParams.getFloat("sharp rock restitution");
-        ROCK_WIDTH = objParams.getFloat("rock width");
-        ROCK_HEIGHT = objParams.getFloat("rock height");
-        PLANT_RADIUS = objParams.getFloat("plant radius");
-    }
-
-    // Constants
-    private static float TERRAIN_WIDTH;
-    private static float TERRAIN_HEIGHT;
-    private static float SHARP_ROCK_DAMAGE;
-    private static float SHARP_ROCK_BOUNCE;
-    private static float ROCK_WIDTH;
-    private static float ROCK_HEIGHT;
-    private static float PLANT_RADIUS;
-
-    // If this object is sharp (must be a sharp rock)
-    private boolean sharp = false;
-
     // Enum to represent the different types of stationary objects.
     public enum StationaryType {
         REGULAR_ROCK,
         SHARP_ROCK,
         TERRAIN,
-        PLANT,
+        CLIFF_TERRAIN,
         WALL
     }
-    private final StationaryType stationaryType;
 
+    /* Pre-defined constants for plants */
+    protected static final int plantA = -1;
+    protected static final int plantB = -2;
+    protected static final int plantC = -3;
+    protected static final int plantD = -4;
+    protected static final int NON_ROCK = Integer.MAX_VALUE;
+    protected static final int REGULAR = 0;
+
+    // Constants
+    private static float SHARP_ROCK_DAMAGE;
+    private static float SHARP_ROCK_BOUNCE;
+    private static float ROCK_WIDTH;
+    private static float ROCK_HEIGHT;
+    /** size of the plant texture, not hit-box; plant hit-box is the same as terrain hit-box */
+    private static float PLANT_SIZE;
+    /** size of the texture and hit-box of all terrain, both width and height */
+    private static float TERRAIN_SIZE;
+
+    /* Fields */
+    private final StationaryType stationaryType;
+    /** 1-13 for texture alas, 0 for default, negative for plants */
+    protected int terrainType = REGULAR;
+    /** @return whether this rock is plant (pre-req: is terrain) */
+    public boolean isPlant(){ return isPlant(terrainType); }
+    /** @return Whether this is a sharp rock or not. */
+    public boolean isSharp() { return stationaryType == StationaryType.SHARP_ROCK; }
+    /** @return Whether this is a cliff terrain or not. */
+    public boolean hasCliff() { return stationaryType == StationaryType.CLIFF_TERRAIN; }
+    /** @return if the stationary type is a terrain type */
+    public static boolean isPlant(int rock_int) { return rock_int < REGULAR; }
     @Override
-    public ObjectType getType() {
-        return ObjectType.STATIONARY;
-    }
+    public ObjectType getType() { return ObjectType.STATIONARY; }
     public StationaryType getStationaryType() { return stationaryType; }
 
     /**
-     * Generalized constructor for collision or no collision only stationary objects.
-     * @param position where the object is located.
-     * @param rt the type it has.
+     * Load the constants for the rock
+     * @param objParams is the "rock" child of object_settings.json
      */
+    public static void setConstants(JsonValue objParams){
+        TERRAIN_SIZE = objParams.getFloat("terrain size");
+        SHARP_ROCK_DAMAGE = objParams.getFloat("sharp rock damage");
+        SHARP_ROCK_BOUNCE = objParams.getFloat("sharp rock restitution");
+        ROCK_WIDTH = objParams.getFloat("rock width");
+        ROCK_HEIGHT = objParams.getFloat("rock height");
+        PLANT_SIZE = objParams.getFloat("plant size");
+    }
+
+    /** Constructor call for rock, fixed terrainType of 0
+     * @param position where the object is located.
+     * @param rt the type it has. */
     public Stationary(Vector2 position, StationaryType rt) {
         stationaryType = rt;
         switch(stationaryType){
@@ -73,23 +84,29 @@ public class Stationary extends GameObject {
             case SHARP_ROCK:
                 initBoxBody(ROCK_WIDTH, ROCK_HEIGHT);
                 physicsObject.setRestitution(SHARP_ROCK_BOUNCE);
-                this.sharp = true;
                 break;
-            case TERRAIN:
-                initBoxBody(TERRAIN_WIDTH, TERRAIN_HEIGHT);
-                break;
-            case PLANT:
-                initWheelBody(PLANT_RADIUS);
-                break;
-            default:
-                throw new RuntimeException("Incorrect constructor called.");
+            case TERRAIN: case CLIFF_TERRAIN: default:
+                throw new RuntimeException("Stationary.java: passed param is not ROCK, incorrect constructor use.");
         }
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
     }
 
-    /**
-     * Constructor for walls only
+    /** Constructor call for terrain, require to know terrain type int
+     * @param position where the object is located.
+     * @param rt the type it has.
+     * @param terrain the terrainType */
+    public Stationary(Vector2 position, StationaryType rt, int terrain) {
+        stationaryType = rt;
+        if(stationaryType == StationaryType.TERRAIN || stationaryType == StationaryType.CLIFF_TERRAIN){
+            terrainType = terrain;
+            initBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
+            setPosition(position);
+            physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        }else{ throw new RuntimeException("Stationary.java: passed param is not TERRAIN, incorrect constructor use."); }
+    }
+
+    /** Constructor for walls only
      * @param polygonVertices where the wall's corners are located
      */
     public Stationary(float[] polygonVertices){
@@ -122,20 +139,22 @@ public class Stationary extends GameObject {
 
     @Override
     protected void setTextureTransform() {
-        float w = TERRAIN_WIDTH / texture.getRegionWidth();
+        float w = TERRAIN_SIZE / texture.getRegionWidth();
         textureScale = new Vector2(w, w);
         switch(stationaryType){
-            case PLANT:
-                textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - PLANT_RADIUS)/2f + 0.5f);
             case WALL:
                 break;
+            case CLIFF_TERRAIN: case TERRAIN:
+                if(isPlant()) {
+                    textureOffset = new Vector2(0.0f,(texture.getRegionHeight() * textureScale.y - PLANT_SIZE)/2f + 0.5f);
+                }else{
+                    textureOffset = new Vector2(0.0f,(texture.getRegionHeight() * textureScale.y - TERRAIN_SIZE)/2f + 0.5f);
+                }
+                break;
             default:
-                textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - TERRAIN_HEIGHT)/2f + 0.5f);
+                textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - TERRAIN_SIZE)/2f + 0.5f);
         }
     }
-
-    /** @return Whether this is a sharp rock or not. */
-    public boolean isSharp() { return sharp && stationaryType == StationaryType.SHARP_ROCK; }
 
     /** @return how much damage this rock does to the player. */
     public static float getSharpRockDamage() { return SHARP_ROCK_DAMAGE; }
@@ -159,8 +178,6 @@ public class Stationary extends GameObject {
     private void drawer(GameCanvas gc, Color c, BiConsumer<GameCanvas, Color> d){
         switch (stationaryType){
             case WALL:
-                break;
-            case PLANT:
                 break;
             default:
                 d.accept(gc, c);

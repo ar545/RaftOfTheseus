@@ -174,7 +174,7 @@ public class MenuMode implements Screen {
         prevPageButton.setVisible(currentPage == 2);
 
         backTable = new Table();
-        backTable.add(backButton).expandX().align(Align.left).padRight(1500).padTop(10);
+        backTable.add(backButton).expandX().align(Align.left).padRight(1150).padTop(10);
 
         // instantiate the "back" button, which is used in multiple menus
         Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
@@ -194,7 +194,7 @@ public class MenuMode implements Screen {
     private void initLevelTables(){
         Table part2 = new Table();
         part2.row();
-        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, 0.85f)).expandX().align(Align.center).padTop(-50);
+        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, 0.6f)).expandX().align(Align.center).padTop(-50);
         levelTables.add(backTable, part2);
 
         // Button styles
@@ -222,19 +222,19 @@ public class MenuMode implements Screen {
         tb3.align(Align.center);
 
         Table part3L = new Table();
-        part3L.add(UICreator.createLabel("PROGRAMMER", skin, 0.5f)).expandX().align(Align.center);
-        part3L.row();
+        part3L.add(UICreator.createLabel("PROGRAMMER", skin, 0.4f)).expandX().align(Align.center);
+        part3L.row().padTop(-20);
 
         Table part3R = new Table();
-        part3R.add(UICreator.createLabel("DESIGNER", skin, 0.5f)).expandX().align(Align.center);
-        part3R.row();
+        part3R.add(UICreator.createLabel("DESIGNER", skin, 0.4f)).expandX().align(Align.center);
+        part3R.row().padTop(-20);
 
         Array<String> members = new Array<String>(new String[]{"Amy Huang", "Demian Yutin", "Howard Fu",
                 "Jaden O'Brien", "Jason Tung", "Leo Zhao", "Gloria Shi", "Noah Braun", "Spencer Pettee", ""});
         int i = 0;
         for(String name : members){
             Label l = new Label(name, skin);
-            l.setFontScale(0.4f);
+            l.setFontScale(0.35f);
             if (i <= 5) {
                 part3L.add(l).expandX().align(Align.center);
                 if (i != 5) part3L.row();
@@ -246,7 +246,7 @@ public class MenuMode implements Screen {
         }
 
         tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
-        tb3.add(part3R).expandX().align(Align.center).padTop(-180);
+        tb3.add(part3R).expandX().align(Align.center).padTop(-160);
         creditTables.add(backTable, tb2, tb3);
     }
 
@@ -344,9 +344,9 @@ public class MenuMode implements Screen {
             case TITLE:
                 for(TextButton tb : titleButtons){
                     if(i == 0){
-                        menuTable.add(tb).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(130);
+                        menuTable.add(tb).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(100);
                     } else {
-                        menuTable.add(tb).expandX().align(Align.left).padLeft(130);
+                        menuTable.add(tb).expandX().align(Align.left).padLeft(100);
                     }
                     if (i != titleButtons.size - 1) menuTable.row();
                     i++;
@@ -359,10 +359,10 @@ public class MenuMode implements Screen {
                 }
                 scrollPane = new ScrollPane(addLevelIslands());
                 scrollPane.setFlickScroll(false);
-                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.7f).padTop(-100);
+                menuTable.add(scrollPane).size(stage.getWidth(), stage.getHeight()*0.7f).padTop(-40);
                 scrollButtonTable = new Table();
-                scrollButtonTable.add(prevPageButton).padRight(stage.getWidth() / 2 - 200);
-                scrollButtonTable.add(nextPageButton).padLeft(stage.getWidth() / 2 - 200);
+                scrollButtonTable.add(prevPageButton).padRight(stage.getWidth() / 2 - 150).padTop(30);
+                scrollButtonTable.add(nextPageButton).padLeft(stage.getWidth() / 2 - 150).padTop(30);
                 scrollButtonTable.align(Align.center);
                 menuTable.row();
                 menuTable.add(scrollButtonTable).padTop(-50);
@@ -383,7 +383,7 @@ public class MenuMode implements Screen {
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
         int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
-        int padding = 170;
+        int padding = 130;
         int[][] buttonPadding = new int[][] {
                 new int[] {0, 3},
                 new int[] {1, 2},
@@ -415,22 +415,22 @@ public class MenuMode implements Screen {
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
             levelButtons[levelNumber] = new TextButton(String.valueOf(levelNumber), canPlay ? buttonStyles[score] : lockButtonStyle);
-            levelButtons[levelNumber].getLabel().setFontScale(0.8f);
+            levelButtons[levelNumber].getLabel().setFontScale(0.5f);
             levelButtons[levelNumber].addListener(UICreator.createListener(levelButtons[levelNumber], canPlay, this::selectlevel, levelNumber));
             //Add button to table
             int buttonPaddingLeft = buttonPadding[levelNumber % LEVELS_PER_PAGE][0];
             int buttonPaddingRight = buttonPadding[levelNumber % LEVELS_PER_PAGE][1];
-            pageTable.add(levelButtons[levelNumber]).size(200).padLeft(buttonPaddingLeft).padRight(buttonPaddingRight);
+            pageTable.add(levelButtons[levelNumber]).size(150).padLeft(buttonPaddingLeft).padRight(buttonPaddingRight);
 
             if ((i + 1) > 0 && (i + 1) % NUM_COLS == 0) {
-                pageTable.row().width(stage.getWidth()).padTop(-80);
+                pageTable.row().width(stage.getWidth()).padTop(-60);
             }
 
             if ((i + 1) % LEVELS_PER_PAGE == 0) {
                 scrollTable.add(pageTable)
                            .width(stage.getWidth() * 0.7f)
-                           .padLeft(i > LEVELS_PER_PAGE ? 440 : 100)
-                           .padRight(i > LEVELS_PER_PAGE ? 400 : 0);
+                           .padLeft(i > LEVELS_PER_PAGE ? 240 : 80)
+                           .padRight(i > LEVELS_PER_PAGE ? 320 : 80);
                 pageTable = new Table();
                 pageTable.align(Align.left);
             }
