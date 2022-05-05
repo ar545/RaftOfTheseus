@@ -959,9 +959,9 @@ public class LevelModel {
         int height = width; // known to be square
         for(int row = 0; row < DIFFICULTY_COUNT; row ++) {
             for(int col = 0; col < Tiled.TERRAIN_TYPES; col++){
-                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row * 2 + 1,
                         width - 2, height - 2); // low terrain
-                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * row * 2 + 1,
                         width - 2, height*(2) - 2); // high terrain
             }
         }
