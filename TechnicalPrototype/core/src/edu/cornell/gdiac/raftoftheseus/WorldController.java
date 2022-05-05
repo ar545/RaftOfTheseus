@@ -1031,6 +1031,7 @@ public class WorldController implements Screen, ContactListener {
         } else if(g.getType() == GameObject.ObjectType.TREASURE){
             // add random wood and update player score
             addScore();
+            r.halfLife();
             ((Treasure) g).setCollected(true);
         } else if(g.getType() == GameObject.ObjectType.GOAL){
             // Check player win
