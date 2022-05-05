@@ -91,13 +91,20 @@ public class LevelModel {
         /** Total variation of terrains */
         private static final int TERRAIN_TYPES = SEA - LAND_OFFSET - 1;
         private static final int FULL_LAND = 7;
+        /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
+        /** layer of environment and land */
+        private static final int LAYER_ENV = 0;
+        /** layer of collectables and shark */
+        private static final int LAYER_COL = 1;
+        /** layer of siren */
+        private static final int LAYER_SIREN = 2;
     }
 
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Width and height of a single grid square in Box-2d units. A grid is 3 meter wide. */
     private static final float GRID_SIZE = 3.0f;
     /** Pixels per grid square */
-    private static final float GRID_PIXELS = 150.0f;
+    private static final float GRID_PIXELS = 125.0f;
     /** Pixels per Box2D unit */
     private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** Default boundary width and height of a single grid in Box-2d units. Borders are 1 meter wide. */
@@ -112,19 +119,10 @@ public class LevelModel {
     public static final int BAR_PLAYER_OFFSET = 70;
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
+    /** How many difficulty themes are there in the game? */
     private static final int DIFFICULTY_COUNT = 3;
-
-
-    /*=*=*=*=*=*=*=*=*=* TILED CURRENT DIRECTION CONSTANTS *=*=*=*=*=*=*=*=*=*/
-    /** layer of environment and land */
-    private static final int LAYER_ENV = 0;
-    /** layer of collectables and shark */
-    private static final int LAYER_COL = 1;
-    /** layer of siren */
-    private static final int LAYER_SIREN = 2;
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.05f;
-
 
     /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
     /** The player of the level */
@@ -535,9 +533,9 @@ public class LevelModel {
      * Precondition: gameObject list has been cleared. */
     private void populateLevel() {
         JsonValue layers = level_data.get("layers");
-        JsonValue environment = layers.get(LAYER_ENV);
-        JsonValue collectables = layers.get(LAYER_COL);
-        JsonValue sirenLayer = layers.get(LAYER_SIREN);
+        JsonValue environment = layers.get(Tiled.LAYER_ENV);
+        JsonValue collectables = layers.get(Tiled.LAYER_COL);
+        JsonValue sirenLayer = layers.get(Tiled.LAYER_SIREN);
         for(JsonValue layer : layers){
             if(layer.getString("name").equals("Environment")){ environment = layer;}
             else if(layer.getString("name").equals("Collectable")){ collectables = layer;}
@@ -581,31 +579,39 @@ public class LevelModel {
             // Now, add this siren by finding another copy of it
             if(existingPositions.containsKey(id)){
                 Vector2 altPosition = existingPositions.remove(id);
-                if(isStart){ addSiren(position, altPosition); }else{ addSiren(altPosition, position); }
+                if(isStart){ addDoubleSiren(position, altPosition); }else{ addDoubleSiren(altPosition, position); }
             }else{
                 existingPositions.put(id, position);
             }
         }
+        for(Vector2 vec : existingPositions.values()){ addSingleSiren(vec); } // SUPPORT STATIONARY SIREN
         existingPositions.clear();
     }
 
     /** Add siren to this game world */
-    private void addSiren(Vector2 startGridPos, Vector2 endGridPos) {
+    private void addDoubleSiren(Vector2 startGridPos, Vector2 endGridPos) {
         computeSirenPosition(startGridPos.x, endGridPos.x, startGridPos.y, endGridPos.y);
         Siren this_siren;
-        if(compute_temp.equals(siren_compute_temp)){
+        if(compute_temp.epsilonEquals(siren_compute_temp, 0.1f)){
             this_siren = new Siren(compute_temp, raft);
         } else {
             this_siren = new Siren(compute_temp, siren_compute_temp, raft);
         }
-        this_siren.setTexture(sirenTexture);
-        this_siren.setStunTexture(stunTexture);
+        addSiren(this_siren);
+    }
+
+    /** Add siren to this game world */
+    private void addSingleSiren(Vector2 GridPos) {
+        computeSirenPosition(GridPos.x, 0, GridPos.y, 0);
+        Siren this_siren = new Siren(compute_temp, raft);
         addSiren(this_siren);
     }
 
     /** add siren to the world */
     protected void addSiren(Siren this_siren) {
         assert inBounds(this_siren) : "Object is not in bounds";
+        this_siren.setTexture(sirenTexture);
+        this_siren.setStunTexture(stunTexture);
         objects.add(this_siren);
         this_siren.activatePhysics(world);
         sirens.add(this_siren);
@@ -619,7 +625,7 @@ public class LevelModel {
         if (tile_int == Tiled.DEFAULT){ return; }
         if (tile_int == Tiled.TREASURE){ addTreasure(row, col); return; }
         if (tile_int == Tiled.ENEMY_SHARK){ addEnemy(row, col, true); return; }
-        if (tile_int == Tiled.ENEMY_SIREN){ return; } // TODO: undefined behavior
+        if (tile_int == Tiled.ENEMY_SIREN){ addSingleSiren(new Vector2(col, row)); return; }
         if (tile_int == Tiled.HYDRA){ addEnemy(row, col, false); return; }
         if (tile_int == Tiled.WRECK){ addWreck(row, col); return; }
         if (tile_int == Tiled.WOOD_LOW){ addWood(row, col, Wood.LOW_WOOD); return; }
@@ -722,7 +728,7 @@ public class LevelModel {
                 Stationary plant = new Stationary(compute_temp, type, rock_int);
                 plant.setTexture(plantTexture[-rock_int - 1]);
                 addObject(plant);
-                rock_int = Tiled.FULL_LAND;
+                rock_int = Tiled.FULL_LAND; // Notice: plants are created as double-objects, so no break here.
             default: // terrain or cliff terrain
                 this_rock = new Stationary(compute_temp, type, rock_int);
                 temp = terrain[(type == Stationary.StationaryType.TERRAIN ? difficulty : difficulty + DIFFICULTY_COUNT)][rock_int - 1];
@@ -869,8 +875,8 @@ public class LevelModel {
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(){
         initLighting(lightSettings.get("init")); // Box2d lights initialization
-        light = createPointLights(lightSettings.get("point")); // Box2d lights information
-        goalLight = createPointLights(lightSettings.get("point")); // Box2d lights information
+        light = createPointLights(lightSettings.get("point")); // One light over the player
+        goalLight = createPointLights(lightSettings.get("point")); // Another light over the goal
         attachLights(light, raft);
         attachLights(goalLight, goal);
     }
@@ -995,7 +1001,7 @@ public class LevelModel {
         PointSource point = new PointSource(rayhandler, rays, Color.WHITE, dist, pos[0], pos[1]);
         point.setColor(color[0],color[1],color[2],color[3]);
         point.setSoft(lightJson.getBoolean("soft"));
-        point.setSoftnessLength(6);
+        point.setSoftnessLength(lightJson.getInt("softLength"));
 
         // Create a filter to exclude see through items
         Filter f = new Filter();
@@ -1353,7 +1359,7 @@ public class LevelModel {
 
     /** draw the fuel sign if the health is below a certain level */
     private void drawFuel(float health, Vector2 player_position, float time) {
-        if (health < 0.2 && health > 0) {
+        if (health < 0.3 && health > 0) {
             int health_int = Math.max(1, (int) (health * 50) * (int) (health * 50));
             if (((int) (time * 100) / health_int) % 2 == 0) {
                 canvas.draw(fuelTexture, player_position.x - 50, player_position.y);
@@ -1423,7 +1429,7 @@ public class LevelModel {
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
         if(light_effect <= 1){ // 30 block light
-            light.setDistance(24);
+            light.setDistance(21);
             light.setSoftnessLength(9);
             light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
         }else if(light_effect == 2){ // 20 non-block light
@@ -1436,13 +1442,13 @@ public class LevelModel {
         }
     }
 
-    /* Fix extend land into invisible border */
+    /** Extend land and terrain into the top invisible border */
     private void populateExtendLand(int row, int col, Stationary.StationaryType type, int rock_int) {
         int extend = computeExtend(rock_int);
         if(extend != Stationary.NON_ROCK){ addRock(row + 1, col, type, extend); }
     }
 
-    /**  */
+    /** This function of magic number compute the best tile type to add to the top layer. */
     private int computeExtend(int rock_int){
         if(Stationary.isPlant(rock_int)) {return 7;}
         switch (rock_int){
