@@ -1,7 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -14,13 +14,16 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
+import org.lwjgl.Sys;
 
-public class SettingsMode implements Screen {
+import java.util.stream.StreamSupport;
+
+public class SettingsMode implements Screen, InputProcessor {
 
     private Stage stage;
     private Table table;
@@ -36,20 +39,28 @@ public class SettingsMode implements Screen {
     private Slider musicSlider;
     /** Slider for sound effects */
     private Slider soundEffectsSlider;
-    /** Background for single key */
-    private Texture singleKeyBackground;
-    /** Background for short text key  */
-    private Texture shortTextKeyBackground;
+    /** Background for gold key */
+    private Texture goldKeyBackground;
+    /** Background for black key  */
+    private Texture blackKeyBackground;
     /** Background for long text key */
     private Texture longTextKeyBackground;
 
     /** TextButton for accessibility */
     TextButton accessibilityButton;
+    /** TextButton for the map key */
+    TextButton mapKeyButton;
+    /** TextButton for the reset key */
+    TextButton resetKeyButton;
+    /** TextButton for the pause key */
+    TextButton pauseKeyButton;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
+    /** Control settings mappings */
+    private static JsonValue controlSettings;
 
     // Load from "screen" in "obj parameters"
     public static void setContants(JsonValue objParams){
@@ -79,6 +90,12 @@ public class SettingsMode implements Screen {
     private boolean active;
     /** Whether accessibility mode is turned on */
     private boolean accessibilityModeActive;
+    /** Whether map key editing mode is on */
+    private boolean editMapKeyEnable;
+    /** Whether reset key editing mode is on */
+    private boolean editResetKeyEnable;
+    /** Whether pause key editing mode is on */
+    private boolean editPauseKeyEnable;
 
     /**
      * Creates a SettingsMode with the default size and position.
@@ -92,6 +109,9 @@ public class SettingsMode implements Screen {
         active = true;
         exitPressed = false;
         accessibilityModeActive = true;
+        editMapKeyEnable = false;
+        editResetKeyEnable = false;
+        editPauseKeyEnable = false;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
     }
 
@@ -102,8 +122,8 @@ public class SettingsMode implements Screen {
      */
     public void populate(AssetDirectory directory) {
         background = directory.getEntry("sea_background", Texture.class);
-        singleKeyBackground = directory.getEntry("single_key_background", Texture.class);
-        shortTextKeyBackground = directory.getEntry("short_text_key_background", Texture.class);
+        goldKeyBackground = directory.getEntry("gold_key_background", Texture.class);
+        blackKeyBackground = directory.getEntry("black_key_background", Texture.class);
         longTextKeyBackground = directory.getEntry("long_text_key_background", Texture.class);
         sliderKnob = directory.getEntry("slider_knob", Texture.class);
         sliderBar = directory.getEntry("slider_bar", Texture.class);
@@ -112,6 +132,11 @@ public class SettingsMode implements Screen {
     /** Sets the ScreenListener for this mode, the ScreenListener will respond to request to quit. */
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
+    }
+
+    /** Sets the control settings  */
+    public static void setKeyParams(JsonValue keyParams){
+        controlSettings = keyParams;
     }
 
     /** Sets exit code to menu */
@@ -125,6 +150,10 @@ public class SettingsMode implements Screen {
         active = true;
         stage = new Stage();
         table = new Table(skin);
+        InputMultiplexer multiplexer = new InputMultiplexer();
+        multiplexer.addProcessor(stage);
+        multiplexer.addProcessor(this);
+        Gdx.input.setInputProcessor(multiplexer);
         buildSettings();
     }
 
@@ -133,14 +162,8 @@ public class SettingsMode implements Screen {
         active = false;
     }
 
-    public void initGUI(){
-
-    }
-
     /** Constructs the view. */
     private void buildSettings() {
-        Gdx.input.setInputProcessor(stage);
-
         stage.addActor(table);
         table.align(Align.top);
         table.setFillParent(true);
@@ -213,7 +236,7 @@ public class SettingsMode implements Screen {
 
         Table part3a = new Table();
         part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin, 0.4f));
-        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, 0.4f, Color.WHITE, shortTextKeyBackground);
+        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, 0.4f, Color.WHITE, blackKeyBackground);
         accessibilityButton.addListener(UICreator.createListener(accessibilityButton, Color.GRAY, Color.WHITE, this::changeAccessibilityMode));
         part3a.add(accessibilityButton).padLeft(30).width(100);
         part3.add(part3a).padLeft(-30);
@@ -226,32 +249,52 @@ public class SettingsMode implements Screen {
 
         Table part4 = new Table();
         int keysPadding = 30;
+
+        String mapKeyString = controlSettings.get("mouse keyboard").get("map").asString();
+        String resetKeyString = controlSettings.get("mouse keyboard").get("reset").asString();
+        String pauseKeyString = controlSettings.get("mouse keyboard").get("pause").asString();
+
         part4.add(UICreator.createLabel("MAP", skin, 0.4f)).padRight(keysPadding);
-        TextButton mapKeyButton = UICreator.createTextButton("M", skin, 0.4f, Color.WHITE, singleKeyBackground);
-        mapKeyButton.addListener(UICreator.createListener(mapKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, 0.4f, Color.WHITE, blackKeyBackground);
+        mapKeyButton.addListener(UICreator.createListener(mapKeyButton, this::changeKeyMapping));
         part4.add(mapKeyButton).padRight(keysPadding);
 
         part4.add(UICreator.createLabel("FIRE", skin, 0.4f)).padRight(keysPadding);
         TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, 0.4f, Color.WHITE, longTextKeyBackground);
-        fireKeyButton.addListener(UICreator.createListener(fireKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        fireKeyButton.addListener(UICreator.createListener(fireKeyButton, this::changeKeyMapping));
         part4.add(fireKeyButton).padRight(keysPadding);
 
         part4.add(UICreator.createLabel("RESTART", skin, 0.4f)).padRight(keysPadding);
-        TextButton restartKeyButton = UICreator.createTextButton("R", skin, 0.4f, Color.WHITE, singleKeyBackground);
-        restartKeyButton.addListener(UICreator.createListener(restartKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
-        part4.add(restartKeyButton).padRight(keysPadding);
+        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, 0.4f, Color.WHITE, blackKeyBackground);
+        resetKeyButton.addListener(UICreator.createListener(resetKeyButton, this::changeKeyMapping));
+        part4.add(resetKeyButton).padRight(keysPadding);
 
         part4.add(UICreator.createLabel("PAUSE", skin, 0.4f)).padRight(keysPadding);
-        TextButton pauseKeyButton = UICreator.createTextButton("Esc", skin, 0.4f, Color.WHITE, shortTextKeyBackground);
-        pauseKeyButton.addListener(UICreator.createListener(pauseKeyButton, Color.GRAY, Color.WHITE, this::changeKeyMapping));
+        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, 0.4f, Color.WHITE, blackKeyBackground);
+        pauseKeyButton.addListener(UICreator.createListener(pauseKeyButton, this::changeKeyMapping));
         part4.add(pauseKeyButton).padRight(keysPadding);
         table.add(part4);
         table.row();
     }
 
     /** Change the appropriate key mapping */
-    private void changeKeyMapping() {
-        System.out.println("TODO : change key mapping");
+    private void changeKeyMapping(TextButton button) {
+        if (button == mapKeyButton) {
+            editMapKeyEnable = !editMapKeyEnable;
+            editResetKeyEnable = false;
+            editPauseKeyEnable = false;
+        } else if (button == resetKeyButton) {
+            editResetKeyEnable = !editResetKeyEnable;
+            editMapKeyEnable = false;
+            editPauseKeyEnable = false;
+        } else if (button == pauseKeyButton) {
+            editPauseKeyEnable = !editPauseKeyEnable;
+            editResetKeyEnable = false;
+            editMapKeyEnable = false;
+        }
+        UICreator.setTextButtonStyle(mapKeyButton, skin, 0.4f, Color.WHITE, editMapKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(resetKeyButton, skin, 0.4f, Color.WHITE, editResetKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(pauseKeyButton, skin, 0.4f, Color.WHITE, editPauseKeyEnable ? goldKeyBackground : blackKeyBackground);
     }
 
     /** Set accessibility mode */
@@ -271,11 +314,13 @@ public class SettingsMode implements Screen {
 
     /** Called when the Screen should render itself. */
     public void render(float delta) {
-        Gdx.input.setInputProcessor(stage);
+        InputController input = InputController.getInstance();
+        input.readInput();
         if (active) {
             draw();
             if (exitPressed || InputController.getInstance().didExit()) {
                 resetExitPressed();
+                resetEditKeys();
                 listener.exitScreen(this, previousMode);
             }
         }
@@ -296,6 +341,11 @@ public class SettingsMode implements Screen {
     /** Reset the settings menu and exit pressed state */
     private void setExitPressed() { exitPressed = true; }
     private void resetExitPressed() { exitPressed = false; }
+    private void resetEditKeys() {
+        editResetKeyEnable = false;
+        editMapKeyEnable = false;
+        editPauseKeyEnable = false;
+    }
 
     /** Called when the Screen is paused. */
     public void pause() {}
@@ -304,4 +354,105 @@ public class SettingsMode implements Screen {
     /** Called when this screen should release all resources. */
     public void dispose() { }
 
+    /**
+     * Called when a key was pressed
+     *
+     * @param keycode one of the constants in {@link Input.Keys}
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean keyDown(int keycode) {
+        String key = Input.Keys.toString(keycode);
+        String currentMapKey = mapKeyButton.getText().toString();
+        String currentResetKey = resetKeyButton.getText().toString();
+        String currentPauseKey = pauseKeyButton.getText().toString();
+        if (editMapKeyEnable && !key.equals(currentResetKey) && !key.equals(currentPauseKey)) {
+            controlSettings.get("mouse keyboard").get("map").set(key); // update the local copy
+            mapKeyButton.getLabel().setText(key);
+        } else if (editResetKeyEnable && !key.equals(currentMapKey) && !key.equals(currentPauseKey) ) {
+            controlSettings.get("mouse keyboard").get("reset").set(key); // update the local copy
+            resetKeyButton.getLabel().setText(key);
+        } else if (editPauseKeyEnable && !key.equals(currentMapKey) && !key.equals(currentResetKey) ) {
+            controlSettings.get("mouse keyboard").get("pause").set(key); // update the local copy
+            pauseKeyButton.getLabel().setText(key);
+        }
+        FileHandle file = Gdx.files.local("input_settings.json"); // update json copy
+        String jsonString = controlSettings.prettyPrint(JsonWriter.OutputType.json, 1);
+        file.writeString(jsonString, false);
+        // TODO update the keys  in the tutorial levels
+        return false;
+    }
+
+    /**
+     * Called when a key was released (Unsupported)
+     *
+     * @param keycode one of the constants in {@link Input.Keys}
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean keyUp(int keycode) { return false; }
+
+    /**
+     * Called when a key was typed (Unsupported)
+     *
+     * @param character The character
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean keyTyped(char character) { return false; }
+
+    /**
+     * Called when the screen was touched or a mouse button was pressed. (Unsupported)
+     *
+     * @param screenX The x coordinate, origin is in the upper left corner
+     * @param screenY The y coordinate, origin is in the upper left corner
+     * @param pointer the pointer for the event.
+     * @param button  the button
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean touchDown(int screenX, int screenY, int pointer, int button) { return false; }
+
+    /**
+     * Called when a finger was lifted or a mouse button was released. (Unsupported)
+     *
+     * @param screenX
+     * @param screenY
+     * @param pointer the pointer for the event.
+     * @param button  the button
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean touchUp(int screenX, int screenY, int pointer, int button) { return false; }
+
+    /**
+     * Called when a finger or the mouse was dragged. (Unsupported)
+     *
+     * @param screenX
+     * @param screenY
+     * @param pointer the pointer for the event.
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean touchDragged(int screenX, int screenY, int pointer) { return false; }
+
+    /**
+     * Called when the mouse was moved without any buttons being pressed. Will not be called on iOS. (Unsupported)
+     *
+     * @param screenX
+     * @param screenY
+     * @return whether the input was processed
+     */
+    @Override
+    public boolean mouseMoved(int screenX, int screenY) { return false; }
+
+    /**
+     * Called when the mouse wheel was scrolled. Will not be called on iOS. (Unsupported)
+     *
+     * @param amountX the horizontal scroll amount, negative or positive depending on the direction the wheel was scrolled.
+     * @param amountY the vertical scroll amount, negative or positive depending on the direction the wheel was scrolled.
+     * @return whether the input was processed.
+     */
+    @Override
+    public boolean scrolled(float amountX, float amountY) { return false; }
 }

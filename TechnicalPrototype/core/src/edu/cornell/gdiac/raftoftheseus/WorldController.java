@@ -6,6 +6,7 @@ import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -65,6 +66,8 @@ public class WorldController implements Screen, ContactListener {
     public static int WORLD_VELOCITY;
     /** Number of position iterations for the constraint solvers */
     public static int WORLD_POSIT;
+    /** Control settings information for tutorial levels */
+    private static JsonValue controlSettings;
 
     private static JsonValue shaderData;
 
@@ -89,14 +92,14 @@ public class WorldController implements Screen, ContactListener {
     protected TextureRegion emptyStar;
     /** The texture for the filled star */
     protected TextureRegion filledStar;
-    /** The texture for the pause button */
-    protected Texture pauseButton;
-    /** The hint image for movement and exit/reset controls */
-    protected TextureRegion hintMovement;
+    /** The hint image for wasd movement */
+    protected TextureRegion wasdIcon;
+    /** The hint image for arrows movement */
+    protected TextureRegion arrowsIcon;
     /** The hint image for firing controls */
     protected TextureRegion hintAttack;
-    /** The hint image for map controls */
-    protected TextureRegion hintMap;
+    /** The hint background for controls */
+    protected TextureRegion hintKey;
     /** Texture for pause screen */
     protected Texture pauseBackground;
     /** Texture for failed level */
@@ -200,6 +203,11 @@ public class WorldController implements Screen, ContactListener {
         this.canvas = canvas;
     }
 
+    /** Sets the control settings information  */
+    public static void setKeyParams(JsonValue keyParams){
+        controlSettings = keyParams;
+    }
+
 
     /**
      * Draw the physics objects to the canvas
@@ -280,36 +288,94 @@ public class WorldController implements Screen, ContactListener {
     private void drawControlHints(float dt) {
         if(blockHint) return;
         hintTimer += dt;
-        TextureRegion hint = null;
-        switch(level_id) {
-            case(0):
-                hint = hintMovement;
-                break;
-            case(2):
-                hint = hintMap;
-                break;
-            case(4):
-                hint = hintAttack;
-                break;
-            default:
-                // draw nothing
-        }
         if(hintTimer >= fadeTimeEnd) {
             blockHint = true;
             return;
         }
-        if (hint != null) {
-            canvas.begin();
-            Color c;
-            if(hintTimer >= fadeTimeStart){
-                c = new Color(1f, 1f, 1f, (fadeTimeEnd - hintTimer)/fadeTimeSpan);
-            } else {
-                c = Color.WHITE;
-            }
-            canvas.draw(hint, c, hint.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hint.getRegionWidth(), hint.getRegionHeight());
-            canvas.end();
+        Color c;
+        if(hintTimer >= fadeTimeStart){
+            c = new Color(1f, 1f, 1f, (fadeTimeEnd - hintTimer)/fadeTimeSpan);
+        } else {
+            c = Color.WHITE;
         }
-
+        BitmapFont font = skin.getFont("default-font");
+        font.setColor(c);
+        canvas.begin();
+        switch(level_id) {
+            case(0):
+                // TOP SECTION
+                canvas.draw(
+                        wasdIcon, c,
+                        wasdIcon.getRegionWidth()*0.5f, 0.0f,
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 50, canvas.getHeight()*0.5f + 120,
+                        wasdIcon.getRegionWidth(), wasdIcon.getRegionHeight()
+                );
+                font.getData().setScale(0.3f);
+                canvas.drawText(
+                        "OR", font,
+                        canvas.getWidth()*0.5f - 20, canvas.getHeight()*0.5f + 120 + wasdIcon.getRegionHeight() / 2
+                );
+                canvas.draw(
+                        arrowsIcon, c,
+                        arrowsIcon.getRegionWidth()*0.5f, 0.0f,
+                        canvas.getWidth()*0.5f + arrowsIcon.getRegionWidth() - 50, canvas.getHeight()*0.5f + 120,
+                        arrowsIcon.getRegionWidth(), arrowsIcon.getRegionHeight()
+                );
+                font.getData().setScale(0.5f);
+                // BOTTOM SECTION LEFT
+                canvas.drawText(
+                        "RESTART", font,
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() - 70 , canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                );
+                canvas.draw(
+                        hintKey, c,
+                        hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
+                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 200, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        hintKey.getRegionWidth() * 0.7f, hintKey.getRegionHeight() * 0.85f
+                );
+                canvas.drawText(
+                        controlSettings.get("mouse keyboard").get("reset").asString(), font,
+                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 175, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                );
+//                // BOTTOM SECTION RIGHT
+                canvas.drawText(
+                        "PAUSE", font,
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 300 , canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                );
+                canvas.draw(
+                        hintKey, c,
+                        hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 520, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        hintKey.getRegionWidth() * 0.7f, hintKey.getRegionHeight() * 0.85f
+                );
+                canvas.drawText(
+                        controlSettings.get("mouse keyboard").get("pause").asString(), font,
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 490, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                );
+                break;
+            case(2):
+                font.getData().setScale(0.5f);
+                canvas.drawText(
+                        "MAP", font,
+                        canvas.getWidth()*0.5f - 220, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
+                );
+                canvas.draw(
+                        hintKey, c,
+                        hintKey.getRegionWidth()*0.5f, 0.0f,
+                        canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120,
+                        hintKey.getRegionWidth(), hintKey.getRegionHeight()
+                );
+                canvas.drawText(
+                        controlSettings.get("mouse keyboard").get("map").asString(), font,
+                        canvas.getWidth()*0.5f - 15, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
+                );
+                break;
+            case(4):
+                break;
+            default:
+                // draw nothing
+        }
+        canvas.end();
     }
 
     private void saveGame() {
@@ -502,8 +568,9 @@ public class WorldController implements Screen, ContactListener {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
         hintAttack = new TextureRegion(directory.getEntry( "hint_attack", Texture.class ));
-        hintMovement = new TextureRegion(directory.getEntry( "hint_movement", Texture.class ));
-        hintMap = new TextureRegion(directory.getEntry( "hint_map", Texture.class ));
+        wasdIcon = new TextureRegion(directory.getEntry( "hint_wasd", Texture.class ));
+        arrowsIcon = new TextureRegion(directory.getEntry("hint_arrows", Texture.class));
+        hintKey = new TextureRegion(directory.getEntry( "black_key_background", Texture.class ));
 
         // shader things
         Texture waterDiffuse = directory.getEntry("water_diffuse", Texture.class);

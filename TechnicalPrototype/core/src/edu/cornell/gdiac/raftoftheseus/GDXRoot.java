@@ -27,6 +27,7 @@ import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
+import org.lwjgl.Sys;
 
 /**
  * Root class for a LibGDX.  
@@ -186,9 +187,12 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		LEVELS_PER_PAGE = screenParams.getInt("level per page", 10);
 		setExitCodes(screenParams.get("exit codes"));
 		MenuMode.setConstants(screenParams.get("screen"), NUM_LEVELS, LEVELS_PER_PAGE);
+		JsonValue keyParams = directory.getEntry("input_settings", JsonValue.class);
 		SettingsMode.setContants(screenParams.get("screen"));
+		SettingsMode.setKeyParams(keyParams);
 		WorldController.setConstants(directory.getEntry("object_settings", JsonValue.class));
-		InputController.setConstants(directory.getEntry("input_settings", JsonValue.class));
+		WorldController.setKeyParams(keyParams);
+		InputController.setConstants(keyParams);
 		InputController.getInstance();
 		SfxController.getInstance().gatherAssets(directory);
 		MusicController.getInstance().gatherAssets(directory);
