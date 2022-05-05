@@ -756,7 +756,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-        Treasure this_treasure = new Treasure(compute_temp);
+        Treasure this_treasure = new Treasure(compute_temp, raft);
         this_treasure.setTexture(treasureTexture);
         this_treasure.initSB(starburstTexture);
         obstacles[col][row] = this_treasure;
@@ -966,9 +966,9 @@ public class LevelModel {
         int height = width; // known to be square
         for(int row = 0; row < DIFFICULTY_COUNT; row ++) {
             for(int col = 0; col < Tiled.TERRAIN_TYPES; col++){
-                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row * 2 + 1,
                         width - 2, height - 2); // low terrain
-                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
+                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * row * 2 + 1,
                         width - 2, height*(2) - 2); // high terrain
             }
         }

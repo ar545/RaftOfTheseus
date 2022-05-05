@@ -10,7 +10,7 @@ import edu.cornell.gdiac.util.FilmStrip;
 
 public class Treasure extends GameObject {
 
-    private static final float STARBURST_OFFSET = 2f;
+    private static final float STARBURST_OFFSET = 4.5f;
 
     private class Starburst extends GameObject{
         public final int SB_SF = 0;
@@ -47,12 +47,12 @@ public class Treasure extends GameObject {
 
     private Starburst sb;
 
-//    private Raft raft;
+    private Raft raft;
 
     /** Frame calculator for animation. */
     private FrameCalculator fc = new FrameCalculator(OPEN_SF);
 
-    public Treasure(Vector2 position) {
+    public Treasure(Vector2 position, Raft raft) {
 
         physicsObject = new WheelObstacle(0.9f);
         setPosition(position);
@@ -60,6 +60,7 @@ public class Treasure extends GameObject {
         physicsObject.getFilterData().categoryBits = CATEGORY_NON_PUSHABLE;
         physicsObject.getFilterData().maskBits = MASK_TREASURE;
         animated = false;
+        this.raft = raft;
 
         collected = false;
     }
@@ -114,8 +115,7 @@ public class Treasure extends GameObject {
         ((FilmStrip) sb.texture).setFrame(sb.fc.getFrame());
         super.draw(canvas);
         if (collected) {
-            canvas.draw(sb.texture, Color.WHITE, sb.origin.x, sb.origin.y, getX() + sb.textureOffset.x,
-                    getY() + sb.textureOffset.y + STARBURST_OFFSET, getAngle(), sb.textureScale.x, sb.textureScale.y);
+            canvas.draw(sb.texture, Color.WHITE, sb.origin.x, sb.origin.y, raft.getX() + sb.textureOffset.x, raft.getY() + sb.textureOffset.y + STARBURST_OFFSET, getAngle(), sb.textureScale.x, sb.textureScale.y);
         }
     }
 
