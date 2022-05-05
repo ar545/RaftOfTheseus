@@ -46,6 +46,14 @@ public class Wood extends GameObject {
         this(new Vector2(bound.x * (float) Math.random(), (float) Math.random() * bound.y), RANDOM_WOOD_GENERATION);
     }
 
+    /** Realign the raft so thsat the bottom of it is at the bottom of the capsule object. */
+    @Override
+    public void setTextureTransform() {
+        float w = getWidth() / texture.getRegionWidth();
+        textureScale = new Vector2(w, w);
+        textureOffset = new Vector2(0.0f,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
+    }
+
     /** return the number of logs in this pile of wood
      * @return float representing player health replenish */
     public float getWood() {
