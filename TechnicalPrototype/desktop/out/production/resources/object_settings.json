@@ -7,15 +7,15 @@
     "world posit" : 2
   },
   "siren" : {
-    "idle time" : 1000,
-    "singing time" : 5000,
+    "idle time" : 1,
+    "singing time" : 5,
     "attack range": 15,
     "hearing range" : 15,
     "proximity" : 0.05,
     "fly speed" : 6,
     "take off speed" : 1.2,
-    "stun time" : 2000,
-    "cool down" : 2000,
+    "stun time" : 3,
+    "cool down" : 2,
     "radius" : 1,
     "texture scale": 1.5,
     "idle animation speed" : 0.2,
@@ -31,8 +31,8 @@
     "flying frames" : 2,
     "idle start frame" : 0,
     "singing start frame" : 5,
-    "take off start frame" : 10,
-    "landing start frame" : 10,
+    "take off start frame" : 11,
+    "landing start frame" : 11,
     "flying start frame" : 15
   },
   "hydra" : {
@@ -45,28 +45,54 @@
     "size" : 10
   },
   "shark" : {
-    "damage per frame" : 0,
     "chase distance" : 12,
     "wander speed" : 1.5,
     "chase speed" : 2.0,
     "enrage speed" : 6.0,
-    "damage" : -25,
     "protect range" : 5,
-    "search range" : 30
+    "search range" : 30,
+    "damage" : -25,
+    "hearing range" : 15,
+    "approach speed" : 5.0,
+    "approach range" : 20.0,
+    "warm up" : 0.5,
+    "cool down" : 0.5,
+    "attack speed" : 20.0,
+    "attack range" : 10.0,
+    "stun time" : 2.0,
+    "texture scale" : 2.0,
+    "radius" : 1.2,
+    "swim animation speed" : 0.08,
+    "bite animation speed" : 0.08,
+    "swim frames" : 9,
+    "bite frames" : 8,
+    "swim start frame" : 8,
+    "bite start frame" : 0
   },
   "spear": {
     "speed scale" : 25.0,
-    "health cost" : -3.0,
-    "texture scale" : 1.8,
+    "health cost" : -2.0,
+    "texture scale" : 3.5,
+    "texture x offset" : -20,
+    "texture y offset" : 0,
     "body length" : 1,
     "body width" : 0.1,
-    "x offset" : 0.85,
-    "y offset" : 1.045,
+    "raft x offset" : 0.9,
+    "raft y offset" : 1.15,
     "angle" : -6.69,
     "range fly" :  10.0,
     "range fall" : 11.0,
     "float range" : 0.5,
-    "float speed" : 1.3
+    "float speed" : 1.3,
+    "idle as" : 0.06,
+    "idle sf" : 0,
+    "idle fc" : 8,
+    "fired as" : 0.06,
+    "fired sf" : 10,
+    "fired fc" : 4,
+    "dest as" : 0.06,
+    "dest sf" : 15,
+    "dest fc" : 7
   },
   "note" : {
     "speed scale" : 15.0,
@@ -77,29 +103,34 @@
     "force" : 30,
     "width" : 0.8
   },
-  "rock": {
-    "width": 3,
-    "height": 3,
-    "damage": -15,
-    "radius": 0.8
+  "stationary": {
+    "rock width": 2.5,
+    "rock height": 1.4,
+    "terrain size": 3,
+    "plant size" : 2,
+    "sharp rock damage": -15,
+    "sharp rock restitution" : 0.7
+
   },
   "terrain": {
   },
   "raft" : {
     "move cost" : 1.0,
-    "with current" : 0.45,
-    "against current" : 1.75,
+    "current movement buff" : 0.1,
+    "current buff scope": 50,
     "max health" : 100,
     "initial health" : 100,
     "damping" : 5,
-    "thrust" : 0.3,
-    "max speed" : 10,
-    "width" : 2.5,
-    "height" : 1.3,
+    "thrust" : 0.18,
+    "min speed": 0.01,
+    "max speed" : 6,
+    "max speed against current" : 9,
+    "width" : 2.4,
+    "height" : 0.7,
     "sensor size" : 1.45,
     "texture scale" : 1.5,
     "idle animation speed" : 0.05,
-    "shooting animation speed" : 0.0333333,
+    "shooting animation speed" : 0.016666667,
     "rotation animation speed" : 0.1,
     "idle frames" : 19,
     "shooting frames" : 19,
@@ -108,7 +139,10 @@
     "shooting starting frame" : 0,
     "rotation starting frame" : 0,
     "horizontal offset" : 0,
-    "enemy bullet duration" : 300
+    "enemy bullet duration" : 300,
+    "aura as" : 0.05,
+    "aura sf" : 0,
+    "aura fc" : 8
   },
   "shader" : {
     "colors_natural" : [
@@ -131,11 +165,23 @@
     ]
   },
   "shipwreck" : {
-    "width" : 3,
+    "width" : 2.8,
     "height" : 0.5,
-    "health" : 3,
-    "drops" : 1,
-    "hit box width" : 3,
-    "hit box height" : 2
+    "health" : 2,
+    "drops" : 15,
+    "hit box width" : 2.8,
+    "hit box height" : 2,
+    "draw size" : 3,
+    "y adjustment" : -0.2
+  },
+  "stun animation" : {
+    "as" : 0.0666,
+    "sf" : 0,
+    "fc" : 4
+  },
+  "current" : {
+    "size" : 3,
+    "weak" : 7,
+    "strong" : 11
   }
 }
