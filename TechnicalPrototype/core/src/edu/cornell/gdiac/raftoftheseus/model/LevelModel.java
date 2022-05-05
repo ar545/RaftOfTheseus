@@ -1291,6 +1291,12 @@ public class LevelModel {
             } else if (a.getType() == GameObject.ObjectType.STATIONARY && b.getType() == GameObject.ObjectType.STATIONARY){
                 Stationary sa = (Stationary) a; Stationary sb = (Stationary) b;
                 if(sa.isPlant() && !sb.isPlant()){return 1;} if(sb.isPlant() && !sa.isPlant()){return -1;}
+            } else if (a.getType() == GameObject.ObjectType.STATIONARY){
+                Stationary sa = (Stationary) a;
+                if(sa.isPlant()){ return 1; }
+            } else if (b.getType() == GameObject.ObjectType.STATIONARY){
+                Stationary sb = (Stationary) b;
+                if(sb.isPlant()){ return -1; }
             }
             return (int) Math.signum(b.getY() - a.getY());
         }
