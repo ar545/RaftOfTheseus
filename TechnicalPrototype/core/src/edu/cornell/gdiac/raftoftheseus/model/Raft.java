@@ -239,7 +239,7 @@ public class Raft extends GameObject implements Animated {
     }
 
     public void applyProjectileForce(){
-        if(forceTime.hasTimeElapsed(FORCE_DURATION, true)) {
+        if(!forceTime.hasTimeElapsed(FORCE_DURATION, false)) {
             physicsObject.getBody().applyForce(externalForce, getPosition(), true);
         }
     }
