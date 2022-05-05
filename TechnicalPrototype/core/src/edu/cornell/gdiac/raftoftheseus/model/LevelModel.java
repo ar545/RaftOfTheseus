@@ -1422,15 +1422,13 @@ public class LevelModel {
     public void setLightAndCircle(Vector2 playerPosOnScreen){
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-        if(light_effect == 0){ // constant light
-            light.setDistance(45);
-            light.setSoftnessLength(12);
+        if(light_effect <= 1){ // 30 block light
+            light.setDistance(24);
+            light.setSoftnessLength(9);
             light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
-        }else if(light_effect == 1){ // short constant light
-            light.setDistance(20);
-            light.setSoftnessLength(6);
-        }else if(light_effect == 2){ // non-block light
-            light.setDistance(30);
+        }else if(light_effect == 2){ // 20 non-block light
+            light.setDistance(15);
+            light.setSoftnessLength(3);
             light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_NON;
         }else if(light_effect == 3){ // health light
             float d = getPlayer().getPotentialDistance() * 2;
