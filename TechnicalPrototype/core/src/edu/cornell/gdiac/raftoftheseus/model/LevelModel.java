@@ -751,7 +751,7 @@ public class LevelModel {
      * @param col the column grid position */
     private void addTreasure(int row, int col) {
         computePosition(col, row);
-        Treasure this_treasure = new Treasure(compute_temp);
+        Treasure this_treasure = new Treasure(compute_temp, raft);
         this_treasure.setTexture(treasureTexture);
         this_treasure.initSB(starburstTexture);
         obstacles[col][row] = this_treasure;
