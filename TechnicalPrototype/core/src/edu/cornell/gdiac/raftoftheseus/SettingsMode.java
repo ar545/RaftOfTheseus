@@ -175,19 +175,19 @@ public class SettingsMode implements Screen, InputProcessor {
         part1.align(Align.left);
         TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.WHITE);
         menuButton.addListener(UICreator.createListener(menuButton, Color.GOLD, Color.WHITE, this::setExitPressed));
-        part1.add(menuButton).expandX().align(Align.left).padRight(1500).padTop(10);
+        part1.add(menuButton).expandX().align(Align.left).padRight(1150).padTop(10);
         table.add(part1);
         table.row();
 
         Table part2 = new Table();
-        part2.add(UICreator.createLabel("SETTINGS", skin, 0.85f)).expandX().align(Align.center);
+        part2.add(UICreator.createLabel("SETTINGS", skin, 0.6f)).expandX().align(Align.center);
         table.add(part2).padTop(-50);
         table.row();
 
         Table part3 = new Table();
-        part3.add(UICreator.createLabel("VOLUME", skin, 0.6f)).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("VOLUME", skin, 0.4f)).padLeft(80).expandX().align(Align.left);
         part3.row();
-        part3.add(UICreator.createLabel("MUSIC", skin, 0.4f)).padLeft(100).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("MUSIC", skin, 0.35f)).padLeft(100).expandX().align(Align.left);
 
         Drawable sliderKnobDrawable = new TextureRegionDrawable(new TextureRegion(sliderKnob));
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
@@ -213,7 +213,7 @@ public class SettingsMode implements Screen, InputProcessor {
         part3.row();
 
         soundEffectsVolume = SfxController.getInstance().getMasterSFXVolume() * 100;
-        part3.add(UICreator.createLabel("SOUND EFFECTS", skin, 0.4f)).padLeft(100).align(Align.left);
+        part3.add(UICreator.createLabel("SOUND EFFECTS", skin, 0.35f)).padLeft(100).align(Align.left);
 
         Label soundEffectsValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(soundEffectsVolume)), skin, 0.4f);
         soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
@@ -231,18 +231,18 @@ public class SettingsMode implements Screen, InputProcessor {
         part3.add(soundEffectsValueLabel).align(Align.left).width(80).padLeft(60);
         part3.row();
 
-        part3.add(UICreator.createLabel("ACCESSIBILITY", skin, 0.6f)).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("ACCESSIBILITY", skin, 0.4f)).padLeft(80).expandX().align(Align.left);
         part3.row();
 
         Table part3a = new Table();
-        part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin, 0.4f));
-        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, 0.4f, Color.WHITE, blackKeyBackground);
+        part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin, 0.35f)).padLeft(100);
+        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, 0.35f, Color.WHITE, blackKeyBackground);
         accessibilityButton.addListener(UICreator.createListener(accessibilityButton, Color.GRAY, Color.WHITE, this::changeAccessibilityMode));
-        part3a.add(accessibilityButton).padLeft(30).width(100);
-        part3.add(part3a).padLeft(-30);
+        part3a.add(accessibilityButton).padLeft(30).width(80).height(60);
+        part3.add(part3a);
         part3.row();
 
-        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin, 0.6f)).padLeft(80);
+        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin, 0.4f)).padLeft(80).expandX().align(Align.left);
         part3.row();
         table.add(part3).padTop(-50);
         table.row();
@@ -254,25 +254,25 @@ public class SettingsMode implements Screen, InputProcessor {
         String resetKeyString = controlSettings.get("mouse keyboard").get("reset").asString();
         String pauseKeyString = controlSettings.get("mouse keyboard").get("pause").asString();
 
-        part4.add(UICreator.createLabel("MAP", skin, 0.4f)).padRight(keysPadding);
-        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, 0.4f, Color.WHITE, blackKeyBackground);
+        part4.add(UICreator.createLabel("MAP", skin, 0.3f)).padRight(keysPadding);
+        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
         mapKeyButton.addListener(UICreator.createListener(mapKeyButton, this::changeKeyMapping));
-        part4.add(mapKeyButton).padRight(keysPadding);
+        part4.add(mapKeyButton).padRight(keysPadding).width(60).height(60);
 
-        part4.add(UICreator.createLabel("FIRE", skin, 0.4f)).padRight(keysPadding);
-        TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, 0.4f, Color.WHITE, longTextKeyBackground);
+        part4.add(UICreator.createLabel("FIRE", skin, 0.3f)).padRight(keysPadding);
+        TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, 0.3f, Color.WHITE, longTextKeyBackground);
         fireKeyButton.addListener(UICreator.createListener(fireKeyButton, this::changeKeyMapping));
-        part4.add(fireKeyButton).padRight(keysPadding);
+        part4.add(fireKeyButton).padRight(keysPadding).width(170).height(60);
 
-        part4.add(UICreator.createLabel("RESTART", skin, 0.4f)).padRight(keysPadding);
-        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, 0.4f, Color.WHITE, blackKeyBackground);
+        part4.add(UICreator.createLabel("RESTART", skin, 0.3f)).padRight(keysPadding);
+        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
         resetKeyButton.addListener(UICreator.createListener(resetKeyButton, this::changeKeyMapping));
-        part4.add(resetKeyButton).padRight(keysPadding);
+        part4.add(resetKeyButton).padRight(keysPadding).width(60).height(60);
 
-        part4.add(UICreator.createLabel("PAUSE", skin, 0.4f)).padRight(keysPadding);
-        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, 0.4f, Color.WHITE, blackKeyBackground);
+        part4.add(UICreator.createLabel("PAUSE", skin, 0.3f)).padRight(keysPadding);
+        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
         pauseKeyButton.addListener(UICreator.createListener(pauseKeyButton, this::changeKeyMapping));
-        part4.add(pauseKeyButton).padRight(keysPadding);
+        part4.add(pauseKeyButton).padRight(keysPadding).width(60).height(60);
         table.add(part4);
         table.row();
     }
@@ -292,9 +292,9 @@ public class SettingsMode implements Screen, InputProcessor {
             editResetKeyEnable = false;
             editMapKeyEnable = false;
         }
-        UICreator.setTextButtonStyle(mapKeyButton, skin, 0.4f, Color.WHITE, editMapKeyEnable ? goldKeyBackground : blackKeyBackground);
-        UICreator.setTextButtonStyle(resetKeyButton, skin, 0.4f, Color.WHITE, editResetKeyEnable ? goldKeyBackground : blackKeyBackground);
-        UICreator.setTextButtonStyle(pauseKeyButton, skin, 0.4f, Color.WHITE, editPauseKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(mapKeyButton, skin, 0.3f, Color.WHITE, editMapKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(resetKeyButton, skin, 0.3f, Color.WHITE, editResetKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(pauseKeyButton, skin, 0.3f, Color.WHITE, editPauseKeyEnable ? goldKeyBackground : blackKeyBackground);
     }
 
     /** Set accessibility mode */

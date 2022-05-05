@@ -330,47 +330,48 @@ public class WorldController implements Screen, ContactListener {
                 canvas.draw(
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
-                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 200, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 150, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
                         hintKey.getRegionWidth() * 0.7f, hintKey.getRegionHeight() * 0.85f
                 );
                 canvas.drawText(
                         controlSettings.get("mouse keyboard").get("reset").asString(), font,
-                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 175, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 125, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
 //                // BOTTOM SECTION RIGHT
                 canvas.drawText(
                         "PAUSE", font,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 300 , canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 280 , canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
                 canvas.draw(
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 520, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 500, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
                         hintKey.getRegionWidth() * 0.7f, hintKey.getRegionHeight() * 0.85f
                 );
                 canvas.drawText(
                         controlSettings.get("mouse keyboard").get("pause").asString(), font,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 490, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 470, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
                 break;
             case(2):
                 font.getData().setScale(0.5f);
                 canvas.drawText(
                         "MAP", font,
-                        canvas.getWidth()*0.5f - 220, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
+                        canvas.getWidth()*0.5f - 140, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
                 );
                 canvas.draw(
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, 0.0f,
-                        canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120,
+                        canvas.getWidth()*0.5f + 50, canvas.getHeight()*0.5f + 120,
                         hintKey.getRegionWidth(), hintKey.getRegionHeight()
                 );
                 canvas.drawText(
                         controlSettings.get("mouse keyboard").get("map").asString(), font,
-                        canvas.getWidth()*0.5f - 15, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
+                        canvas.getWidth()*0.5f + 35, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
                 );
                 break;
             case(4):
+                canvas.draw(hintAttack, c, hintAttack.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hintAttack.getRegionWidth(), hintAttack.getRegionHeight());
                 break;
             default:
                 // draw nothing
@@ -443,23 +444,23 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, 0.5f);
+            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, 0.35f);
             resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
             table.add(resumeButton).padTop(-20);
             table.row();
 
-            TextButton restartButton = UICreator.createTextButton("RESTART", skin, 0.5f);
+            TextButton restartButton = UICreator.createTextButton("RESTART", skin, 0.35f);
             restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             table.add(restartButton);
             table.row();
 
-            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.5f);
+            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.35f);
             table.add(settingsButton);
             settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
             table.row();
 
             TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.5f);
+            exitButton.getLabel().setFontScale(0.35f);
             exitButton.getLabel().setColor(Color.GOLD);
             exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
             table.add(exitButton);
@@ -494,7 +495,7 @@ public class WorldController implements Screen, ContactListener {
         table.setBackground(skin.getDrawable("transition_background"));
 
         Table part1 = new Table();
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, 0.6f);
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, 0.4f);
         mainButton.addListener(UICreator.createListener(mainButton, this::goNext, didFail));
         part1.add(mainButton).expandX().align(Align.center).padTop(10);
         table.add(part1);
@@ -503,16 +504,16 @@ public class WorldController implements Screen, ContactListener {
         Table part2 = new Table();
         part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
-            TextButton replayButton = UICreator.createTextButton("REPLAY", skin, 0.5f);
+            TextButton replayButton = UICreator.createTextButton("REPLAY", skin, 0.4f);
             replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             part2.add(replayButton).expandX().padRight(70);
         }
 
-        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.5f, Color.GOLD);
+        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.4f, Color.GOLD);
         settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
         part2.add(settingsButton).expandX();
 
-        TextButton exitButton = UICreator.createTextButton("EXIT", skin, 0.5f, Color.GOLD);
+        TextButton exitButton = UICreator.createTextButton("EXIT", skin, 0.4f, Color.GOLD);
         exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, Color.GOLD, this::setExitPressed));
         part2.add(exitButton).expandX();
         table.add(part2);
