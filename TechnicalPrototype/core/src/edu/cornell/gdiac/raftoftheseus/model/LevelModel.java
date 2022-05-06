@@ -87,7 +87,7 @@ public class LevelModel {
         private static final int PLANT_END = 62;
         /** Index of the representation of plant in tile set texture */
         private static final int HYDRA = 63;
-        public static final int PLANT_COUNT = CAPYBARA - PLANT + 1;
+        public static final int PLANT_COUNT = CAPYBARA - PLANT;
         /** Total variation of terrains */
         private static final int TERRAIN_TYPES = SEA - LAND_OFFSET - 1;
         private static final int FULL_LAND = 7;
@@ -157,6 +157,8 @@ public class LevelModel {
     private PooledList<GameObject> addQueue = new PooledList<>();
     /** All enemy objects in the world */
     private PooledList<Shark> sharks = new PooledList<>();
+    /** All plant objects in the world */
+    private PooledList<Plant> plants = new PooledList<>();
     /** All hydras objects in the world */
     private PooledList<Hydra> hydras = new PooledList<>();
     /** All siren in the world */
@@ -184,6 +186,7 @@ public class LevelModel {
     /** Texture for all treasures */
     private FilmStrip treasureTexture;
     private FilmStrip starburstTexture;
+    private FilmStrip daisy;
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodSTexture;
     /** Texture for wood pieces that represents double pile of logs */
@@ -258,6 +261,7 @@ public class LevelModel {
     public PooledList<Siren> getSirens() { return sirens; }
     /** get the list of sirens in the world */
     public PooledList<Spear> getSpears() { return spears; }
+    public PooledList<Plant> getPlants() { return plants; }
     public PooledList<Treasure> getTreasure() { return treasure; }
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
@@ -725,9 +729,11 @@ public class LevelModel {
                 }
                 break;
             case Stationary.plantA: case Stationary.plantB: case Stationary.plantC: case Stationary.plantD:
-                Stationary plant = new Stationary(compute_temp, type, rock_int);
-                plant.setTexture(plantTexture[-rock_int - 1]);
+                Plant plant = new Plant(compute_temp, type, rock_int);
+                if(rock_int == Stationary.plantD) {plant.setTexture(daisy);}
+                else{plant.setTexture(plantTexture[-rock_int - 1]);}
                 addObject(plant);
+                plants.add(plant);
                 rock_int = Tiled.FULL_LAND; // Notice: plants are created as double-objects, so no break here.
             default: // terrain or cliff terrain
                 this_rock = new Stationary(compute_temp, type, rock_int);
@@ -942,9 +948,9 @@ public class LevelModel {
         plantTexture[0] = new TextureRegion(directory.getEntry("plantA", Texture.class));
         plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
         plantTexture[2] = new TextureRegion(directory.getEntry("plantC", Texture.class));
-        plantTexture[3] = new TextureRegion(directory.getEntry("plantD", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
+        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 2, 12);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
         sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
