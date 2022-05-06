@@ -49,6 +49,7 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
     private StateMachine<Shark, SharkState> stateMachine;
     /** FrameController for animation. */
     private FrameCalculator fc = new FrameCalculator(SWIM_SF);
+    private FrameCalculator stun_fc = new FrameCalculator(0);
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
@@ -180,8 +181,11 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
     public void setAnimationFrame(float dt) {
         // Get frame number
         fc.addTime(dt);
+        stun_fc.addTime(dt);
         switch(stateMachine.getCurrentState()){
             case STUNNED:
+                stun_fc.setFrame(0.1f, 0, 4, false);
+                ((FilmStrip)stunTexture.texture).setFrame(stun_fc.getFrame());
                 fc.setFrame(SWIM_SF);
                 fc.checkFlash(SWIM_AS);
                 break;
@@ -215,8 +219,10 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
-        if(fc.getFlash()) super.draw(canvas, Color.RED);
-        else super.draw(canvas);
+        Color tint = fc.getFlash() ? Color.RED : Color.WHITE;
+        super.draw(canvas, tint);
+        if (stateMachine.isInState(SharkState.STUNNED))
+            super.draw(canvas, stunTexture);
     }
 
     public void takeDamage() {

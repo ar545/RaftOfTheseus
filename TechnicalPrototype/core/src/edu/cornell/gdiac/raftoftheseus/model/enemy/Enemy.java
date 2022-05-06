@@ -48,7 +48,7 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** Method to ensure that each enemy has their stun texture set. */
     public void setStunTexture(TextureRegion value){
-        stunTexture.texture = value;
+        stunTexture.setTexture(value);
         stunTexture.setTextureScale(new Vector2(
                 getWidth() * 2/ this.stunTexture.texture.getRegionWidth(),
                 getWidth() * 2/ this.stunTexture.texture.getRegionHeight()));
