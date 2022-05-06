@@ -47,7 +47,7 @@ public class Raft extends GameObject implements Animated {
         IDLE_FC = objParams.getInt("idle frames");
         SHOOTING_FC = objParams.getInt("shooting frames");
         HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
-        FORCE_DURATION = objParams.getLong("enemy bullet duration");
+        FORCE_DURATION = objParams.getFloat("enemy bullet duration");
         AURA_AS = objParams.getFloat("aura as");
         AURA_SF = objParams.getInt("aura sf");
         AURA_FC = objParams.getInt("aura fc");
@@ -242,6 +242,7 @@ public class Raft extends GameObject implements Animated {
         forceTime.setTimeStamp();
     }
 
+    /** */
     public void applyProjectileForce(){
         if(!forceTime.hasTimeElapsed(FORCE_DURATION, false)) {
             physicsObject.getBody().applyForce(externalForce, getPosition(), true);

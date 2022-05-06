@@ -139,7 +139,7 @@
     "shooting starting frame" : 0,
     "rotation starting frame" : 0,
     "horizontal offset" : 0,
-    "enemy bullet duration" : 300,
+    "enemy bullet duration" : 0.5,
     "aura as" : 0.05,
     "aura sf" : 0,
     "aura fc" : 8
