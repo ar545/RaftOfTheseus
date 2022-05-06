@@ -63,6 +63,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     private StateMachine<Siren, SirenState> stateMachine;
     /** Animation Calculator */
     private FrameCalculator fc = new FrameCalculator();
+    private FrameCalculator stun_fc = new FrameCalculator(0);
     /** To keep track how much time has passed. */
     private long timeStamp = 0L;
     private boolean timeStamped = false;
@@ -277,6 +278,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     public void setAnimationFrame(float dt) {
         // Get frame number
         fc.addTime(dt);
+        stun_fc.addTime(dt);
 //        System.out.println(stateMachine.getCurrentState());
         switch(stateMachine.getCurrentState()){
             case IDLE:
@@ -295,6 +297,8 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
                 fc.setFrame(FLYING_AS, FLYING_SF, FLYING_FRAMES, true);
                 break;
             case STUNNED:
+                stun_fc.setFrame(0.1f, 0, 4, false);
+                ((FilmStrip)stunTexture.getTexture()).setFrame(stun_fc.getFrame());
                 fc.setFrame(SINGING_SF);
                 fc.checkFlash(FLASHING_AS);
                 break;
@@ -309,7 +313,9 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
-        if(fc.getFlash()) super.draw(canvas, Color.RED);
-        else super.draw(canvas);
+        Color tint = fc.getFlash() ? Color.RED : Color.WHITE;
+        super.draw(canvas, tint);
+        if (stateMachine.isInState(SirenState.STUNNED))
+            super.draw(canvas, stunTexture);
     }
 }

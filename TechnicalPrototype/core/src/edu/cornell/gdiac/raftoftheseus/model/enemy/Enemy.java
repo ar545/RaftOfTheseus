@@ -21,7 +21,7 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** For stun animation. */
     protected FrameCalculator stunFC = new FrameCalculator();
-    protected TextureHolder stunTexture = new TextureHolder();
+    protected TextureHolder stunTexture;
 
     /**
      * Constructor
@@ -48,12 +48,12 @@ public abstract class Enemy<T, K extends State<T>> extends GameObject {
 
     /** Method to ensure that each enemy has their stun texture set. */
     public void setStunTexture(TextureRegion value){
-        stunTexture.texture = value;
+        stunTexture = new TextureHolder(value);
         stunTexture.setTextureScale(new Vector2(
-                getWidth() * 2/ this.stunTexture.texture.getRegionWidth(),
-                getWidth() * 2/ this.stunTexture.texture.getRegionHeight()));
+                getWidth() * 2/ this.stunTexture.getTexture().getRegionWidth(),
+                getWidth() * 2/ this.stunTexture.getTexture().getRegionHeight()));
         stunTexture.setTextureOffset(new Vector2(0f,
-                (stunTexture.texture.getRegionHeight() * stunTexture.textureScale.y - getHeight())/2f));
+                (stunTexture.getTexture().getRegionHeight() * stunTexture.getTextureScale().y - getHeight())/2f));
     }
 
     /** Set raft field */

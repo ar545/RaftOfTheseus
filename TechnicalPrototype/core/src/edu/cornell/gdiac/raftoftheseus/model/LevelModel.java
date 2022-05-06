@@ -23,8 +23,12 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Note;
 import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
+
+import javax.xml.stream.events.StartDocument;
 import java.util.Comparator;
 import java.util.HashMap;
+
+import static edu.cornell.gdiac.raftoftheseus.model.Stationary.StationaryType.*;
 
 public class LevelModel {
 
@@ -1103,19 +1107,33 @@ public class LevelModel {
         pix.setColor(1.0f, 1.0f, 0.5f, 1.0f); // R = 1 = no terrain nearby
         pix.fill();
         for (GameObject o : getObjects()) {
+            // figure out whether this object should create a surf pattern
             GameObject.ObjectType oType = o.getType();
-            if (oType == GameObject.ObjectType.STATIONARY || oType == GameObject.ObjectType.GOAL) {
-                boolean isRock = (oType == GameObject.ObjectType.STATIONARY);
-                Vector2 pos = o.getPosition(); // in box2d units (3 per tile)
-                pos.scl(1.0f/GRID_SIZE); // in tiles
-                pos.add(1, 1); // offset one tile
-                // rock position, in tiles:
+            boolean isStationary = (oType == GameObject.ObjectType.STATIONARY);
+            boolean isGoal = (oType == GameObject.ObjectType.GOAL);
+            boolean isRock = false;
+            boolean isTerrain = false;
+            if (isStationary) {
+                Stationary.StationaryType st = ((Stationary)o).getStationaryType();
+                if (st == SHARP_ROCK || st == REGULAR_ROCK)
+                    isRock = true;
+                if (st == TERRAIN || st == CLIFF_TERRAIN)
+                    isTerrain = true;
+            }
+            boolean hasSurf = isGoal || isRock || isTerrain;
+            // add the surf pattern to the texture
+            if (hasSurf) {
+                Vector2 pos = o.getPosition().scl(1.0f/GRID_SIZE).add(1, 1); // in tiles, offset
+                // int position, in tiles:
                 int rx = (int)pos.x;
                 int ry = (int)pos.y;
-                // rock center, in tile coords:
+                // object center, in tile coords:
                 float cx = rx + 0.5f;
                 float cy = ry + 0.5f;
-                // rock radius
+
+                // determine surf shape
+                boolean isRound = isGoal || isRock;
+                // object radius (only used if isRound is true)
                 float rockRadius = isRock ? 0.6f : 0.97f;
 
                 // iterate through neighboring tiles (but don't go OOB)
@@ -1127,20 +1145,24 @@ public class LevelModel {
                                 // center of pixel, in tile coords
                                 float x = (px+0.5f)/res;
                                 float y = (py+0.5f)/res;
-                                /*
-                                // nearest point in the rock to (x, y)
-                                float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
-                                float ny = Math.min(Math.max(cy-0.5f, y), cy+0.5f);
-                                // distance from pixel to nearest point in rock
-                                float dx = x - nx;
-                                float dy = y - ny;
-                                dy *= sqrt2;
-                                 */
-                                float dx = x - cx;
-                                float dy = (y - cy)*sqrt2;
-                                float d = (float)Math.sqrt(dx*dx+dy*dy);
-                                d = Math.max(0.0f, d - rockRadius);
+                                float d = 0.0f;
+                                if (isRound) {
+                                    float dx = x - cx;
+                                    float dy = (y - cy)*sqrt2;
+                                    d = (float)Math.sqrt(dx*dx+dy*dy);
+                                    d = Math.max(0.0f, d - rockRadius);
+                                } else {
+                                    // nearest point in the rock to (x, y)
+                                    float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
+                                    float ny = Math.min(Math.max(cy-0.5f, y), cy+0.5f);
+                                    // distance from pixel to nearest point in rock
+                                    float dx = x - nx;
+                                    float dy = y - ny;
+                                    dy *= sqrt2;
+                                    d = (float)Math.sqrt(dx*dx+dy*dy);
+                                }
                                 d = Math.min(1.0f, d); // clamp to 1
+
                                 // if this distance is smaller than what's already in the texture, replace it
                                 float d_old = (pix.getPixel(px, py) >>> 24)/255.0f; // red value only
                                 d = Math.min(d, d_old);
@@ -1277,7 +1299,6 @@ public class LevelModel {
             GameObject.ObjectType type = obj.getType();
             if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.STATIONARY
                     || type == GameObject.ObjectType.GOAL) {
-                System.out.println(type);
                 obj.draw(canvas, Color.valueOf("a08962"));
             }
         }

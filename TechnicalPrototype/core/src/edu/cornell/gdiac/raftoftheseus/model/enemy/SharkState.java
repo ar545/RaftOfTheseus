@@ -37,6 +37,10 @@ public enum SharkState implements State<Shark> {
     },
     ATTACK(){
         @Override
+        public void enter(Shark entity) {
+            entity.setDesiredVelocity(Shark.ATTACK_SPEED, true);
+        }
+        @Override
         public void update(Shark entity) {
             entity.setDesiredVelocity(Shark.ATTACK_SPEED, false); // shark doesn't change direction mid-charge
             if(entity.isDoneWithAttackAnimation()) {

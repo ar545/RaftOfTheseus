@@ -156,6 +156,8 @@ public class Spear extends Projectile implements Animated {
         textureOffset = new Vector2(0, 0);
     }
 
+    // TODO Make spear move slowly when player turns direction
+
     /**
      * Change the position of this spear relative to the raft.
      * @param pos the raft position

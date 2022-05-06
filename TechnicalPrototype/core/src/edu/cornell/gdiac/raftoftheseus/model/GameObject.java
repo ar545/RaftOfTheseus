@@ -179,10 +179,10 @@ public abstract class GameObject {
      * @param holder the additional texture
      */
     public void draw(GameCanvas canvas, TextureHolder holder) {
-        if (holder.texture != null) {
-            canvas.draw(holder.texture, holder.color, holder.origin.x, holder.origin.y,
-                    getX() + holder.textureOffset.x, getY() + holder.textureOffset.y,
-                    getAngle(), holder.textureScale.x, holder.textureScale.y);
+        if (holder.getTexture() != null) {
+            canvas.draw(holder.getTexture(), holder.getColor(), holder.getOrigin().x, holder.getOrigin().y,
+                    getX() + holder.getTextureOffset().x, getY() + holder.getTextureOffset().y,
+                    getAngle(), holder.getTextureScale().x, holder.getTextureScale().y);
         }
     }
 

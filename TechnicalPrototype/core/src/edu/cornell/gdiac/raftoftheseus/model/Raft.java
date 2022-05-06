@@ -47,7 +47,7 @@ public class Raft extends GameObject implements Animated {
         IDLE_FC = objParams.getInt("idle frames");
         SHOOTING_FC = objParams.getInt("shooting frames");
         HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
-        FORCE_DURATION = objParams.getLong("enemy bullet duration");
+        FORCE_DURATION = objParams.getFloat("enemy bullet duration");
         AURA_AS = objParams.getFloat("aura as");
         AURA_SF = objParams.getInt("aura sf");
         AURA_FC = objParams.getInt("aura fc");
@@ -242,6 +242,7 @@ public class Raft extends GameObject implements Animated {
         forceTime.setTimeStamp();
     }
 
+    /** */
     public void applyProjectileForce(){
         if(!forceTime.hasTimeElapsed(FORCE_DURATION, false)) {
             physicsObject.getBody().applyForce(externalForce, getPosition(), true);
@@ -327,11 +328,11 @@ public class Raft extends GameObject implements Animated {
         super.setTexture(raft);
         attackAura = new TextureHolder(aura);
         attackAura.setTextureScale(new Vector2(
-                getWidth() * 2/ this.attackAura.texture.getRegionWidth(),
-                getWidth() * 2/ this.attackAura.texture.getRegionHeight()));
+                getWidth() * 2/ this.attackAura.getTexture().getRegionWidth(),
+                getWidth() * 2/ this.attackAura.getTexture().getRegionHeight()));
         attackAura.setTextureOffset(new Vector2(
                 HORIZONTAL_OFFSET,
-                (attackAura.texture.getRegionHeight() * attackAura.textureScale.y - getHeight())/2f));
+                (attackAura.getTexture().getRegionHeight() * attackAura.getTextureScale().y - getHeight())/2f));
     }
 
     /** Realign the raft so thsat the bottom of it is at the bottom of the capsule object. */
@@ -351,7 +352,7 @@ public class Raft extends GameObject implements Animated {
         ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
         if(raftState == RaftState.CHARGING){
-            ((FilmStrip) attackAura.texture).setFrame(aurafc.getFrame());
+            ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
             super.draw(canvas, attackAura);
         }
     }

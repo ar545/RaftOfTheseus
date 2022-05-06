@@ -54,9 +54,9 @@ const float thresh_mid = 0.03;
 const float thresh_low = 0.0225;
 
 // big rolling wave parameters
-const float big_wave_amplitude = 0.3;
-const float big_wave_speed = 1.0; // in tile widths per second
-const float big_wave_length = 12.0; // as a multiple of 1 tile width
+const float big_wave_amplitude = 0.15;
+const float big_wave_speed = 0.5; // in tile widths per second
+const float big_wave_length = 20.0; // as a multiple of 1 tile width
 const float big_wave_angle = -0.5*PI/2.0; // angle of direction in which the wave moves: 0 is east, pi/2 is north, etc.
 // (derived constants)
 const vec2 big_wave_direction = vec2(cos(big_wave_angle), sin(big_wave_angle));
