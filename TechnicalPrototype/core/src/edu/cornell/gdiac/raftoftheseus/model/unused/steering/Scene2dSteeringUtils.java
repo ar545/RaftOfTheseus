@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 
-package edu.cornell.gdiac.raftoftheseus.steering;
+package edu.cornell.gdiac.raftoftheseus.model.unused.steering;
 
 import com.badlogic.gdx.math.Vector2;
 
