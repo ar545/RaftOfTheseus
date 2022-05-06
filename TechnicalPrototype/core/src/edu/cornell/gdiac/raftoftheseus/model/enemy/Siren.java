@@ -298,7 +298,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
                 break;
             case STUNNED:
                 stun_fc.setFrame(0.1f, 0, 4, false);
-                ((FilmStrip)stunTexture.texture).setFrame(stun_fc.getFrame());
+                ((FilmStrip)stunTexture.getTexture()).setFrame(stun_fc.getFrame());
                 fc.setFrame(SINGING_SF);
                 fc.checkFlash(FLASHING_AS);
                 break;

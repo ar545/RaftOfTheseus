@@ -945,15 +945,15 @@ public class WorldController implements Screen, ContactListener {
             GameObject bd2 = (GameObject) body2.getUserData();
             // Check for bullet collision with object (terrain or enemy)
             if (bd1.getType() == GameObject.ObjectType.SPEAR) {
-                ResolveSpearCollision((Spear) bd1, bd2);
+                resolveSpearCollision((Spear) bd1, bd2);
             } else if (bd2.getType() == GameObject.ObjectType.SPEAR) {
-                ResolveSpearCollision((Spear) bd2, bd1);
+                resolveSpearCollision((Spear) bd2, bd1);
             }
             // Check for player collision
             else if(bd1.getType() == GameObject.ObjectType.RAFT){
-                ResolveRaftCollision((Raft) bd1, bd2);
+                resolveRaftCollision((Raft) bd1, bd2);
             } else if(bd2.getType() == GameObject.ObjectType.RAFT){
-                ResolveRaftCollision((Raft) bd2, bd1);
+                resolveRaftCollision((Raft) bd2, bd1);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -963,15 +963,15 @@ public class WorldController implements Screen, ContactListener {
     /** Resolve collision between the spear and any other object.
      * @param s spear
      * @param g terrain or enemy */
-    private void ResolveSpearCollision(Spear s, GameObject g) {
+    private void resolveSpearCollision(Spear s, GameObject g) {
         if(g.getType() == GameObject.ObjectType.SHARK) {
             // stun shark
             if (((Shark)g).setHit()) {
                 SfxController.getInstance().playSFX("spear_enemy_hit");
                 SfxController.getInstance().playSFX("shark_hit");
-                s.setDestroyed(true);
                 ((Shark) g).takeDamage();
             }
+            s.setDestroyed(true);
         } else if(g.getType() == GameObject.ObjectType.HYDRA) {
             // stun hydra
             SfxController.getInstance().playSFX("spear_enemy_hit");
@@ -979,9 +979,9 @@ public class WorldController implements Screen, ContactListener {
             ((Hydra) g).setHit();
         } else if (g.getType() == GameObject.ObjectType.SIREN){
             if(((Siren) g).setHit()) {
-                s.setDestroyed(true);
                 SfxController.getInstance().playSFX("spear_enemy_hit");
             }
+            s.setDestroyed(true);
         } else if (g.getType() == GameObject.ObjectType.STATIONARY) {
             SfxController.getInstance().playSFX("spear_break");
             s.setDestroyed(true);
@@ -1003,7 +1003,7 @@ public class WorldController implements Screen, ContactListener {
      * @param r the player
      * @param g wood, enemies, treasure, or projectiles
      */
-    private void ResolveRaftCollision(Raft r, GameObject g){
+    private void resolveRaftCollision(Raft r, GameObject g){
         if(g.isDestroyed()) {return;}
         if(g.getType() == GameObject.ObjectType.WOOD){
             // update player health

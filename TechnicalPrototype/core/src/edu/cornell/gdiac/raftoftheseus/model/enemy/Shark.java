@@ -185,7 +185,7 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
         switch(stateMachine.getCurrentState()){
             case STUNNED:
                 stun_fc.setFrame(0.1f, 0, 4, false);
-                ((FilmStrip)stunTexture.texture).setFrame(stun_fc.getFrame());
+                ((FilmStrip)stunTexture.getTexture()).setFrame(stun_fc.getFrame());
                 fc.setFrame(SWIM_SF);
                 fc.checkFlash(SWIM_AS);
                 break;

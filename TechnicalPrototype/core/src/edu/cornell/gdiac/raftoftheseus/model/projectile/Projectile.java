@@ -5,6 +5,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.model.GameObject;
+import edu.cornell.gdiac.raftoftheseus.model.util.Timer;
 import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 
@@ -12,6 +13,7 @@ public class Projectile extends GameObject {
 
     /** Original projectile position. */
     private Vector2 originalPos;
+    protected Timer lifespan = new Timer();
 
     public Projectile(){}
 
@@ -40,6 +42,8 @@ public class Projectile extends GameObject {
     public boolean outMaxDistance(float RANGE_FALL){
         return getDistTraveled() > RANGE_FALL;
     }
+
+    // TODO Change range based on time
 
     /** Update projectile based on its range. */
     public void update(float delta, float RANGE_FLY) {

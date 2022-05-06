@@ -328,11 +328,11 @@ public class Raft extends GameObject implements Animated {
         super.setTexture(raft);
         attackAura = new TextureHolder(aura);
         attackAura.setTextureScale(new Vector2(
-                getWidth() * 2/ this.attackAura.texture.getRegionWidth(),
-                getWidth() * 2/ this.attackAura.texture.getRegionHeight()));
+                getWidth() * 2/ this.attackAura.getTexture().getRegionWidth(),
+                getWidth() * 2/ this.attackAura.getTexture().getRegionHeight()));
         attackAura.setTextureOffset(new Vector2(
                 HORIZONTAL_OFFSET,
-                (attackAura.texture.getRegionHeight() * attackAura.textureScale.y - getHeight())/2f));
+                (attackAura.getTexture().getRegionHeight() * attackAura.getTextureScale().y - getHeight())/2f));
     }
 
     /** Realign the raft so thsat the bottom of it is at the bottom of the capsule object. */
@@ -352,7 +352,7 @@ public class Raft extends GameObject implements Animated {
         ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
         if(raftState == RaftState.CHARGING){
-            ((FilmStrip) attackAura.texture).setFrame(aurafc.getFrame());
+            ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
             super.draw(canvas, attackAura);
         }
     }
