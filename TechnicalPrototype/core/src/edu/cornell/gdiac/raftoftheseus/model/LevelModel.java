@@ -1145,7 +1145,6 @@ public class LevelModel {
                                     float dy = (y - cy)*sqrt2;
                                     d = (float)Math.sqrt(dx*dx+dy*dy);
                                     d = Math.max(0.0f, d - rockRadius);
-                                    d = Math.min(1.0f, d); // clamp to 1
                                 } else {
                                     // nearest point in the rock to (x, y)
                                     float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
@@ -1155,9 +1154,8 @@ public class LevelModel {
                                     float dy = y - ny;
                                     dy *= sqrt2;
                                     d = (float)Math.sqrt(dx*dx+dy*dy);
-                                    d = Math.max(0.0f, d);
-                                    d = Math.min(1.0f, d); // clamp to 1
                                 }
+                                d = Math.min(1.0f, d); // clamp to 1
 
                                 // if this distance is smaller than what's already in the texture, replace it
                                 float d_old = (pix.getPixel(px, py) >>> 24)/255.0f; // red value only
