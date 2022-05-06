@@ -17,7 +17,7 @@ public class Treasure extends GameObject {
 
         public final int SB_FC = 7;
 
-        public final float SB_AS = 0.1f;
+        public final float SB_AS = 0.15f;
 
         public FrameCalculator fc;
 

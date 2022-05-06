@@ -187,11 +187,14 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
                 break;
             case IDLE:
             case APPROACH:
-            case PAUSE_BEFORE_ATTACK:
             case PAUSE_AFTER_ATTACK:
             case DYING:
                 fc.setFlash(false);
                 fc.setFrame(SWIM_AS, SWIM_SF, SWIM_FRAMES, false);
+                break;
+            case PAUSE_BEFORE_ATTACK:
+                fc.setFlash(false);
+                fc.setFrame(SWIM_AS*4f, SWIM_SF, SWIM_FRAMES, true);
                 break;
             case ATTACK:
                 fc.setFlash(false);
