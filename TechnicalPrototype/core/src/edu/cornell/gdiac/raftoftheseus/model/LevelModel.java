@@ -191,6 +191,7 @@ public class LevelModel {
     private FilmStrip treasureTexture;
     private FilmStrip starburstTexture;
     private FilmStrip daisy;
+    private FilmStrip plantC;
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodSTexture;
     /** Texture for wood pieces that represents double pile of logs */
@@ -735,6 +736,7 @@ public class LevelModel {
             case Stationary.plantA: case Stationary.plantB: case Stationary.plantC: case Stationary.plantD:
                 Plant plant = new Plant(compute_temp, type, rock_int);
                 if(rock_int == Stationary.plantD) {plant.setTexture(daisy);}
+                else if(rock_int == Stationary.plantC) {plant.setTexture(plantC);}
                 else{plant.setTexture(plantTexture[-rock_int - 1]);}
                 addObject(plant);
                 plants.add(plant);
@@ -951,10 +953,11 @@ public class LevelModel {
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
         plantTexture[0] = new TextureRegion(directory.getEntry("plantA", Texture.class));
         plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
-        plantTexture[2] = new TextureRegion(directory.getEntry("plantC", Texture.class));
+//        plantTexture[2] = new TextureRegion(directory.getEntry("plantC", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
-        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 2, 12);
+        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 4, 6);
+        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 12);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
         sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
