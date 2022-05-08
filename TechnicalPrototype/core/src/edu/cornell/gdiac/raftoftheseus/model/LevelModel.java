@@ -24,7 +24,6 @@ import edu.cornell.gdiac.raftoftheseus.model.projectile.Spear;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 
-import javax.xml.stream.events.StartDocument;
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -128,33 +127,13 @@ public class LevelModel {
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.05f;
 
-    /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
+    /*=*=*=*=*=*=*=*=*=* LEVEL Components (clear after each level dispose) *=*=*=*=*=*=*=*=*=*/
+    /** The Box2D world */
+    public World world;
     /** The player of the level */
     private Raft raft;
     /** The goal of the level */
     private Goal goal;
-    /** The vertices of the wall */
-    private float[] polygonVertices;
-    /** Reference to the game assets directory */
-    private AssetDirectory directory;
-    /** Reference to the game canvas. */
-    private final GameCanvas canvas;
-    /** The read-in level data */
-    private JsonValue level_data;
-    /** The Box2D world */
-    public World world;
-    /** The boundary of the world */
-    private Rectangle bounds;
-    /** The amount of treasure in the level */
-    private int treasureCount;
-    /** The difficulty of the level (0 = easy, 1 = medium, 2 = hard) */
-    private int difficulty;
-    /** The map size in grid */
-    protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
-    /** Vector 2 holding the temp position vector for the game object to create */
-    private Vector2 compute_temp = new Vector2(0, 0);
-    /** Vector 2 holding the temp position vector for the siren to jump into */
-    private Vector2 siren_compute_temp = new Vector2(0, 0);
     /** All the objects in the world. */
     private PooledList<GameObject> objects  = new PooledList<>();
     /** Queue for adding objects */
@@ -169,13 +148,37 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** All spears in the world */
     private PooledList<Spear> spears = new PooledList<>();
-    private PooledList<Treasure> treasure = new PooledList<>();
+    /** List of treasure in this world */
+//    private PooledList<Treasure> treasure = new PooledList<>();
+    private Treasure[] treasure = new Treasure[3];
+    private int treasureCount = 0;
+    /*=*=*=*=*=*=*=*=*=* LEVEL FIELDS *=*=*=*=*=*=*=*=*=*/
+    /** Reference to the game assets directory */
+    private AssetDirectory directory;
+    /** Reference to the game canvas. */
+    private final GameCanvas canvas;
+    /** The read-in level data */
+    private JsonValue level_data;
+    /** The boundary of the world */
+    private Rectangle bounds;
+    /** The difficulty of the level (0 = easy, 1 = medium, 2 = hard) */
+    private int difficulty;
+    /** The vertices of the wall */
+    private float[] polygonVertices;
+    /** The map size in grid */
+    protected GridPoint2 map_size = new GridPoint2(DEFAULT_GRID_COL, DEFAULT_GRID_ROW);
+    /** Vector 2 holding the temp position vector for the game object to create */
+    private Vector2 compute_temp = new Vector2(0, 0);
+    /** Vector 2 holding the temp position vector for the siren to jump into */
+    private Vector2 siren_compute_temp = new Vector2(0, 0);
     /** Reference to the current field */
     private CurrentField currentField;
     /** The light source coming from the player */
-    private PointSource light;
+    private PointSource raftLight;
     /** The light source coming from the goal */
     private PointSource goalLight;
+    /** The light source coming from the goal */
+    private PointSource[] treasureLight = new PointSource[3];
     /** The ray-handler for storing lights, and drawing them (SIGH) */
     protected RayHandler rayhandler;
     /** what light effect to show the player */
@@ -267,7 +270,7 @@ public class LevelModel {
     /** get the list of sirens in the world */
     public PooledList<Spear> getSpears() { return spears; }
     public PooledList<Plant> getPlants() { return plants; }
-    public PooledList<Treasure> getTreasure() { return treasure; }
+    public Treasure[] getTreasure() { return treasure; }
     /** This added queue is use for adding new project tiles */
     public PooledList<GameObject> getAddQueue() { return addQueue; }
     /** set directory */
@@ -413,46 +416,31 @@ public class LevelModel {
         return new Affine2().set(cameraTransform);
     }
 
-
     /*=*=*=*=*=*=*=*=*=* Level selection: dispose, select, and reset *=*=*=*=*=*=*=*=*=*/
-
-    /**
-     * Dispose of all (non-static) resources allocated to this mode.
-     */
+    /** Dispose of all (non-static) resources allocated to this mode. Clear up all list of this singleton class. */
     public void dispose() {
         for(GameObject obj : objects) { obj.deactivatePhysics(world); }
         objects.clear();
+        addQueue.clear();
         sharks.clear();
-        treasure.clear();
         hydras.clear();
         sirens.clear();
-        addQueue.clear();
-        world.dispose();
-        objects = null;
-        addQueue = null;
+        plants.clear();
+        spears.clear();
+        treasureCount = 0; // setting counter to 0 will repopulate the array
         bounds = null;
-        world  = null;
-        if (light != null) { light.remove(); light = null; }
+        if (world != null) { world.dispose(); world  = null; }
+        if (raftLight != null) { raftLight.remove(); raftLight = null; }
+        if (goalLight != null) { goalLight.remove(); goalLight = null; }
+        for(int i = 0; i < 3; i ++){if (treasureLight[i] != null) { treasureLight[i].remove(); treasureLight[i] = null; }}
         if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
 
-    /**
-     * Resets the status of the game so that we can play again.
-     * <p>
-     * This method disposes of the world and creates a new one.
-     */
+    /** Resets the status of the game so that we can play again.
+     * This method disposes of the world and creates a new one. */
     public void reset() {
-        for(GameObject obj : objects) { obj.deactivatePhysics(world); }
-        objects.clear();
-        sharks.clear();
-        hydras.clear();
-        sirens.clear();
-        addQueue.clear();
-        if (world != null)
-            world.dispose();
+        dispose();
         world = new World(ZERO_VECTOR_2,false);
-        if (light != null) { light.remove(); light = null; }
-        if (rayhandler != null) { rayhandler.dispose(); rayhandler = null; }
     }
 
     /** Load the level representing by the parameter level_int.
@@ -461,7 +449,6 @@ public class LevelModel {
      *
      * @param level_int an integer representing the level selection, i.e. which json file to read from. */
     public void loadLevel(int level_int, JsonValue level_data){
-        treasureCount = 0;
         if(level_int != LEVEL_RESTART_CODE && level_data != null){
             // Load in new level
             this.level_data = level_data;
@@ -778,9 +765,9 @@ public class LevelModel {
         this_treasure.setTexture(treasureTexture);
         this_treasure.initSB(starburstTexture);
         obstacles[col][row] = this_treasure;
-        treasure.add(this_treasure);
+        treasure[treasureCount] = this_treasure;
+        treasureCount ++;
         addObject(this_treasure);
-        treasureCount++;
     }
 
     /** Add Goal Objects to the world, using the Json value for goal.
@@ -887,10 +874,14 @@ public class LevelModel {
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(){
         initLighting(lightSettings.get("init")); // Box2d lights initialization
-        light = createPointLights(lightSettings.get("point")); // One light over the player
-        goalLight = createPointLights(lightSettings.get("point")); // Another light over the goal
-        attachLights(light, raft);
+        raftLight = createPointLights(lightSettings.get("raft")); // One light over the player
+        goalLight = createPointLights(lightSettings.get("goal")); // Another light over the goal
+        attachLights(raftLight, raft);
         attachLights(goalLight, goal);
+        for(int i = 0; i < treasureCount; i ++ ) {
+            treasureLight[i] = createPointLights(lightSettings.get("treasure"));
+            attachLights(treasureLight[i], treasure[i]);
+        }
     }
 
     /** Update the light effect of the world */
@@ -909,7 +900,7 @@ public class LevelModel {
     /** Render the shadow effects. */
     public void renderLightsAlternative(){ if (rayhandler != null) {
         Vector2 lightTrans = lightTranslation();
-        light.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, light.getDirection());
+        raftLight.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, raftLight.getDirection());
         rayhandler.render();
     } }
 
@@ -1018,7 +1009,8 @@ public class LevelModel {
 
         // Create a filter to exclude see through items
         Filter f = new Filter();
-        f.categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
+        if(lightJson.getBoolean("block")){ f.categoryBits = GameObject.CATEGORY_LIGHT_BLOCK; }
+        else{ f.categoryBits = GameObject.CATEGORY_LIGHT_NON; }
         point.setContactFilter(f);
         point.setActive(true); // TURN ON NOW
         return point;
@@ -1251,6 +1243,16 @@ public class LevelModel {
     }
 
     // DRAWING
+    /** Set the animation frame for all objects in the level model
+     * @param dt the time slice */
+    public void setAnimationFrame(float dt) {
+        getPlayer().setAnimationFrame(dt);
+        for(Spear s : getSpears()){ s.setAnimationFrame(dt); }
+        for(Siren s : getSirens()){ s.setAnimationFrame(dt); }
+        for(Shark s : getSharks()){ s.setAnimationFrame(dt); }
+        if(getTreasureCount() == 3){ for(Treasure s: getTreasure() ){ if(s != null){ s.setAnimationFrame(dt); } } }
+        for(Plant s: getPlants()){ s.setAnimationFrame(dt); }
+    }
 
     public void draw(float time, boolean isTutorial) {
         if (!canvas.shaderCanBeUsed)
@@ -1270,7 +1272,7 @@ public class LevelModel {
 //        drawReticle();
         canvas.end();
 
-        setLightAndCircle(playerPosOnScreen);
+        drawHealthCircle(playerPosOnScreen);
         if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
     }
 
@@ -1451,26 +1453,32 @@ public class LevelModel {
     /** change the level light effect, for testing purposes only */
     public void change(boolean debug) {
         light_effect ++;
-        if( light_effect == 4 ){ light_effect = 0; if(debug) { raft.addHealth(200); } } // for testing purposes
+        if( light_effect == 2 ){ activateTreasureLight(true); } // activate treasure-chest light
+        else if( light_effect == 4 ){ light_effect = 0; activateTreasureLight(false); } // deactivate
     }
 
-    /** draw a circle showing how far the player can move before they die */
-    public void setLightAndCircle(Vector2 playerPosOnScreen){
+    private void activateTreasureLight(boolean b) { for(int i = 0; i < treasureCount; i ++){
+        if(treasureLight[i] != null) { treasureLight[i].setActive(b); }
+    } }
+
+    /** Set a treasure to be collected */
+    public void treasureCollected(Treasure g) {
+        raft.halfLife();
+        for(int i = 0; i < treasureCount; i ++){
+            if(treasure[i] == g){
+                treasureLight[i].setActive(false);
+                treasureLight[i] = null;
+            }
+        }
+        g.setCollected(true);
+    }
+
+    /** Draw a circle showing how far the player can move before they die (only if light setting is odd).
+     * @param playerPosOnScreen the camera-transformed player position */
+    public void drawHealthCircle(Vector2 playerPosOnScreen){ if(light_effect % 2 == 1) {
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-        if(light_effect <= 1){ // 30 block light
-            light.setDistance(21);
-            light.setSoftnessLength(9);
-            light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_BLOCK;
-        }else if(light_effect == 2){ // 20 non-block light
-            light.setDistance(15);
-            light.setSoftnessLength(3);
-            light.getContactFilter().categoryBits = GameObject.CATEGORY_LIGHT_NON;
-        }else if(light_effect == 3){ // health light
-            float d = getPlayer().getPotentialDistance() * 2;
-            light.setDistance(d);
-        }
-    }
+    } }
 
     /** Extend land and terrain into the top invisible border */
     private void populateExtendLand(int row, int col, Stationary.StationaryType type, int rock_int) {

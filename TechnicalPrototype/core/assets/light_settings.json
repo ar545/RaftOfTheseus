@@ -6,12 +6,31 @@
 		"diffuse":		true,
 		"blur":			3
 	},
-	"point": {
+	"raft": {
 		"color":		[1.0, 1.0, 1.0, 1.0],
 		"pos":			[  0,   0],
-		"distance":		   12,
+		"distance":		20,
 		"rays":			512,
 		"soft":			true,
-		"softLength":			6
+		"softLength":	8,
+		"block":        true
+	},
+	"goal": {
+		"color":		[1.0, 1.0, 1.0, 1.0],
+		"pos":			[  0,   0],
+		"distance":		10,
+		"rays":			512,
+		"soft":			true,
+		"softLength":	6,
+		"block":        true
+	},
+	"treasure": {
+		"color":		[1.0, 1.0, 1.0, 1.0],
+		"pos":			[  0,   0],
+		"distance":		6,
+		"rays":			512,
+		"soft":			false,
+		"softLength":	6,
+		"block":        false
 	}
  }
