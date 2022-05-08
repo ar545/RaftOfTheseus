@@ -6,9 +6,11 @@ import com.badlogic.gdx.math.Vector2;
 
 /**
  * Class that holds the same information required to draw a texture in GameObject, but for additional textures.
+ * Contains information on how to draw the texture.
  */
 public class TextureHolder {
 
+    // Parameters
     private TextureRegion texture;
     private Vector2 origin = new Vector2(0, 0);
     private Vector2 textureScale = new Vector2(1, 1);
@@ -16,10 +18,15 @@ public class TextureHolder {
     private float angle = 0;
     private Color color = Color.WHITE;
 
+    /**
+     * Constructor that automatically sets the origin to be the center of the texture.
+     * @param texture the additional texture.
+     */
     public TextureHolder(TextureRegion texture){
         setTexture(texture);
     }
 
+    /** @param texture the additional texture. */
     public void setTexture(TextureRegion texture) {
         this.texture = texture;
         origin.set(texture.getRegionWidth()/2.0f, texture.getRegionHeight()/2.0f);

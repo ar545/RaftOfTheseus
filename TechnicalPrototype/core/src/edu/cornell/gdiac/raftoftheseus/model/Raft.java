@@ -210,7 +210,7 @@ public class Raft extends GameObject implements Animated {
         boolean againstCurrent = false;
         if(onCurrent){
             float angle = Math.abs(movementInput.angleDeg() - currentVelocity.angleDeg());
-            System.out.println(angle);
+//            System.out.println(angle);
             againstCurrent = (180 - CURRENT_BUFF_SCOPE) < angle && angle < (180 + CURRENT_BUFF_SCOPE);
         }
         if (super.isDestroyed()) return;

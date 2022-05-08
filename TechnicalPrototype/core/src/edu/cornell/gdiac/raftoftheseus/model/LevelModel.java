@@ -1161,7 +1161,7 @@ public class LevelModel {
         Spear s = new Spear(raft.getPosition());
         s.setTexture(spearTexture);
         spears.add(s);
-        addQueuedObject(s);
+        addObject(s);
         raft.setSpear(s);
     }
 
@@ -1197,7 +1197,7 @@ public class LevelModel {
     public void createNote(Vector2 pos, Vector2 dir){
         Note n = new Note(pos, dir);
         n.setTexture(noteTexture);
-        addQueuedObject(n);
+        addObject(n);
     }
 
     /** Destroy if an object is a bullet and is out_of_bound. Could be extended to check for all objects

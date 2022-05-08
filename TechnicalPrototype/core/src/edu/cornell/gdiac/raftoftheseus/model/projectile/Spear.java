@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model.projectile;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Filter;
@@ -28,8 +29,8 @@ public class Spear extends Projectile implements Animated {
         ANGLE = objParams.getFloat("angle");
         RANGE_FLY = objParams.getInt("range fly");
         RANGE_FALL = objParams.getInt("range fall");
-        FLOAT_RANGE = objParams.getFloat("float range");
-        FLOAT_SPEED = objParams.getFloat("float speed");
+        OSCILLATION_RANGE = objParams.getFloat("float range");
+        OSCILLATION_SPEED = objParams.getFloat("float speed");
         IDLE_AS = objParams.getFloat("idle as");
         IDLE_SF = objParams.getInt("idle sf");
         IDLE_FC = objParams.getInt("idle fc");
@@ -56,10 +57,14 @@ public class Spear extends Projectile implements Animated {
     private static int RANGE_FALL;
     private static float SPEAR_XO;
     private static float SPEAR_YO;
+    private static float X_FLOAT_SPEED = 0.5f;
     private static float ANGLE;
-    private static float FLOAT_RANGE;
-    private static float FLOAT_SPEED;
-
+    private static float OSCILLATION_RANGE;
+    private static float OSCILLATION_SPEED;
+    // Rotation
+    private static float LOCK_THRESHOLD = 0.1f;
+    private boolean locked = false;
+    private static float ROTATION_VEL = 10000f;
     // Animation
     private static float IDLE_AS;
     private static int IDLE_SF;
@@ -97,6 +102,7 @@ public class Spear extends Projectile implements Animated {
         physicsObject = new BoxObstacle(WIDTH, LENGTH);
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER_BULLET;
         physicsObject.getFilterData().maskBits = 0;
+        physicsObject.setAngularDamping(0f);
         setPosition(pos.add(SPEAR_XO, SPEAR_YO));
         setAngle(ANGLE);
     }
@@ -113,8 +119,9 @@ public class Spear extends Projectile implements Animated {
         Filter f = physicsObject.getFilterData();
         f.maskBits = MASK_PLAYER_BULLET;
         physicsObject.setFilterData(f);
-        setAngle(dir.angleDeg()-90f);
+        setAngle(dir.angleDeg());
         setBody(dir.scl(SPEED).mulAdd(raft_speed, 0.5f));
+        getBody().setAngularVelocity(0);
         fc.resetAll();
     }
 
@@ -158,15 +165,34 @@ public class Spear extends Projectile implements Animated {
 
     // TODO Make spear move slowly when player turns direction
 
+    Vector2 new_pos = new Vector2();
+
     /**
      * Change the position of this spear relative to the raft.
      * @param pos the raft position
      */
     public void setFloatPosition(Vector2 pos, float floatTime, float flip, Vector2 dir){
-        float y_float = (float) Math.sin(floatTime*FLOAT_SPEED) * FLOAT_RANGE;
-        pos.add(SPEAR_XO, SPEAR_YO + y_float);
-        setPosition(pos);
-        setAngle(dir.sub(getPosition()).rotateDeg(-90f).angleDeg());
+        float y_float = (float) Math.sin(floatTime * OSCILLATION_SPEED) * OSCILLATION_RANGE;
+//        if(getPosition().x >= -SPEAR_XO && flip < 0){
+//
+//        }
+        new_pos.set(pos).add(SPEAR_XO * flip, SPEAR_YO + y_float);
+        setPosition(new_pos);
+        float dAngle = dir.sub(getPosition()).angleDeg();
+        System.out.println(getAngle());
+//        if(!locked) {
+//            if(Math.abs(getAngle() - dAngle) < LOCK_THRESHOLD){
+//                locked = true;
+//                getBody().setAngularVelocity(0);
+//            } else {
+//                float rotation;
+//                if(dAngle < getAngle() || dAngle > getAngle() + 180) rotation = -1f * ROTATION_VEL;
+//                else rotation = ROTATION_VEL;
+//                physicsObject.getBody().setAngularVelocity(rotation);
+//                if(getAngle() < 0) setAngle(getAngle() + 360);
+//            }
+//        } else
+        setAngle(dAngle);
     }
 
     @Override
@@ -198,6 +224,6 @@ public class Spear extends Projectile implements Animated {
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
-        super.draw(canvas);
+        canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() + textureOffset.x, getY() + textureOffset.y, getAngle() - 90f, textureScale.x, textureScale.y);
     }
 }
