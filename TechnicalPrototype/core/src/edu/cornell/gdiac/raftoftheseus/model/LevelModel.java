@@ -897,38 +897,6 @@ public class LevelModel {
         rayhandler.render();
     } }
 
-    /** Render the shadow effects. */
-    public void renderLightsAlternative(){ if (rayhandler != null) {
-        Vector2 lightTrans = lightTranslation();
-        raftLight.attachToBody(getPlayer().physicsObject.getBody(), lightTrans.x, lightTrans.y, raftLight.getDirection());
-        rayhandler.render();
-    } }
-
-    /** This calculates the box-2d light position translation according to the screen (canvas) size,
-     *  the player position, and the pixel per unit scale.
-     * @return a Vector2 representing the translation that texture will go through */
-    Vector2 lightTranslation() {
-        // "Moving Camera" calculate offset = (ship pos) - (canvas size / 2), in pixels
-        Vector2 mapCenter = new Vector2(cols(), rows()).scl(GRID_SIZE).scl(0.5f); // center-of-map coordination
-        Vector2 translation = new Vector2(mapCenter); // except for capped camera, light always at center of map
-        translation.sub(getPlayer().getPosition());
-
-         // "Capped Camera": bound x and y within walls
-        Rectangle wallBounds = wallBounds();
-        float half = (GRID_SIZE / GRID_PIXELS) * 0.5f; // 0.015f is the size of half-screen transformed into b2d coordinates
-        translation.x = Math.min(translation.x, mapCenter.x + canvas.getWidth() * (-half) - wallBounds.x);
-        translation.x = Math.max(translation.x, mapCenter.x + canvas.getWidth() * (half) - wallBounds.width);
-        translation.y = Math.min(translation.y, mapCenter.y + canvas.getHeight() * (-half) - wallBounds.y);
-        translation.y = Math.max(translation.y, mapCenter.y + canvas.getHeight() * (half) - wallBounds.height);
-
-        // "Scaled Camera": adjust x and y scale
-        float x_diff = mapCenter.x - (getPlayer().getPosition().x + translation.x);
-        float y_diff = mapCenter.y - (getPlayer().getPosition().y + translation.y);
-        if( x_diff != 0 ){ translation.x -= x_diff * ((mapCenter.x / (canvas.getWidth() * half)) - 1); }
-        if( y_diff != 0 ){ translation.y -= y_diff * ((mapCenter.y / (canvas.getWidth() * half)) - 1); }
-        return translation;
-    }
-
     /*=*=*=*=*=*=*=*=*=* Texture assets and box2d lighting *=*=*=*=*=*=*=*=*=*/
 
     /** This gather the assets required for initializing the objects. Should be called after directory is set. */
@@ -1371,14 +1339,6 @@ public class LevelModel {
             for(GameObject obj : getObjects())
                 obj.draw(canvas);
         }
-    }
-
-    /** Precondition & post-condition: the game canvas is open
-     * @param health the health percentage for the player */
-    private void drawLinearHealthBar(float health, Vector2 player_position) {
-        canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f), (player_position.y + 20),
-                greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        canvas.drawLinearHealth(health, player_position, colorBar);
     }
 
     /** Precondition & post-condition: the game canvas is open

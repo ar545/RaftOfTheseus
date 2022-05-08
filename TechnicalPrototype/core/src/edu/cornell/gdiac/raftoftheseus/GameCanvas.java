@@ -1294,18 +1294,7 @@ public class GameCanvas {
 	/** Draw the radial health bar, given health and player position */
 	public void drawRadialHealth(Vector2 position, float health){ radialHealth.updateAndDraw(position, health, spriteBatch); }
 
-	/** Draw the linear health bar, given health and player position */
-	public void drawLinearHealth(float health, Vector2 player_position, Texture colorBar) {
-		int width_offset = (int)(colorBar.getWidth() * 0.07f);
-		Color c = new Color(radialHealth.makeColor((float)1/3, health),
-				radialHealth.makeColor((float)2/3, health), 0.2f, 1);
-		TextureRegion RatioBar = new TextureRegion(colorBar, width_offset, 0,
-				(int)(colorBar.getWidth() * (health * 0.86f) + width_offset), colorBar.getHeight());
-		if(health >= 0) {draw(RatioBar, c,(player_position.x - 100) + width_offset,
-				(player_position.y + 20), RatioBar.getRegionWidth(), RatioBar.getRegionHeight());}
-	}
 	/*=*=* Radial Health Bar END *=*=*/
-
 	/** get the camera matrix and use it for box-2d light transformation calculations */
 	public Matrix4 getCameraMatrix(){ return global.cpy(); }
 }
