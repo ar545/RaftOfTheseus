@@ -110,7 +110,8 @@
   },
   "raft" : {
     "move cost" : 1.0,
-    "current movement buff" : 0.1,
+    "with current movement buff" : 0.1,
+    "against current movement buff" : 0.2,
     "current buff scope": 50,
     "max health" : 100,
     "initial health" : 100,

@@ -50,7 +50,7 @@
         }, 
         {
          "firstgid":64,
-         "source":"..\/..\/resources 2\/levels\/updatedTiledSet.tsx"
+         "source":"updatedTiledSet.tsx"
         }],
  "tilewidth":48,
  "type":"map",

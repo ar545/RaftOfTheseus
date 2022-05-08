@@ -118,6 +118,7 @@ public class Spear extends Projectile implements Animated {
         spearState = SpearState.FIRED;
         Filter f = physicsObject.getFilterData();
         f.maskBits = MASK_PLAYER_BULLET;
+        f.categoryBits = CATEGORY_PLAYER_BULLET;
         physicsObject.setFilterData(f);
         setAngle(dir.angleDeg());
         setBody(dir.scl(SPEED).mulAdd(raft_speed, 0.5f));

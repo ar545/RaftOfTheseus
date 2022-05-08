@@ -1286,11 +1286,18 @@ public class LevelModel {
 
     private static class renderOrderComparator implements Comparator<GameObject>{
         public int compare(GameObject a, GameObject b) {
-            if(a.getType() == GameObject.ObjectType.SPEAR && b.getType() == GameObject.ObjectType.RAFT){
-                return 1;
-            } else if (b.getType() == GameObject.ObjectType.SPEAR && a.getType() == GameObject.ObjectType.RAFT){
+            // Put spear behind terrain
+            if (a.getType() == GameObject.ObjectType.SPEAR && b.getType() == GameObject.ObjectType.STATIONARY){
                 return -1;
-            } else if (a.getType() == GameObject.ObjectType.SIREN || a.getType() == GameObject.ObjectType.NOTE){
+            } else if (b.getType() == GameObject.ObjectType.SPEAR && a.getType() == GameObject.ObjectType.STATIONARY){
+                return 1;
+            }
+            // Put spear in front of everything else.
+            else if(a.getType() == GameObject.ObjectType.SPEAR){
+                return 1;
+            } else if(b.getType() == GameObject.ObjectType.SPEAR){
+                return -1;
+            } else if (a.getType() == GameObject.ObjectType.SIREN || a.getType() == GameObject.ObjectType.NOTE) {
                 return 1;
             } else if (b.getType() == GameObject.ObjectType.SIREN || b.getType() == GameObject.ObjectType.NOTE){
                 return -1;

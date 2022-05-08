@@ -27,7 +27,8 @@ public class Raft extends GameObject implements Animated {
      * */
     public static void setConstants(JsonValue objParams){
         MOVE_COST = objParams.getFloat("move cost");
-        CURRENT_MOVEMENT_BUFF = objParams.getFloat("current movement buff");
+        WC_MOVE_BUFF = objParams.getFloat("with current movement buff");
+        AC_MOVE_BUFF = objParams.getFloat("against current movement buff");
         CURRENT_BUFF_SCOPE = objParams.getFloat("current buff scope");
         MAXIMUM_PLAYER_HEALTH = objParams.getFloat("max health");
         INITIAL_PLAYER_HEALTH = objParams.getFloat("initial health");
@@ -57,8 +58,9 @@ public class Raft extends GameObject implements Animated {
     /** Movement cost for a unit distance **/
     private static float MOVE_COST;
     /** Movement cost multiplier for moving with the current */
-    private static float CURRENT_MOVEMENT_BUFF;
+    private static float AC_MOVE_BUFF;
     private static float CURRENT_BUFF_SCOPE;
+    private static float WC_MOVE_BUFF;
 
     // ATTRIBUTES
     /** A physics object used for collisions with interactable objects which shouldn't push the player (wood, goal, etc) */
@@ -222,7 +224,8 @@ public class Raft extends GameObject implements Animated {
             // Accelerate player based on input
             forceCache.set(movementInput).scl(THRUST);
             // Small buff going against currents
-            if(againstCurrent) forceCache.add(movementInput.cpy().nor().scl(CURRENT_MOVEMENT_BUFF));
+            if(againstCurrent) forceCache.add(movementInput.cpy().nor().scl(AC_MOVE_BUFF));
+            else if(onCurrent) forceCache.add(movementInput.cpy().nor().scl(WC_MOVE_BUFF));
             physicsObject.getBody().applyLinearImpulse(forceCache,getPosition(),true);
         }
         // Velocity too high, clamp it
