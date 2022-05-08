@@ -656,7 +656,7 @@ public class LevelModel {
     }
 
     /** compute the stationary type */
-    private Stationary.StationaryType computeRockType(int tile_int) {
+    private static Stationary.StationaryType computeRockType(int tile_int) {
         switch(tile_int){
             case Tiled.ROCK_ALONE: return Stationary.StationaryType.REGULAR_ROCK;
             case Tiled.ROCK_SHARP: return Stationary.StationaryType.SHARP_ROCK;
@@ -666,14 +666,14 @@ public class LevelModel {
         }
     }
 
-    private boolean isStrongCurrent(int tile_int){
+    private static boolean isStrongCurrent(int tile_int){
         int div = tile_int % 7;
         if(div == 1 || div == 2 || div == 3) {return false;}
         return (tile_int <= Tiled.LAND_OFFSET && tile_int > Tiled.TREASURE);
     }
 
     /** Compute the rock_int according to the tile_int: 0 for reg, 1-13 for land, -1 for sharp, -2 for plant */
-    private int computeRockInt(int tile_int){
+    private static int computeRockInt(int tile_int){
         if (tile_int == Tiled.ROCK_ALONE || tile_int == Tiled.ROCK_SHARP){ return Stationary.REGULAR; }
         if (tile_int > Tiled.LAND_OFFSET && tile_int < Tiled.SEA){ return tile_int - Tiled.LAND_OFFSET; }
         if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.PLANT){ return tile_int - Tiled.SAND_OFFSET; }
@@ -687,7 +687,7 @@ public class LevelModel {
     /** Compute the direction of the current base on the level json input
      * @param i level json input
      * @return the direction of the current */
-    private Current.Direction compute_direction(int i) {
+    private static Current.Direction compute_direction(int i) {
         switch (i){
             case Tiled.NORTH: return Current.Direction.NORTH;
             case Tiled.SOUTH: return Current.Direction.SOUTH;
@@ -709,31 +709,25 @@ public class LevelModel {
      * @param rock_int 0 if stand-alone, 1-13 if texture alas, -1 for sharp, -2 for plant */
     private void addRock(int row, int col, Stationary.StationaryType type, int rock_int) {
         computePosition(col, row);
-        TextureRegion temp;
         Stationary this_rock;
-        switch(rock_int){
-            case Stationary.REGULAR:
-                this_rock = new Stationary(compute_temp, type);
-                if(type == Stationary.StationaryType.SHARP_ROCK){
-                    temp = sharpRockTexture;
-                }else{
-                    temp = regularRockTexture;
-                }
-                break;
-            case Stationary.plantA: case Stationary.plantB: case Stationary.plantC: case Stationary.plantD:
+        if(rock_int == Stationary.REGULAR){ // rock or sharp rock
+            this_rock = new Stationary(compute_temp, type);
+            if(type == Stationary.StationaryType.SHARP_ROCK){
+                this_rock.setTexture(sharpRockTexture);
+            } else { this_rock.setTexture(regularRockTexture); }
+        } else { // terrain or cliff terrain
+            if(Stationary.isPlant(rock_int)){
                 Plant plant = new Plant(compute_temp, type, rock_int);
-                if(rock_int == Stationary.plantD) {plant.setTexture(daisy);}
-                else if(rock_int == Stationary.plantC) {plant.setTexture(plantC);}
-                else{plant.setTexture(plantTexture[-rock_int - 1]);}
+                if(rock_int == Stationary.plantD) { plant.setTexture(daisy); }
+                else if(rock_int == Stationary.plantC) { plant.setTexture(plantC); }
+                else{ plant.setTexture(plantTexture[-rock_int - 1]); }
                 addObject(plant);
                 plants.add(plant);
                 rock_int = Tiled.FULL_LAND; // Notice: plants are created as double-objects, so no break here.
-            default: // terrain or cliff terrain
-                this_rock = new Stationary(compute_temp, type, rock_int);
-                temp = terrain[(type == Stationary.StationaryType.TERRAIN ? difficulty : difficulty + DIFFICULTY_COUNT)][rock_int - 1];
-                break;
+            } // Each tiled.plant is parsed as a full_land terrain object AND a plant objects with corresponding texture.
+            this_rock = new Stationary(compute_temp, type, rock_int);
+            this_rock.setTexture(terrain[(type == Stationary.StationaryType.TERRAIN ? difficulty : difficulty + DIFFICULTY_COUNT)][rock_int - 1]);
         }
-        this_rock.setTexture(temp);
         if(row < obstacles[0].length){obstacles[col][row] = this_rock;}
         addTopObject(this_rock);
     }
@@ -912,7 +906,6 @@ public class LevelModel {
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
         plantTexture[0] = new TextureRegion(directory.getEntry("plantA", Texture.class));
         plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
-//        plantTexture[2] = new TextureRegion(directory.getEntry("plantC", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
         plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 4, 6);
