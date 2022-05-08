@@ -148,7 +148,8 @@ public class Stationary extends GameObject {
                 if(isPlant()) {
                     textureOffset = new Vector2(0.0f,(texture.getRegionHeight() * textureScale.y - PLANT_SIZE)/2f + 0.5f);
                 }else{
-                    textureOffset = new Vector2(0.0f,(texture.getRegionHeight() * textureScale.y - TERRAIN_SIZE)/2f + 0.5f);
+                    textureOffset = new Vector2(0.0f,(texture.getRegionHeight() * textureScale.y - TERRAIN_SIZE)/2f);
+                    // 0.5f y-offset is removed to match terrain down border with the bottom of screen (or adjust camera transform border)
                 }
                 break;
             default:
