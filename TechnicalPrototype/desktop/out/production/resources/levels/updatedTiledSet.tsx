@@ -65,9 +65,9 @@
  <tile id="62" type="Enemy"/>
  <wangsets>
   <wangset name="Land Set" type="corner" tile="28">
-   <wangcolor name="Cliff" color="#ff0000" tile="34" probability="1"/>
+   <wangcolor name="LOW Land" color="#ff0000" tile="34" probability="1"/>
    <wangcolor name="Sea" color="#00ff00" tile="41" probability="1"/>
-   <wangcolor name="Sand" color="#0000ff" tile="48" probability="1"/>
+   <wangcolor name="HIGH Cliff" color="#0000ff" tile="48" probability="1"/>
    <wangtile tileid="28" wangid="0,2,0,1,0,2,0,2"/>
    <wangtile tileid="29" wangid="0,2,0,2,0,1,0,2"/>
    <wangtile tileid="30" wangid="0,1,0,2,0,1,0,1"/>

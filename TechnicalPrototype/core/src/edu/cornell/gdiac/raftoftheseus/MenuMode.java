@@ -222,11 +222,11 @@ public class MenuMode implements Screen {
         tb3.align(Align.center);
 
         Table part3L = new Table();
-        part3L.add(UICreator.createLabel("PROGRAMMER", skin, 0.4f)).expandX().align(Align.center);
+        part3L.add(UICreator.createLabel("PROGRAMMERS", skin, 0.4f)).expandX().align(Align.center);
         part3L.row().padTop(-20);
 
         Table part3R = new Table();
-        part3R.add(UICreator.createLabel("DESIGNER", skin, 0.4f)).expandX().align(Align.center);
+        part3R.add(UICreator.createLabel("DESIGNERS", skin, 0.4f)).expandX().align(Align.center);
         part3R.row().padTop(-20);
 
         Array<String> members = new Array<String>(new String[]{"Amy Huang", "Demian Yutin", "Howard Fu",

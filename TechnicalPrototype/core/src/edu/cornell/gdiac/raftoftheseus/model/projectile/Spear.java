@@ -177,7 +177,7 @@ public class Spear extends Projectile implements Animated {
         new_pos.set(pos).add(0.0f, SPEAR_YO + yOffset);
         Vector2 d = dir.sub(pos);
         float angle = d.angleDeg();
-        new_pos.add(d.nor().scl(3.0f));
+        new_pos.add(d.nor().scl(2.0f));
         setPosition(new_pos);
         setAngle(angle);
 //        if(!locked) {
