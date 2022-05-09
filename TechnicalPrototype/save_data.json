@@ -109,7 +109,7 @@
 	{
 		"name": "Level 15",
 		"level": 15,
-		"complete": false,
+		"complete": true,
 		"score": 0,
 		"unlocked": true
 	},
@@ -118,7 +118,7 @@
 		"level": 16,
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 17",

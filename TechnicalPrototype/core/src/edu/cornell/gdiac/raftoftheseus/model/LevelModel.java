@@ -631,7 +631,6 @@ public class LevelModel {
         if (tile_int == Tiled.WOOD_HIGH){ addWood(row, col, Wood.HIGH_WOOD); return; }
         // This function should never reach here.
         System.out.println("Un-parse-able information detected in collectable layer:" + tile_int);
-        addWood(row, col, 1);
     }
 
     /** This is the level editor JSON parser that populate the environment layer
@@ -1436,10 +1435,12 @@ public class LevelModel {
 
     /** Draw a circle showing how far the player can move before they die (only if light setting is odd).
      * @param playerPosOnScreen the camera-transformed player position */
-    public void drawHealthCircle(Vector2 playerPosOnScreen){ if(light_effect % 2 == 1) {
+    public void drawHealthCircle(Vector2 playerPosOnScreen){
+//        if(light_effect % 2 == 1) {
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-    } }
+//        }
+    }
 
     /** Extend land and terrain into the top invisible border */
     private void populateExtendLand(int row, int col, Stationary.StationaryType type, int rock_int) {

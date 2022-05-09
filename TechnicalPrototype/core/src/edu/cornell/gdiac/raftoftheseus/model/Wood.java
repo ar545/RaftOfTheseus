@@ -38,6 +38,7 @@ public class Wood extends GameObject {
         physicsObject.getFilterData().maskBits = MASK_WOOD;
 
         physicsObject.setDensity(0.2f);
+        physicsObject.setFixedRotation(true);
         wood = value;
     }
 
