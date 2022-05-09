@@ -661,7 +661,7 @@ public class LevelModel {
             case Tiled.ROCK_ALONE: return Stationary.StationaryType.REGULAR_ROCK;
             case Tiled.ROCK_SHARP: return Stationary.StationaryType.SHARP_ROCK;
             default:
-                if(tile_int > Tiled.SEA && tile_int < Tiled.CAPYBARA) { return Stationary.StationaryType.CLIFF_TERRAIN; }
+                if(tile_int > Tiled.SEA && tile_int <= Tiled.CAPYBARA) { return Stationary.StationaryType.CLIFF_TERRAIN; }
                 else{ return Stationary.StationaryType.TERRAIN; }
         }
     }
