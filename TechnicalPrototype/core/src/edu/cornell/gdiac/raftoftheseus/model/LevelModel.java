@@ -760,7 +760,7 @@ public class LevelModel {
         this_treasure.initSB(starburstTexture);
         obstacles[col][row] = this_treasure;
         treasure[treasureCount] = this_treasure;
-        treasureCount ++;
+        treasureCount++;
         addObject(this_treasure);
     }
 
