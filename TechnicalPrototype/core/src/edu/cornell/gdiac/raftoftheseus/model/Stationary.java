@@ -98,12 +98,20 @@ public class Stationary extends GameObject {
      * @param terrain the terrainType */
     public Stationary(Vector2 position, StationaryType rt, int terrain) {
         stationaryType = rt;
-        if(stationaryType == StationaryType.TERRAIN || stationaryType == StationaryType.CLIFF_TERRAIN){
+        if(stationaryType == StationaryType.TERRAIN){
             terrainType = terrain;
             initBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
             setPosition(position);
             physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
-        }else{ throw new RuntimeException("Stationary.java: passed param is not TERRAIN, incorrect constructor use."); }
+        } else if (stationaryType == StationaryType.CLIFF_TERRAIN){
+            terrainType = terrain;
+            physicsObject = new BoxObstacle(TERRAIN_SIZE, TERRAIN_SIZE);
+            physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN_CLIFF;
+            physicsObject.getFilterData().maskBits = MASK_TERRAIN_CLIFF;
+            setPosition(position);
+            physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
+        }
+        else{ throw new RuntimeException("Stationary.java: passed param is not TERRAIN, incorrect constructor use."); }
     }
 
     /** Constructor for walls only
