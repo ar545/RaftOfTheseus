@@ -908,7 +908,7 @@ public class LevelModel {
         plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
-        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 4, 6);
+        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 2, 4);
         daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 12);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);

@@ -17,9 +17,9 @@ public class Plant extends Stationary {
     }
 
     private static class PlantC{
-        final static float animationSpeed = 0.24f;
+        final static float animationSpeed = 0.5f;
         final static int start = 0;
-        final static int frames = 24;
+        final static int frames = 8;
         final static boolean reverse = false;
         static void setFrame(FrameCalculator fc){ fc.setFrame(animationSpeed, start, frames, reverse); }
     }
