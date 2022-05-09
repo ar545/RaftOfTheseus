@@ -379,9 +379,6 @@ public class Raft extends GameObject implements Animated {
     public void updateSpear(float dt, Vector2 dir){
         if(!hasSpear()) return;
         floatTime += dt;
-        if(floatTime >= 360){
-            floatTime = 0;
-        }
         spear.setFloatPosition(getPosition(), floatTime, flip, dir);
     }
     /** The Spear the raft owns */
