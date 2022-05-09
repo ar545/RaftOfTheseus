@@ -981,6 +981,7 @@ public class WorldController implements Screen, ContactListener {
                 sw.setDestroyed(true);
                 levelModel.addWood(sw.getPosition(), Shipwreck.getDrops());
             }
+            SfxController.getInstance().playSFX("raft_damage");
         }
         // destroy bullet
 
@@ -1034,6 +1035,7 @@ public class WorldController implements Screen, ContactListener {
                             r.setDamaged(false);
                         }
                     }, 2, 1, 1);
+                    SfxController.getInstance().playSFX("raft_damage");
                 }
             }
         } else if(g.getType() == GameObject.ObjectType.NOTE){

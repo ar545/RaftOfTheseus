@@ -161,7 +161,7 @@
   },
   "shipwreck" : {
     "width" : 2.8,
-    "height" : 0.5,
+    "height" : 2.5,
     "health" : 2,
     "drops" : 15,
     "hit box width" : 2.8,
