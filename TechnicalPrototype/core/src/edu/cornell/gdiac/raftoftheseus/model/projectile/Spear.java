@@ -166,20 +166,27 @@ public class Spear extends Projectile implements Animated {
 
     // TODO Make spear move slowly when player turns direction
 
-    Vector2 new_pos = new Vector2();
-
     /**
      * Change the position of this spear relative to the raft.
      * @param pos the raft position
      */
     public void setFloatPosition(Vector2 pos, float floatTime, float flip, Vector2 dir){
+        Vector2 initialPosition = pos.cpy().add(SPEAR_XO * flip, SPEAR_YO);
+        float initialAngle = 90.0f;
+
         float yOffset = (float) Math.sin(floatTime * OSCILLATION_SPEED) * OSCILLATION_RANGE;
-        new_pos.set(pos).add(0.0f, SPEAR_YO + yOffset);
-        Vector2 d = dir.sub(pos);
-        float angle = d.angleDeg();
-        new_pos.add(d.nor().scl(2.0f));
-        setPosition(new_pos);
-        setAngle(angle);
+        Vector2 newPosition = pos.cpy().add(0.0f, SPEAR_YO + yOffset);
+        Vector2 d = dir.sub(newPosition);
+        float newAngle = d.angleDeg();
+        newPosition.add(d.nor().scl(getWidth()*0.75f));
+
+        float i = Math.min(1.0f, floatTime*2.0f);
+        newPosition.scl(i).add(initialPosition.scl(1.0f-i));
+        newAngle = newAngle * i + initialAngle * (1.0f - i);
+
+        setPosition(newPosition);
+        setAngle(newAngle);
+
 //        if(!locked) {
 //            if(Math.abs(getAngle() - dAngle) < LOCK_THRESHOLD){
 //                locked = true;
