@@ -64,7 +64,7 @@
     "bite start frame" : 0
   },
   "spear": {
-    "speed scale" : 40.0,
+    "speed scale" : 30.0,
     "health cost" : -2.0,
     "texture scale" : 3.5,
     "texture x offset" : -20,

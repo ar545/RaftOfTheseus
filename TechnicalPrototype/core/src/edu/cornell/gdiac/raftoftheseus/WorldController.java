@@ -971,8 +971,10 @@ public class WorldController implements Screen, ContactListener {
             }
             s.setDestroyed(true);
         } else if (g.getType() == GameObject.ObjectType.STATIONARY) {
-            SfxController.getInstance().playSFX("spear_break");
-            s.deactivate();
+            if(((Stationary) g).hasCliff()) {
+                SfxController.getInstance().playSFX("spear_break");
+                s.deactivate();
+            }
         } else if (g.getType() == GameObject.ObjectType.SHIPWRECK){
             s.setDestroyed(true);
             Shipwreck sw = ((Shipwreck) g);

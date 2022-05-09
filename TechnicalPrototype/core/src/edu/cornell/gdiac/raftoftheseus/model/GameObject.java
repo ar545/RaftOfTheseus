@@ -44,17 +44,20 @@ public abstract class GameObject {
     public final static short CATEGORY_LIGHT_BLOCK = 1<<10;
     public final static short CATEGORY_LIGHT_NON = 1<<11;
     protected final static short CATEGORY_DESTRUCTIBLE = 1<<12;
+    protected final static short CATEGORY_TERRAIN_CLIFF = 1<<13;
     /** Collision filtering masks */
     protected final static short MASK_PLAYER = CATEGORY_ENEMY | CATEGORY_ENEMY_BULLET | CATEGORY_CURRENT
-            | CATEGORY_TERRAIN;
-    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_TERRAIN | CATEGORY_DESTRUCTIBLE;
+            | CATEGORY_TERRAIN | CATEGORY_TERRAIN_CLIFF;
+    protected final static short MASK_PLAYER_BULLET = CATEGORY_ENEMY | CATEGORY_DESTRUCTIBLE | CATEGORY_TERRAIN_CLIFF;
     protected final static short MASK_ENEMY = CATEGORY_PLAYER | CATEGORY_PLAYER_BULLET | CATEGORY_CURRENT
-            | CATEGORY_TERRAIN | CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE;
+            | CATEGORY_TERRAIN | CATEGORY_TERRAIN_CLIFF | CATEGORY_PUSHABLE | CATEGORY_NON_PUSHABLE;
     protected final static short MASK_NOTE = CATEGORY_PLAYER_SENSOR;
     protected final static short MASK_CURRENT = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PUSHABLE;
-    protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PLAYER_BULLET |
+    protected final static short MASK_TERRAIN = CATEGORY_PLAYER | CATEGORY_ENEMY |
             CATEGORY_ENEMY_BULLET | CATEGORY_PUSHABLE | CATEGORY_LIGHT_BLOCK;
-    protected final static short MASK_WOOD = CATEGORY_PLAYER_SENSOR | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN;
+    protected final static short MASK_TERRAIN_CLIFF = CATEGORY_PLAYER | CATEGORY_ENEMY | CATEGORY_PLAYER_BULLET |
+            CATEGORY_ENEMY_BULLET | CATEGORY_PUSHABLE | CATEGORY_LIGHT_BLOCK;
+    protected final static short MASK_WOOD = CATEGORY_PLAYER_SENSOR | CATEGORY_ENEMY | CATEGORY_CURRENT | CATEGORY_TERRAIN | CATEGORY_TERRAIN_CLIFF;
     protected final static short MASK_TREASURE = CATEGORY_PLAYER_SENSOR;// treasure isn't pushed around by anything
     protected final static short MASK_GOAL = CATEGORY_PLAYER_SENSOR | CATEGORY_ENEMY;
     protected final static short MASK_SIREN = CATEGORY_PLAYER_BULLET; // Siren only interacts with bullet
