@@ -3,6 +3,7 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -1163,7 +1164,7 @@ public class LevelModel {
      * @param firelocation where the mouse was pointing upon release
      */
     public void fireSpear(Vector2 firelocation){
-        Vector2 facing = firelocation.sub(raft.getSpear().getPosition()).nor();
+        Vector2 facing = firelocation.sub(raft.getPosition()).nor();
         Vector2 raft_speed = raft.physicsObject.getLinearVelocity().cpy().scl(0.5f);
         raft.getSpear().fire(facing, raft_speed);
         raft.setSpear(null);
@@ -1230,7 +1231,7 @@ public class LevelModel {
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
-//        drawReticle();
+        drawReticle();
         canvas.end();
 
         drawHealthCircle(playerPosOnScreen);
@@ -1366,7 +1367,7 @@ public class LevelModel {
         Vector2 mouseGamePos = new Vector2(mouseX, mouseY);
         getCameraTransform().inv().applyTo(mouseGamePos);
         mouseGamePos.sub(getPlayer().getPosition());
-        mouseGamePos.scl(Math.min(Spear.getSpearRange(),  mouseGamePos.len()) / mouseGamePos.len());
+//        mouseGamePos.scl(Math.min(Spear.getSpearRange(),  mouseGamePos.len()) / mouseGamePos.len());
         mouseGamePos.add(getPlayer().getPosition());
         getCameraTransform().applyTo(mouseGamePos);
 

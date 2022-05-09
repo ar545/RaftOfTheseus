@@ -173,14 +173,13 @@ public class Spear extends Projectile implements Animated {
      * @param pos the raft position
      */
     public void setFloatPosition(Vector2 pos, float floatTime, float flip, Vector2 dir){
-        float y_float = (float) Math.sin(floatTime * OSCILLATION_SPEED) * OSCILLATION_RANGE;
-//        if(getPosition().x >= -SPEAR_XO && flip < 0){
-//
-//        }
-        new_pos.set(pos).add(SPEAR_XO * flip, SPEAR_YO + y_float);
+        float yOffset = (float) Math.sin(floatTime * OSCILLATION_SPEED) * OSCILLATION_RANGE;
+        new_pos.set(pos).add(0.0f, SPEAR_YO + yOffset);
+        Vector2 d = dir.sub(pos);
+        float angle = d.angleDeg();
+        new_pos.add(d.nor().scl(3.0f));
         setPosition(new_pos);
-        float dAngle = dir.sub(getPosition()).angleDeg();
-        System.out.println(getAngle());
+        setAngle(angle);
 //        if(!locked) {
 //            if(Math.abs(getAngle() - dAngle) < LOCK_THRESHOLD){
 //                locked = true;
@@ -193,7 +192,6 @@ public class Spear extends Projectile implements Animated {
 //                if(getAngle() < 0) setAngle(getAngle() + 360);
 //            }
 //        } else
-        setAngle(dAngle);
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -260,6 +261,10 @@ public class WorldController implements Screen, ContactListener {
 //            SfxController.getInstance().fadeMusic();
             drawTransition();
         }
+        if (!pausePressed && !complete && !failed)
+            hideCursor();
+        else
+            unhideCursor();
     }
 
     private float hintTimer = 0f;
@@ -865,7 +870,9 @@ public class WorldController implements Screen, ContactListener {
      * also paused before it is destroyed.
      */
     @Override
-    public void pause() {}
+    public void pause() {
+        unhideCursor();
+    }
 
     /**
      * Dispose of all (non-static) resources allocated to this mode.
@@ -1064,6 +1071,27 @@ public class WorldController implements Screen, ContactListener {
     /** Unused ContactListener method.*/
     @Override
     public void postSolve(Contact contact, ContactImpulse impulse) {}
+
+    private boolean isCursorHidden = false;
+
+    private void hideCursor() {
+        if (!isCursorHidden) {
+            Pixmap pixmap = new Pixmap(1,1, Pixmap.Format.RGBA8888);
+            pixmap.setColor(0,0,0,0);
+            pixmap.drawPixel(0,0);
+            Cursor cursor = Gdx.graphics.newCursor(pixmap, 0, 0);
+            Gdx.graphics.setCursor(cursor);
+            pixmap.dispose();
+            isCursorHidden = true;
+        }
+    }
+
+    private void unhideCursor() {
+        if (isCursorHidden) {
+            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+            isCursorHidden = false;
+        }
+    }
 
     /*=*=*=*=*=*=*=*=*=* Set and Reset Level *=*=*=*=*=*=*=*=*=*/
     /**
