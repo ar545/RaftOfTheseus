@@ -111,7 +111,7 @@ public class Spear extends Projectile implements Animated {
 
     /**
      * Detach the spear from the raft
-     * @param dir which way the spear will head
+     * @param dir which way the spear will head, already normalized
      * @param raft_speed the rafts current speed
      */
     public void fire(Vector2 dir, Vector2 raft_speed){
