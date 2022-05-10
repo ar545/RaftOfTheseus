@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.4" name="updatedTiledSet" tilewidth="50" tileheight="50" tilecount="63" columns="7">
- <image source="GMTiled.png" width="350" height="450"/>
+<tileset version="1.8" tiledversion="1.8.4" name="updatedTiledSet" tilewidth="50" tileheight="50" tilecount="70" columns="7">
+ <image source="GMTiled.png" width="350" height="500"/>
  <tile id="0" type="Raft"/>
  <tile id="1" type="Siren"/>
  <tile id="2" type="Enemy"/>
@@ -63,6 +63,13 @@
  <tile id="60" type="Rock" probability="0.05"/>
  <tile id="61" type="Rock" probability="0.05"/>
  <tile id="62" type="Rock" probability="0.05"/>
+ <tile id="63" type="Rock" probability="0.05"/>
+ <tile id="64" type="Rock" probability="0.05"/>
+ <tile id="65" type="Rock" probability="0.05"/>
+ <tile id="66" type="Rock" probability="0.05"/>
+ <tile id="67" type="Rock" probability="0.05"/>
+ <tile id="68" type="Rock" probability="0.05"/>
+ <tile id="69" type="Enemy"/>
  <wangsets>
   <wangset name="Land Set" type="corner" tile="28">
    <wangcolor name="LOW Land" color="#ff0000" tile="34" probability="1"/>
@@ -99,10 +106,16 @@
    <wangtile tileid="56" wangid="0,3,0,3,0,3,0,3"/>
    <wangtile tileid="57" wangid="0,3,0,3,0,3,0,3"/>
    <wangtile tileid="58" wangid="0,3,0,3,0,3,0,3"/>
-   <wangtile tileid="59" wangid="0,1,0,1,0,1,0,1"/>
-   <wangtile tileid="60" wangid="0,1,0,1,0,1,0,1"/>
-   <wangtile tileid="61" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="59" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="60" wangid="0,3,0,3,0,3,0,3"/>
+   <wangtile tileid="61" wangid="0,3,0,3,0,3,0,3"/>
    <wangtile tileid="62" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="63" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="64" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="65" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="66" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="67" wangid="0,1,0,1,0,1,0,1"/>
+   <wangtile tileid="68" wangid="0,1,0,1,0,1,0,1"/>
   </wangset>
  </wangsets>
 </tileset>

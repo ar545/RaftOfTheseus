@@ -85,12 +85,12 @@ public class LevelModel {
         private static final int SAND_OFFSET = 42;
         /** Index of the representation of plant in tile set texture */
         private static final int HIGH_PLANT_START = 56;
-        public static final int HIGH_PLANT_END = 59;
-        public static final int PLANT_START = 60;
+        public static final int HIGH_PLANT_END = 62;
+        public static final int PLANT_START = 63;
         /** Index of the representation of plant in tile set texture */
-        private static final int PLANT_END = 63;
+        private static final int PLANT_END = 69;
         /** Index of the representation of plant in tile set texture */
-        private static final int HYDRA = 64;
+        private static final int HYDRA = 70;
         public static final int FIXED_PLANT_COUNT = 2;
         /** Total variation of terrains */
         private static final int TERRAIN_TYPES = SEA - LAND_OFFSET - 1;
@@ -679,6 +679,9 @@ public class LevelModel {
         if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.HIGH_PLANT_START){ return tile_int - Tiled.SAND_OFFSET; }
         if (tile_int == Tiled.HIGH_PLANT_START || tile_int == Tiled.PLANT_START){ return Stationary.plantA; }
         if (tile_int == Tiled.HIGH_PLANT_START + 1 || tile_int == Tiled.PLANT_START + 1){ return Stationary.plantB; }
+        if (tile_int == Tiled.HIGH_PLANT_START + 2 || tile_int == Tiled.PLANT_START + 2){ return Stationary.plantC; }
+        if (tile_int == Tiled.HIGH_PLANT_START + 3 || tile_int == Tiled.PLANT_START + 3){ return Stationary.plantD; }
+        if (tile_int == Tiled.HIGH_PLANT_START + 4 || tile_int == Tiled.PLANT_START + 4){ return Stationary.plantB; }
         if (tile_int == Tiled.HIGH_PLANT_END - 1 || tile_int == Tiled.PLANT_END - 1){ return Stationary.plantC; }
         if (tile_int == Tiled.HIGH_PLANT_END || tile_int == Tiled.PLANT_END){ return Stationary.plantD; }
         return Stationary.NON_ROCK;
@@ -863,7 +866,10 @@ public class LevelModel {
     }
 
     /** populate the raft field for existing enemies */
-    private void populateEnemyRaftField(){ for(Shark s : getSharks()){ s.setRaft(getPlayer()); } }
+    private void populateEnemyRaftField(){
+        for(Shark s : getSharks()){ s.setRaft(getPlayer()); }
+        for(Treasure t : getTreasure()){ if(t != null){ t.setRaft(getPlayer()); } }
+    }
 
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(){

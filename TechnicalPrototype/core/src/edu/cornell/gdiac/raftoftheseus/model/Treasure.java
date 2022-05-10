@@ -12,6 +12,8 @@ public class Treasure extends GameObject {
 
     private static final float STARBURST_OFFSET = 4.5f;
 
+    public void setRaft(Raft player) { raft = player; }
+
     private class Starburst extends GameObject{
         public final int SB_SF = 0;
 
