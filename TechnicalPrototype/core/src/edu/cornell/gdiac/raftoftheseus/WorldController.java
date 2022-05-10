@@ -247,7 +247,7 @@ public class WorldController implements Screen, ContactListener {
         updateRaftWakeSamples();
 
         // Draw the level
-        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 5);
+        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4);
 
         // draw stars
         drawStar(playerScore);
