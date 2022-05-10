@@ -302,10 +302,12 @@ public class MenuMode implements Screen {
         canvas.clear();
         switch (currentScreen) {
             case TITLE:
-                canvas.draw(menuBackground,-100f * Gdx.graphics.getDensity(), -50f * Gdx.graphics.getDensity());
+//                canvas.draw(menuBackground,-100f * Gdx.graphics.getDensity(), -50f * Gdx.graphics.getDensity());
+                canvas.drawBackground(menuBackground, true);
                 break;
             default:
-                canvas.draw(seaBackground,0f, 0f);
+//                canvas.draw(seaBackground,0f, 0f);
+                canvas.drawBackground(seaBackground, true);
                 break;
         }
         canvas.end();
