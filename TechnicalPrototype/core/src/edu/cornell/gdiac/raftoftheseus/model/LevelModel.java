@@ -302,7 +302,8 @@ public class LevelModel {
 
     /** prepare the pixel size for the game screen */
     private float calculatePixels(int canvasHeight){
-        return Math.max(Math.min(120f + ((float) canvasHeight - 960) / 16.0f, 160f), 108);
+        System.out.println("" + Math.max(Math.min(120f + ((float) canvasHeight - 960f) / 16f, 160f), 108f));
+        return Math.max(Math.min(120f + ((float) canvasHeight - 960f) / 16f, 160f), 108f);
     }
 
 
