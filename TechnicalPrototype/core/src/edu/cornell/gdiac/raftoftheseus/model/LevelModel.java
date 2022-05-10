@@ -291,21 +291,17 @@ public class LevelModel {
     /** Get treasure count for the level */
     public int getTreasureCount() { return treasureCount; }
     /** Constructor call for this singleton class */
-    public LevelModel(GameCanvas canvas){ this.canvas = canvas;
-        GRID_PIXELS = calculatePixels(canvas.getHeight());
-    }
+    public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
 
+    /* Todo: vary the grid_pixel per screen size */
     /** Pixels per grid square */
-    private float GRID_PIXELS;
+    private static final float GRID_PIXELS = 140.0f;
     /** Pixels per Box2D unit */
-    private float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
-
+    private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** prepare the pixel size for the game screen */
     private float calculatePixels(int canvasHeight){
-        System.out.println("" + Math.max(Math.min(120f + ((float) canvasHeight - 960f) / 16f, 160f), 108f));
         return Math.max(Math.min(120f + ((float) canvasHeight - 960f) / 16f, 160f), 108f);
     }
-
 
     /**
      * Returns true if the object is in bounds.

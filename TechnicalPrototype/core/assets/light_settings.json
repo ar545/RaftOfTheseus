@@ -1,7 +1,7 @@
 {
 	"fpsRange":		  	[  20,  60],
 	"init": {
-		"color":	  	[0.1, 0.1, 0.1, 0.1],
+		"color":	  	[0.20, 0.20, 0.25, 1.0],
 		"gamma":		true,
 		"diffuse":		true,
 		"blur":			2
@@ -21,7 +21,7 @@
 		"distance":		16.5,
 		"rays":			512,
 		"soft":			true,
-		"softLength":	9,
+		"softLength":	6,
 		"block":        true
 	},
 	"goal": {
