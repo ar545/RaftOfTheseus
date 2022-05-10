@@ -140,15 +140,15 @@
     "level:7" : "levels/SharpRocks2.json",
     "level:8" : "levels/SirenEasy.json",
     "level:9" : "levels/SirenMedium.json",
-    "level:10" : "levels/SharkEasy.json",
-    "level:11" : "levels/SharkMedium.json",
-    "level:12" : "levels/Maze.json",
-    "level:13" : "levels/Spring.json",
+    "level:10" : "levels/OopsAllCurrents1.json",
+    "level:11" : "levels/SharkEasy.json",
+    "level:12" : "levels/SharkMedium.json",
+    "level:13" : "levels/OopsAllCurrents2.json",
     "level:14" : "levels/SirenHard.json",
     "level:15": "levels/SharkHard.json",
-    "level:16": "levels/TheClimb.json",
-    "level:17": "levels/SirenHard.json",
-    "level:18": "levels/SirenHard.json",
-    "level:19": "levels/SirenHard.json"
+    "level:16": "levels/Spring.json",
+    "level:17": "levels/Maze.json",
+    "level:18": "levels/TheClimb.json",
+    "level:19": "levels/TheStraferReduced.json"
   }
 }
