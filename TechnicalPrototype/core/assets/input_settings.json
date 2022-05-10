@@ -4,7 +4,7 @@
 	"previous": "2",
 	"reset": "R",
 	"debug": "G",
-	"exit": "P",
+	"exit": "Escape",
 	"fire": 0,
 	"fireKey": "Space",
 	"map": "Z",
