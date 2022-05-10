@@ -1436,10 +1436,10 @@ public class LevelModel {
     /** Draw a circle showing how far the player can move before they die (only if light setting is odd).
      * @param playerPosOnScreen the camera-transformed player position */
     public void drawHealthCircle(Vector2 playerPosOnScreen){
-//        if(light_effect % 2 == 1) {
+        if(light_effect % 2 == 0) {
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-//        }
+        }
     }
 
     /** Extend land and terrain into the top invisible border */
