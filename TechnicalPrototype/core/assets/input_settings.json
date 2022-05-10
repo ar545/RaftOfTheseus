@@ -7,7 +7,7 @@
 	"exit": "P",
 	"fire": 0,
 	"fireKey": "Space",
-	"map": "Tab",
+	"map": "Z",
 	"map_alt": "M",
 	"sprint": "Shift",
 	"w": "W",
@@ -19,7 +19,7 @@
 	"left": "Left",
 	"right": "Right",
 	"test": "T",
-	"pause": "Escape",
+	"pause": "K",
 	"special": "C",
 	"rotate left": "J",
 	"rotate right": "K"

@@ -24,6 +24,7 @@ import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.PooledList;
+import org.lwjgl.Sys;
 
 import java.util.Iterator;
 
@@ -101,6 +102,8 @@ public class WorldController implements Screen, ContactListener {
     protected TextureRegion hintAttack;
     /** The hint background for controls */
     protected TextureRegion hintKey;
+    /** The black transition screen */
+    protected TextureRegion transitionScreen;
     /** Texture for pause screen */
     protected Texture pauseBackground;
     /** Texture for failed level */
@@ -144,6 +147,17 @@ public class WorldController implements Screen, ContactListener {
     private boolean exitPressed;
 
     private final long startTime;
+
+    private float hintTimer = 0f;
+    private float fadeTimeStart = 5f;
+    private float fadeTimeEnd = 6f;
+    private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
+    private boolean blockHint = false;
+
+    private float transitionTimer = 0f;
+    private float transitionTimeEnd = 1.5f;
+    private boolean drawFadeTransition;
+    private boolean shouldNext = false;
 
     // SHADER STUFF
     private float[] raftSamplePositionsXY = new float[16];
@@ -258,24 +272,41 @@ public class WorldController implements Screen, ContactListener {
                 wasComplete = true;
                 saveGame();
             }
-//            SfxController.getInstance().fadeMusic();
             drawTransition();
         }
         if (map || pausePressed || complete || failed)
             unhideCursor();
         else
             hideCursor();
-    }
 
-    private float hintTimer = 0f;
-    private float fadeTimeStart = 5f;
-    private float fadeTimeEnd = 6f;
-    private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
-    private boolean blockHint = false;
+        // draw the fading transition
+        drawFadeTransition(dt);
+    }
 
     private void resetControlHints(){
         hintTimer = 0;
         blockHint = false;
+    }
+
+    private void drawFadeTransition(float dt) {
+        if (!drawFadeTransition) return;
+        transitionTimer += dt;
+        if (transitionTimer >= transitionTimeEnd) {
+            drawFadeTransition = false;
+            System.out.println("here");
+            shouldNext = complete;
+        }
+        canvas.begin();
+        if (complete) {
+            canvas.draw(transitionScreen,  new Color(0, 0, 0, 1 - (transitionTimeEnd - transitionTimer)/transitionTimeEnd),
+                    0, 0, canvas.getWidth(), canvas.getHeight());
+            stage.clear();
+            table.clear();
+        } else {
+            canvas.draw(transitionScreen,  new Color(0, 0, 0,  (transitionTimeEnd - transitionTimer)/transitionTimeEnd),
+                    0, 0, canvas.getWidth(), canvas.getHeight());
+        }
+        canvas.end();
     }
 
     private void drawControlHints(float dt) {
@@ -292,6 +323,7 @@ public class WorldController implements Screen, ContactListener {
             c = Color.WHITE;
         }
         BitmapFont font = skin.getFont("default-font");
+        font.getData().setScale(0.3f);
         font.setColor(c);
         canvas.begin();
         switch(level_id) {
@@ -300,54 +332,66 @@ public class WorldController implements Screen, ContactListener {
                 canvas.draw(
                         wasdIcon, c,
                         wasdIcon.getRegionWidth()*0.5f, 0.0f,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 50, canvas.getHeight()*0.5f + 120,
-                        wasdIcon.getRegionWidth(), wasdIcon.getRegionHeight()
+                        canvas.getWidth()*0.5f - 1.25f * wasdIcon.getRegionWidth(), canvas.getHeight()*0.5f + 120,
+                        wasdIcon.getRegionWidth() * 1.4f, wasdIcon.getRegionHeight() * 1.4f
                 );
                 font.getData().setScale(0.3f);
                 canvas.drawText(
                         "OR", font,
-                        canvas.getWidth()*0.5f - 20, canvas.getHeight()*0.5f + 120 + wasdIcon.getRegionHeight() / 2
+                        canvas.getWidth()*0.5f - 30, canvas.getHeight()*0.5f + 120 + wasdIcon.getRegionHeight() / 2
                 );
                 canvas.draw(
                         arrowsIcon, c,
                         arrowsIcon.getRegionWidth()*0.5f, 0.0f,
-                        canvas.getWidth()*0.5f + arrowsIcon.getRegionWidth() - 50, canvas.getHeight()*0.5f + 120,
-                        arrowsIcon.getRegionWidth(), arrowsIcon.getRegionHeight()
+                        canvas.getWidth()*0.5f + 0.75f * arrowsIcon.getRegionWidth(), canvas.getHeight()*0.5f + 120,
+                        arrowsIcon.getRegionWidth() * 1.4f, arrowsIcon.getRegionHeight() * 1.4f
                 );
                 font.getData().setScale(0.5f);
                 // BOTTOM SECTION LEFT
                 canvas.drawText(
                         "RESTART", font,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() - 70 , canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                        canvas.getWidth()*0.5f - 1.75f * wasdIcon.getRegionWidth(),
+                        canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
+                String resetText = controlSettings.get("mouse keyboard").get("reset").asString();
+                float resetBoxScale = (resetText.equals("Tab") || resetText.equals("Esc")) ? 1.25f : 0.7f;
                 canvas.draw(
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
-                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 150, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
-                        hintKey.getRegionWidth() * 0.7f, hintKey.getRegionHeight() * 0.85f
+                        canvas.getWidth()*0.5f - hintKey.getRegionWidth(),
+                        canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        hintKey.getRegionWidth() * resetBoxScale, hintKey.getRegionHeight() * 0.85f
                 );
                 canvas.drawText(
-                        controlSettings.get("mouse keyboard").get("reset").asString(), font,
-                        canvas.getHeight()*0.5f + wasdIcon.getRegionHeight() + 125, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                       resetText, font,
+                        canvas.getWidth()*0.5f - 1.35f * hintKey.getRegionWidth(),
+                        canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
-//                // BOTTOM SECTION RIGHT
+                // BOTTOM SECTION RIGHT
+                String pauseText = controlSettings.get("mouse keyboard").get("pause").asString();
+                float pauseTextScale = (pauseText.equals("Tab") || pauseText.equals("Esc")) ? 1.25f : 0.7f;
                 canvas.drawText(
                         "PAUSE", font,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 280 , canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                        canvas.getWidth()*0.5f + 0.5f * hintKey.getRegionWidth() + 20 ,
+                        canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
                 canvas.draw(
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 500, canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
-                        hintKey.getRegionWidth() * 0.7f, hintKey.getRegionHeight() * 0.85f
+                        canvas.getWidth()*0.5f + 3f * hintKey.getRegionWidth() + 20,
+                        canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        hintKey.getRegionWidth() * pauseTextScale, hintKey.getRegionHeight() * 0.85f
                 );
                 canvas.drawText(
-                        controlSettings.get("mouse keyboard").get("pause").asString(), font,
-                        canvas.getWidth()*0.5f - wasdIcon.getRegionWidth() + 470, canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
+                        pauseText, font,
+                        canvas.getWidth()*0.5f + 2.55f * hintKey.getRegionWidth() + 30,
+                        canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
                 break;
             case(2):
                 font.getData().setScale(0.5f);
+                String mapText = controlSettings.get("mouse keyboard").get("map").asString();
+                float mapTextScale = (mapText.equals("Tab") || mapText.equals("Esc")) ? 1.25f : 0.7f;
                 canvas.drawText(
                         "MAP", font,
                         canvas.getWidth()*0.5f - 140, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
@@ -356,11 +400,11 @@ public class WorldController implements Screen, ContactListener {
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, 0.0f,
                         canvas.getWidth()*0.5f + 50, canvas.getHeight()*0.5f + 120,
-                        hintKey.getRegionWidth(), hintKey.getRegionHeight()
+                        hintKey.getRegionWidth() * mapTextScale, hintKey.getRegionHeight()
                 );
                 canvas.drawText(
-                        controlSettings.get("mouse keyboard").get("map").asString(), font,
-                        canvas.getWidth()*0.5f + 35, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
+                        mapText, font,
+                        canvas.getWidth()*0.5f + 20, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
                 );
                 break;
             case(3):
@@ -467,7 +511,7 @@ public class WorldController implements Screen, ContactListener {
         if (!transitionBuilt) {
             transitionBuilt = true;
             if (complete && !failed) {
-                buildTransitionScreen(successBackgrounds[level_id < TUTORIAL_COUNT ? successBackgrounds.length - 1 : playerScore], false);
+                buildTransitionScreen(successBackgrounds[level_id < TUTORIAL_COUNT ? 0 : playerScore], false);
             } else {
                 buildTransitionScreen(failedBackground, true);
             }
@@ -487,29 +531,29 @@ public class WorldController implements Screen, ContactListener {
         skin.add("transition_background", background);
         table.setBackground(skin.getDrawable("transition_background"));
 
-        Table part1 = new Table();
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, 0.4f);
-        mainButton.addListener(UICreator.createListener(mainButton, this::goNext, didFail));
-        part1.add(mainButton).expandX().align(Align.center).padTop(10);
-        table.add(part1);
+        Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
+        float fontSize = 0.6f * Gdx.graphics.getDensity();
+
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, fontSize, textColor);
+        mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
+        table.add(mainButton).expandX().align(Align.center).padTop(50);
         table.row();
 
-        Table part2 = new Table();
-        part2.row().colspan(didFail ? 2 : 3);
         if (!didFail) {
-            TextButton replayButton = UICreator.createTextButton("REPLAY", skin, 0.4f);
-            replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
-            part2.add(replayButton).expandX().padRight(70);
+            TextButton replayButton = UICreator.createTextButton("RESTART", skin, fontSize, textColor);
+            replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, textColor, this::reset));
+            table.add(replayButton).expandX().align(Align.center);
+            table.row();
         }
 
-        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.4f, Color.GOLD);
-        settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
-        part2.add(settingsButton).expandX();
+        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, fontSize, textColor);
+        settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, textColor, this::setSettingsPressed));
+        table.add(settingsButton).expandX();
+        table.row();
 
-        TextButton exitButton = UICreator.createTextButton("EXIT", skin, 0.4f, Color.GOLD);
-        exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, Color.GOLD, this::setExitPressed));
-        part2.add(exitButton).expandX();
-        table.add(part2);
+        TextButton exitButton = UICreator.createTextButton("EXIT", skin, fontSize, textColor);
+        exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, textColor, this::setExitPressed));
+        table.add(exitButton).expandX();
         table.row();
     }
 
@@ -519,6 +563,8 @@ public class WorldController implements Screen, ContactListener {
             reset();
         } else {
             nextPressed = true;
+            drawFadeTransition = true;
+            transitionTimer = 0f;
         }
     }
 
@@ -537,9 +583,11 @@ public class WorldController implements Screen, ContactListener {
         canvas.begin();
         int size = 70;
         int padding = 10;
-        canvas.draw(star > 0 ? filledStar : emptyStar, padding, canvas.getHeight() - size);
-        canvas.draw(star > 1 ? filledStar : emptyStar, size + padding, canvas.getHeight() - size);
-        canvas.draw(star > 2 ? filledStar : emptyStar, 2 * size + padding, canvas.getHeight() - size);
+        if (level_id >= TUTORIAL_COUNT) {
+            canvas.draw(star > 0 ? filledStar : emptyStar, padding, canvas.getHeight() - size);
+            canvas.draw(star > 1 ? filledStar : emptyStar, size + padding, canvas.getHeight() - size);
+            canvas.draw(star > 2 ? filledStar : emptyStar, 2 * size + padding, canvas.getHeight() - size);
+        }
         canvas.end();
     }
 
@@ -561,6 +609,7 @@ public class WorldController implements Screen, ContactListener {
         for (int i = 0; i < 4; i++) {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
+        transitionScreen = new TextureRegion(directory.getEntry("transition_screen", Texture.class));
         hintAttack = new TextureRegion(directory.getEntry( "hint_attack", Texture.class ));
         wasdIcon = new TextureRegion(directory.getEntry( "hint_wasd", Texture.class ));
         arrowsIcon = new TextureRegion(directory.getEntry("hint_arrows", Texture.class));
@@ -637,9 +686,10 @@ public class WorldController implements Screen, ContactListener {
             exitPressed = false;
             listener.exitScreen(this, QUIT);
             return false;
-        } else if (input.didNext() || nextPressed) {
+        } else if ((input.didNext() || nextPressed) && shouldNext) {
             pause();
             nextPressed = false;
+            shouldNext = false;
             listener.exitScreen(this, NEXT_LEVEL);
             return false;
         }  else if (settingsPressed) {
@@ -1170,6 +1220,8 @@ public class WorldController implements Screen, ContactListener {
         wasComplete = false;
         wasMoving = false;
         wasCharging = false;
+        drawFadeTransition = true;
+        transitionTimer = 0f;
 
         // Reset Soundcontroller
         SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));

@@ -12,11 +12,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
 import edu.cornell.gdiac.util.ScreenListener;
 import org.lwjgl.Sys;
 
+import javax.swing.*;
 import java.util.Arrays;
 
 import static edu.cornell.gdiac.raftoftheseus.GDXRoot.MENU_TO_SETTINGS;
@@ -160,7 +162,7 @@ public class MenuMode implements Screen {
      * Creates all necessary buttons for the menu screen.
      */
     private void initMenuButtons(){
-        backButton = UICreator.createTextButton("BACK", skin, Color.WHITE);
+        backButton = UICreator.createTextButton("BACK", skin, 0.5f * Gdx.graphics.getDensity(), Color.WHITE);
         backButton.addListener(UICreator.createListener(backButton, Color.GOLD, Color.WHITE,
                 "button_enter", "button_click", this::changeScreenTo, MenuScreen.TITLE));
 
@@ -174,12 +176,13 @@ public class MenuMode implements Screen {
         prevPageButton.setVisible(currentPage == 2);
 
         backTable = new Table();
-        backTable.add(backButton).expandX().align(Align.left).padRight(1150).padTop(10);
+        backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
 
         // instantiate the "back" button, which is used in multiple menus
+        float fontSize = 0.5f * Gdx.graphics.getDensity();
         Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
         for(String n : holder){
-            titleButtons.add(UICreator.createTextButton(n, skin));
+            titleButtons.add(UICreator.createTextButton(n, skin, fontSize));
         }
         //Add listeners to buttons
         titleButtons.get(0).addListener(UICreator.createListener(titleButtons.get(0), "raft_sail_open", this::setPlayState));
@@ -215,18 +218,22 @@ public class MenuMode implements Screen {
      * Creates all the credit visuals for the game.
      */
     private void initCreditTables(){
+        float titleFontSize = 0.8f * Gdx.graphics.getDensity();
+        float headingFontSize = 0.7f * Gdx.graphics.getDensity();
+        float subheadingFontSize = 0.5f * Gdx.graphics.getDensity();
+
         Table tb2 = new Table();
-        tb2.add(UICreator.createLabel("CREDITS", skin, 0.6f)).expandX().align(Align.center);
+        tb2.add(UICreator.createLabel("CREDITS", skin, titleFontSize)).expandX().align(Align.center);
 
         Table tb3 = new Table();
         tb3.align(Align.center);
 
         Table part3L = new Table();
-        part3L.add(UICreator.createLabel("PROGRAMMERS", skin, 0.4f)).expandX().align(Align.center);
+        part3L.add(UICreator.createLabel("PROGRAMMERS", skin, headingFontSize)).expandX().align(Align.center);
         part3L.row().padTop(-20);
 
         Table part3R = new Table();
-        part3R.add(UICreator.createLabel("DESIGNERS", skin, 0.4f)).expandX().align(Align.center);
+        part3R.add(UICreator.createLabel("DESIGNERS", skin, headingFontSize)).expandX().align(Align.center);
         part3R.row().padTop(-20);
 
         Array<String> members = new Array<String>(new String[]{"Amy Huang", "Demian Yutin", "Howard Fu",
@@ -234,7 +241,7 @@ public class MenuMode implements Screen {
         int i = 0;
         for(String name : members){
             Label l = new Label(name, skin);
-            l.setFontScale(0.35f);
+            l.setFontScale(subheadingFontSize);
             if (i <= 5) {
                 part3L.add(l).expandX().align(Align.center);
                 if (i != 5) part3L.row();
@@ -274,7 +281,7 @@ public class MenuMode implements Screen {
      */
     public void show() {
         active = true;
-        stage = new Stage();
+        stage = new Stage(new StretchViewport(canvas.getWidth(), canvas.getHeight()));
         Gdx.input.setInputProcessor(stage);
         buildMenu();
     }
@@ -295,10 +302,10 @@ public class MenuMode implements Screen {
         canvas.clear();
         switch (currentScreen) {
             case TITLE:
-                canvas.drawBackground(menuBackground, true);
+                canvas.draw(menuBackground,-100f * Gdx.graphics.getDensity(), -50f * Gdx.graphics.getDensity());
                 break;
             default:
-                canvas.drawBackground(seaBackground, true);
+                canvas.draw(seaBackground,0f, 0f);
                 break;
         }
         canvas.end();
@@ -383,7 +390,7 @@ public class MenuMode implements Screen {
     /** Adds the 3rd table to the levelTables array to menu population. */
     private Table addLevelIslands(){
         int[] levelCounts = new int[] { 0, 9, 1, 8, 2, 7, 3, 6, 4, 5, 10, 19, 11, 18, 12, 17, 13, 16, 14, 15};
-        int padding = 130;
+        int padding =(int) (200 * Gdx.graphics.getDensity());
         int[][] buttonPadding = new int[][] {
                 new int[] {0, 3},
                 new int[] {1, 2},
@@ -404,6 +411,8 @@ public class MenuMode implements Screen {
         Table pageTable = new Table();
         pageTable.align(Align.left);
 
+        float buttonSize = 225 * Gdx.graphics.getDensity();
+
         levelButtons = new TextButton[LEVEL_COUNT];
         int levelNumber = 0;
         for (int i = 0; i < LEVEL_COUNT; i ++) {
@@ -418,9 +427,9 @@ public class MenuMode implements Screen {
             levelButtons[levelNumber].getLabel().setFontScale(0.5f);
             levelButtons[levelNumber].addListener(UICreator.createListener(levelButtons[levelNumber], canPlay, this::selectlevel, levelNumber));
             //Add button to table
-            int buttonPaddingLeft = buttonPadding[levelNumber % LEVELS_PER_PAGE][0];
-            int buttonPaddingRight = buttonPadding[levelNumber % LEVELS_PER_PAGE][1];
-            pageTable.add(levelButtons[levelNumber]).size(150).padLeft(buttonPaddingLeft).padRight(buttonPaddingRight);
+            float buttonPaddingLeft = buttonPadding[levelNumber % LEVELS_PER_PAGE][0];
+            float buttonPaddingRight = buttonPadding[levelNumber % LEVELS_PER_PAGE][1];
+            pageTable.add(levelButtons[levelNumber]).size(buttonSize).padLeft(buttonPaddingLeft).padRight(buttonPaddingRight);
 
             if ((i + 1) > 0 && (i + 1) % NUM_COLS == 0) {
                 pageTable.row().width(stage.getWidth()).padTop(-60);
@@ -429,8 +438,8 @@ public class MenuMode implements Screen {
             if ((i + 1) % LEVELS_PER_PAGE == 0) {
                 scrollTable.add(pageTable)
                            .width(stage.getWidth() * 0.7f)
-                           .padLeft(i > LEVELS_PER_PAGE ? 240 : 80)
-                           .padRight(i > LEVELS_PER_PAGE ? 320 : 80);
+                           .padLeft(i > LEVELS_PER_PAGE ? 420 * Gdx.graphics.getDensity() : 100 * Gdx.graphics.getDensity())
+                           .padRight(i > LEVELS_PER_PAGE ? 420 * Gdx.graphics.getDensity(): 100 * Gdx.graphics.getDensity());
                 pageTable = new Table();
                 pageTable.align(Align.left);
             }
@@ -483,6 +492,9 @@ public class MenuMode implements Screen {
         float sy = ((float)height)/STANDARD_HEIGHT;
         scale = (sx < sy ? sx : sy);
         heightY = height;
+        if (stage != null) {
+            stage.getViewport().update(width, height, true);
+        }
     }
 
     /** Reset the play pressed state */
