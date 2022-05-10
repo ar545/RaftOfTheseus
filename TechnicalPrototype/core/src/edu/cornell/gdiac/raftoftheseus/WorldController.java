@@ -276,7 +276,7 @@ public class WorldController implements Screen, ContactListener {
         }
         if (map || pausePressed || complete || failed)
             unhideCursor();
-        else
+        else if (!InputController.getInstance().didExit())
             hideCursor();
 
         // draw the fading transition
