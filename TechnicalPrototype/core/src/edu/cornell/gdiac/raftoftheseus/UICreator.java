@@ -61,6 +61,7 @@ public class UICreator {
         button.getLabel().setColor(c);
     }
 
+
     public static TextButton createTextButton(String name, Skin skin, float fontSize){
         return createTextButton(name, skin, fontSize, Color.WHITE);
     }
@@ -215,19 +216,19 @@ public class UICreator {
     }
 
     // WorldController Buttons
-    public static ClickListener createListener(TextButton button, Consumer<Boolean> function, boolean didFail){
+    public static ClickListener createListener(TextButton button, Color c1, Color c2, Consumer<Boolean> function, boolean didFail){
         return new ClickListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 if (pointer == -1) SfxController.getInstance().playSFX("button_enter");
                 super.enter(event, x, y, pointer, fromActor);
-                button.getLabel().setColor(Color.LIGHT_GRAY);
+                button.getLabel().setColor(c1);
             }
 
             @Override
             public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
-                button.getLabel().setColor(Color.WHITE);
+                button.getLabel().setColor(c2);
             }
 
             @Override
