@@ -284,7 +284,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 */
 	private void draw() {
 		canvas.begin();
-		canvas.draw(background,-100f * Gdx.graphics.getDensity(), -50f * Gdx.graphics.getDensity());
+//		canvas.draw(background,-100f * Gdx.graphics.getDensity(), -50f * Gdx.graphics.getDensity());
+		canvas.drawBackground(background,true);
 		if (!loadingComplete) {
 			drawProgress(canvas);
 		}
