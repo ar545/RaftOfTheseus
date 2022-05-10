@@ -1,36 +1,45 @@
 {
 	"fpsRange":		  	[  20,  60],
 	"init": {
-		"color":	  	[0.25, 0.25, 0.25, 0.25],
+		"color":	  	[0.1, 0.1, 0.1, 0.1],
 		"gamma":		true,
 		"diffuse":		true,
-		"blur":			3
+		"blur":			2
 	},
 	"raft": {
 		"color":		[1.0, 1.0, 1.0, 1.0],
 		"pos":			[  0,   0],
-		"distance":		20,
+		"distance":		27,
 		"rays":			512,
 		"soft":			true,
-		"softLength":	8,
+		"softLength":	9,
+		"block":        true
+	},
+	"hard_raft": {
+		"color":		[1.0, 1.0, 1.0, 1.0],
+		"pos":			[  0,   0],
+		"distance":		16.5,
+		"rays":			512,
+		"soft":			true,
+		"softLength":	9,
 		"block":        true
 	},
 	"goal": {
 		"color":		[1.0, 1.0, 1.0, 1.0],
 		"pos":			[  0,   0],
-		"distance":		10,
+		"distance":		12,
 		"rays":			512,
 		"soft":			true,
-		"softLength":	6,
+		"softLength":	9,
 		"block":        true
 	},
 	"treasure": {
-		"color":		[1.0, 1.0, 1.0, 1.0],
+		"color":		[1.0, 1.0, 0.6, 1.0],
 		"pos":			[  0,   0],
-		"distance":		6,
+		"distance":		7.5,
 		"rays":			512,
 		"soft":			false,
-		"softLength":	6,
+		"softLength":	7.5,
 		"block":        false
 	}
  }

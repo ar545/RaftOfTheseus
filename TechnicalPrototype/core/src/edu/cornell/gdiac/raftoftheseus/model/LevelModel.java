@@ -874,7 +874,7 @@ public class LevelModel {
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(){
         initLighting(lightSettings.get("init")); // Box2d lights initialization
-        raftLight = createPointLights(lightSettings.get("raft")); // One light over the player
+        raftLight = createPointLights(lightSettings.get(difficulty == 2 ? "hard_raft" : "raft")); // One light over the player
         goalLight = createPointLights(lightSettings.get("goal")); // Another light over the goal
         attachLights(raftLight, raft);
         attachLights(goalLight, goal);
