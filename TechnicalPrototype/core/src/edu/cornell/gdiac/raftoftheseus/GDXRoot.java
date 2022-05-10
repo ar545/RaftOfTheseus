@@ -133,8 +133,20 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * @param height The new height in pixels
 	 */
 	public void resize(int width, int height) {
-		canvas.resize();
 		super.resize(width,height);
+		canvas.resize();
+		if (loading != null) {
+			loading.resize(width, height);
+		}
+		if (menu != null) {
+			menu.resize(width, height);
+		}
+		if (playing != null) {
+			playing.resize(width, height);
+		}
+		if (settings != null) {
+			settings.resize(width, height);
+		}
 	}
 
 	/**

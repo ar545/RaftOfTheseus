@@ -8,6 +8,7 @@
       "background": "images/background.png",
       "blue_texture": "images/blue_pixel.png",
       "menu_background": "images/menu_background.png",
+      "transition_screen": "transition_screen.png",
       "sea_background": "images/sea_background.png",
       "pause_background": "images/pause_background.png",
       "slider_bar": "images/sliderbar.png",
