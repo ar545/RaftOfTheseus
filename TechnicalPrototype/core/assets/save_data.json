@@ -137,8 +137,8 @@
 	{
 		"name": "Level 19",
 		"level": 19,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 2,
 		"unlocked": false
 	},
 	{
