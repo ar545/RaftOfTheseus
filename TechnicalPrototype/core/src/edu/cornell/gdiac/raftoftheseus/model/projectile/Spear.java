@@ -111,7 +111,7 @@ public class Spear extends Projectile implements Animated {
 
     /**
      * Detach the spear from the raft
-     * @param dir which way the spear will head
+     * @param dir which way the spear will head, already normalized
      * @param raft_speed the rafts current speed
      */
     public void fire(Vector2 dir, Vector2 raft_speed){
@@ -174,10 +174,10 @@ public class Spear extends Projectile implements Animated {
      */
     public void setFloatPosition(Vector2 pos, float floatTime, float flip, Vector2 dir){
         float yOffset = (float) Math.sin(floatTime * OSCILLATION_SPEED) * OSCILLATION_RANGE;
-        new_pos.set(pos).add(0.0f, SPEAR_YO + yOffset);
-        Vector2 d = dir.sub(pos);
+        new_pos.set(pos).add(SPEAR_XO, SPEAR_YO + yOffset);
+        Vector2 d = dir.sub(getPosition());
         float angle = d.angleDeg();
-        new_pos.add(d.nor().scl(3.0f));
+//        new_pos.add(d.nor().scl(3.0f));
         setPosition(new_pos);
         setAngle(angle);
 //        if(!locked) {
