@@ -3,7 +3,6 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import box2dLight.RayHandler;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -85,13 +84,14 @@ public class LevelModel {
         /** the offset for sand textures */
         private static final int SAND_OFFSET = 42;
         /** Index of the representation of plant in tile set texture */
-        private static final int PLANT = 56;
-        public static final int CAPYBARA = 59;
+        private static final int HIGH_PLANT_START = 56;
+        public static final int HIGH_PLANT_END = 59;
+        public static final int PLANT_START = 60;
         /** Index of the representation of plant in tile set texture */
-        private static final int PLANT_END = 62;
+        private static final int PLANT_END = 63;
         /** Index of the representation of plant in tile set texture */
-        private static final int HYDRA = 63;
-        public static final int PLANT_COUNT = CAPYBARA - PLANT;
+        private static final int HYDRA = 64;
+        public static final int FIXED_PLANT_COUNT = 2;
         /** Total variation of terrains */
         private static final int TERRAIN_TYPES = SEA - LAND_OFFSET - 1;
         private static final int FULL_LAND = 7;
@@ -211,7 +211,7 @@ public class LevelModel {
     /** Texture for all rock, as they look the same */
     private TextureRegion sharpRockTexture;
     /** Texture for all the plant which has the same hit-box as the rock */
-    private TextureRegion[] plantTexture = new TextureRegion[Tiled.PLANT_COUNT];
+    private TextureRegion[] plantTexture = new TextureRegion[Tiled.FIXED_PLANT_COUNT];
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Stun overlay for enemies */
@@ -631,7 +631,6 @@ public class LevelModel {
         if (tile_int == Tiled.WOOD_HIGH){ addWood(row, col, Wood.HIGH_WOOD); return; }
         // This function should never reach here.
         System.out.println("Un-parse-able information detected in collectable layer:" + tile_int);
-        addWood(row, col, 1);
     }
 
     /** This is the level editor JSON parser that populate the environment layer
@@ -662,7 +661,7 @@ public class LevelModel {
             case Tiled.ROCK_ALONE: return Stationary.StationaryType.REGULAR_ROCK;
             case Tiled.ROCK_SHARP: return Stationary.StationaryType.SHARP_ROCK;
             default:
-                if(tile_int > Tiled.SEA && tile_int < Tiled.CAPYBARA) { return Stationary.StationaryType.CLIFF_TERRAIN; }
+                if(tile_int > Tiled.SEA && tile_int <= Tiled.HIGH_PLANT_END) { return Stationary.StationaryType.CLIFF_TERRAIN; }
                 else{ return Stationary.StationaryType.TERRAIN; }
         }
     }
@@ -677,11 +676,11 @@ public class LevelModel {
     private static int computeRockInt(int tile_int){
         if (tile_int == Tiled.ROCK_ALONE || tile_int == Tiled.ROCK_SHARP){ return Stationary.REGULAR; }
         if (tile_int > Tiled.LAND_OFFSET && tile_int < Tiled.SEA){ return tile_int - Tiled.LAND_OFFSET; }
-        if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.PLANT){ return tile_int - Tiled.SAND_OFFSET; }
-        if (tile_int == Tiled.PLANT || tile_int == Tiled.PLANT + 4){ return Stationary.plantA; }
-        if (tile_int == Tiled.PLANT + 1 || tile_int == Tiled.PLANT + 5){ return Stationary.plantB; }
-        if (tile_int == Tiled.PLANT + 2 || tile_int == Tiled.PLANT + 6){ return Stationary.plantC; }
-        if (tile_int == Tiled.PLANT + 3){ return Stationary.plantD; }
+        if (tile_int > Tiled.SAND_OFFSET && tile_int < Tiled.HIGH_PLANT_START){ return tile_int - Tiled.SAND_OFFSET; }
+        if (tile_int == Tiled.HIGH_PLANT_START || tile_int == Tiled.PLANT_START){ return Stationary.plantA; }
+        if (tile_int == Tiled.HIGH_PLANT_START + 1 || tile_int == Tiled.PLANT_START + 1){ return Stationary.plantB; }
+        if (tile_int == Tiled.HIGH_PLANT_END - 1 || tile_int == Tiled.PLANT_END - 1){ return Stationary.plantC; }
+        if (tile_int == Tiled.HIGH_PLANT_END || tile_int == Tiled.PLANT_END){ return Stationary.plantD; }
         return Stationary.NON_ROCK;
     }
 
@@ -909,7 +908,7 @@ public class LevelModel {
         plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
-        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 4, 6);
+        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 2, 4);
         daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 12);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
@@ -1436,10 +1435,12 @@ public class LevelModel {
 
     /** Draw a circle showing how far the player can move before they die (only if light setting is odd).
      * @param playerPosOnScreen the camera-transformed player position */
-    public void drawHealthCircle(Vector2 playerPosOnScreen){ if(light_effect % 2 == 1) {
+    public void drawHealthCircle(Vector2 playerPosOnScreen){
+        if(light_effect % 2 == 0) {
         float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
         canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
-    } }
+        }
+    }
 
     /** Extend land and terrain into the top invisible border */
     private void populateExtendLand(int row, int col, Stationary.StationaryType type, int rock_int) {

@@ -1,12 +1,39 @@
+/* ================================================================================================================== //
+Author: Demian Yutin
+
+Last Revised: 5/6/2022
+
+Purpose: This shader displays a continuous moving water texture, including moving currents, breaking waves around
+terrain (surf), a big wave moving slowly across the level, and a wake pattern following the raft when it moves. The
+shader creates the illusion of the water being viewed at an angle, to complement the game's 3/4-perspective artstyle.
+
+Sources: The vast majority of this code and its documentation was written by Demian from scratch, and a small amount was
+adapted with modification from online sources.
+I used https://docs.godotengine.org/en/3.1/tutorials/shading/intro_to_shaders_water_workshop.html for texture-based UV
+deformation and the idea of having a large sinusoidal wave sweep across the level, although the code was mostly
+rewritten to fit my unique architecture for this shader. The UV displacement texture from this tutorial was used. This
+usage is permitted by the MIT license at https://github.com/GDQuest/godot-demos/blob/master/LICENSE.
+I used https://mebiusbox.github.io/contents/EffectTextureMaker/ as a tool to generate the worley noise and normal
+textures used. This usage is permitted under the CC0 license, as listed on this website's about page.
+I used https://gamedev.stackexchange.com/a/150389 as a guide for displaying moving currents, although this code also
+had to be mostly rewritten (as well as translated from a different shader language). This usage is permitted by the
+CC BY-SA 3.0 license (true for all StackOverflow content).
+The implementation of surf was inspired by Sebastian Lague's video series on procedural planet generation, specifically
+the timestamp at 15:40 in https://www.youtube.com/watch?v=vTMEdHcKgM4&t=940s. No code was used from this source.
+
+The remainder of the design, code, and documentation is entirely original, written by Demian without consulting online
+code sources. However, Wikipedia was used as a reference for the math and physics involved:
+https://en.wikipedia.org/wiki/Wake_(physics) for the wake left by the player;
+https://en.wikipedia.org/wiki/Fresnel_equations and https://en.wikipedia.org/wiki/Schlick%27s_approximation for the way
+that the nomal vector (describing the 3D shape of the water's surface) determines how much light is reflected (how
+bright the water appears at a point);
+https://en.wikipedia.org/wiki/Newton%27s_method for going from 2D texture space to a virtual 3D world space.
+// ================================================================================================================== */
+
 #version 120
 
-// ========================================================..======================================================== //
 uniform sampler2D u_texture;
 varying vec2 v_texCoords;
-
-/*
-A generic moving wave with speed s and wavelength w is sin(2*PI*(s*t-x)/w).
-*/
 
 // =================================================== CONSTANTS  =================================================== //
 
@@ -26,9 +53,9 @@ const float thresh_mid = 0.03;
 const float thresh_low = 0.0225;
 
 // big rolling wave parameters
-const float big_wave_amplitude = 0.3;
-const float big_wave_speed = 1.0; // in tile widths per second
-const float big_wave_length = 12.0; // as a multiple of 1 tile width
+const float big_wave_amplitude = 0.25;
+const float big_wave_speed = 0.5; // in tile widths per second
+const float big_wave_length = 20.0; // as a multiple of 1 tile width
 const float big_wave_angle = -0.5*PI/2.0; // angle of direction in which the wave moves: 0 is east, pi/2 is north, etc.
 // (derived constants)
 const vec2 big_wave_direction = vec2(cos(big_wave_angle), sin(big_wave_angle));
@@ -274,7 +301,6 @@ vec3 get_surf(vec2 world_xy) {
     // optionally calculate gradient (we don't do this, but this is where we would)
     vec2 gradient = vec2(0.0);
     return vec3(height, gradient) * surf_amplitude;
-//    return vec3(dist);
 }
 
 // ================================================== PART 4. WAKE ================================================== //
@@ -311,7 +337,7 @@ vec3 wake_contributed_from_sample(int sample_id, vec2 world_xy) {
 
     // scale this sample's contribution
     float age_prop = sample_age / (wake_sample_period * wake_samples_number);
-    float age_decay = clamp(5.0*(1.0 - age_prop), 0.0, 1.0); // older samples contribute less
+    float age_decay = clamp(min(10.0*age_prop, 5.0*(1.0 - age_prop)), 0.0, 1.0); // older samples (and very new ones) contribute less
     float slowness_factor = clamp(sample_speed, 0.0, 1.0); // slow-moving raft produces less wake
 
     return vec3(height, gradient) * age_decay * slowness_factor * slowness_factor;
@@ -362,6 +388,5 @@ void main() {
     float reflection = 0.02 + 0.98*pow(1.0-cos_ang, 5.0); // 0.02 = ((1-n)/(1+n))^2, where n=1.33 = index of refraction of water
 
     vec3 color = color_from_value(value_from_h_and_r(sum_height, reflection));
-//    color = mix(color, surf, 0.99);
     gl_FragColor = vec4(color, 1.0);
 }

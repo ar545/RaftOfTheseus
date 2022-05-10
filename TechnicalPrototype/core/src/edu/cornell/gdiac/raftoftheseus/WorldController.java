@@ -261,10 +261,10 @@ public class WorldController implements Screen, ContactListener {
 //            SfxController.getInstance().fadeMusic();
             drawTransition();
         }
-        if (!pausePressed && !complete && !failed)
-            hideCursor();
-        else
+        if (map || pausePressed || complete || failed)
             unhideCursor();
+        else
+            hideCursor();
     }
 
     private float hintTimer = 0f;
@@ -363,7 +363,7 @@ public class WorldController implements Screen, ContactListener {
                         canvas.getWidth()*0.5f + 35, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
                 );
                 break;
-            case(4):
+            case(3):
                 canvas.draw(hintAttack, c, hintAttack.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hintAttack.getRegionWidth(), hintAttack.getRegionHeight());
                 break;
             default:
