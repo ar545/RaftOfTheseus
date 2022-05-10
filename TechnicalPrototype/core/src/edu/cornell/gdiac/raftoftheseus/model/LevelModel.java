@@ -107,10 +107,6 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Width and height of a single grid square in Box-2d units. A grid is 3 meter wide. */
     private static final float GRID_SIZE = 3.0f;
-    /** Pixels per grid square */
-    private static final float GRID_PIXELS = 125.0f;
-    /** Pixels per Box2D unit */
-    private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** Default boundary width and height of a single grid in Box-2d units. Borders are 1 meter wide. */
     private static final float DEFAULT_BOUNDARY = 1.0f;
     /** Default num of rows in the map (y, height) */
@@ -297,6 +293,15 @@ public class LevelModel {
     /** Constructor call for this singleton class */
     public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
 
+    /* Todo: vary the grid_pixel per screen size */
+    /** Pixels per grid square */
+    private static final float GRID_PIXELS = 140.0f;
+    /** Pixels per Box2D unit */
+    private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
+    /** prepare the pixel size for the game screen */
+    private float calculatePixels(int canvasHeight){
+        return Math.max(Math.min(120f + ((float) canvasHeight - 960f) / 16f, 160f), 108f);
+    }
 
     /**
      * Returns true if the object is in bounds.
@@ -469,7 +474,7 @@ public class LevelModel {
         currentField = new  CurrentField(bounds.width, bounds.height, 3);
         // Populate game objects
         populateLevel();
-        prepareLights();
+        prepareLights(level_int);
 
         // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
@@ -700,7 +705,7 @@ public class LevelModel {
             case Tiled.SOUTH_WEST: return Current.Direction.SOUTH_WEST;
             case Tiled.EAST_SOUTH: return Current.Direction.EAST_SOUTH;
             case Tiled.WEST_NORTH: return Current.Direction.WEST_NORTH;
-            default: return Current.Direction.NONE;
+            default: System.out.print("un-parse-able information: " + i); return Current.Direction.NONE;
         }
     }
 
@@ -872,8 +877,8 @@ public class LevelModel {
     }
 
     /** Prepare the box2d light settings once raft is ready */
-    private void prepareLights(){
-        initLighting(lightSettings.get("init")); // Box2d lights initialization
+    private void prepareLights(int level){
+        initLighting(lightSettings.get("init"), level); // Box2d lights initialization
         raftLight = createPointLights(lightSettings.get(difficulty == 2 ? "hard_raft" : "raft")); // One light over the player
         goalLight = createPointLights(lightSettings.get("goal")); // Another light over the goal
         attachLights(raftLight, raft);
@@ -992,13 +997,13 @@ public class LevelModel {
      *
      * @param  lightJson	the JSON tree defining the light
      */
-    private void initLighting(JsonValue lightJson) {
+    private void initLighting(JsonValue lightJson, int level) {
         RayHandler.setGammaCorrection(lightJson.getBoolean("gamma"));
         RayHandler.useDiffuseLight(lightJson.getBoolean("diffuse"));
         rayhandler = new RayHandler(world, (int) bounds.width, (int) bounds.height);
-
-        float[] color = lightJson.get("color").asFloatArray();
-        rayhandler.setAmbientLight(color[0], color[1], color[2], color[3]);
+        float[] colorArray = lightJson.get("array").asFloatArray();
+        float color = colorArray[Math.max(0, Math.min(level, colorArray.length - 1))];
+        rayhandler.setAmbientLight(color, color, color, color);
         int blur = lightJson.getInt("blur");
         rayhandler.setBlur(blur > 0);
         rayhandler.setBlurNum(blur);
@@ -1239,7 +1244,7 @@ public class LevelModel {
         drawReticle();
         canvas.end();
 
-//        drawHealthCircle(playerPosOnScreen);
+        drawHealthCircle(playerPosOnScreen);
         if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
     }
 
@@ -1442,7 +1447,7 @@ public class LevelModel {
     /** Draw a circle showing how far the player can move before they die (only if light setting is odd).
      * @param playerPosOnScreen the camera-transformed player position */
     public void drawHealthCircle(Vector2 playerPosOnScreen){
-        if(light_effect % 2 == 0) {
+        if(light_effect % 2 == 1) {
             float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
             canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
         }

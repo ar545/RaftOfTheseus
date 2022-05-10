@@ -108,7 +108,7 @@ public class Current extends GameObject {
             case EAST_SOUTH:
                 return -45.0f;
             default:
-                throw new RuntimeException("Direction mismatch");
+                throw new RuntimeException("Direction mismatch at box2d location:" + getPosition().x + ", " + getPosition().y);
         }
     }
 
