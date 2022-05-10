@@ -54,7 +54,7 @@
 		"name": "Level 7",
 		"level": 7,
 		"complete": true,
-		"score": 1,
+		"score": 0,
 		"unlocked": true
 	},
 	{
@@ -82,7 +82,7 @@
 		"name": "Level 11",
 		"level": 11,
 		"complete": true,
-		"score": 0,
+		"score": 2,
 		"unlocked": true
 	},
 	{
@@ -110,27 +110,27 @@
 		"name": "Level 15",
 		"level": 15,
 		"complete": true,
-		"score": 1,
+		"score": 2,
 		"unlocked": true
 	},
 	{
 		"name": "Level 16",
 		"level": 16,
 		"complete": true,
-		"score": 0,
+		"score": 1,
 		"unlocked": true
 	},
 	{
 		"name": "Level 17",
 		"level": 17,
 		"complete": true,
-		"score": 1,
+		"score": 0,
 		"unlocked": true
 	},
 	{
 		"name": "Level 18",
 		"level": 18,
-		"complete": false,
+		"complete": true,
 		"score": 0,
 		"unlocked": true
 	},
@@ -139,7 +139,7 @@
 		"level": 19,
 		"complete": false,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 20",

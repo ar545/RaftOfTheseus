@@ -1046,7 +1046,7 @@ public class LevelModel {
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
                 p.add(1, 1); // offset one tile
-                Vector2 d = c.getDirectionVector().scl(0.05f); // length dependent on magnitude (assumes maximum magnitude 20)
+                Vector2 d = c.getDirectionVector().scl(0.5f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
@@ -1244,7 +1244,7 @@ public class LevelModel {
         drawReticle();
         canvas.end();
 
-        drawHealthCircle(playerPosOnScreen);
+//        drawHealthCircle(playerPosOnScreen);
         if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
     }
 
@@ -1448,8 +1448,8 @@ public class LevelModel {
      * @param playerPosOnScreen the camera-transformed player position */
     public void drawHealthCircle(Vector2 playerPosOnScreen){
         if(light_effect % 2 == 0) {
-        float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
-        canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
+            float r = getPlayer().getPotentialDistance() * PIXELS_PER_UNIT;
+            canvas.drawHealthCircle((int)playerPosOnScreen.x, (int)playerPosOnScreen.y, r);
         }
     }
 

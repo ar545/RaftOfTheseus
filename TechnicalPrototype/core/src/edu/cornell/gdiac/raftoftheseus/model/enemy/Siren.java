@@ -54,6 +54,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     /** 2 Vector caches to store where the siren is and where it will need to go. */
     private Vector2 start = new Vector2();
     private Vector2 finish = new Vector2();
+    private Vector2 storage = new Vector2();
     /** The index in waypoints of the next waypoint to fly to. */
     private int waypoint;
     private Array<Vector2> waypoints;
@@ -195,8 +196,9 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         start.set(getPosition());
         finish.set(waypoints.get(waypoint));
         // Defensive code for 2 of the same position
-        if (finish.cpy().sub(start).len() < PROXIMITY) return;
-        moveVector.set(finish.cpy().sub(start));
+        storage.set(finish.sub(start));
+        if (storage.len() < PROXIMITY) return;
+        moveVector.set(storage);
     }
     /** Set the move vector to zero so the Siren comes to a rest. */
     public void stopMove(){ this.moveVector.setZero(); }
@@ -224,7 +226,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     // Changing location
     /** @return when the Siren has reached its destination. */
     public boolean nearLanding(){
-        float dist = getPosition().cpy().sub(waypoints.get(waypoint)).len();
+        float dist = storage.set(getPosition()).sub(waypoints.get(waypoint)).len();
         return dist < PROXIMITY;
     }
 
@@ -249,7 +251,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     public Vector2 getTargetDirection(Vector2 playerCurrentVelocity) {
         start.set(getPosition());
         finish.set(player.getPosition().add(player.getLinearVelocity()).add(playerCurrentVelocity));
-        return finish.cpy().sub(start).nor();
+        return finish.sub(start).nor();
     }
 
     // Stunned
