@@ -107,10 +107,6 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* LEVEL CONSTANTS *=*=*=*=*=*=*=*=*=*/
     /** Width and height of a single grid square in Box-2d units. A grid is 3 meter wide. */
     private static final float GRID_SIZE = 3.0f;
-    /** Pixels per grid square */
-    private static final float GRID_PIXELS = 125.0f;
-    /** Pixels per Box2D unit */
-    private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
     /** Default boundary width and height of a single grid in Box-2d units. Borders are 1 meter wide. */
     private static final float DEFAULT_BOUNDARY = 1.0f;
     /** Default num of rows in the map (y, height) */
@@ -295,7 +291,19 @@ public class LevelModel {
     /** Get treasure count for the level */
     public int getTreasureCount() { return treasureCount; }
     /** Constructor call for this singleton class */
-    public LevelModel(GameCanvas canvas){ this.canvas = canvas; }
+    public LevelModel(GameCanvas canvas){ this.canvas = canvas;
+        GRID_PIXELS = calculatePixels(canvas.getHeight());
+    }
+
+    /** Pixels per grid square */
+    private float GRID_PIXELS;
+    /** Pixels per Box2D unit */
+    private float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
+
+    /** prepare the pixel size for the game screen */
+    private float calculatePixels(int canvasHeight){
+        return Math.max(Math.min(120f + ((float) canvasHeight - 960) / 16.0f, 160f), 108);
+    }
 
 
     /**
