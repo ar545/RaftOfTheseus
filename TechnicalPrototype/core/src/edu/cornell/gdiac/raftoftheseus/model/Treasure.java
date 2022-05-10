@@ -115,7 +115,7 @@ public class Treasure extends GameObject {
         ((FilmStrip) sb.texture).setFrame(sb.fc.getFrame());
         super.draw(canvas);
         if (collected) {
-            canvas.draw(sb.texture, Color.WHITE, sb.origin.x, sb.origin.y, raft.getX() + sb.textureOffset.x, raft.getY() + sb.textureOffset.y + STARBURST_OFFSET, getAngle(), sb.textureScale.x, sb.textureScale.y);
+            if(sb != null && raft != null) canvas.draw(sb.texture, Color.WHITE, sb.origin.x, sb.origin.y, raft.getX() + sb.textureOffset.x, raft.getY() + sb.textureOffset.y + STARBURST_OFFSET, getAngle(), sb.textureScale.x, sb.textureScale.y);
         }
     }
 
