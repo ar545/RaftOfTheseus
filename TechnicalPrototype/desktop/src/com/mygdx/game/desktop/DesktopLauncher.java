@@ -14,6 +14,7 @@ public class DesktopLauncher {
 //		config.fullscreen = true;
 		config.width = LwjglApplicationConfiguration.getDesktopDisplayMode().width;
 		config.height = LwjglApplicationConfiguration.getDesktopDisplayMode().height;
+		config.foregroundFPS = 60; // cap fps
 		config.resizable = false;
 		config.title = "Raft of Theseus";
 		config.addIcon("images/icon.png", Files.FileType.Internal);

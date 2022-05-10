@@ -142,4 +142,11 @@ public class Current extends GameObject {
                 return new Vector2(0, 0);
         }
     }
+
+    /**
+     * Scales the given current magnitude to the 0...1 range, for use in the shader.
+     */
+    public static float getMaxMagnitude() {
+        return STRONG_MAGNITUDE;
+    }
 }

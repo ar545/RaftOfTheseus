@@ -40,7 +40,7 @@
 		"name": "Level 5",
 		"level": 5,
 		"complete": true,
-		"score": 1,
+		"score": 3,
 		"unlocked": true
 	},
 	{
@@ -54,14 +54,14 @@
 		"name": "Level 7",
 		"level": 7,
 		"complete": true,
-		"score": 1,
+		"score": 0,
 		"unlocked": true
 	},
 	{
 		"name": "Level 8",
 		"level": 8,
 		"complete": true,
-		"score": 1,
+		"score": 3,
 		"unlocked": true
 	},
 	{
