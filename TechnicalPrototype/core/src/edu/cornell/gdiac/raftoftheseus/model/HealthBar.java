@@ -7,7 +7,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-public class CutTexture
+public class HealthBar
 {
     /** the number of floats per vertex in the libgdx spritebatch */
     private static final int FLOAT_PER_VERTEX = 5;
@@ -26,11 +26,18 @@ public class CutTexture
     /** health history */
     private float[] retracing_health = new float[retracing_health_size];
 
+    /** the contrast color to show when the player is suffering from damage */
+    private Color altColor = Color.SKY;
+
     private boolean retracing_tick = false;
     /** pointer to the retracing array, where to read from and write to, and move the pointer forward */
     int retracing_index = 0;
     /** Constructor call with known texture */
-    public CutTexture(Texture texture){ position.setZero(); this.texture = texture; }
+    public HealthBar(Texture texture){ position.setZero(); this.texture = texture; }
+
+    public void adjustMode(boolean accessibilityMode){
+        if(accessibilityMode){ altColor = Color.ROYAL; } else { altColor = Color.SKY; }
+    }
 
     /** This function calculate the correct health bar color
      * @param median for red color the median should be 1/3 and 2/3 for green color
@@ -49,10 +56,10 @@ public class CutTexture
         Vector2 la = (new Vector2(d)).scl( 1.0f).add(c);
         Vector2 lb = (new Vector2(d)).scl(-1.0f).add(c);
 
-        Vector2 tl = new Vector2(0, 1);
-        Vector2 tr = new Vector2(1, 1);
-        Vector2 bl = new Vector2(0, 0);
-        Vector2 br = new Vector2(1, 0);
+        Vector2 tl = new Vector2(0, 1); // top left
+        Vector2 tr = new Vector2(1, 1); // top right
+        Vector2 bl = new Vector2(0, 0); // bottom left
+        Vector2 br = new Vector2(1, 0); // bottom right
 
         Vector2 i1 = new Vector2();
         Vector2 i2 = new Vector2();
@@ -120,7 +127,7 @@ public class CutTexture
         float retrace_health = retraceHealth(health);
         if(retrace_health > health){
             Color bkgColor = Color.BLUE;
-            if(retracing_index % 7 < 3){ bkgColor = Color.WHITE; }
+            if(retracing_index % 7 < 3){ bkgColor = altColor; }
            // cut according to retrace_health
            update(retrace_health, bkgColor);
            // render to retrace health

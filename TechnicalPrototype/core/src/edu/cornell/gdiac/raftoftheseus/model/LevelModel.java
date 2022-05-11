@@ -116,8 +116,6 @@ public class LevelModel {
     private int light_effect = 0;
     /** the lerp-camera that allow camera retracing */
     Vector2 lerpCamera = new Vector2(0, 0);
-    /** Whether to use shaders or not */
-    private static boolean USE_SHADER = true;
     /** Json information for light settings */
     private JsonValue lightSettings;
     /** Transform from Box2D coordinates to screen coordinates */
@@ -412,7 +410,7 @@ public class LevelModel {
 
         // the following could be changed so that it only recalculates a flowmap the first time it loads a level, if
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
-        if (USE_SHADER) {
+        if (canvas.USE_SHADER) {
             canvas.setDataMaps(recalculateFlowMap(), recalculateSurfMap());
         }
     }
@@ -1130,9 +1128,6 @@ public class LevelModel {
     }
 
     public void draw(float time, boolean isTutorial) {
-        if (!canvas.shaderCanBeUsed)
-            USE_SHADER = false; // disable shader if reading shader files failed (e.g. on Mac)
-
         canvas.begin(cameraTransform);
         drawWater(time);
         drawObjects(time);
@@ -1190,7 +1185,7 @@ public class LevelModel {
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(float time) {
         Rectangle eg = extraGrid(); // TODO: invisible border: don't mess up the scaling on everything in the shader
-        if (USE_SHADER) {
+        if (canvas.USE_SHADER) {
             canvas.useWaterShader(time);
             canvas.draw(waterTexture, Color.WHITE, eg.x,  eg.y, eg.width, eg.height);
             canvas.stopUsingShader();
@@ -1233,23 +1228,16 @@ public class LevelModel {
      *
      */
     public void drawObjects(float time){
-        standardDrawList.sort(new renderOrderComparator());
-//        getObjects().sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
+        standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
         // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
-        if (USE_SHADER) {
-            // draw floaty objects with shader
+        if (canvas.USE_SHADER) {
             canvas.useItemShader(time);
-            for(GameObject obj : woodTreasureDrawList) {
-//            for(GameObject obj : getObjects()) {
-//                if (obj.getType() == GameObject.ObjectType.WOOD || obj.getType() == GameObject.ObjectType.TREASURE) // don't draw currents with the shader on
+            for(GameObject obj : woodTreasureDrawList) { // id shader is on, draw floaty objects with shader
                     obj.draw(canvas);
             }
             canvas.stopUsingShader();
             // draw non-floaty objects
-            for(GameObject obj : standardDrawList) {
-//            for(GameObject obj : getObjects()) {
-//                if (obj.getType() != GameObject.ObjectType.CURRENT && obj.getType() != GameObject.ObjectType.WOOD
-//                        && obj.getType() != GameObject.ObjectType.TREASURE) // don't draw currents with the shader on
+            for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
                     obj.draw(canvas);
             }
         } else {

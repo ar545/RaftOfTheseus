@@ -24,7 +24,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.*;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.GdxRuntimeException;
-import edu.cornell.gdiac.raftoftheseus.model.CutTexture;
+import edu.cornell.gdiac.raftoftheseus.model.HealthBar;
 
 /**
  * Primary view class for the game, abstracting the basic graphics calls.
@@ -1283,12 +1283,20 @@ public class GameCanvas {
 		local.translate(-ox,-oy);
 	}
 
-	/*=*=* Radial Health Bar BEGIN *=*=*/
-	CutTexture radialHealth;
+	/*=*=* Radial Health Bar and Accessbility mode BEGIN *=*=*/
+	/** Whether to use shaders or not */
+	public boolean USE_SHADER = true;
+	/** reference to the texture of the health bar */
+	HealthBar radialHealth;
+
+	public void setAccessibility(boolean accessibilityModeActive) {
+		radialHealth.adjustMode(accessibilityModeActive);
+		USE_SHADER = shaderCanBeUsed && !accessibilityModeActive; // disable shader if reading shader files failed (e.g. on Mac)
+	}
 
 	/** Set the texture for the radial health bar */
 	public void setRadialHealth(Texture texture){
-		radialHealth = new CutTexture(texture);
+		radialHealth = new HealthBar(texture);
 	}
 
 	/** Draw the radial health bar, given health and player position */

@@ -109,7 +109,7 @@ public class SettingsMode implements Screen, InputProcessor {
         resize(canvas.getWidth(), canvas.getHeight());
         active = true;
         exitPressed = false;
-        accessibilityModeActive = true;
+        accessibilityModeActive = false;
         editMapKeyEnable = false;
         editResetKeyEnable = false;
         editPauseKeyEnable = false;
@@ -314,8 +314,8 @@ public class SettingsMode implements Screen, InputProcessor {
         // TODO
         accessibilityModeActive = !accessibilityModeActive;
         accessibilityButton.setText(accessibilityModeActive ? "ON" : "OFF");
+        canvas.setAccessibility(accessibilityModeActive); // Update game canvas to accessible
     }
-
 
 
     /** Draw the status of this player mode. */
