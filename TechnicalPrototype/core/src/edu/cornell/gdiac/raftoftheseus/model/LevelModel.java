@@ -1228,8 +1228,7 @@ public class LevelModel {
      *
      */
     public void drawObjects(float time){
-        standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
-        // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
+
         if (canvas.USE_SHADER) {
             canvas.useItemShader(time);
             for(GameObject obj : woodTreasureDrawList) { // id shader is on, draw floaty objects with shader
@@ -1237,10 +1236,13 @@ public class LevelModel {
             }
             canvas.stopUsingShader();
             // draw non-floaty objects
+            standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
+            // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
             for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
                     obj.draw(canvas);
             }
         } else {
+            getObjects().sort(new renderOrderComparator());
             for(GameObject obj : getObjects())
                 obj.draw(canvas);
         }
