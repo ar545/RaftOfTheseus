@@ -9,9 +9,9 @@ import edu.cornell.gdiac.util.FilmStrip;
 public class Plant extends Stationary {
 
     private static class Daisy{
-        final static float animationSpeed = 0.06f;
+        final static float animationSpeed = 1f;
         final static int start = 0;
-        final static int frames = 48;
+        final static int frames = 16;
         final static boolean reverse = false;
         static void setFrame(FrameCalculator fc){ fc.setFrame(animationSpeed, start, frames, reverse); }
     }
@@ -28,16 +28,20 @@ public class Plant extends Stationary {
 
     public Plant(Vector2 position, StationaryType rt, int terrain) { super(position, rt, terrain); }
 
+    private boolean isAnimated(){
+        return terrainType == Stationary.plantD || terrainType == Stationary.plantC || terrainType == Stationary.plantA;
+    }
+
     public void setAnimationFrame(float dt) {
-        if(terrainType == Stationary.plantD || terrainType == Stationary.plantC) {
+        if(isAnimated()) {
             fc.addTime(dt);
         }
-        if(terrainType == Stationary.plantD) { Daisy.setFrame(fc); }
+        if(terrainType == Stationary.plantD || terrainType == Stationary.plantA) { Daisy.setFrame(fc); }
         if(terrainType == Stationary.plantC) { PlantC.setFrame(fc); }
     }
 
     public void draw(GameCanvas canvas){
-        if(terrainType == Stationary.plantD || terrainType == Stationary.plantC) { ((FilmStrip) texture).setFrame(fc.getFrame()); }
+        if(isAnimated()) { ((FilmStrip) texture).setFrame(fc.getFrame()); }
         super.draw(canvas);
     }
 }

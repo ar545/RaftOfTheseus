@@ -131,6 +131,7 @@ public class LevelModel {
     private FilmStrip treasureTexture;
     private FilmStrip starburstTexture;
     private FilmStrip daisy;
+    private FilmStrip yellowDaisy;
     private FilmStrip plantC;
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodSTexture;
@@ -234,12 +235,12 @@ public class LevelModel {
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
-        plantTexture[0] = new TextureRegion(directory.getEntry("plantA", Texture.class));
-        plantTexture[1] = new TextureRegion(directory.getEntry("plantB", Texture.class));
+        plantTexture[0] = new TextureRegion(directory.getEntry("plantB", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
         plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 2, 4);
-        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 12);
+        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 4);
+        yellowDaisy = new FilmStrip(directory.getEntry("plantA", Texture.class), 4, 4);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
         sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
@@ -652,7 +653,8 @@ public class LevelModel {
                 Plant plant = new Plant(compute_temp, type, rock_int);
                 if(rock_int == Stationary.plantD) { plant.setTexture(daisy); }
                 else if(rock_int == Stationary.plantC) { plant.setTexture(plantC); }
-                else{ plant.setTexture(plantTexture[-rock_int - 1]); }
+                else if(rock_int == Stationary.plantA) { plant.setTexture(yellowDaisy); }
+                else{ plant.setTexture(plantTexture[0]); }
                 addObject(plant);
                 plants.add(plant);
                 standardDrawList.add(plant);
