@@ -164,6 +164,8 @@ public class LevelModel {
     private TextureRegion noteTexture;
     /** Texture for map background */
     protected Texture mapBackground;
+    /** Texture for map background */
+    protected Texture seaBackground;
     /** an array of texture region representing the terrain */
     protected TextureRegion[][] terrain;
     /** Texture for water */
@@ -248,6 +250,7 @@ public class LevelModel {
         noteTexture = new TextureRegion(directory.getEntry("note", Texture.class));
         mapBackground = directory.getEntry("map_background", Texture.class);
 //        blueTexture = directory.getEntry("blue_texture", Texture.class);
+        seaBackground = directory.getEntry("background", Texture.class);
         waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
         colorBar  = directory.getEntry( "white_bar", Texture.class );
@@ -1184,13 +1187,13 @@ public class LevelModel {
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(float time) {
-        Rectangle eg = extraGrid(); // TODO: invisible border: don't mess up the scaling on everything in the shader
+        Rectangle eg = extraGrid(); // invisible border on top: use extra gird to don't mess up the scaling in the shader
         if (canvas.USE_SHADER) {
             canvas.useWaterShader(time);
             canvas.draw(waterTexture, Color.WHITE, eg.x,  eg.y, eg.width, eg.height);
             canvas.stopUsingShader();
         } else
-            canvas.draw(waterTexture, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
+            canvas.draw(seaBackground, Color.BLUE, eg.x,  eg.y, eg.width, eg.height);
     }
 
     private static class renderOrderComparator implements Comparator<GameObject>{
@@ -1228,7 +1231,6 @@ public class LevelModel {
      *
      */
     public void drawObjects(float time){
-
         if (canvas.USE_SHADER) {
             canvas.useItemShader(time);
             for(GameObject obj : woodTreasureDrawList) { // id shader is on, draw floaty objects with shader
