@@ -834,6 +834,7 @@ public class WorldController implements Screen, ContactListener {
             if (obj.isDestroyed()) {
                 obj.deactivatePhysics(levelModel.world);
                 entry.remove();
+                levelModel.removeObj(obj); // always non-null
             } else {
                 // Note that update is called last!
                 obj.update(dt);
