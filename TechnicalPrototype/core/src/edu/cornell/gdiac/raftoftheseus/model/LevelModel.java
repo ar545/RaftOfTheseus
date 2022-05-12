@@ -1189,6 +1189,11 @@ public class LevelModel {
      * draws background water (for the sea) and moving currents (using shader)
      * Precondition & post-condition: the game canvas is open */
     public void drawWater(float time) {
+        // check whether recalculation of the map is required
+        if(canvas.recalculation_required){
+            canvas.setDataMaps(recalculateFlowMap(), recalculateSurfMap());
+            canvas.recalculation_required = false;
+        }
         Rectangle eg = extraGrid(); // invisible border on top: use extra gird to don't mess up the scaling in the shader
         if (canvas.USE_SHADER) {
             canvas.useWaterShader(time);

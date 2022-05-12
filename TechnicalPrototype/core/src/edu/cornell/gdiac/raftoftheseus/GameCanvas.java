@@ -1286,12 +1286,15 @@ public class GameCanvas {
 	/*=*=* Radial Health Bar and Accessbility mode BEGIN *=*=*/
 	/** Whether to use shaders or not */
 	public boolean USE_SHADER = true;
+	/** Whether recalculation of surf and flow map is needed */
+	public boolean recalculation_required = false;
 	/** reference to the texture of the health bar */
 	HealthBar radialHealth;
 
 	public void setAccessibility(boolean accessibilityModeActive) {
 		radialHealth.adjustMode(accessibilityModeActive);
 		USE_SHADER = shaderCanBeUsed && !accessibilityModeActive; // disable shader if reading shader files failed (e.g. on Mac)
+		recalculation_required = USE_SHADER;
 	}
 
 	/** Set the texture for the radial health bar */
