@@ -420,7 +420,7 @@ public class LevelModel {
     }
 
     private void setDifficulty(int level_int) {
-        difficulty = level_int < 6 ? 0 : (level_int < 10 ? 1 : 2);
+        difficulty = level_int < 6 ? 0 : (level_int < 13 ? 1 : 2);
     }
 
     public int getDifficulty() {

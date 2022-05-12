@@ -45,7 +45,7 @@
                         {
                          "name":"isStart",
                          "type":"bool",
-                         "value":true
+                         "value":false
                         }],
                  "rotation":0,
                  "type":"",

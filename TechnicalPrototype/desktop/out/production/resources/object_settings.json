@@ -45,10 +45,10 @@
     "size" : 10
   },
   "shark" : {
-    "damage" : -25,
+    "damage" : -20,
     "hearing range" : 15,
     "approach speed" : 7.5,
-    "approach range" : 20.0,
+    "approach range" : 15.0,
     "warm up" : 1.5,
     "cool down" : 0.5,
     "attack speed" : 30.0,
