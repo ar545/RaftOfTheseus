@@ -258,9 +258,9 @@ public class SettingsMode implements Screen, InputProcessor {
         String mapKeyString = controlSettings.get("mouse keyboard").get("map").asString();
         String resetKeyString = controlSettings.get("mouse keyboard").get("reset").asString();
         String pauseKeyString = controlSettings.get("mouse keyboard").get("pause").asString();
-        mapKeyString = mapKeyString.equals("Escape") ? "Esc" : mapKeyString;
-        resetKeyString = resetKeyString.equals("Escape") ? "Esc" : resetKeyString;
-        pauseKeyString = pauseKeyString.equals("Escape") ? "Esc" : pauseKeyString;
+//        mapKeyString = mapKeyString.equals("Escape") ? "Esc" : mapKeyString;
+//        resetKeyString = resetKeyString.equals("Escape") ? "Esc" : resetKeyString;
+//        pauseKeyString = pauseKeyString.equals("Escape") ? "Esc" : pauseKeyString;
 
         part4.add(UICreator.createLabel("MAP", skin, keysFontSize)).padRight(keysPadding);
         mapKeyButton = UICreator.createTextButton(mapKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
@@ -381,7 +381,7 @@ public class SettingsMode implements Screen, InputProcessor {
         String currentMapKey = mapKeyButton.getText().toString();
         String currentResetKey = resetKeyButton.getText().toString();
         String currentPauseKey = pauseKeyButton.getText().toString();
-        key = key.equals("Escape") ? "Esc" : key;
+//        key = key.equals("Escape") ? "Esc" : key;
         if (editMapKeyEnable && !key.equals(currentResetKey) && !key.equals(currentPauseKey)) {
             controlSettings.get("mouse keyboard").get("map").set(key); // update the local copy
             mapKeyButton.getLabel().setText(key);
