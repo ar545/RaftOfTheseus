@@ -423,7 +423,9 @@ public class WorldController implements Screen, ContactListener {
         saveData.get("level_data").get(level_id).get("complete").set(true);
         // if the treasure available in the level is 0, the player gets 3 stars for completing
         int score = levelModel.getTreasureCount() > 0 ? playerScore : 3;
-        saveData.get("level_data").get(level_id).get("score").set(score, Integer.toString(score));
+        if(saveData.get("level_data").get(level_id).getInt("score") < score){
+            saveData.get("level_data").get(level_id).get("score").set(score, Integer.toString(score));
+        }
         if (level_id + 1 < NUM_LEVELS) {
             saveData.get("level_data").get(level_id + 1).get("unlocked").set(true);
         }
