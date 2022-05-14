@@ -354,6 +354,7 @@ public class WorldController implements Screen, ContactListener {
                         canvas.getHeight()*0.5f - 70 + wasdIcon.getRegionHeight()
                 );
                 String resetText = controlSettings.get("mouse keyboard").get("reset").asString();
+                resetText = resetText.equals("Escape") ? "Esc" : resetText;
                 float resetBoxScale = (resetText.equals("Tab") || resetText.equals("Esc")) ? 1.25f : 0.7f;
                 canvas.draw(
                         hintKey, c,
@@ -369,6 +370,7 @@ public class WorldController implements Screen, ContactListener {
                 );
                 // BOTTOM SECTION RIGHT
                 String pauseText = controlSettings.get("mouse keyboard").get("pause").asString();
+                pauseText = pauseText.equals("Escape") ? "Esc" : pauseText;
                 float pauseTextScale = (pauseText.equals("Tab") || pauseText.equals("Esc")) ? 1.25f : 0.7f;
                 canvas.drawText(
                         "PAUSE", font,
@@ -391,6 +393,7 @@ public class WorldController implements Screen, ContactListener {
             case(2):
                 font.getData().setScale(0.5f);
                 String mapText = controlSettings.get("mouse keyboard").get("map").asString();
+                mapText = mapText.equals("Escape") ? "Esc" : mapText;
                 float mapTextScale = (mapText.equals("Tab") || mapText.equals("Esc")) ? 1.25f : 0.7f;
                 canvas.drawText(
                         "MAP", font,
