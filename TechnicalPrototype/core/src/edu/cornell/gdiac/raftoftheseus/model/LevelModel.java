@@ -1130,7 +1130,7 @@ public class LevelModel {
         for(Plant s: getPlants()){ s.setAnimationFrame(dt); }
     }
 
-    public void draw(float time, boolean isTutorial) {
+    public void draw(float time, boolean isTutorial, boolean isLastLevel) {
         canvas.begin(cameraTransform);
         drawWater(time);
         drawObjects(time);
@@ -1146,7 +1146,13 @@ public class LevelModel {
         canvas.end();
 
         drawHealthCircle(playerPosOnScreen);
-        if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
+        if(!isTutorial){ renderLights(); } // Draw the light effects
+        if(isLastLevel){ fadeOutShadows(time); }
+    }
+
+    private void fadeOutShadows(float time) {
+        float strength = Math.max(0, Math.min(1, time / 100f));
+        rayhandler.setAmbientLight(strength, strength, strength, 1);
     }
 
     public void drawMap(){
