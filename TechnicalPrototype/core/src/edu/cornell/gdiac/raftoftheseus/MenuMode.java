@@ -351,6 +351,7 @@ public class MenuMode implements Screen {
         int i = 0;
         switch(currentScreen) {
             case TITLE:
+                menuTable.background(new TextureRegionDrawable(menuBackground));
                 for(TextButton tb : titleButtons){
                     if(i == 0){
                         menuTable.add(tb).padTop(canvas.getHeight() / 2).expandX().align(Align.left).padLeft(100);
@@ -362,6 +363,7 @@ public class MenuMode implements Screen {
                 }
                 break;
             case LEVEL_SELECT:
+                menuTable.background(new TextureRegionDrawable(seaBackground));
                 for(Table t : levelTables){
                     menuTable.add(t);
                     menuTable.row();
@@ -378,6 +380,7 @@ public class MenuMode implements Screen {
                 menuTable.row();
                 break;
             case CREDITS:
+                menuTable.background(new TextureRegionDrawable(seaBackground));
                 for(Table t : creditTables){
                     if(i != 1) menuTable.add(t);
                     else menuTable.add(t).padTop(-50);
