@@ -1298,12 +1298,13 @@ public class GameCanvas {
 	}
 
 	/** Set the texture for the radial health bar */
-	public void setRadialHealth(Texture texture){
-		radialHealth = new HealthBar(texture);
+	public void setRadialHealth(Texture texture, Texture texture_top){
+		radialHealth = new HealthBar(texture, texture_top);
 	}
 
 	/** Draw the radial health bar, given health and player position */
-	public void drawRadialHealth(Vector2 position, float health){ radialHealth.updateAndDraw(position, health, spriteBatch); }
+	public void drawRadialHealth(Vector2 position, float health, float firing)
+	{ radialHealth.updateAndDraw(position, health, firing, spriteBatch); }
 
 	/*=*=* Radial Health Bar END *=*=*/
 	/** get the camera matrix and use it for box-2d light transformation calculations */

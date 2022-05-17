@@ -65,7 +65,7 @@
   },
   "spear": {
     "speed scale" : 30.0,
-    "health cost" : -2.0,
+    "health cost" : -1.0,
     "texture scale" : 3.5,
     "texture x offset" : -20,
     "texture y offset" : 0,
@@ -125,7 +125,7 @@
     "sensor size" : 1.45,
     "texture scale" : 1.5,
     "idle animation speed" : 0.05,
-    "shooting animation speed" : 0.015,
+    "shooting animation speed" : 0.010,
     "rotation animation speed" : 0.1,
     "idle frames" : 19,
     "shooting frames" : 19,
@@ -135,9 +135,9 @@
     "rotation starting frame" : 0,
     "horizontal offset" : 0,
     "enemy bullet duration" : 0.5,
-    "aura as" : 0.05,
-    "aura sf" : 0,
-    "aura fc" : 8
+    "aura animation speed" : 0.05,
+    "aura frame count" : 8,
+    "aura start frame" : 0
   },
   "shader" : {
     "colors_natural" : [

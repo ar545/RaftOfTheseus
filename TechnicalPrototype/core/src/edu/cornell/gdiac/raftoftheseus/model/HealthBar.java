@@ -3,6 +3,7 @@ package edu.cornell.gdiac.raftoftheseus.model;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
@@ -19,6 +20,8 @@ public class HealthBar
     public Vector2 position = new Vector2();
     /** reference to the texture */
     public Texture texture;
+    /** reference to the texture top */
+    public Texture textureTop;
     /** The vertices representing the cut texture */
     public float[] vertices = new float[VERTEX_PER_RECTANGLE * FLOAT_PER_VERTEX];
     /** How far in time do we retrace the health */
@@ -33,10 +36,10 @@ public class HealthBar
     /** pointer to the retracing array, where to read from and write to, and move the pointer forward */
     int retracing_index = 0;
     /** Constructor call with known texture */
-    public HealthBar(Texture texture){ position.setZero(); this.texture = texture; }
+    public HealthBar(Texture texture, Texture texture_top){ position.setZero(); this.texture = texture; this.textureTop = texture_top; }
 
     public void adjustMode(boolean accessibilityMode){
-        if(accessibilityMode){ altColor = Color.ROYAL; } else { altColor = Color.SKY; }
+        if(accessibilityMode){ altColor = Color.BLUE; } else { altColor = Color.SKY; }
     }
 
     /** This function calculate the correct health bar color
@@ -119,14 +122,14 @@ public class HealthBar
     }
 
     /** Sequence of health bar drawing */
-    public void updateAndDraw(Vector2 position, float health, PolygonSpriteBatch spriteBatch) {
+    public void updateAndDraw(Vector2 position, float health, float firing, PolygonSpriteBatch spriteBatch) {
         // set position
         this.position.set(position);
         // make color (red - green transition color)
         Color color = new Color(makeColor((float)1/3, health), makeColor((float)2/3, health), 0.2f, 1);
         float retrace_health = retraceHealth(health);
         if(retrace_health > health){
-            Color bkgColor = Color.BLUE;
+            Color bkgColor = Color.ROYAL;
             if(retracing_index % 7 < 3){ bkgColor = altColor; }
            // cut according to retrace_health
            update(retrace_health, bkgColor);
@@ -137,6 +140,19 @@ public class HealthBar
         update(health, color);
         // render real-time health
         render(spriteBatch);
+        drawTop(spriteBatch, firing, position);
+    }
+
+    private void drawTop(PolygonSpriteBatch spriteBatch, float firing, Vector2 position) {
+        TextureRegion tr = makeTopBar(firing);
+        spriteBatch.setColor(Color.RED);
+        spriteBatch.draw(tr, position.x - ((float) textureTop.getWidth() / 2), position.y);
+        spriteBatch.setColor(Color.WHITE);
+    }
+
+    private TextureRegion makeTopBar(float firing) {
+        float widthRatio = 0.42f + 0.16f * firing; // take width between 0.42 and 0.58
+        return new TextureRegion(textureTop, (int) (textureTop.getWidth() * widthRatio), textureTop.getHeight() / 2); // only upper half is drawn
     }
 
     /** find the health "retracing_health_size" screens ago */

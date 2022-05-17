@@ -175,8 +175,6 @@ public class LevelModel {
     private TextureRegion earthTile;
     /** Texture for fuel */
     private TextureRegion fuelTexture;
-    /** The texture for the colored health bar */
-    protected Texture colorBar;
     /** The texture for the health bar background */
     protected TextureRegion greyBar;
     /** The texture for the aiming reticle */
@@ -254,10 +252,9 @@ public class LevelModel {
         seaBackground = directory.getEntry("background", Texture.class);
         waterTexture = directory.getEntry("water_diffuse", Texture.class);
         greyBar = new TextureRegion(directory.getEntry( "grey_bar", Texture.class ));
-        colorBar  = directory.getEntry( "white_bar", Texture.class );
         reticleTexture = new TextureRegion(directory.getEntry("reticle", Texture.class));
         lightSettings = directory.getEntry("lights", JsonValue.class);
-        canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class));
+        canvas.setRadialHealth(directory.getEntry("radial_bar",Texture.class), directory.getEntry( "top_bar", Texture.class ));
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
         shipwreckTexture = new FilmStrip(directory.getEntry("shipwreck", Texture.class), 3, 1);
         gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
@@ -416,6 +413,7 @@ public class LevelModel {
         // this operation is found to be too slow. However, I've found that it's not that slow, so this is unnecessary.
         if (canvas.USE_SHADER) {
             canvas.setDataMaps(recalculateFlowMap(), recalculateSurfMap());
+            getObjects().sort(new renderOrderComparator()); // sort objects order on map. exclusive to shader bcz otherwise this list is sorted in draw()
         }
     }
 
@@ -1142,7 +1140,7 @@ public class LevelModel {
         canvas.begin();
         Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
         cameraTransform.applyTo(playerPosOnScreen);
-        drawHealthBar(getPlayer().getHealthRatio(), playerPosOnScreen);
+        drawHealthBar(playerPosOnScreen);
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
         drawReticle();
         canvas.end();
@@ -1258,11 +1256,12 @@ public class LevelModel {
     }
 
     /** Precondition & post-condition: the game canvas is open
-     * @param health the health percentage for the player */
-    private void drawHealthBar(float health, Vector2 player_position) {
+     * @param player_position the on-screen position of player */
+    private void drawHealthBar(Vector2 player_position) {
         canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f),
                 (player_position.y + BAR_PLAYER_OFFSET), greyBar.getRegionWidth(), greyBar.getRegionHeight());
-        canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 6 + BAR_PLAYER_OFFSET), health);
+        canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 6 + BAR_PLAYER_OFFSET),
+                getPlayer().getHealthRatio(), getPlayer().getFiringStage());
     }
 
     /** draw the fuel sign if the health is below a certain level */

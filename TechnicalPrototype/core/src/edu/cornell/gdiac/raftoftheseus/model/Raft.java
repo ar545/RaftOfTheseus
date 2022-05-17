@@ -41,17 +41,17 @@ public class Raft extends GameObject implements Animated {
         OBJ_HEIGHT = objParams.getFloat("height");
         SENSOR_RADIUS = objParams.getFloat("sensor size");
         TEXTURE_SCALE = objParams.getFloat("texture scale");
-        IDLE_AS = objParams.getFloat("idle animation speed");
-        SHOOTING_AS = objParams.getFloat("shooting animation speed");
-        IDLE_SF = objParams.getInt("idle starting frame");
-        SHOOTING_SF = objParams.getInt("shooting starting frame");
-        IDLE_FC = objParams.getInt("idle frames");
-        SHOOTING_FC = objParams.getInt("shooting frames");
         HORIZONTAL_OFFSET = objParams.getFloat("horizontal offset");
         FORCE_DURATION = objParams.getFloat("enemy bullet duration");
-        AURA_AS = objParams.getFloat("aura as");
-        AURA_SF = objParams.getInt("aura sf");
-        AURA_FC = objParams.getInt("aura fc");
+        IDLE_AS = objParams.getFloat("idle animation speed");
+        IDLE_SF = objParams.getInt("idle starting frame");
+        IDLE_FC = objParams.getInt("idle frames");
+        SHOOTING_AS = objParams.getFloat("shooting animation speed");
+        SHOOTING_SF = objParams.getInt("shooting starting frame");
+        SHOOTING_FC = objParams.getInt("shooting frames");
+        AURA_AS = objParams.getFloat("aura animation speed");
+        AURA_SF = objParams.getInt("aura start frame");
+        AURA_FC = objParams.getInt("aura frame count");
     }
 
     // CONSTANTS
@@ -73,10 +73,10 @@ public class Raft extends GameObject implements Animated {
     public static float MAXIMUM_PLAYER_HEALTH;
     /** Initial player health */
     public static float INITIAL_PLAYER_HEALTH;
-    /** Whether the raft is actively firing */
-    private boolean isCharging;
+//    /** Whether the raft is actively firing */
+//    private boolean isCharging;
     private boolean canFire;
-    /** Whether or not the raft is currently being damaged (feedback purposes) */
+    /** Whether the raft is currently being damaged (feedback purposes) */
     private boolean isDamaged;
     /** The amount to slow the character down, while they aren't moving */
     private static float DAMPING;
@@ -114,19 +114,21 @@ public class Raft extends GameObject implements Animated {
     /** Frame calculator for animation. */
     private FrameCalculator fc = new FrameCalculator(IDLE_SF);
     // AURA
-    private FrameCalculator aurafc = new FrameCalculator();
+    private FrameCalculator aurafc = new FrameCalculator(AURA_SF);
+    /** animation speed of the attack animation */
     private static float AURA_AS;
+    /** start frame of the attack animation */
     private static int AURA_SF;
+    /** frame count of the attack animation */
     private static int AURA_FC;
     private TextureHolder attackAura;
 
     /** restore the player health to half life */
     public void halfLife() { addHealth(MAXIMUM_PLAYER_HEALTH / 2); }
 
-    private enum RaftState{
-        IDLE,
-        CHARGING,
-    }
+    /** raft state: idle represent not actively trying to create a spear, charging means in the process of creating spears */
+    private enum RaftState{ IDLE,  CHARGING }
+    /** default state should be idle */
     private RaftState raftState = RaftState.IDLE;
 
     // METHODS
@@ -146,10 +148,8 @@ public class Raft extends GameObject implements Animated {
         interactionSensor.setBodyType(BodyDef.BodyType.DynamicBody);
         interactionSensor.getFilterData().categoryBits = CATEGORY_PLAYER_SENSOR;
         interactionSensor.getFilterData().maskBits = MASK_PLAYER_SENSOR;
-        isCharging = false;
         canFire = false;
-        /** Whether or not the player was very recently damaged. */
-        isDamaged = false;
+        isDamaged = false; /* Whether the player was very recently damaged. */
     }
 
     /**
@@ -197,7 +197,7 @@ public class Raft extends GameObject implements Animated {
         boolean isRowing = !movementInput.isZero();
         return isDrifting || isRowing;
     }
-    /** Getter and setters for whether or not the player was recently damaged. */
+    /** Getter and setters for whether the player was recently damaged. */
     public boolean isDamaged() { return isDamaged; }
     public void setDamaged(boolean damaged) { this.isDamaged = damaged; }
     /** Sets the player movement input. */
@@ -252,7 +252,6 @@ public class Raft extends GameObject implements Animated {
         }
     }
 
-
     /** Getter and setters for health */
     public float getHealth() { return health; }
     /** Getter and setters for health */
@@ -276,23 +275,24 @@ public class Raft extends GameObject implements Animated {
     public float getPotentialDistance() {
         return health / MOVE_COST;
     }
-    /** Set whether the player has reached the end of the animation cycle. */
-    public void resetCanFire() { canFire = false; isCharging = false;  }
     /** Reverse the firing animation and effect due to pre-mature release of mouse. */
-    public void reverseFire() { canFire = false; isCharging = false; addHealth(-Spear.DAMAGE); raftState = RaftState.IDLE; }
+    public void reverseFire() { addHealth(-Spear.DAMAGE); switchToIdle(); resetCanFire(); }
+    /** called when fire is reversed or finished. reset two fcs and set state to idle */
+    public void switchToIdle() { raftState = RaftState.IDLE; fc.resetAll(); }
+    /** Set whether the player has reached the end of the animation cycle. */
+    public void resetCanFire() { canFire = false; aurafc.resetAll(); }
     /** @return whether the player has reached the end of the firing animation cycle. */
     public boolean canFire() { return canFire; }
     /** @param charging whether to set the player to actively charging. Subtracts health to create the spear. */
     public void beginCharging(boolean charging) {
-        if(!isCharging && !canFire && charging) {
-            isCharging = true;
+        if(!isCharging() && !canFire && charging) {
             addHealth(Spear.DAMAGE);
             raftState = RaftState.CHARGING;
             fc.resetAll();
         }
     }
     /** @return whether player is actively charging. */
-    public boolean isCharging() { return isCharging; }
+    public boolean isCharging() { return raftState == RaftState.CHARGING; }
 
     // Which direction to player is facing.
     float flip;
@@ -307,19 +307,22 @@ public class Raft extends GameObject implements Animated {
         switch (raftState){
             case IDLE:
                 fc.setFrame(IDLE_AS, IDLE_SF, IDLE_FC, false);
+                if(canFire()) {aurafc.setFrame(AURA_AS, AURA_SF, AURA_FC, false);}
                 break;
             case CHARGING:
                 fc.setFrame(SHOOTING_AS, SHOOTING_SF, SHOOTING_FC, false);
                 canFire = fc.isFrame(SHOOTING_SF, SHOOTING_FC, false);
                 aurafc.setFrame(AURA_AS, AURA_SF, AURA_FC, false);
-                if(canFire) {
-                    isCharging = false;
-                    raftState = RaftState.IDLE;
-                    fc.resetAll();
-                    aurafc.resetAll();
-                }
+                if(canFire()) { switchToIdle(); } // charging process is finished
         }
         flip = setTextureXOrientation(false);
+    }
+
+    /** @return float representing the readiness of the weapon before firing. Guaranteed to be between 0 and 1. */
+    public float getFiringStage(){
+        if(canFire() || hasSpear()){ return 1; }
+        else if(raftState == RaftState.IDLE) { return 0; }
+        else{ return Math.max(0, Math.min(1, (float) fc.getFrame() / SHOOTING_FC)); }
     }
 
     /**
@@ -354,7 +357,7 @@ public class Raft extends GameObject implements Animated {
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
-        if(raftState == RaftState.CHARGING){
+        if(raftState == RaftState.CHARGING || canFire()){
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
             super.draw(canvas, attackAura);
         }
