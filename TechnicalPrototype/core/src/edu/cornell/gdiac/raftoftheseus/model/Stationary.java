@@ -105,13 +105,28 @@ public class Stationary extends GameObject {
             physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         } else if (stationaryType == StationaryType.CLIFF_TERRAIN){
             terrainType = terrain;
-            physicsObject = new BoxObstacle(TERRAIN_SIZE, TERRAIN_SIZE);
-            physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN_CLIFF;
-            physicsObject.getFilterData().maskBits = MASK_TERRAIN_CLIFF;
+            if(hasLowerHitBox(terrain)){
+                initBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
+            }else{
+                initCliffBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
+            }
+
             setPosition(position);
             physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
         }
         else{ throw new RuntimeException("Stationary.java: passed param is not TERRAIN, incorrect constructor use."); }
+    }
+
+    /** init the physics body for cliff-like terrain (that blocks spear) */
+    private void initCliffBoxBody(float width, float height) {
+        physicsObject = new BoxObstacle(width, height);
+        physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN_CLIFF;
+        physicsObject.getFilterData().maskBits = MASK_TERRAIN_CLIFF;
+    }
+
+    /** see if a terrain cliff has lower hit box */
+    private boolean hasLowerHitBox(int terrain){
+        return terrain == 8 || terrain == 9 || terrain == 13;
     }
 
     /** Constructor for walls only
