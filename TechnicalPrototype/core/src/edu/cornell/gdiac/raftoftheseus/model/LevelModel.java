@@ -49,7 +49,7 @@ public class LevelModel {
     /** How many difficulty themes are there in the game? */
     private static final int DIFFICULTY_COUNT = 3;
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
-    private static final float LERP_FACTOR = 0.05f;
+    private static final float LERP_FACTOR = 0.04f;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL Objects (clear after each level dispose) *=*=*=*=*=*=*=*=*=*/
     /** The Box2D world */
