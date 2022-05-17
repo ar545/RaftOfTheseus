@@ -186,7 +186,7 @@ public class MenuMode implements Screen {
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/TimesRoman.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
         parameter.color = Color.BLACK;
-        parameter.size = 60;
+        parameter.size = (int) (60*Gdx.graphics.getDensity());
         BitmapFont font = generator.generateFont(parameter);
 
 //        System.out.println(fontSize);
