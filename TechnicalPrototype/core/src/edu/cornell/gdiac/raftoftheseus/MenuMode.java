@@ -179,7 +179,7 @@ public class MenuMode implements Screen {
         backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
 
         // instantiate the "back" button, which is used in multiple menus
-        float fontSize = 0.5f * Gdx.graphics.getDensity();
+        float fontSize = Gdx.graphics.getPpiX() * 0.5f / Gdx.graphics.getPpiY();
         Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
         for(String n : holder){
             titleButtons.add(UICreator.createTextButton(n, skin, fontSize));
