@@ -456,10 +456,10 @@ public class LevelModel {
     /** Add Wall Objects to the world, using the Json value for goal.
      * The wall is shifted to the south-west by DEFAULT_BOUNDARY to overlap with the world origin */
     private void generateRectangle(float x1, float y1, float x2, float y2) {
-        x1 += -DEFAULT_BOUNDARY;
-        x2 += -DEFAULT_BOUNDARY;
-        y1 += -DEFAULT_BOUNDARY;
-        y2 += -DEFAULT_BOUNDARY;
+        x1 -= DEFAULT_BOUNDARY;
+        x2 -= DEFAULT_BOUNDARY;
+        y1 -= DEFAULT_BOUNDARY;
+        y2 -= DEFAULT_BOUNDARY;
         float[] polygonVertices = new float[] {x1, y1, x2, y1, x2, y2, x1, y2};
         Stationary this_wall = new Stationary(polygonVertices); /* The wall of the level */
         this_wall.setTexture(earthTile);
@@ -1327,9 +1327,9 @@ public class LevelModel {
 
     /** change the level light effect, for testing purposes only */
     public void change(boolean debug) {
-        light_effect ++;
-        if( light_effect == 2 ){ activateTreasureLight(true); } // activate treasure-chest light
-        else if( light_effect == 4 ){ light_effect = 0; activateTreasureLight(false); } // deactivate
+        if( debug ){ light_effect ++; }
+        if( light_effect == 2 ){ activateTreasureLight(false); } // activate treasure-chest light
+        else if( light_effect == 4 ){ light_effect = 0; activateTreasureLight(true); } // deactivate
     }
 
     private void activateTreasureLight(boolean b) { for(int i = 0; i < treasureCount; i ++){
