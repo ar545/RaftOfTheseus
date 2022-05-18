@@ -832,7 +832,7 @@ public class LevelModel {
 
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(int level){
-        initLighting(lightSettings.get("init"), level); // Box2d lights initialization
+        initLighting(lightSettings.get("init"), level); // Box-2d lights initialization
         raftLight = createPointLights(lightSettings.get(difficulty == 2 ? "hard_raft" : "raft")); // One light over the player
         goalLight = createPointLights(lightSettings.get("goal")); // Another light over the goal
         attachLights(raftLight, raft);
@@ -841,6 +841,7 @@ public class LevelModel {
             treasureLight[i] = createPointLights(lightSettings.get("treasure"));
             attachLights(treasureLight[i], treasure[i]);
         }
+        lastLevelShadowTracker = 0.02f;
     }
 
     /** Update the light effect of the world */
@@ -939,6 +940,8 @@ public class LevelModel {
      The B and A values of the texture are unused.
      */
     private Texture recalculateFlowMap() {
+        float gamma = 1.5f; // used to better differentiate slow and fast currents. 1.0f = no adjustment; >1 = more differentiation; <1 = less; 0 = all currents look the same.
+        float g = (gamma-1.0f)*0.5f;
         Pixmap pix = new Pixmap(extraCols(), extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
@@ -948,7 +951,8 @@ public class LevelModel {
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
                 p.add(1, 1); // offset one tile
-                Vector2 d = c.getDirectionVector().scl(0.5f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                Vector2 d = c.getDirectionVector().scl(1.0f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                d.scl(0.5f*(float)Math.pow(d.len2(), g));
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
@@ -1130,7 +1134,7 @@ public class LevelModel {
         for(Plant s: getPlants()){ s.setAnimationFrame(dt); }
     }
 
-    public void draw(float time, boolean isTutorial) {
+    public void draw(float time, boolean isTutorial, boolean isLastLevel) {
         canvas.begin(cameraTransform);
         drawWater(time);
         drawObjects(time);
@@ -1146,7 +1150,16 @@ public class LevelModel {
         canvas.end();
 
         drawHealthCircle(playerPosOnScreen);
-        if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
+        if(!isTutorial){ renderLights(); } // Draw the light effects
+        if(isLastLevel){ fadeOutShadows(); }
+    }
+
+    float lastLevelShadowTracker = 0f;
+
+    private void fadeOutShadows() {
+        lastLevelShadowTracker = lastLevelShadowTracker + (1 - lastLevelShadowTracker) * 0.0005f;
+        float strength = Math.max(0, Math.min(1, lastLevelShadowTracker));
+        rayhandler.setAmbientLight(strength, strength, strength, 1);
     }
 
     public void drawMap(){
