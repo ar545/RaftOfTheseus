@@ -247,7 +247,7 @@ public class WorldController implements Screen, ContactListener {
         updateRaftWakeSamples();
 
         // Draw the level
-        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4, level_id == NUM_LEVELS - 1);
+        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4, isLastLevel());
 
         // draw stars
         drawStar(playerScore);
@@ -282,6 +282,8 @@ public class WorldController implements Screen, ContactListener {
         // draw the fading transition
         drawFadeTransition(dt);
     }
+
+    private boolean isLastLevel() { return level_id == NUM_LEVELS - 1; }
 
     private void resetControlHints(){
         hintTimer = 0;
@@ -539,7 +541,7 @@ public class WorldController implements Screen, ContactListener {
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
         float fontSize = 0.6f * Gdx.graphics.getDensity();
 
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, fontSize, textColor);
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : (isLastLevel() ? "CREDITS!" : "NEXT"), skin, fontSize, textColor);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
         table.add(mainButton).expandX().align(Align.center).padTop(50);
         table.row();
