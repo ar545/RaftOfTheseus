@@ -174,7 +174,14 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			loading = null;
 		}
 		else if (exitCode == PREV_LEVEL) setPlayScreen(Math.max(0, currentLevel-1));
-		else if(exitCode == NEXT_LEVEL) setPlayScreen(Math.min(NUM_LEVELS -1, currentLevel+1));
+		else if(exitCode == NEXT_LEVEL) {
+			if(currentLevel == NUM_LEVELS - 1) {
+				setSettingsScreen(TO_MENU);
+				setScreen(menu);
+				menu.changeScreenTo(MenuMode.MenuScreen.CREDITS);
+			} // special: where finishing the last level goes to credit screen
+			else { setPlayScreen(Math.min(NUM_LEVELS - 1, currentLevel + 1)); } // standard next-level
+		}
 		else if (exitCode == WORLD_TO_SETTINGS) setSettingsScreen(TO_WORLD);
 		else if (exitCode == MENU_TO_SETTINGS) setSettingsScreen(TO_MENU);
 		else if (screen == settings) {

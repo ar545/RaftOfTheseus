@@ -484,7 +484,7 @@ public class MenuMode implements Screen {
      * Method to set the different menu screens
      * @param targetScreen the screen we want
      */
-    private void changeScreenTo(MenuScreen targetScreen) {
+    protected void changeScreenTo(MenuScreen targetScreen) {
         stage.clear();
         currentScreen = targetScreen;
         buildMenu();
