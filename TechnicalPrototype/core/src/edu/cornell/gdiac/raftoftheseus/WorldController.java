@@ -322,7 +322,7 @@ public class WorldController implements Screen, ContactListener {
         } else {
             c = Color.WHITE;
         }
-        BitmapFont font = skin.getFont("default-font");
+        BitmapFont font = skin.getFont("diogenes-font-medium");
         font.getData().setScale(0.3f);
         font.setColor(c);
         canvas.begin();
@@ -486,17 +486,17 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, 0.35f);
+            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
             resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
             table.add(resumeButton).padTop(-20);
             table.row();
 
-            TextButton restartButton = UICreator.createTextButton("RESTART", skin, 0.35f);
+            TextButton restartButton = UICreator.createTextButton("RESTART", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
             restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             table.add(restartButton);
             table.row();
 
-            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.35f);
+            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
             table.add(settingsButton);
             settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
             table.row();
@@ -539,24 +539,24 @@ public class WorldController implements Screen, ContactListener {
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
         float fontSize = 0.6f * Gdx.graphics.getDensity();
 
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, fontSize, textColor);
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.MEDIUM);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
         table.add(mainButton).expandX().align(Align.center).padTop(50);
         table.row();
 
         if (!didFail) {
-            TextButton replayButton = UICreator.createTextButton("RESTART", skin, fontSize, textColor);
+            TextButton replayButton = UICreator.createTextButton("RESTART", skin, textColor, UICreator.FontSize.MEDIUM);
             replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, textColor, this::reset));
             table.add(replayButton).expandX().align(Align.center);
             table.row();
         }
 
-        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, fontSize, textColor);
+        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, textColor, UICreator.FontSize.MEDIUM);
         settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, textColor, this::setSettingsPressed));
         table.add(settingsButton).expandX();
         table.row();
 
-        TextButton exitButton = UICreator.createTextButton("EXIT", skin, fontSize, textColor);
+        TextButton exitButton = UICreator.createTextButton("EXIT", skin, textColor, UICreator.FontSize.MEDIUM);
         exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, textColor, this::setExitPressed));
         table.add(exitButton).expandX();
         table.row();
