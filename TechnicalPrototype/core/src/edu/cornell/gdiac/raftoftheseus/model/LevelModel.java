@@ -939,6 +939,8 @@ public class LevelModel {
      The B and A values of the texture are unused.
      */
     private Texture recalculateFlowMap() {
+        float gamma = 1.5f; // used to better differentiate slow and fast currents. 1.0f = no adjustment; >1 = more differentiation; <1 = less; 0 = all currents look the same.
+        float g = (gamma-1.0f)*0.5f;
         Pixmap pix = new Pixmap(extraCols(), extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
@@ -948,7 +950,8 @@ public class LevelModel {
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
                 p.add(1, 1); // offset one tile
-                Vector2 d = c.getDirectionVector().scl(0.5f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                Vector2 d = c.getDirectionVector().scl(1.0f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                d.scl(0.5f*(float)Math.pow(d.len2(), g));
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
