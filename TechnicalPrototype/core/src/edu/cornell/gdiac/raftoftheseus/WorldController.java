@@ -149,8 +149,8 @@ public class WorldController implements Screen, ContactListener {
     private final long startTime;
 
     private float hintTimer = 0f;
-    private float fadeTimeStart = 5f;
-    private float fadeTimeEnd = 6f;
+    private float fadeTimeStart = 6f;
+    private float fadeTimeEnd = 7.5f;
     private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
     private boolean blockHint = false;
 
@@ -303,12 +303,12 @@ public class WorldController implements Screen, ContactListener {
         canvas.begin();
         if (complete) {
             canvas.draw(transitionScreen,  new Color(0, 0, 0, 1 - (transitionTimeEnd - transitionTimer)/transitionTimeEnd),
-                    0, 0, canvas.getWidth(), canvas.getHeight());
+                    0, 0, canvas.getWidth(), canvas.getHeight() * 1.1f);
             stage.clear();
             table.clear();
         } else {
             canvas.draw(transitionScreen,  new Color(0, 0, 0,  (transitionTimeEnd - transitionTimer)/transitionTimeEnd),
-                    0, 0, canvas.getWidth(), canvas.getHeight());
+                    0, 0, canvas.getWidth(), canvas.getHeight() * 1.1f);
         }
         canvas.end();
     }
