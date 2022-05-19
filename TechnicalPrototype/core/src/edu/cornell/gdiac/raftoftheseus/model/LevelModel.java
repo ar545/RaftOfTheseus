@@ -832,7 +832,7 @@ public class LevelModel {
 
     /** Prepare the box2d light settings once raft is ready */
     private void prepareLights(int level){
-        initLighting(lightSettings.get("init"), level); // Box2d lights initialization
+        initLighting(lightSettings.get("init"), level); // Box-2d lights initialization
         raftLight = createPointLights(lightSettings.get(difficulty == 2 ? "hard_raft" : "raft")); // One light over the player
         goalLight = createPointLights(lightSettings.get("goal")); // Another light over the goal
         attachLights(raftLight, raft);
@@ -841,6 +841,7 @@ public class LevelModel {
             treasureLight[i] = createPointLights(lightSettings.get("treasure"));
             attachLights(treasureLight[i], treasure[i]);
         }
+        lastLevelShadowTracker = 0.02f;
     }
 
     /** Update the light effect of the world */
@@ -1130,7 +1131,7 @@ public class LevelModel {
         for(Plant s: getPlants()){ s.setAnimationFrame(dt); }
     }
 
-    public void draw(float time, boolean isTutorial) {
+    public void draw(float time, boolean isTutorial, boolean isLastLevel) {
         canvas.begin(cameraTransform);
         drawWater(time);
         drawObjects(time);
@@ -1146,7 +1147,16 @@ public class LevelModel {
         canvas.end();
 
         drawHealthCircle(playerPosOnScreen);
-        if(!isTutorial){ renderLights(); } // Draw the light effects if level is not tutorial
+        if(!isTutorial){ renderLights(); } // Draw the light effects
+        if(isLastLevel){ fadeOutShadows(); }
+    }
+
+    float lastLevelShadowTracker = 0f;
+
+    private void fadeOutShadows() {
+        lastLevelShadowTracker = lastLevelShadowTracker + (1 - lastLevelShadowTracker) * 0.0005f;
+        float strength = Math.max(0, Math.min(1, lastLevelShadowTracker));
+        rayhandler.setAmbientLight(strength, strength, strength, 1);
     }
 
     public void drawMap(){

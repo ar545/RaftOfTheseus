@@ -17,7 +17,7 @@ public class Plant extends Stationary {
     }
 
     private static class PlantC{
-        final static float animationSpeed = 0.5f;
+        final static float animationSpeed = 2f;
         final static int start = 0;
         final static int frames = 8;
         final static boolean reverse = false;

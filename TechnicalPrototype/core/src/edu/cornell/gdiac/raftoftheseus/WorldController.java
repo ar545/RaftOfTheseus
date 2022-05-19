@@ -247,10 +247,12 @@ public class WorldController implements Screen, ContactListener {
         updateRaftWakeSamples();
 
         // Draw the level
-        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4);
+        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4, isLastLevel());
 
         // draw stars
-        drawStar(playerScore);
+        if (level_id >= TUTORIAL_COUNT) {
+            drawStar(playerScore);
+        }
 
         // draw control hints
         drawControlHints(dt);
@@ -282,6 +284,8 @@ public class WorldController implements Screen, ContactListener {
         // draw the fading transition
         drawFadeTransition(dt);
     }
+
+    private boolean isLastLevel() { return level_id == NUM_LEVELS - 1; }
 
     private void resetControlHints(){
         hintTimer = 0;
@@ -486,25 +490,26 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, 0.35f);
-            resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
-            table.add(resumeButton).padTop(-20);
+            float fontSize = 0.6f * Gdx.graphics.getDensity();
+            Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
+
+            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, fontSize, textColor);
+            resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, textColor, this::resetPausePressed));
+            table.add(resumeButton).padTop(70);
             table.row();
 
-            TextButton restartButton = UICreator.createTextButton("RESTART", skin, 0.35f);
-            restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
+            TextButton restartButton = UICreator.createTextButton("RESTART", skin, fontSize, textColor);
+            restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, textColor, this::reset));
             table.add(restartButton);
             table.row();
 
-            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, 0.35f);
+            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, fontSize, textColor);
             table.add(settingsButton);
-            settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
+            settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, textColor, this::setSettingsPressed));
             table.row();
 
-            TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.35f);
-            exitButton.getLabel().setColor(Color.GOLD);
-            exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
+            TextButton exitButton = UICreator.createTextButton("EXIT", skin, fontSize, textColor);
+            exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, textColor, this::setExitPressed));
             table.add(exitButton);
         }
         stage.act();
@@ -539,9 +544,9 @@ public class WorldController implements Screen, ContactListener {
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
         float fontSize = 0.6f * Gdx.graphics.getDensity();
 
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, fontSize, textColor);
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : (isLastLevel() ? "CREDITS!" : "NEXT"), skin, fontSize, textColor);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
-        table.add(mainButton).expandX().align(Align.center).padTop(50);
+        table.add(mainButton).expandX().align(Align.center).padTop(level_id < TUTORIAL_COUNT || didFail ? 50 : 180);
         table.row();
 
         if (!didFail) {

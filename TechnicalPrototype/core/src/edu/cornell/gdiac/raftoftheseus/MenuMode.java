@@ -183,24 +183,9 @@ public class MenuMode implements Screen {
         backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
 
         // instantiate the "back" button, which is used in multiple menus
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/TimesRoman.ttf"));
-        FreeTypeFontParameter parameter = new FreeTypeFontParameter();
-        parameter.color = Color.BLACK;
-        parameter.size = 60;
-        BitmapFont font = generator.generateFont(parameter);
-
-//        System.out.println(fontSize);
-        skin.add("font", font);
         Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
         for(String n : holder){
-            TextButtonStyle style = new TextButtonStyle();
-            style.font = font;
-            TextButton button = new TextButton(n, style);
-//            button.getLabel().setFontScale(fontSize);
-//            button.getLabel().setColor(c);
-//            return button;
-            titleButtons.add(button);
-//            titleButtons.add(UICreator.createTextButton(n, skin, fontSize));
+            titleButtons.add(UICreator.createTextButton(n, skin, 0.4f));
         }
         //Add listeners to buttons
         titleButtons.get(0).addListener(UICreator.createListener(titleButtons.get(0), "raft_sail_open", this::setPlayState));
@@ -499,7 +484,7 @@ public class MenuMode implements Screen {
      * Method to set the different menu screens
      * @param targetScreen the screen we want
      */
-    private void changeScreenTo(MenuScreen targetScreen) {
+    protected void changeScreenTo(MenuScreen targetScreen) {
         stage.clear();
         currentScreen = targetScreen;
         buildMenu();
