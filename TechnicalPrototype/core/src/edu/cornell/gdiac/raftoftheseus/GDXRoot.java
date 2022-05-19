@@ -111,6 +111,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 		setScreen(null);
 		screen.dispose();
 		SfxController.getInstance().dispose();
+		MusicController.getInstance().dispose();
 		canvas.dispose();
 		canvas = null;
 
