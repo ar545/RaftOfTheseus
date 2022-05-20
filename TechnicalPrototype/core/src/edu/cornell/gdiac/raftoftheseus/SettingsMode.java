@@ -142,7 +142,7 @@ public class SettingsMode implements Screen, InputProcessor {
      * @param directory Reference to the asset directory
      */
     public void populate(AssetDirectory directory) {
-        background = directory.getEntry("sea_background", Texture.class);
+        background = directory.getEntry("transition_screen", Texture.class);
         goldKeyBackground = directory.getEntry("gold_key_background", Texture.class);
         blackKeyBackground = directory.getEntry("black_key_background", Texture.class);
         longTextKeyBackground = directory.getEntry("long_text_key_background", Texture.class);

@@ -50,7 +50,8 @@ public class HealthBar
     public float makeColor(float median, float health){ return Math.max(0, Math.min((1.5f - 3 * Math.abs(health - median)), 1)); }
 
     /** update the vertices according to the angle to cut the texture, and update the texture with selected color
-     * @param health the health to draw the cut texture */
+     * @param health the health to draw the cut texture
+     * @author <a href="https://stackoverflow.com/questions/65605106/libgdx-cut-texture-with-an-angle">...</a> */
     public void update(float health, Color color) {
         float angle = (1-health) * FULL_DEGREE; // float representing the cut angle, 180 as dead, 0 as full health
 
@@ -145,7 +146,7 @@ public class HealthBar
 
     private void drawTop(PolygonSpriteBatch spriteBatch, float firing, Vector2 position) {
         TextureRegion tr = makeTopBar(firing);
-        spriteBatch.setColor(Color.RED);
+        spriteBatch.setColor(firing == 1 ? Color.SALMON : Color.RED);
         spriteBatch.draw(tr, position.x - ((float) textureTop.getWidth() / 2), position.y);
         spriteBatch.setColor(Color.WHITE);
     }
