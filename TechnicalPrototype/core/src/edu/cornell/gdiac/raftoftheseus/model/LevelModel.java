@@ -49,6 +49,8 @@ public class LevelModel {
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.04f;
 
+    private int ticks;
+
     /*=*=*=*=*=*=*=*=*=* LEVEL Objects (clear after each level dispose) *=*=*=*=*=*=*=*=*=*/
     /** The Box2D world */
     public World world;
@@ -179,6 +181,8 @@ public class LevelModel {
     private TextureRegion reticleTexture;
     /** The shipwreck texture. */
     private FilmStrip shipwreckTexture;
+    public static final float BOB_TIME =  240.f;
+    public static final float BOB_AMP = 0.3f;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -946,6 +950,8 @@ public class LevelModel {
      The B and A values of the texture are unused.
      */
     private Texture recalculateFlowMap() {
+        float gamma = 1.5f; // used to better differentiate slow and fast currents. 1.0f = no adjustment; >1 = more differentiation; <1 = less; 0 = all currents look the same.
+        float g = (gamma-1.0f)*0.5f;
         Pixmap pix = new Pixmap(extraCols(), extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
@@ -955,7 +961,8 @@ public class LevelModel {
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
                 p.add(1, 1); // offset one tile
-                Vector2 d = c.getDirectionVector().scl(0.5f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                Vector2 d = c.getDirectionVector().scl(1.0f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                d.scl(0.5f*(float)Math.pow(d.len2(), g));
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
@@ -1145,7 +1152,9 @@ public class LevelModel {
 
         // reset camera transform for other player-centered texture (because health bar isn't in game units)
         canvas.begin();
-        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
+        ticks++;
+
+        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy().add(0, BOB_AMP * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI));
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(playerPosOnScreen);
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
@@ -1262,12 +1271,22 @@ public class LevelModel {
             standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
             // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
             for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
+                if (obj.getType() == GameObject.ObjectType.RAFT){
+                    ((Raft)obj).draw(canvas, ticks);
+                }
+                else {
                     obj.draw(canvas);
+                }
             }
         } else {
             getObjects().sort(new renderOrderComparator());
             for(GameObject obj : getObjects())
-                obj.draw(canvas);
+                if (obj.getType() == GameObject.ObjectType.RAFT){
+                    ((Raft)obj).draw(canvas, ticks);
+                }
+            else {
+                    obj.draw(canvas);
+                }
         }
     }
 

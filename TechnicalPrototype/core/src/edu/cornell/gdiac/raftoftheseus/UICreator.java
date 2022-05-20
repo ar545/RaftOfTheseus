@@ -27,27 +27,48 @@ public class UICreator {
     /** The color for hovered buttons */
     private static Color activeColor = Color.GOLD;
 
+    public static enum FontSize {
+        SMALL,
+        MEDIUM,
+        LARGE
+    }
+
     public UICreator(){}
 
     // TEXTBUTTON CREATORS
 
-    public static TextButton createTextButton(String name, Skin skin, float fontSize, Color c){
-        TextButton button = new TextButton(name, skin);
-        button.getLabel().setFontScale(fontSize);
+    public static TextButton createTextButton(String name, Skin skin, Color c, FontSize size){
+        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
+        setFontSize(size, style, skin);
+        TextButton button = new TextButton(name, style);
         button.getLabel().setColor(c);
         return button;
     }
 
-    public static TextButton createTextButton(String name, Skin skin, float fontSize, Color c, Texture background) {
+    public static TextButton createTextButton(String name, Skin skin, Color c, Texture background, FontSize size) {
         TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(background));
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.up = drawable;
         buttonStyle.down = drawable.tint(Color.GRAY);
-        buttonStyle.font = skin.getFont("default-font");
+        setFontSize(size, buttonStyle, skin);
         TextButton button = new TextButton(name, buttonStyle);
-        button.getLabel().setFontScale(fontSize);
         button.getLabel().setColor(c);
         return button;
+    }
+
+    public static void setFontSize(FontSize size, TextButton.TextButtonStyle style, Skin skin) {
+        switch (size) {
+            case SMALL:
+                style.font = skin.getFont("diogenes-font-small");
+                break;
+            case MEDIUM:
+                style.font = skin.getFont("diogenes-font-medium");
+                break;
+            case LARGE:
+                style.font = skin.getFont("diogenes-font-large");
+                break;
+
+        }
     }
 
     public static void setTextButtonStyle(TextButton button, Skin skin, float fontSize, Color c, Texture background) {
@@ -55,23 +76,10 @@ public class UICreator {
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.up = drawable;
         buttonStyle.down = drawable.tint(Color.GRAY);
-        buttonStyle.font = skin.getFont("default-font");
+        buttonStyle.font = skin.getFont("diogenes-font-medium");
         button.setStyle(buttonStyle);
         button.getLabel().setFontScale(fontSize);
         button.getLabel().setColor(c);
-    }
-
-
-    public static TextButton createTextButton(String name, Skin skin, float fontSize){
-        return createTextButton(name, skin, fontSize, Color.WHITE);
-    }
-
-    public static TextButton createTextButton(String name, Skin skin, Color c){
-        return createTextButton(name, skin, FONT_SIZE, c);
-    }
-
-    public static TextButton createTextButton(String name, Skin skin){
-        return createTextButton(name, skin, FONT_SIZE);
     }
 
     // LABEL CREATORS

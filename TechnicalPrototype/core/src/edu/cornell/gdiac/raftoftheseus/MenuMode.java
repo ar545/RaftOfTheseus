@@ -123,6 +123,23 @@ public class MenuMode implements Screen {
         playPressed = false;
         currentScreen = MenuScreen.TITLE;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontParameter smallParameter = new FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontParameter mediumParameter = new FreeTypeFontParameter();
+        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontParameter largeParameter = new FreeTypeFontParameter();
+        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
     }
 
     /**
@@ -166,26 +183,26 @@ public class MenuMode implements Screen {
      * Creates all necessary buttons for the menu screen.
      */
     private void initMenuButtons(){
-        backButton = UICreator.createTextButton("BACK", skin, 0.5f * Gdx.graphics.getDensity(), Color.WHITE);
+        backButton = UICreator.createTextButton("BACK", skin, Color.WHITE, UICreator.FontSize.SMALL);
         backButton.addListener(UICreator.createListener(backButton, Color.GOLD, Color.WHITE,
                 "button_enter", "button_click", this::changeScreenTo, MenuScreen.TITLE));
 
-        nextPageButton = UICreator.createTextButton("NEXT", skin, Color.WHITE);
+        nextPageButton = UICreator.createTextButton("NEXT", skin, Color.WHITE, UICreator.FontSize.SMALL);
         nextPageButton.addListener(UICreator.createListener(nextPageButton, Color.GOLD, Color.WHITE, this::scrollPage));
 
-        prevPageButton = UICreator.createTextButton("PREV", skin, Color.WHITE);
+        prevPageButton = UICreator.createTextButton("PREV", skin, Color.WHITE, UICreator.FontSize.SMALL);
         prevPageButton.addListener(UICreator.createListener(prevPageButton, Color.GOLD, Color.WHITE, this::scrollPage));
 
         nextPageButton.setVisible(currentPage == 0);
         prevPageButton.setVisible(currentPage == 2);
 
         backTable = new Table();
-        backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
+        backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity() + 100).padTop(10);
 
         // instantiate the "back" button, which is used in multiple menus
         Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
         for(String n : holder){
-            titleButtons.add(UICreator.createTextButton(n, skin, 0.4f));
+            titleButtons.add(UICreator.createTextButton(n, skin, Color.WHITE, UICreator.FontSize.SMALL));
         }
         //Add listeners to buttons
         titleButtons.get(0).addListener(UICreator.createListener(titleButtons.get(0), "raft_sail_open", this::setPlayState));
@@ -209,12 +226,12 @@ public class MenuMode implements Screen {
             buttonStyles[i] = new TextButtonStyle();
             buttonStyles[i].up = buttonDrawables[i];
             buttonStyles[i].down = buttonDrawables[i].tint(Color.GRAY);
-            buttonStyles[i].font = skin.getFont("default-font");
+            buttonStyles[i].font = skin.getFont("diogenes-font-large");
         }
         TextureRegionDrawable lockButtonDrawable =  new TextureRegionDrawable(new TextureRegion(levelButtonImages[4]));
         lockButtonStyle.up = lockButtonDrawable;
         lockButtonStyle.down = lockButtonDrawable;
-        lockButtonStyle.font = skin.getFont("default-font");
+        lockButtonStyle.font = skin.getFont("diogenes-font-large");
     }
 
     /**
@@ -484,7 +501,7 @@ public class MenuMode implements Screen {
      * Method to set the different menu screens
      * @param targetScreen the screen we want
      */
-    protected void changeScreenTo(MenuScreen targetScreen) {
+    public void changeScreenTo(MenuScreen targetScreen) {
         stage.clear();
         currentScreen = targetScreen;
         buildMenu();

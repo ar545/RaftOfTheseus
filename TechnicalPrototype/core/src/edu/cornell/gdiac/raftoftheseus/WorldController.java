@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -149,8 +150,8 @@ public class WorldController implements Screen, ContactListener {
     private final long startTime;
 
     private float hintTimer = 0f;
-    private float fadeTimeStart = 6f;
-    private float fadeTimeEnd = 7.5f;
+    private float fadeTimeStart = 5f;
+    private float fadeTimeEnd = 6f;
     private float fadeTimeSpan = fadeTimeEnd - fadeTimeStart;
     private boolean blockHint = false;
 
@@ -186,6 +187,23 @@ public class WorldController implements Screen, ContactListener {
         this.exitPressed = false;
         this.stage = new Stage();
         this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
         this.table = new Table();
         enemySight = new EnemyRayCast();
         startTime = System.currentTimeMillis();
@@ -247,12 +265,10 @@ public class WorldController implements Screen, ContactListener {
         updateRaftWakeSamples();
 
         // Draw the level
-        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4, isLastLevel());
+        levelModel.draw((System.currentTimeMillis() - startTime) / 1000.0f, level_id < 4, level_id == NUM_LEVELS - 1);
 
         // draw stars
-        if (level_id >= TUTORIAL_COUNT) {
-            drawStar(playerScore);
-        }
+        drawStar(playerScore);
 
         // draw control hints
         drawControlHints(dt);
@@ -285,8 +301,6 @@ public class WorldController implements Screen, ContactListener {
         drawFadeTransition(dt);
     }
 
-    private boolean isLastLevel() { return level_id == NUM_LEVELS - 1; }
-
     private void resetControlHints(){
         hintTimer = 0;
         blockHint = false;
@@ -303,12 +317,12 @@ public class WorldController implements Screen, ContactListener {
         canvas.begin();
         if (complete) {
             canvas.draw(transitionScreen,  new Color(0, 0, 0, 1 - (transitionTimeEnd - transitionTimer)/transitionTimeEnd),
-                    0, 0, canvas.getWidth(), canvas.getHeight() * 1.1f);
+                    0, 0, canvas.getWidth(), canvas.getHeight());
             stage.clear();
             table.clear();
         } else {
             canvas.draw(transitionScreen,  new Color(0, 0, 0,  (transitionTimeEnd - transitionTimer)/transitionTimeEnd),
-                    0, 0, canvas.getWidth(), canvas.getHeight() * 1.1f);
+                    0, 0, canvas.getWidth(), canvas.getHeight());
         }
         canvas.end();
     }
@@ -326,7 +340,7 @@ public class WorldController implements Screen, ContactListener {
         } else {
             c = Color.WHITE;
         }
-        BitmapFont font = skin.getFont("default-font");
+        BitmapFont font = skin.getFont("diogenes-font-medium");
         font.getData().setScale(0.3f);
         font.setColor(c);
         canvas.begin();
@@ -490,26 +504,25 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            float fontSize = 0.6f * Gdx.graphics.getDensity();
-            Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
-
-            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, fontSize, textColor);
-            resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, textColor, this::resetPausePressed));
-            table.add(resumeButton).padTop(70);
+            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
+            resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
+            table.add(resumeButton).padTop(-20);
             table.row();
 
-            TextButton restartButton = UICreator.createTextButton("RESTART", skin, fontSize, textColor);
-            restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, textColor, this::reset));
+            TextButton restartButton = UICreator.createTextButton("RESTART", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
+            restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             table.add(restartButton);
             table.row();
 
-            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, fontSize, textColor);
+            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
             table.add(settingsButton);
-            settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, textColor, this::setSettingsPressed));
+            settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
             table.row();
 
-            TextButton exitButton = UICreator.createTextButton("EXIT", skin, fontSize, textColor);
-            exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, textColor, this::setExitPressed));
+            TextButton exitButton = new TextButton("EXIT", skin);
+            exitButton.getLabel().setFontScale(0.35f);
+            exitButton.getLabel().setColor(Color.GOLD);
+            exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
             table.add(exitButton);
         }
         stage.act();
@@ -544,24 +557,24 @@ public class WorldController implements Screen, ContactListener {
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
         float fontSize = 0.6f * Gdx.graphics.getDensity();
 
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : (isLastLevel() ? "CREDITS!" : "NEXT"), skin, fontSize, textColor);
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.MEDIUM);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
-        table.add(mainButton).expandX().align(Align.center).padTop(level_id < TUTORIAL_COUNT || didFail ? 50 : 180);
+        table.add(mainButton).expandX().align(Align.center).padTop(50);
         table.row();
 
         if (!didFail) {
-            TextButton replayButton = UICreator.createTextButton("RESTART", skin, fontSize, textColor);
+            TextButton replayButton = UICreator.createTextButton("RESTART", skin, textColor, UICreator.FontSize.MEDIUM);
             replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, textColor, this::reset));
             table.add(replayButton).expandX().align(Align.center);
             table.row();
         }
 
-        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, fontSize, textColor);
+        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, textColor, UICreator.FontSize.MEDIUM);
         settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, textColor, this::setSettingsPressed));
         table.add(settingsButton).expandX();
         table.row();
 
-        TextButton exitButton = UICreator.createTextButton("EXIT", skin, fontSize, textColor);
+        TextButton exitButton = UICreator.createTextButton("EXIT", skin, textColor, UICreator.FontSize.MEDIUM);
         exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, textColor, this::setExitPressed));
         table.add(exitButton).expandX();
         table.row();
@@ -1224,6 +1237,23 @@ public class WorldController implements Screen, ContactListener {
         table.clear();
         playerScore = 0;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
         transitionBuilt = false;
         pausePressed = false;
         pauseBuilt = false;
