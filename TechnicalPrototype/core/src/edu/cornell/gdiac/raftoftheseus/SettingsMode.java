@@ -4,7 +4,9 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Slider.*;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -114,6 +116,24 @@ public class SettingsMode implements Screen, InputProcessor {
         editResetKeyEnable = false;
         editPauseKeyEnable = false;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
     }
 
     /**
@@ -122,7 +142,7 @@ public class SettingsMode implements Screen, InputProcessor {
      * @param directory Reference to the asset directory
      */
     public void populate(AssetDirectory directory) {
-        background = directory.getEntry("sea_background", Texture.class);
+        background = directory.getEntry("transition_screen", Texture.class);
         goldKeyBackground = directory.getEntry("gold_key_background", Texture.class);
         blackKeyBackground = directory.getEntry("black_key_background", Texture.class);
         longTextKeyBackground = directory.getEntry("long_text_key_background", Texture.class);
@@ -179,7 +199,7 @@ public class SettingsMode implements Screen, InputProcessor {
 
         Table part1 = new Table();
         part1.align(Align.left);
-        TextButton menuButton = UICreator.createTextButton("BACK", skin, 0.5f * Gdx.graphics.getDensity(), Color.WHITE);
+        TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
         menuButton.addListener(UICreator.createListener(menuButton, Color.GOLD, Color.WHITE, this::setExitPressed));
         part1.add(menuButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
         table.add(part1);
@@ -241,7 +261,7 @@ public class SettingsMode implements Screen, InputProcessor {
 
         Table part3a = new Table();
         part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin, subheadingFontSize)).padLeft(100);
-        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, subheadingFontSize, Color.WHITE, blackKeyBackground);
+        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
         accessibilityButton.addListener(UICreator.createListener(accessibilityButton, Color.GRAY, Color.WHITE, this::changeAccessibilityMode));
         part3a.add(accessibilityButton).padLeft(30).width(80).height(60);
         part3.add(part3a);
@@ -263,22 +283,22 @@ public class SettingsMode implements Screen, InputProcessor {
 //        pauseKeyString = pauseKeyString.equals("Escape") ? "Esc" : pauseKeyString;
 
         part4.add(UICreator.createLabel("MAP", skin, keysFontSize)).padRight(keysPadding);
-        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
+        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
         mapKeyButton.addListener(UICreator.createListener(mapKeyButton, this::changeKeyMapping));
         part4.add(mapKeyButton).padRight(keysPadding).width(60).height(60);
 
         part4.add(UICreator.createLabel("FIRE", skin, keysFontSize)).padRight(keysPadding);
-        TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, 0.3f, Color.WHITE, longTextKeyBackground);
+        TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, Color.WHITE, longTextKeyBackground, UICreator.FontSize.MEDIUM);
         fireKeyButton.addListener(UICreator.createListener(fireKeyButton, this::changeKeyMapping));
         part4.add(fireKeyButton).padRight(keysPadding).width(170).height(60);
 
         part4.add(UICreator.createLabel("RESTART", skin, keysFontSize)).padRight(keysPadding);
-        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
+        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
         resetKeyButton.addListener(UICreator.createListener(resetKeyButton, this::changeKeyMapping));
         part4.add(resetKeyButton).padRight(keysPadding).width(60).height(60);
 
         part4.add(UICreator.createLabel("PAUSE", skin, keysFontSize)).padRight(keysPadding);
-        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, 0.3f, Color.WHITE, blackKeyBackground);
+        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
         pauseKeyButton.addListener(UICreator.createListener(pauseKeyButton, this::changeKeyMapping));
         part4.add(pauseKeyButton).padRight(keysPadding).width(60).height(60);
         table.add(part4);

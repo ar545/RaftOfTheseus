@@ -49,8 +49,12 @@ public class MenuMode implements Screen {
     private ScrollPane scrollPane;
     /** Background texture for menu */
     private Texture menuBackground;
-    /** Background texture for credits */
+    /** Background texture for settings */
     private Texture seaBackground;
+    /** alternative group logo */
+    private Texture altLogo;
+    /** textuer for group logo */
+    private Texture groupLogo;
     /** Textures for level buttons */
     private Texture[] levelButtonImages;
     /** Texture for the levels to select. */
@@ -123,6 +127,23 @@ public class MenuMode implements Screen {
         playPressed = false;
         currentScreen = MenuScreen.TITLE;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontParameter smallParameter = new FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontParameter mediumParameter = new FreeTypeFontParameter();
+        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontParameter largeParameter = new FreeTypeFontParameter();
+        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
     }
 
     /**
@@ -133,6 +154,8 @@ public class MenuMode implements Screen {
     public void populate(AssetDirectory directory) {
         menuBackground = directory.getEntry("menu_background", Texture.class);
         seaBackground = directory.getEntry("sea_background", Texture.class);
+        altLogo = directory.getEntry("alt_logo", Texture.class);
+        groupLogo = directory.getEntry("group_logo", Texture.class);
         levelButtonImages = new Texture[5];
         for (int i = 0; i < 4; i++) {
             levelButtonImages[i] = directory.getEntry("level_star_" + i, Texture.class);
@@ -166,26 +189,26 @@ public class MenuMode implements Screen {
      * Creates all necessary buttons for the menu screen.
      */
     private void initMenuButtons(){
-        backButton = UICreator.createTextButton("BACK", skin, 0.5f * Gdx.graphics.getDensity(), Color.WHITE);
+        backButton = UICreator.createTextButton("BACK", skin, Color.WHITE, UICreator.FontSize.SMALL);
         backButton.addListener(UICreator.createListener(backButton, Color.GOLD, Color.WHITE,
                 "button_enter", "button_click", this::changeScreenTo, MenuScreen.TITLE));
 
-        nextPageButton = UICreator.createTextButton("NEXT", skin, Color.WHITE);
+        nextPageButton = UICreator.createTextButton("NEXT", skin, Color.WHITE, UICreator.FontSize.SMALL);
         nextPageButton.addListener(UICreator.createListener(nextPageButton, Color.GOLD, Color.WHITE, this::scrollPage));
 
-        prevPageButton = UICreator.createTextButton("PREV", skin, Color.WHITE);
+        prevPageButton = UICreator.createTextButton("PREV", skin, Color.WHITE, UICreator.FontSize.SMALL);
         prevPageButton.addListener(UICreator.createListener(prevPageButton, Color.GOLD, Color.WHITE, this::scrollPage));
 
         nextPageButton.setVisible(currentPage == 0);
         prevPageButton.setVisible(currentPage == 2);
 
         backTable = new Table();
-        backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
+        backTable.add(backButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity() + 100).padTop(10);
 
         // instantiate the "back" button, which is used in multiple menus
         Array<String> holder = new Array<>(new String[]{"START", "LEVELS", "SETTINGS", "CREDITS"});
         for(String n : holder){
-            titleButtons.add(UICreator.createTextButton(n, skin, 0.4f));
+            titleButtons.add(UICreator.createTextButton(n, skin, Color.WHITE, UICreator.FontSize.SMALL));
         }
         //Add listeners to buttons
         titleButtons.get(0).addListener(UICreator.createListener(titleButtons.get(0), "raft_sail_open", this::setPlayState));
@@ -209,18 +232,19 @@ public class MenuMode implements Screen {
             buttonStyles[i] = new TextButtonStyle();
             buttonStyles[i].up = buttonDrawables[i];
             buttonStyles[i].down = buttonDrawables[i].tint(Color.GRAY);
-            buttonStyles[i].font = skin.getFont("default-font");
+            buttonStyles[i].font = skin.getFont("diogenes-font-large");
         }
         TextureRegionDrawable lockButtonDrawable =  new TextureRegionDrawable(new TextureRegion(levelButtonImages[4]));
         lockButtonStyle.up = lockButtonDrawable;
         lockButtonStyle.down = lockButtonDrawable;
-        lockButtonStyle.font = skin.getFont("default-font");
+        lockButtonStyle.font = skin.getFont("diogenes-font-large");
     }
 
     /**
      * Creates all the credit visuals for the game.
      */
     private void initCreditTables(){
+        creditTables.clear();
         float titleFontSize = 0.8f * Gdx.graphics.getDensity();
         float headingFontSize = 0.7f * Gdx.graphics.getDensity();
         float subheadingFontSize = 0.5f * Gdx.graphics.getDensity();
@@ -257,8 +281,23 @@ public class MenuMode implements Screen {
 
         tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
         tb3.add(part3R).expandX().align(Align.center).padTop(-160);
-        creditTables.add(backTable, tb2, tb3);
+
+        Table tb4 = new Table(); // group logo table
+        logoB = UICreator.createTextButton(" ", skin, Color.WHITE, groupLogo, UICreator.FontSize.SMALL);
+        logoB.addListener(UICreator.createListener(logoB, this::changeLogo));
+        tb4.add(logoB).align(Align.center).width(600).height(225);
+
+        creditTables.add(backTable, tb2, tb3, tb4);
     }
+
+    /** update the appearance of the logo button */
+    private void updateLogo(){ UICreator.setTextButtonStyle(logoB, skin, 1, Color.WHITE, logoChanged ? altLogo : groupLogo); }
+    /** reference to the logo button */
+    TextButton logoB;
+    /** whether the logo has been changed to alternative logo */
+    boolean logoChanged = false;
+    /** change the logo, according to: lC = (lC ? false : (Math.random() > 0.8 ? true : lC )) */
+    private void changeLogo() { logoChanged = (!logoChanged && (Math.random() > 0.8 || logoChanged)); }
 
     /**
      * Sets the ScreenListener for this mode
@@ -312,6 +351,9 @@ public class MenuMode implements Screen {
 //                canvas.draw(seaBackground,0f, 0f);
                 canvas.drawBackground(seaBackground, true);
                 break;
+        }
+        if(currentScreen == MenuScreen.CREDITS){
+            updateLogo();
         }
         canvas.end();
         stage.act();
@@ -383,6 +425,7 @@ public class MenuMode implements Screen {
                 menuTable.row();
                 break;
             case CREDITS:
+//                initCreditTables();
                 menuTable.background(new TextureRegionDrawable(seaBackground));
                 for(Table t : creditTables){
                     if(i != 1) menuTable.add(t);
@@ -484,7 +527,7 @@ public class MenuMode implements Screen {
      * Method to set the different menu screens
      * @param targetScreen the screen we want
      */
-    protected void changeScreenTo(MenuScreen targetScreen) {
+    public void changeScreenTo(MenuScreen targetScreen) {
         stage.clear();
         currentScreen = targetScreen;
         buildMenu();

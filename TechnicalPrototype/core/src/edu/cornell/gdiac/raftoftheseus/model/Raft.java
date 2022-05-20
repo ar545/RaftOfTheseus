@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -15,6 +16,9 @@ import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
+
+import static edu.cornell.gdiac.raftoftheseus.model.LevelModel.BOB_AMP;
+import static edu.cornell.gdiac.raftoftheseus.model.LevelModel.BOB_TIME;
 
 /**
  * Model class for the player raft.
@@ -357,6 +361,18 @@ public class Raft extends GameObject implements Animated {
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
         super.draw(canvas);
+        if(raftState == RaftState.CHARGING || canFire()){
+            ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
+            super.draw(canvas, attackAura);
+        }
+    }
+
+    public void draw(GameCanvas canvas, int ticks){
+        ((FilmStrip) texture).setFrame(fc.getFrame());
+        if (texture != null) {
+            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() + textureOffset.x,
+                    getY() + textureOffset.y + BOB_AMP * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI), getAngle(), textureScale.x, textureScale.y);
+        }
         if(raftState == RaftState.CHARGING || canFire()){
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
             super.draw(canvas, attackAura);

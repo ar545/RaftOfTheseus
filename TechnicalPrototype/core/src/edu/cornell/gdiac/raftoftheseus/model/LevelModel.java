@@ -36,20 +36,20 @@ public class LevelModel {
     private static final float GRID_SIZE = 3.0f;
     /** Default boundary width and height of a single grid in Box-2d units. Borders are 1 meter wide. */
     private static final float DEFAULT_BOUNDARY = 1.0f;
-    /** Default num of rows in the map (y, height) */
-    private static final int DEFAULT_GRID_ROW = 16;
-    /** Default num of columns in the map (x, width) */
-    private static final int DEFAULT_GRID_COL = 24;
+    /** Default num of rows in the map (y, height). NEW: MAXIMUM num of rows show on any screen. */
+    private static final int DEFAULT_GRID_ROW = 12;
+    /** Default num of columns in the map (x, width) NEW: MAXIMUM num of cols show on any screen. */
+    private static final int DEFAULT_GRID_COL = 18;
     /** a final vector 2 with both x and y as 0, e.g. Top-down game with no gravity */
     private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
-    /** the height offset between the health bar and the player height */
-    public static final int BAR_PLAYER_OFFSET = 70;
     /** This is used as a level int representing restarting the level */
     protected static final int LEVEL_RESTART_CODE = -1;
     /** How many difficulty themes are there in the game? */
     private static final int DIFFICULTY_COUNT = 3;
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.04f;
+
+    private int ticks;
 
     /*=*=*=*=*=*=*=*=*=* LEVEL Objects (clear after each level dispose) *=*=*=*=*=*=*=*=*=*/
     /** The Box2D world */
@@ -181,6 +181,8 @@ public class LevelModel {
     private TextureRegion reticleTexture;
     /** The shipwreck texture. */
     private FilmStrip shipwreckTexture;
+    public static final float BOB_TIME =  240.f;
+    public static final float BOB_AMP = 0.3f;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -274,16 +276,23 @@ public class LevelModel {
         }
     }
 
-    /* Todo: vary the grid_pixel per screen size */
-    /** Pixels per grid square */
-    private static final float GRID_PIXELS = 140.0f;
-    /** Pixels per Box2D unit */
-    private static final float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
-    /** prepare the pixel size for the game screen */
-    private float calculatePixels(int canvasHeight){ return Math.max(Math.min(120f + ((float) canvasHeight - 960f) / 16f, 160f), 108f); }
+    /*=*=*=*=*=*=*=*=*=* varied pixel per grid based on screen size *=*=*=*=*=*=*=*=*=*/
+    /** default pixels per grid square. Pixel per grid must never be smaller than this value */
+    private static final float STANDARD_GRID_PIXELS = 130.0f;
+    /** Active pixels per grid square */
+    private static float GRID_PIXELS = STANDARD_GRID_PIXELS;
+    /** Active pixels per Box2D unit, calculated based on pixels per grid square */
+    private static float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
+    /** update the pixel size for the game screen */
+    public void resizeScreen(){
+        if(canvas == null){ return; }
+        float height_req = (float) canvas.getHeight() / DEFAULT_GRID_ROW;
+        float width_req = (float) canvas.getWidth() / DEFAULT_GRID_COL;
+        GRID_PIXELS = Math.max(STANDARD_GRID_PIXELS, Math.max(height_req, width_req));
+        PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
+    }
 
     /*=*=*=*=*=*=* Level Parser: bounds of the world *=*=*=*=*=*=*=*/
-
     /** Returns true if the object is in bounds.
      * This assertion is useful for debugging the physics.
      * @param obj The object to check.
@@ -388,6 +397,7 @@ public class LevelModel {
      *
      * @param level_int an integer representing the level selection, i.e. which json file to read from. */
     public void loadLevel(int level_int, JsonValue level_data){
+        resizeScreen();
         if(level_int != LEVEL_RESTART_CODE && level_data != null){
             // Load in new level
             this.level_data = level_data;
@@ -940,6 +950,8 @@ public class LevelModel {
      The B and A values of the texture are unused.
      */
     private Texture recalculateFlowMap() {
+        float gamma = 1.5f; // used to better differentiate slow and fast currents. 1.0f = no adjustment; >1 = more differentiation; <1 = less; 0 = all currents look the same.
+        float g = (gamma-1.0f)*0.5f;
         Pixmap pix = new Pixmap(extraCols(), extraRows(),  Pixmap.Format.RGBA8888);
         pix.setColor(0.5f, 0.5f, 0.5f, 1); // 0.5 = no current
         pix.fill();
@@ -949,7 +961,8 @@ public class LevelModel {
                 Vector2 p = c.getPosition(); // in box2d units (3 per tile)
                 p.scl(1.0f/GRID_SIZE); // in tiles
                 p.add(1, 1); // offset one tile
-                Vector2 d = c.getDirectionVector().scl(0.5f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                Vector2 d = c.getDirectionVector().scl(1.0f/Current.getMaxMagnitude()); // length dependent on magnitude (in 0,1 range)
+                d.scl(0.5f*(float)Math.pow(d.len2(), g));
                 d.add(1,1).scl(0.5f); // between 0 and 1
                 pix.setColor(d.x, d.y, 0, 1);
                 pix.drawPixel((int)p.x, (int)p.y);
@@ -1139,7 +1152,9 @@ public class LevelModel {
 
         // reset camera transform for other player-centered texture (because health bar isn't in game units)
         canvas.begin();
-        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
+        ticks++;
+
+        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy().add(0, BOB_AMP * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI));
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(playerPosOnScreen);
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
@@ -1256,18 +1271,29 @@ public class LevelModel {
             standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
             // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
             for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
+                if (obj.getType() == GameObject.ObjectType.RAFT){
+                    ((Raft)obj).draw(canvas, ticks);
+                }
+                else {
                     obj.draw(canvas);
+                }
             }
         } else {
             getObjects().sort(new renderOrderComparator());
             for(GameObject obj : getObjects())
-                obj.draw(canvas);
+                if (obj.getType() == GameObject.ObjectType.RAFT){
+                    ((Raft)obj).draw(canvas, ticks);
+                }
+            else {
+                    obj.draw(canvas);
+                }
         }
     }
 
     /** Precondition & post-condition: the game canvas is open
      * @param player_position the on-screen position of player */
     private void drawHealthBar(Vector2 player_position) {
+        float BAR_PLAYER_OFFSET = 0.65f * GRID_PIXELS; /* the height offset between the health bar and the player height */
         canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f),
                 (player_position.y + BAR_PLAYER_OFFSET), greyBar.getRegionWidth(), greyBar.getRegionHeight());
         canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 6 + BAR_PLAYER_OFFSET),
