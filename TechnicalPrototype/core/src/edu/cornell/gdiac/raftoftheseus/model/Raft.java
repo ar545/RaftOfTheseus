@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.raftoftheseus.model;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -109,6 +110,7 @@ public class Raft extends GameObject implements Animated {
     /** The number of frames for this animation. */
     private static int IDLE_FC;
     private static int SHOOTING_FC;
+    private static final float BOB_TIME =  240.f;
     /** The player's spear when held in inventory. */
     private Spear spear;
     /** Frame calculator for animation. */
@@ -122,6 +124,8 @@ public class Raft extends GameObject implements Animated {
     /** frame count of the attack animation */
     private static int AURA_FC;
     private TextureHolder attackAura;
+
+    private int ticks;
 
     /** restore the player health to half life */
     public void halfLife() { addHealth(MAXIMUM_PLAYER_HEALTH / 2); }
@@ -150,6 +154,7 @@ public class Raft extends GameObject implements Animated {
         interactionSensor.getFilterData().maskBits = MASK_PLAYER_SENSOR;
         canFire = false;
         isDamaged = false; /* Whether the player was very recently damaged. */
+        ticks = 0;
     }
 
     /**
@@ -187,6 +192,7 @@ public class Raft extends GameObject implements Animated {
         super.update(dt);
         interactionSensor.setPosition(physicsObject.getPosition());
         interactionSensor.update(dt);
+        ticks++;
     }
 
     /** @return the player movement input. */
@@ -356,7 +362,10 @@ public class Raft extends GameObject implements Animated {
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
-        super.draw(canvas);
+        if (texture != null) {
+            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() + textureOffset.x,
+                    getY() + textureOffset.y + 0.25f * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI), getAngle(), textureScale.x, textureScale.y);
+        }
         if(raftState == RaftState.CHARGING || canFire()){
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
             super.draw(canvas, attackAura);
