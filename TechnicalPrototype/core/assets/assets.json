@@ -10,6 +10,8 @@
       "menu_background": "images/menu_background.png",
       "sea_background": "images/sea_background.png",
       "transition_screen": "images/UI_background.png",
+      "group_logo": "images/Group_logo.png",
+      "alt_logo": "images/Group_logo_alt.png",
       "pause_background": "images/pause_background.png",
       "slider_bar": "images/sliderbar.png",
       "slider_knob": "images/sliderknob.png",

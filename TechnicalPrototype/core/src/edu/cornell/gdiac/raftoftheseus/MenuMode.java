@@ -49,8 +49,12 @@ public class MenuMode implements Screen {
     private ScrollPane scrollPane;
     /** Background texture for menu */
     private Texture menuBackground;
-    /** Background texture for credits */
+    /** Background texture for settings */
     private Texture seaBackground;
+    /** alternative group logo */
+    private Texture altLogo;
+    /** textuer for group logo */
+    private Texture groupLogo;
     /** Textures for level buttons */
     private Texture[] levelButtonImages;
     /** Texture for the levels to select. */
@@ -150,6 +154,8 @@ public class MenuMode implements Screen {
     public void populate(AssetDirectory directory) {
         menuBackground = directory.getEntry("menu_background", Texture.class);
         seaBackground = directory.getEntry("sea_background", Texture.class);
+        altLogo = directory.getEntry("alt_logo", Texture.class);
+        groupLogo = directory.getEntry("group_logo", Texture.class);
         levelButtonImages = new Texture[5];
         for (int i = 0; i < 4; i++) {
             levelButtonImages[i] = directory.getEntry("level_star_" + i, Texture.class);
@@ -238,6 +244,7 @@ public class MenuMode implements Screen {
      * Creates all the credit visuals for the game.
      */
     private void initCreditTables(){
+        creditTables.clear();
         float titleFontSize = 0.8f * Gdx.graphics.getDensity();
         float headingFontSize = 0.7f * Gdx.graphics.getDensity();
         float subheadingFontSize = 0.5f * Gdx.graphics.getDensity();
@@ -274,8 +281,23 @@ public class MenuMode implements Screen {
 
         tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
         tb3.add(part3R).expandX().align(Align.center).padTop(-160);
-        creditTables.add(backTable, tb2, tb3);
+
+        Table tb4 = new Table(); // group logo table
+        logoB = UICreator.createTextButton(" ", skin, Color.WHITE, groupLogo, UICreator.FontSize.SMALL);
+        logoB.addListener(UICreator.createListener(logoB, this::changeLogo));
+        tb4.add(logoB).align(Align.center).width(600).height(225);
+
+        creditTables.add(backTable, tb2, tb3, tb4);
     }
+
+    /** update the appearance of the logo button */
+    private void updateLogo(){ UICreator.setTextButtonStyle(logoB, skin, 1, Color.WHITE, logoChanged ? altLogo : groupLogo); }
+    /** reference to the logo button */
+    TextButton logoB;
+    /** whether the logo has been changed to alternative logo */
+    boolean logoChanged = false;
+    /** change the logo, according to: lC = (lC ? false : (Math.random() > 0.8 ? true : lC )) */
+    private void changeLogo() { logoChanged = (!logoChanged && (Math.random() > 0.8 || logoChanged)); }
 
     /**
      * Sets the ScreenListener for this mode
@@ -329,6 +351,9 @@ public class MenuMode implements Screen {
 //                canvas.draw(seaBackground,0f, 0f);
                 canvas.drawBackground(seaBackground, true);
                 break;
+        }
+        if(currentScreen == MenuScreen.CREDITS){
+            updateLogo();
         }
         canvas.end();
         stage.act();
@@ -400,6 +425,7 @@ public class MenuMode implements Screen {
                 menuTable.row();
                 break;
             case CREDITS:
+//                initCreditTables();
                 menuTable.background(new TextureRegionDrawable(seaBackground));
                 for(Table t : creditTables){
                     if(i != 1) menuTable.add(t);
