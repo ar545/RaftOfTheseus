@@ -443,8 +443,9 @@ public class LevelModel {
         }
     }
 
+    /** easy, no star: 01234 (5 total); mid: 56789 10 11 12 (8 total); hard: 13 14 15 16 17 18 19 (7 total) **/
     private void setDifficulty(int level_int) {
-        difficulty = level_int < 6 ? 0 : (level_int < 13 ? 1 : 2);
+        difficulty = level_int < 5 ? 0 : (level_int < 13 ? 1 : 2);
     }
 
     public int getDifficulty() {
