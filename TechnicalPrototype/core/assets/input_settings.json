@@ -4,7 +4,7 @@
 	"previous": "2",
 	"reset": "R",
 	"debug": "G",
-	"exit": "Escape",
+	"exit": "0",
 	"fire": 0,
 	"fireKey": "Space",
 	"map": "Z",
@@ -19,7 +19,7 @@
 	"left": "Left",
 	"right": "Right",
 	"test": "T",
-	"pause": "P",
+	"pause": "Escape",
 	"special": "C",
 	"rotate left": "J",
 	"rotate right": "K"
