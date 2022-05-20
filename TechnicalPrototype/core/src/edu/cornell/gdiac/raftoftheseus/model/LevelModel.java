@@ -130,9 +130,14 @@ public class LevelModel {
     /** Texture for all treasures */
     private FilmStrip treasureTexture;
     private FilmStrip starburstTexture;
-    private FilmStrip daisy;
-    private FilmStrip yellowDaisy;
-    private FilmStrip plantC;
+    /** orange daisy filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] oraDaisy = new FilmStrip[DIFFICULTY_COUNT];
+    /** red daisy filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] redDaisy = new FilmStrip[DIFFICULTY_COUNT];
+    /** translational moving grass filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] transGrass = new FilmStrip[DIFFICULTY_COUNT];
+    /** rotational moving grass filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] rotGrass = new FilmStrip[DIFFICULTY_COUNT];
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodSTexture;
     /** Texture for wood pieces that represents double pile of logs */
@@ -147,8 +152,6 @@ public class LevelModel {
     private TextureRegion regularRockTexture;
     /** Texture for all rock, as they look the same */
     private TextureRegion sharpRockTexture;
-    /** Texture for all the plant which has the same hit-box as the rock */
-    private TextureRegion[] plantTexture = new TextureRegion[Tiled.FIXED_PLANT_COUNT];
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Stun overlay for enemies */
@@ -235,12 +238,8 @@ public class LevelModel {
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
-        plantTexture[0] = new TextureRegion(directory.getEntry("plantB", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
-        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 2, 4);
-        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 4);
-        yellowDaisy = new FilmStrip(directory.getEntry("plantA", Texture.class), 4, 4);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
         sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
@@ -260,6 +259,23 @@ public class LevelModel {
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
         shipwreckTexture = new FilmStrip(directory.getEntry("shipwreck", Texture.class), 3, 1);
         gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
+        gatherPlantAssets();
+    }
+
+    /** gather the plants assets for 4 kinds of plants (2 daises, 2 grasses) corresponding to level difficulty */
+    private void gatherPlantAssets() {
+        transGrass[0] = new FilmStrip(directory.getEntry("grassTransGreen", Texture.class), 2, 4);
+        transGrass[1] = new FilmStrip(directory.getEntry("grassTransYellow", Texture.class), 2, 4);
+        transGrass[2] = new FilmStrip(directory.getEntry("grassTransPurple", Texture.class), 2, 4);
+        rotGrass[0] = new FilmStrip(directory.getEntry("grassRotGreen", Texture.class), 2, 4);
+        rotGrass[1] = new FilmStrip(directory.getEntry("grassRotYellow", Texture.class), 2, 4);
+        rotGrass[2] = new FilmStrip(directory.getEntry("grassRotPurple", Texture.class), 2, 4);
+        redDaisy[0] = new FilmStrip(directory.getEntry("daisyRedGreen", Texture.class), 4, 4);
+        redDaisy[1] = new FilmStrip(directory.getEntry("daisyRedYellow", Texture.class), 4, 4);
+        redDaisy[2] = new FilmStrip(directory.getEntry("daisyRedPurple", Texture.class), 4, 4);
+        oraDaisy[0] = new FilmStrip(directory.getEntry("daisyOraGreen", Texture.class), 4, 4);
+        oraDaisy[1] = new FilmStrip(directory.getEntry("daisyOraYellow", Texture.class), 4, 4);
+        oraDaisy[2] = new FilmStrip(directory.getEntry("daisyOraPurple", Texture.class), 4, 4);
     }
 
     private void gatherTerrainAssets(Texture terrainTexture) {
@@ -659,10 +675,11 @@ public class LevelModel {
         } else { // terrain or cliff terrain
             if(Stationary.isPlant(rock_int)){ // plant terrain: prepare animated object
                 Plant plant = new Plant(compute_temp, type, rock_int);
-                if(rock_int == Stationary.plantD) { plant.setTexture(daisy); }
-                else if(rock_int == Stationary.plantC) { plant.setTexture(plantC); }
-                else if(rock_int == Stationary.plantA) { plant.setTexture(yellowDaisy); }
-                else{ plant.setTexture(plantTexture[0]); }
+                if(rock_int == Stationary.plantD) { plant.setTexture(redDaisy[difficulty]); }
+                else if(rock_int == Stationary.plantC) { plant.setTexture(rotGrass[difficulty]); }
+                else if(rock_int == Stationary.plantB) { plant.setTexture(transGrass[difficulty]); }
+                else if(rock_int == Stationary.plantA) { plant.setTexture(oraDaisy[difficulty]); }
+                else{ System.out.println("unreadable rock int"); }
                 addObject(plant);
                 plants.add(plant);
                 standardDrawList.add(plant);
