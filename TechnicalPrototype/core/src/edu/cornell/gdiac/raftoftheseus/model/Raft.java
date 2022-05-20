@@ -364,7 +364,7 @@ public class Raft extends GameObject implements Animated {
         ((FilmStrip) texture).setFrame(fc.getFrame());
         if (texture != null) {
             canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() + textureOffset.x,
-                    getY() + textureOffset.y + 0.25f * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI), getAngle(), textureScale.x, textureScale.y);
+                    getY() + textureOffset.y + 0.15f * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI), getAngle(), textureScale.x, textureScale.y);
         }
         if(raftState == RaftState.CHARGING || canFire()){
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());

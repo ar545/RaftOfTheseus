@@ -70,7 +70,7 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** All spears in the world */
     private PooledList<Spear> spears = new PooledList<>();
-    private PooledList<GameObject> woodTreasureDrawList  = new PooledList<>();
+    private PooledList<GameObject> floatingObjectDrawList = new PooledList<>();
     private PooledList<GameObject> currents  = new PooledList<>();
     private PooledList<GameObject> standardDrawList = new PooledList<>();
     /** List of treasure in this world */
@@ -368,7 +368,7 @@ public class LevelModel {
         sirens.clear();
         plants.clear();
         spears.clear();
-        woodTreasureDrawList.clear();
+        floatingObjectDrawList.clear();
         standardDrawList.clear();
         currents.clear();
         treasureCount = 0; // setting counter to 0 will repopulate the array
@@ -684,7 +684,7 @@ public class LevelModel {
         treasure[treasureCount] = this_treasure;
         treasureCount++;
         addObject(this_treasure);
-        woodTreasureDrawList.add(this_treasure);
+        floatingObjectDrawList.add(this_treasure);
     }
 
     /** Add Goal Objects to the world, using the Json value for goal.
@@ -708,7 +708,7 @@ public class LevelModel {
         Wood wood = new Wood(compute_temp, value);
         wood.setTexture(findWoodTexture(value));
         addObject(wood);
-        woodTreasureDrawList.add(wood);
+        floatingObjectDrawList.add(wood);
     }
 
     private TextureRegion findWoodTexture(int value){
@@ -828,7 +828,7 @@ public class LevelModel {
      * @param obj The object to delete */
     public void removeObj(GameObject obj) {
         if(obj.getType() == GameObject.ObjectType.TREASURE || obj.getType() == GameObject.ObjectType.WOOD){
-            woodTreasureDrawList.remove(obj);
+            floatingObjectDrawList.remove(obj);
         } else if(obj.getType() != GameObject.ObjectType.CURRENT){
             standardDrawList.remove(obj);
         }
@@ -936,7 +936,7 @@ public class LevelModel {
         Wood this_wood = new Wood(pos, value);
         this_wood.setTexture(findWoodTexture(value));
         addQueuedObject(this_wood);
-        woodTreasureDrawList.add(this_wood);
+        floatingObjectDrawList.add(this_wood);
     }
 
     /**
@@ -1256,16 +1256,35 @@ public class LevelModel {
      */
     public void drawObjects(float time){
         if (canvas.USE_SHADER) {
-            canvas.useItemShader(time);
-            for(GameObject obj : woodTreasureDrawList) { // id shader is on, draw floaty objects with shader
-                    obj.draw(canvas);
+            //awooga
+            for(GameObject obj : floatingObjectDrawList) { // id shader is on, draw floaty objects with shader
+                canvas.useItemShader(time);
+                switch(obj.getType()) {
+//                    case RAFT:
+//                        canvas.setItemShaderUniforms(8, 5, 0.38f, 0.10f);
+//                        break;
+                    case TREASURE:
+                        canvas.setItemShaderUniforms(1, 7, 0.1f, 0.25f);
+                        break;
+                    default:
+                        canvas.setItemShaderUniforms(1, 1, 0.0f, 0.25f);
+                        break;
+                }
+                obj.draw(canvas);
+                canvas.stopUsingShader();
             }
-            canvas.stopUsingShader();
             // draw non-floaty objects
             standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
             // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
             for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
+                if (obj.getType() == GameObject.ObjectType.RAFT) {
+                    canvas.useItemShader(time);
+                    canvas.setItemShaderUniforms(8, 5, 0.38f, 0.10f);
                     obj.draw(canvas);
+                    canvas.stopUsingShader();
+                } else {
+                    obj.draw(canvas);
+                }
             }
         } else {
             getObjects().sort(new renderOrderComparator());
