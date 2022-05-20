@@ -49,6 +49,8 @@ public class LevelModel {
     /** How fast do you want to lerp this camera? Fast: 0.1 or 0.2; Slow: 0.01 or 0.005 */ // TODO: factor out
     private static final float LERP_FACTOR = 0.04f;
 
+    private int ticks;
+
     /*=*=*=*=*=*=*=*=*=* LEVEL Objects (clear after each level dispose) *=*=*=*=*=*=*=*=*=*/
     /** The Box2D world */
     public World world;
@@ -179,6 +181,8 @@ public class LevelModel {
     private TextureRegion reticleTexture;
     /** The shipwreck texture. */
     private FilmStrip shipwreckTexture;
+    public static final float BOB_TIME =  240.f;
+    public static final float BOB_AMP = 0.3f;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -1145,7 +1149,9 @@ public class LevelModel {
 
         // reset camera transform for other player-centered texture (because health bar isn't in game units)
         canvas.begin();
-        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy();
+        ticks++;
+
+        Vector2 playerPosOnScreen = getPlayer().getPosition().cpy().add(0, BOB_AMP * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI));
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(playerPosOnScreen);
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
@@ -1262,12 +1268,22 @@ public class LevelModel {
             standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
             // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
             for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
+                if (obj.getType() == GameObject.ObjectType.RAFT){
+                    ((Raft)obj).draw(canvas, ticks);
+                }
+                else {
                     obj.draw(canvas);
+                }
             }
         } else {
             getObjects().sort(new renderOrderComparator());
             for(GameObject obj : getObjects())
-                obj.draw(canvas);
+                if (obj.getType() == GameObject.ObjectType.RAFT){
+                    ((Raft)obj).draw(canvas, ticks);
+                }
+            else {
+                    obj.draw(canvas);
+                }
         }
     }
 
