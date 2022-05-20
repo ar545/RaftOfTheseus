@@ -1012,6 +1012,7 @@ public class LevelModel {
             GameObject.ObjectType oType = o.getType();
             boolean isStationary = (oType == GameObject.ObjectType.STATIONARY);
             boolean isGoal = (oType == GameObject.ObjectType.GOAL);
+            boolean isShipwreck = (oType == GameObject.ObjectType.SHIPWRECK);
             boolean isRock = false;
             boolean isTerrain = false;
             if (isStationary) {
@@ -1021,7 +1022,7 @@ public class LevelModel {
                 if (st == TERRAIN || st == CLIFF_TERRAIN)
                     isTerrain = true;
             }
-            boolean hasSurf = isGoal || isRock || isTerrain;
+            boolean hasSurf = isGoal || isShipwreck || isRock || isTerrain;
             // add the surf pattern to the texture
             if (hasSurf) {
                 Vector2 pos = o.getPosition().scl(1.0f/GRID_SIZE).add(1, 1); // in tiles, offset
@@ -1031,11 +1032,13 @@ public class LevelModel {
                 // object center, in tile coords:
                 float cx = rx + 0.5f;
                 float cy = ry + 0.5f;
+                if (isShipwreck)
+                    cy -= 0.15f;
 
                 // determine surf shape
-                boolean isRound = isGoal || isRock;
+                boolean isRound = isGoal || isRock || isShipwreck;
                 // object radius (only used if isRound is true)
-                float rockRadius = isRock ? 0.6f : 0.97f;
+                float rockRadius = isGoal ? 0.97f : 0.6f;
 
                 // iterate through neighboring tiles (but don't go OOB)
                 for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x+1, rx+1); tx++) {
@@ -1175,6 +1178,14 @@ public class LevelModel {
         Vector2 playerPosOnScreen = getPlayer().getPosition().cpy().add(0, BOB_AMP * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI));
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(playerPosOnScreen);
+        canvas.end();
+
+        // draw starbursts after health bar
+        canvas.begin(cameraTransform);
+        drawStarbursts();
+        canvas.end();
+
+        canvas.begin();
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
         drawReticle();
         canvas.end();
@@ -1280,7 +1291,6 @@ public class LevelModel {
      */
     public void drawObjects(float time){
         if (canvas.USE_SHADER) {
-            //awooga
             for(GameObject obj : floatingObjectDrawList) { // id shader is on, draw floaty objects with shader
                 canvas.useItemShader(time);
                 switch(obj.getType()) {
@@ -1319,6 +1329,15 @@ public class LevelModel {
             else {
                     obj.draw(canvas);
                 }
+        }
+    }
+
+    private void drawStarbursts() {
+        // draw starbursts on top of everything else
+        for(GameObject obj : floatingObjectDrawList) { // id shader is on, draw floaty objects with shader
+            if(obj.getType() == GameObject.ObjectType.TREASURE) {
+                ((Treasure)obj).drawStar(canvas);
+            }
         }
     }
 
