@@ -229,7 +229,7 @@ vec4 sample_flow_map(vec2 uv, vec2 grid_point) {
 
     float height = texture2D(u_texture, uv).r; // only uses one channel
     float speed = dot(flow_vector, flow_vector); // actually speed squared, but it doesn't matter
-    speed = min(1.0, 50.0*speed);
+//    speed = min(1.0, 50.0*speed);
     vec3 normal = texture2D(normal_texture, uv).rgb * 2.0 - 1.0;
     vec2 gradient = normal.xy/normal.z + texture_based_offset;
     return vec4(height, gradient, speed);
@@ -258,7 +258,7 @@ vec3 get_texture_wave(vec2 world_xy) {
     float water_speed = combined.w;
 
     // increase height using water_speed to make currents more visible
-    float speed_scaling = 1.0+2.0*water_speed;
+    float speed_scaling = 1.0 + 30.0*water_speed;// + 2000.0*max(0.0, water_speed-0.3);
 
     return vec3(height, gradient) * texture_wave_amplitude * speed_scaling;
 }

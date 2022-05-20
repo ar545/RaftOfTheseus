@@ -36,8 +36,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.JsonReader;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.Controllers;
+import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.util.XBoxController;
 
@@ -81,8 +83,9 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** Middle portion of the status forground (colored region) */
 	private TextureRegion statusFrgMiddle;
 	/** Right cap to the status forground (colored region) */
-	private TextureRegion statusFrgRight;	
-
+	private TextureRegion statusFrgRight;
+	private FilmStrip shark;
+	private final FrameCalculator fc = new FrameCalculator(0);
 	/** Default budget for asset loader (do nothing but load 60 fps) */
 	private static int DEFAULT_BUDGET = 15;
 	/** Standard window size (for scaling) */
@@ -218,6 +221,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 		// Load the next two images immediately.
 		background = internal.getEntry( "background", Texture.class );
+		shark = new FilmStrip(internal.getEntry("shark", Texture.class), 1, 17);
 		background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
 		statusBar = internal.getEntry( "progress", Texture.class );
 
@@ -308,12 +312,22 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 		canvas.draw(statusFrgLeft, Color.WHITE,   centerX-width/2, centerY, scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT);
 		if (progress > 0) {
-			float span = progress*(width-2*scale*PROGRESS_CAP)/2.0f;
+			float span = progress*(width-2*scale*PROGRESS_CAP)/1.1f;
 			canvas.draw(statusFrgRight, Color.WHITE,  centerX-width/2+scale*PROGRESS_CAP+span, centerY, scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT);
 			canvas.draw(statusFrgMiddle, Color.WHITE, centerX-width/2+scale*PROGRESS_CAP, centerY, span, scale*PROGRESS_HEIGHT);
+			animateShark(span);
 		} else {
 			canvas.draw(statusFrgRight, Color.WHITE,  centerX-width/2+scale*PROGRESS_CAP, centerY, scale*PROGRESS_CAP, scale*PROGRESS_HEIGHT);
 		}
+	}
+
+	private void animateShark(float span){
+		// shark moving toward progress bar
+		fc.addTime(0.5f);
+		fc.setFrame(1f, 0, 17, false);
+		shark.setFrame(fc.getFrame());
+		canvas.draw(shark, Color.WHITE,  centerX-width/2+scale*PROGRESS_CAP+span + shark.getRegionWidth() / 2,
+				centerY - shark.getRegionHeight() / 2, -shark.getRegionWidth(), shark.getRegionHeight());
 	}
 
 	// ADDITIONAL SCREEN METHODS

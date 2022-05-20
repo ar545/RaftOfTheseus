@@ -30,6 +30,7 @@ public class Stationary extends GameObject {
     protected static final int plantB = -2;
     protected static final int plantC = -3;
     protected static final int plantD = -4;
+    protected static final int plantStatic = -5;
     protected static final int NON_ROCK = Integer.MAX_VALUE;
     protected static final int REGULAR = 0;
 
