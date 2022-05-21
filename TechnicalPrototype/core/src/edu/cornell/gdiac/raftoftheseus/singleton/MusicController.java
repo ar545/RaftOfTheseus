@@ -24,7 +24,7 @@ public class MusicController {
     /** Whether the player was in danger */
     private boolean wasInDanger = false;
     /** Whether the level is complete. */
-    private boolean levelComplete = true;
+    private boolean levelComplete = false;
 
     /**
      * Constructor for MusicController
@@ -168,7 +168,7 @@ public class MusicController {
     }
 
     /**
-     * Fades out both explore and danger music in separate threads.
+     * Fades out both all music threads;
      */
     public void completeMusic(){
         if(!levelComplete) {
@@ -226,7 +226,8 @@ public class MusicController {
     public void resumeMusic(){
         resetThreads();
         for(DynamicMusic m : music.values()){
-            m.getMusic().pause();
+            m.getMusic().setPosition(0);
+            m.getMusic().play();
         }
     }
 

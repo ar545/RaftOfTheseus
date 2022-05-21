@@ -286,6 +286,7 @@ public class WorldController implements Screen, ContactListener {
         if (complete || failed) {
             // Do things that only happen once after completing the level.
             if(!wasComplete && complete) {
+                MusicController.getInstance().completeMusic();
                 SfxController.getInstance().playSFX("level_complete");
                 SfxController.getInstance().setLevelComplete();
                 wasComplete = true;
