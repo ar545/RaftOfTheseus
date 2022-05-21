@@ -154,6 +154,7 @@ public class MusicController {
         musicPreset = 0;
         setMusic();
         playMusic("menu");
+        music.get("menu").setFadeIn(true);
     }
 
     /**
