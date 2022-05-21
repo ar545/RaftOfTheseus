@@ -139,7 +139,7 @@ public class Raft extends GameObject implements Animated {
      * @param position: position of raft
      */
     public Raft(Vector2 position) {
-        physicsObject = new BoxObstacle(OBJ_WIDTH , OBJ_HEIGHT);
+        physicsObject = new CapsuleObstacle(OBJ_WIDTH , OBJ_HEIGHT);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER;
