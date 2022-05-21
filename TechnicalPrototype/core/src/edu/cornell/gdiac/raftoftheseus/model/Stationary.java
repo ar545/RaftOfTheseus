@@ -146,16 +146,16 @@ public class Stationary extends GameObject {
         boolean isCorner = true;
         switch (terrain) {
             case 1:
-                vertices = new float[]{3, 0, 3, 3, 2, 2.8f, 0.1f, 1.5f, 0, 0};
+                vertices = new float[]{3, 0, 3, 3, 2.9f, 3, 2, 2.8f, 0.1f, 1.5f, 0, 0.1f, 0, 0};
                 break;
             case 2:
-                vertices = new float[]{0, 0, 3, 0, 2.7f, 1.5f, 1.1f, 2.7f, 0, 3};
+                vertices = new float[]{0, 0, 3, 0, 3, 0.1f, 2.7f, 1.5f, 1.1f, 2.7f, 0.1f, 3, 0, 3};
                 break;
             case 8:
-                vertices = new float[]{3, 3, 0, 3, 0.4f, 1.4f, 1.9f, 0.3f, 3, 0};
+                vertices = new float[]{3, 3, 0, 3, 0, 2.9f, 0.4f, 1.4f, 1.9f, 0.3f, 2.9f, 0, 3, 0};
                 break;
             case 9:
-                vertices = new float[]{0, 3, 0, 0, 1, 0.3f, 2.6f, 1.4f, 3, 3};
+                vertices = new float[]{0, 3, 0, 0, 0.1f, 0, 1, 0.3f, 2.6f, 1.4f, 3, 2.9f, 3, 3};
                 break;
             default:
                 isCorner = false;
