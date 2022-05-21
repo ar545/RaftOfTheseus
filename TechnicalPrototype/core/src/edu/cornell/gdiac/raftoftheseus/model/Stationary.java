@@ -100,30 +100,13 @@ public class Stationary extends GameObject {
      * @param terrain the terrainType */
     public Stationary(Vector2 position, StationaryType rt, int terrain) {
         stationaryType = rt;
-        if(stationaryType == StationaryType.TERRAIN){
-            terrainType = terrain;
-            initBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
-            setPosition(position);
-            physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
-        } else if (stationaryType == StationaryType.CLIFF_TERRAIN){
-            terrainType = terrain;
-            if(hasLowerHitBox(terrain)){
-                initBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
-            }else{
-                initCliffBoxBody(TERRAIN_SIZE, TERRAIN_SIZE);
-            }
-
-            setPosition(position);
-            physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
-        }
-        else{ throw new RuntimeException("Stationary.java: passed param is not TERRAIN, incorrect constructor use."); }
-    }
-
-    /** init the physics body for cliff-like terrain (that blocks spear) */
-    private void initCliffBoxBody(float width, float height) {
-        physicsObject = new BoxObstacle(width, height);
-        physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN_CLIFF;
-        physicsObject.getFilterData().maskBits = MASK_TERRAIN_CLIFF;
+        terrainType = terrain;
+        if (stationaryType != StationaryType.TERRAIN && stationaryType != StationaryType.CLIFF_TERRAIN)
+            throw new RuntimeException("Stationary.java: passed param is not TERRAIN, incorrect constructor use.");
+        boolean isCliff = stationaryType == StationaryType.CLIFF_TERRAIN && !hasLowerHitBox(terrain);
+        initPolygonBody(TERRAIN_SIZE, TERRAIN_SIZE, isCliff, terrain);
+        setPosition(position);
+        physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
     }
 
     /** see if a terrain cliff has lower hit box */
@@ -137,23 +120,67 @@ public class Stationary extends GameObject {
     public Stationary(float[] polygonVertices){
         physicsObject = new PolygonObstacle(polygonVertices);
         physicsObject.setBodyType(BodyDef.BodyType.StaticBody);
-        setTerrainBits();
+        setTerrainBits(false);
         stationaryType = StationaryType.WALL;
     }
 
     /**
+     * init the physics body for rocks
+     *
      * @param width of box obstacle
      * @param height of box obstacle
      */
     private void initBoxBody(float width, float height){
         physicsObject = new BoxObstacle(width, height);
-        setTerrainBits();
+        setTerrainBits(false);
+    }
+
+    /**
+     * init the physics body for terrain or cliff-like terrain (that blocks spear)
+     *
+     * @param width of box obstacle
+     * @param height of box obstacle
+     */
+    private void initPolygonBody(float width, float height, boolean isCliff, int terrain){
+        float[] vertices = new float[10]; // 0,0 to 3,3
+        boolean isCorner = true;
+        switch (terrain) {
+            case 1:
+                vertices = new float[]{3, 0, 3, 3, 2, 2.8f, 0.1f, 1.5f, 0, 0};
+                break;
+            case 2:
+                vertices = new float[]{0, 0, 3, 0, 2.7f, 1.5f, 1.1f, 2.7f, 0, 3};
+                break;
+            case 8:
+                vertices = new float[]{3, 3, 0, 3, 0.4f, 1.4f, 1.9f, 0.3f, 3, 0};
+                break;
+            case 9:
+                vertices = new float[]{0, 3, 0, 0, 1, 0.3f, 2.6f, 1.4f, 3, 3};
+                break;
+            default:
+                isCorner = false;
+                physicsObject = new BoxObstacle(width, height);
+                break;
+        }
+        if (isCorner) {
+            for (int i = 0; i < (int)(vertices.length/2); i ++) {
+                vertices[2*i] = vertices[2*i] * (width / 3.0f) - 1.5f;
+                vertices[2*i + 1] = vertices[2*i + 1] * (height / 3.0f) - 1.5f;
+            }
+            physicsObject = new PolygonObstacle(vertices);
+        }
+        setTerrainBits(isCliff);
     }
 
     /** Set the masking as terrain for collision detection. */
-    private void setTerrainBits(){
-        physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
-        physicsObject.getFilterData().maskBits = MASK_TERRAIN;
+    private void setTerrainBits(boolean isCliff){
+        if (!isCliff) {
+            physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN;
+            physicsObject.getFilterData().maskBits = MASK_TERRAIN;
+        } else {
+            physicsObject.getFilterData().categoryBits = CATEGORY_TERRAIN_CLIFF;
+            physicsObject.getFilterData().maskBits = MASK_TERRAIN_CLIFF;
+        }
     }
 
     /** @param radius of wheel obstacle */
