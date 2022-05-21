@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.JsonWriter;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.raftoftheseus.singleton.InputController;
+import edu.cornell.gdiac.raftoftheseus.singleton.MusicController;
 import edu.cornell.gdiac.raftoftheseus.singleton.SfxController;
 import edu.cornell.gdiac.util.ScreenListener;
 import org.lwjgl.Sys;
@@ -233,6 +234,7 @@ public class SettingsMode implements Screen, InputProcessor {
             public void changed(ChangeEvent event, Actor actor) {
                 musicVolume = musicSlider.getValue();
                 SfxController.getInstance().setMasterMusicVolume(musicVolume / 100);
+                MusicController.getInstance().setMasterMusicVolume(musicVolume / 100);
                 musicValueLabel.setText((int) Math.floor(musicVolume));
             }
         });
