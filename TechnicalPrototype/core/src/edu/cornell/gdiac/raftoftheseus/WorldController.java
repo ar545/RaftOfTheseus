@@ -284,7 +284,9 @@ public class WorldController implements Screen, ContactListener {
             drawPause();
         }
         if (complete || failed) {
+            // Do things that only happen once after completing the level.
             if(!wasComplete && complete) {
+                MusicController.getInstance().completeMusic();
                 SfxController.getInstance().playSFX("level_complete");
                 SfxController.getInstance().setLevelComplete();
                 wasComplete = true;
@@ -873,7 +875,7 @@ public class WorldController implements Screen, ContactListener {
         resolveSFX(player);
     }
 
-    private boolean useThread = false;
+    // Store information about enemies.
     private boolean sharkWas = false;
     private boolean sirenWas = false;
 
@@ -883,21 +885,36 @@ public class WorldController implements Screen, ContactListener {
         boolean sharkNow = false;
         boolean sirenNow = false;
         for(Shark s : levelModel.getSharks()){
-            if(s.canHear()){
+            if(s.getTargetDistance() < 12f){
                 sharkNow = true;
                 break;
             }
         }
         for(Siren s : levelModel.getSirens()){
-            if(s.canHear()){
+            if(s.getTargetDistance() < 12f){
                 sirenNow = true;
                 break;
             }
         }
 
         // Update music
-        if(useThread) {
-            MusicController.getInstance().updateMusic(sharkNow, sirenNow);
+        if(USE_THREAD) {
+            if(sirenNow && !sirenWas){
+                System.out.println("fadeIn triggered");
+                sirenWas = true;
+                MusicController.getInstance().tradeMusic(true, "siren");
+            } else if (!sirenNow && sirenWas){
+                sirenWas = false;
+                MusicController.getInstance().tradeMusic(false, "siren");
+            }
+            if(sharkNow && !sharkWas){
+                sharkWas = true;
+                MusicController.getInstance().tradeMusic(true, "shark");
+            } else if (!sharkNow && sharkWas){
+                sharkWas = false;
+                MusicController.getInstance().tradeMusic(false, "shark");
+            }
+
         } else {
             boolean wasInDanger = sharkWas || sirenWas;
             boolean nowInDanger = sharkNow || sirenNow;
@@ -909,11 +926,11 @@ public class WorldController implements Screen, ContactListener {
             }
             SfxController.getInstance().updateMusic();
         }
-        sirenWas = sirenNow;
-        sharkWas = sharkNow;
     }
 
+    // Store information about player movement and on current location.
     private boolean wasMoving = false;
+    private boolean wasCurrent = false;
 
     /**
      * Start and stop sail sounds if necessary.
@@ -926,8 +943,16 @@ public class WorldController implements Screen, ContactListener {
             wasMoving = true;
         } else if(wasMoving && !player.isMoving()){
             SfxController.getInstance().stopSFX("raft_sail_wind");
-//            SfxController.getInstance().playSFX("raft_sail_down");
+            SfxController.getInstance().playSFX("raft_sail_down");
             wasMoving = false;
+        }
+        // Update current sounds
+        if(!wasCurrent && levelModel.playerOnCurrent()){
+            SfxController.getInstance().playSFX("current_flow", true);
+            wasCurrent = true;
+        } else if (wasCurrent && !levelModel.playerOnCurrent()){
+            SfxController.getInstance().stopSFX("current_flow");
+            wasCurrent = false;
         }
     }
 
@@ -1232,7 +1257,7 @@ public class WorldController implements Screen, ContactListener {
      * <p>
      * This method disposes of the world and creates a new one.
      */
-    public void setLevel(int level_int){
+    public void setLevel(int level_int, boolean reset){
         // check if load the same level, if not, reset lerp vector
         boolean same_level = level_int == level_id;
         level_id = level_int;
@@ -1272,8 +1297,22 @@ public class WorldController implements Screen, ContactListener {
         transitionTimer = 0f;
 
         // Reset Soundcontroller
-        SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
-        SfxController.getInstance().startLevelMusic();
+        if(reset) {
+            if (USE_THREAD) {
+                MusicController.getInstance().resumeMusic();
+            } else {
+                SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
+                SfxController.getInstance().startLevelMusic();
+            }
+        } else {
+            if (USE_THREAD) {
+                MusicController.getInstance().startLevelMusic(level_int);
+            } else {
+                SfxController.getInstance().setMusicPreset(level_data.getInt("music_preset", 1));
+                SfxController.getInstance().startLevelMusic();
+            }
+        }
+        SfxController.getInstance().playSFX("calm_ocean", true);
 
         // Reset hint displays
         resetControlHints();
@@ -1316,7 +1355,9 @@ public class WorldController implements Screen, ContactListener {
      * This method disposes of the world and creates a new one.
      */
     public void reset() {
-        SfxController.getInstance().haltMusic();
-        setLevel(level_id);
+        if(USE_THREAD) MusicController.getInstance().pauseMusic();
+        else SfxController.getInstance().haltMusic();
+        SfxController.getInstance().haltSFX();
+        setLevel(level_id, true);
     }
 }

@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.raftoftheseus.singleton;
 
 import com.badlogic.gdx.audio.Music;
+import edu.cornell.gdiac.raftoftheseus.model.util.Timer;
 
 /**
  * Wrapper class to allow control of music dynamics based on an FSM.
@@ -17,10 +18,14 @@ public class DynamicMusic implements Runnable {
     /** Whether this music is in the process or has already faded in/out. */
     private boolean fadeIn;
     /** Whether this music is done fading in or out. */
-    private boolean doneFade;
+    private boolean doneFade = true;
     /** Whether to stop this thread. */
     private boolean exit;
+    /** The thread to run the dynamic changes on. */
     Thread t;
+
+    /** Timestamp */
+    private Timer timeStamp;
 
     public DynamicMusic(String index, Music m)
     {
@@ -28,6 +33,7 @@ public class DynamicMusic implements Runnable {
         this.index = index;
         this.fadeIn = false;
         exit = false;
+        timeStamp = new Timer();
     }
 
     /**
@@ -83,6 +89,7 @@ public class DynamicMusic implements Runnable {
      * Fades in this music file while it can still increase its volume.
      */
     private void fadeIn(){
+        print("fading in");
         long timeStamp = System.currentTimeMillis();
         float percentage = (float) (System.currentTimeMillis() - timeStamp) / MusicController.getTradeTime();
         float maxVolume = MusicController.getMusicVolume();
