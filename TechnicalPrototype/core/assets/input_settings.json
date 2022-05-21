@@ -1,13 +1,13 @@
 {
 "mouse keyboard": {
-	"next": "1",
-	"previous": "2",
+	"next": "8",
+	"previous": "9",
 	"reset": "R",
-	"debug": "G",
-	"exit": "0",
+	"debug": "O",
+	"exit": "P",
 	"fire": 0,
 	"fireKey": "Space",
-	"map": "Z",
+	"map": "Tab",
 	"map_alt": "M",
 	"sprint": "Shift",
 	"w": "W",
@@ -19,7 +19,7 @@
 	"left": "Left",
 	"right": "Right",
 	"test": "T",
-	"pause": "P",
+	"pause": "Escape",
 	"special": "C",
 	"rotate left": "J",
 	"rotate right": "K"
