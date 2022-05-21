@@ -945,7 +945,7 @@ public class WorldController implements Screen, ContactListener {
             wasMoving = true;
         } else if(wasMoving && !player.isMoving()){
             SfxController.getInstance().stopSFX("raft_sail_wind");
-            SfxController.getInstance().playSFX("raft_sail_down");
+//            SfxController.getInstance().playSFX("raft_sail_down");
             wasMoving = false;
         }
         // Update current sounds

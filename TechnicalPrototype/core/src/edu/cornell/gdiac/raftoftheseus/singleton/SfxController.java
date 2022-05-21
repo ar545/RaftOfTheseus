@@ -34,6 +34,8 @@ public class SfxController {
     private ArrayMap<Integer, JsonValue> musicPresets;
     /** ArrayMap to link sfx names to Sound instances. */
     private ArrayMap<String, Sound> sfx;
+    /** ID storing to adjust sfx volume. */
+    private ArrayMap<String, Long> sfx_ids;
     /** ArrayMap to link music names to Music instances. */
     private ArrayMap<String, Music> music;
     /** Whether or not a music trade is in progress. */
@@ -118,6 +120,7 @@ public class SfxController {
     public SfxController(){
         musicPresets = new ArrayMap<>();
         sfx = new ArrayMap<>();
+        sfx_ids = new ArrayMap<>();
         music = new ArrayMap<>();
         STATE = MusicState.SAFE;
     }
@@ -181,6 +184,11 @@ public class SfxController {
      */
     public void setMasterSfxVolume(float sfxVolume) {
         this.sfxVolume = sfxVolume;
+        for(String s : sfx_ids.keys()) {
+            if (s.equals("raft_sail_wind") || s.equals("current_flow") || s.equals("calm_ocean")) {
+                sfx.get(s).setVolume(sfx_ids.get(s), sfxVolume);
+            }
+        }
     }
 
     /**
@@ -211,6 +219,7 @@ public class SfxController {
         } else {
             id = s.play(sfxvol, 1, pan);
         }
+        sfx_ids.put(name, id);
         return id;
     }
 

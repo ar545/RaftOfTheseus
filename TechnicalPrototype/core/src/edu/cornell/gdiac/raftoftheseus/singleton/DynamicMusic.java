@@ -142,6 +142,9 @@ public class DynamicMusic implements Runnable {
         return (1 - percentage) * maxVolume >= minVolume;
     }
 
+    /** Set FadeIn to be true for core music to allow dynamic changes. */
+    public void setFadeIn(boolean fadeIn){ this.fadeIn = fadeIn; }
+
     /** To check what state this Dynamic music is in. */
     public boolean isFadeIn(){ return fadeIn; }
 

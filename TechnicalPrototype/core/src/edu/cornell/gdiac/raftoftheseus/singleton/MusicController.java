@@ -161,10 +161,12 @@ public class MusicController {
      */
     public void startLevelMusic(int level){
         setMusicPreset(level);
+        resetThreads();
         setMusicVolume(0, "shark", "siren", "explore");
         playMusic("shark", 0, true);
         playMusic("siren", 0, true);
         playMusic("explore");
+        music.get("explore").setFadeIn(true);
     }
 
     /**
