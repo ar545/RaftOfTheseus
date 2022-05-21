@@ -29,6 +29,7 @@
       "success_background_1": "images/success_1.png",
       "success_background_2": "images/success_2.png",
       "success_background_3": "images/success_3.png",
+      "success_background_tutorial": "images/success_tutorial.png",
       "raft":     "images/Obj_Player_GM.png",
       "raft_aura" : "images/Obj_AttackHighlight.png",
       "woodS":     "images/Small_Log.png",
