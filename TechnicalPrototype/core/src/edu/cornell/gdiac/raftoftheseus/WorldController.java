@@ -504,9 +504,12 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
+            table.add(UICreator.createLabel("LEVEL " + level_id, skin, 0.5f)).padTop(-20);
+            table.row();
+
             TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
             resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
-            table.add(resumeButton).padTop(-20);
+            table.add(resumeButton);
             table.row();
 
             TextButton restartButton = UICreator.createTextButton("RESTART", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
@@ -557,9 +560,12 @@ public class WorldController implements Screen, ContactListener {
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
         float fontSize = 0.6f * Gdx.graphics.getDensity();
 
+        table.add(UICreator.createLabel("LEVEL " + level_id, skin, 0.5f)).padTop(-20);
+        table.row();
+
         TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.MEDIUM);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
-        table.add(mainButton).expandX().align(Align.center).padTop(50);
+        table.add(mainButton).expandX().align(Align.center);
         table.row();
 
         if (!didFail) {
