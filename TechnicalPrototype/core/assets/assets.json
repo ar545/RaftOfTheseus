@@ -124,7 +124,8 @@
     "button_click" : "sounds/Sfx_Button_MainMenuClick.ogg",
     "map_open" : "sounds/Sfx_Map_Opening.ogg",
     "shark_hit" : "sounds/Sfx_Shark_Hit.ogg",
-    "calm_ocean" : "sounds/Sfx_CalmOcean.ogg"
+    "calm_ocean" : "sounds/Sfx_CalmOcean.ogg",
+    "note_fire" : "sounds/Sfx_Note_Fire.ogg"
   },
   "music" : {
     "menu": "music/Msc_Menu_RoTTheme.ogg",

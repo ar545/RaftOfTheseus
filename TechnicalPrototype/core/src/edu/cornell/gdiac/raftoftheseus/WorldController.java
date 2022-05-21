@@ -829,6 +829,7 @@ public class WorldController implements Screen, ContactListener {
         for(Siren s : levelModel.getSirens()){
             s.updateAI(dt);
             if(s.willAttack()){
+                SfxController.getInstance().playSFX("note_fire");
                 levelModel.createNote(s.getPosition().cpy(), s.getTargetDirection(levelModel.getPlayerCurrentVelocity()));
             }
         }
@@ -1167,6 +1168,7 @@ public class WorldController implements Screen, ContactListener {
             r.setProjectileForce(((Note) g).getForce());
             r.addHealth(Note.DAMAGE);
             g.setDestroyed(true);
+            SfxController.getInstance().playSFX("raft_damage");
         }
     }
 
