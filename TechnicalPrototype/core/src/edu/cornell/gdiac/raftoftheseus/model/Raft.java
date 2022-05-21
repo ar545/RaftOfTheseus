@@ -363,6 +363,7 @@ public class Raft extends GameObject implements Animated {
         super.draw(canvas);
         if(raftState == RaftState.CHARGING || canFire()){
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
+            attackAura.setColor(canFire() ? Color.YELLOW : Color.RED);
             super.draw(canvas, attackAura);
         }
     }
@@ -375,6 +376,7 @@ public class Raft extends GameObject implements Animated {
         }
         if(raftState == RaftState.CHARGING || canFire()){
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
+            attackAura.setColor(canFire() ? Color.YELLOW : Color.RED);
             super.draw(canvas, attackAura);
         }
     }

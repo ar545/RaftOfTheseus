@@ -72,7 +72,7 @@ public class LevelModel {
     private PooledList<Siren> sirens = new PooledList<>();
     /** All spears in the world */
     private PooledList<Spear> spears = new PooledList<>();
-    private PooledList<GameObject> woodTreasureDrawList  = new PooledList<>();
+    private PooledList<GameObject> floatingObjectDrawList = new PooledList<>();
     private PooledList<GameObject> currents  = new PooledList<>();
     private PooledList<GameObject> standardDrawList = new PooledList<>();
     /** List of treasure in this world */
@@ -130,9 +130,14 @@ public class LevelModel {
     /** Texture for all treasures */
     private FilmStrip treasureTexture;
     private FilmStrip starburstTexture;
-    private FilmStrip daisy;
-    private FilmStrip yellowDaisy;
-    private FilmStrip plantC;
+    /** orange daisy filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] oraDaisy = new FilmStrip[DIFFICULTY_COUNT];
+    /** red daisy filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] redDaisy = new FilmStrip[DIFFICULTY_COUNT];
+    /** translational moving grass filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] transGrass = new FilmStrip[DIFFICULTY_COUNT];
+    /** rotational moving grass filmstrip array, corresponding to level difficulty */
+    private FilmStrip[] rotGrass = new FilmStrip[DIFFICULTY_COUNT];
     /** Texture for wood pieces that represent single pile of log */
     private TextureRegion woodSTexture;
     /** Texture for wood pieces that represents double pile of logs */
@@ -147,8 +152,6 @@ public class LevelModel {
     private TextureRegion regularRockTexture;
     /** Texture for all rock, as they look the same */
     private TextureRegion sharpRockTexture;
-    /** Texture for all the plant which has the same hit-box as the rock */
-    private TextureRegion[] plantTexture = new TextureRegion[Tiled.FIXED_PLANT_COUNT];
     /** Texture for current placeholder: texture alas in future */
     private TextureRegion currentTexture;
     /** Stun overlay for enemies */
@@ -182,7 +185,7 @@ public class LevelModel {
     /** The shipwreck texture. */
     private FilmStrip shipwreckTexture;
     public static final float BOB_TIME =  240.f;
-    public static final float BOB_AMP = 0.3f;
+    public static final float BOB_AMP = 0.15f;
 
     /*=*=*=*=*=*=*=*=*=* INTERFACE: getter and setter *=*=*=*=*=*=*=*=*=*/
     /** get the reference to the player avatar */
@@ -235,12 +238,8 @@ public class LevelModel {
         targetTexture = new TextureRegion(directory.getEntry("target", Texture.class));
         regularRockTexture = new TextureRegion(directory.getEntry("regular_rock", Texture.class));
         sharpRockTexture = new TextureRegion(directory.getEntry("sharp_rock", Texture.class));
-        plantTexture[0] = new TextureRegion(directory.getEntry("plantB", Texture.class));
         treasureTexture = new FilmStrip(directory.getEntry("treasure", Texture.class), 1, 7);
         starburstTexture = new FilmStrip(directory.getEntry("treasure_starburst", Texture.class), 2, 5);
-        plantC = new FilmStrip(directory.getEntry("plantC", Texture.class), 2, 4);
-        daisy = new FilmStrip(directory.getEntry("plantD", Texture.class), 4, 4);
-        yellowDaisy = new FilmStrip(directory.getEntry("plantA", Texture.class), 4, 4);
         currentTexture = new TextureRegion(directory.getEntry("current", Texture.class));
         stunTexture = new FilmStrip(directory.getEntry("stun_overlay", Texture.class), 1, 4);
         sharkTexture = new FilmStrip(directory.getEntry("shark", Texture.class), 1, 17);
@@ -260,6 +259,23 @@ public class LevelModel {
         fuelTexture = new TextureRegion(directory.getEntry("fuel", Texture.class));
         shipwreckTexture = new FilmStrip(directory.getEntry("shipwreck", Texture.class), 3, 1);
         gatherTerrainAssets(directory.getEntry("terrain",Texture.class));
+        gatherPlantAssets();
+    }
+
+    /** gather the plants assets for 4 kinds of plants (2 daises, 2 grasses) corresponding to level difficulty */
+    private void gatherPlantAssets() {
+        transGrass[0] = new FilmStrip(directory.getEntry("grassTransGreen", Texture.class), 2, 4);
+        transGrass[1] = new FilmStrip(directory.getEntry("grassTransYellow", Texture.class), 2, 4);
+        transGrass[2] = new FilmStrip(directory.getEntry("grassTransPurple", Texture.class), 2, 4);
+        rotGrass[0] = new FilmStrip(directory.getEntry("grassRotGreen", Texture.class), 2, 4);
+        rotGrass[1] = new FilmStrip(directory.getEntry("grassRotYellow", Texture.class), 2, 4);
+        rotGrass[2] = new FilmStrip(directory.getEntry("grassRotPurple", Texture.class), 2, 4);
+        redDaisy[0] = new FilmStrip(directory.getEntry("daisyRedGreen", Texture.class), 4, 4);
+        redDaisy[1] = new FilmStrip(directory.getEntry("daisyRedYellow", Texture.class), 4, 4);
+        redDaisy[2] = new FilmStrip(directory.getEntry("daisyRedPurple", Texture.class), 4, 4);
+        oraDaisy[0] = new FilmStrip(directory.getEntry("daisyOraGreen", Texture.class), 4, 4);
+        oraDaisy[1] = new FilmStrip(directory.getEntry("daisyOraYellow", Texture.class), 4, 4);
+        oraDaisy[2] = new FilmStrip(directory.getEntry("daisyOraPurple", Texture.class), 4, 4);
     }
 
     private void gatherTerrainAssets(Texture terrainTexture) {
@@ -372,7 +388,7 @@ public class LevelModel {
         sirens.clear();
         plants.clear();
         spears.clear();
-        woodTreasureDrawList.clear();
+        floatingObjectDrawList.clear();
         standardDrawList.clear();
         currents.clear();
         treasureCount = 0; // setting counter to 0 will repopulate the array
@@ -427,8 +443,9 @@ public class LevelModel {
         }
     }
 
+    /** easy, no star: 01234 (5 total); mid: 56789 10 11 12 (8 total); hard: 13 14 15 16 17 18 19 (7 total) **/
     private void setDifficulty(int level_int) {
-        difficulty = level_int < 6 ? 0 : (level_int < 13 ? 1 : 2);
+        difficulty = level_int < 5 ? 0 : (level_int < 13 ? 1 : 2);
     }
 
     public int getDifficulty() {
@@ -659,10 +676,11 @@ public class LevelModel {
         } else { // terrain or cliff terrain
             if(Stationary.isPlant(rock_int)){ // plant terrain: prepare animated object
                 Plant plant = new Plant(compute_temp, type, rock_int);
-                if(rock_int == Stationary.plantD) { plant.setTexture(daisy); }
-                else if(rock_int == Stationary.plantC) { plant.setTexture(plantC); }
-                else if(rock_int == Stationary.plantA) { plant.setTexture(yellowDaisy); }
-                else{ plant.setTexture(plantTexture[0]); }
+                if(rock_int == Stationary.plantD) { plant.setTexture(redDaisy[difficulty]); }
+                else if(rock_int == Stationary.plantC) { plant.setTexture(rotGrass[difficulty]); }
+                else if(rock_int == Stationary.plantB) { plant.setTexture(transGrass[difficulty]); }
+                else if(rock_int == Stationary.plantA) { plant.setTexture(oraDaisy[difficulty]); }
+                else{ System.out.println("unreadable rock int"); }
                 addObject(plant);
                 plants.add(plant);
                 standardDrawList.add(plant);
@@ -688,7 +706,7 @@ public class LevelModel {
         treasure[treasureCount] = this_treasure;
         treasureCount++;
         addObject(this_treasure);
-        woodTreasureDrawList.add(this_treasure);
+        floatingObjectDrawList.add(this_treasure);
     }
 
     /** Add Goal Objects to the world, using the Json value for goal.
@@ -712,7 +730,7 @@ public class LevelModel {
         Wood wood = new Wood(compute_temp, value);
         wood.setTexture(findWoodTexture(value));
         addObject(wood);
-        woodTreasureDrawList.add(wood);
+        floatingObjectDrawList.add(wood);
     }
 
     private TextureRegion findWoodTexture(int value){
@@ -832,7 +850,7 @@ public class LevelModel {
      * @param obj The object to delete */
     public void removeObj(GameObject obj) {
         if(obj.getType() == GameObject.ObjectType.TREASURE || obj.getType() == GameObject.ObjectType.WOOD){
-            woodTreasureDrawList.remove(obj);
+            floatingObjectDrawList.remove(obj);
         } else if(obj.getType() != GameObject.ObjectType.CURRENT){
             standardDrawList.remove(obj);
         }
@@ -940,7 +958,7 @@ public class LevelModel {
         Wood this_wood = new Wood(pos, value);
         this_wood.setTexture(findWoodTexture(value));
         addQueuedObject(this_wood);
-        woodTreasureDrawList.add(this_wood);
+        floatingObjectDrawList.add(this_wood);
     }
 
     /**
@@ -994,6 +1012,7 @@ public class LevelModel {
             GameObject.ObjectType oType = o.getType();
             boolean isStationary = (oType == GameObject.ObjectType.STATIONARY);
             boolean isGoal = (oType == GameObject.ObjectType.GOAL);
+            boolean isShipwreck = (oType == GameObject.ObjectType.SHIPWRECK);
             boolean isRock = false;
             boolean isTerrain = false;
             if (isStationary) {
@@ -1003,7 +1022,7 @@ public class LevelModel {
                 if (st == TERRAIN || st == CLIFF_TERRAIN)
                     isTerrain = true;
             }
-            boolean hasSurf = isGoal || isRock || isTerrain;
+            boolean hasSurf = isGoal || isShipwreck || isRock || isTerrain;
             // add the surf pattern to the texture
             if (hasSurf) {
                 Vector2 pos = o.getPosition().scl(1.0f/GRID_SIZE).add(1, 1); // in tiles, offset
@@ -1013,11 +1032,13 @@ public class LevelModel {
                 // object center, in tile coords:
                 float cx = rx + 0.5f;
                 float cy = ry + 0.5f;
+                if (isShipwreck)
+                    cy -= 0.15f;
 
                 // determine surf shape
-                boolean isRound = isGoal || isRock;
+                boolean isRound = isGoal || isRock || isShipwreck;
                 // object radius (only used if isRound is true)
-                float rockRadius = isRock ? 0.6f : 0.97f;
+                float rockRadius = isGoal ? 0.97f : 0.6f;
 
                 // iterate through neighboring tiles (but don't go OOB)
                 for (int tx = Math.max(0, rx-1); tx <= Math.min(map_size.x+1, rx+1); tx++) {
@@ -1157,6 +1178,14 @@ public class LevelModel {
         Vector2 playerPosOnScreen = getPlayer().getPosition().cpy().add(0, BOB_AMP * (float) Math.sin((ticks % BOB_TIME)/BOB_TIME * 2 * Math.PI));
         cameraTransform.applyTo(playerPosOnScreen);
         drawHealthBar(playerPosOnScreen);
+        canvas.end();
+
+        // draw starbursts after health bar
+        canvas.begin(cameraTransform);
+        drawStarbursts();
+        canvas.end();
+
+        canvas.begin();
         if(isTutorial){ drawFuel(getPlayer().getHealthRatio(), playerPosOnScreen, time); } // fuel icon in tutorial only
         drawReticle();
         canvas.end();
@@ -1262,19 +1291,32 @@ public class LevelModel {
      */
     public void drawObjects(float time){
         if (canvas.USE_SHADER) {
-            canvas.useItemShader(time);
-            for(GameObject obj : woodTreasureDrawList) { // id shader is on, draw floaty objects with shader
-                    obj.draw(canvas);
+            for(GameObject obj : floatingObjectDrawList) { // id shader is on, draw floaty objects with shader
+                canvas.useItemShader(time);
+                switch(obj.getType()) {
+//                    case RAFT:
+//                        canvas.setItemShaderUniforms(8, 5, 0.38f, 0.10f);
+//                        break;
+                    case TREASURE:
+                        canvas.setItemShaderUniforms(1, 7, 0.1f, 0.25f);
+                        break;
+                    default:
+                        canvas.setItemShaderUniforms(1, 1, 0.0f, 0.25f);
+                        break;
+                }
+                obj.draw(canvas);
+                canvas.stopUsingShader();
             }
-            canvas.stopUsingShader();
             // draw non-floaty objects
             standardDrawList.sort(new renderOrderComparator()); // sort objects by y value, so that they are drawn in the correct order
             // (note: almost-sorted lists are sorted in O(n) time by Java, so this isn't too slow, but it could still probably be improved.)
             for(GameObject obj : standardDrawList) { // if shader is on, don't draw currents and floaty obj (wood and TR)
-                if (obj.getType() == GameObject.ObjectType.RAFT){
+                if (obj.getType() == GameObject.ObjectType.RAFT) {
+                    canvas.useItemShader(time);
+                    canvas.setItemShaderUniforms(8, 5, 0.38f, 0.10f);
                     ((Raft)obj).draw(canvas, ticks);
-                }
-                else {
+                    canvas.stopUsingShader();
+                } else {
                     obj.draw(canvas);
                 }
             }
@@ -1287,6 +1329,15 @@ public class LevelModel {
             else {
                     obj.draw(canvas);
                 }
+        }
+    }
+
+    private void drawStarbursts() {
+        // draw starbursts on top of everything else
+        for(GameObject obj : floatingObjectDrawList) { // id shader is on, draw floaty objects with shader
+            if(obj.getType() == GameObject.ObjectType.TREASURE) {
+                ((Treasure)obj).drawStar(canvas);
+            }
         }
     }
 

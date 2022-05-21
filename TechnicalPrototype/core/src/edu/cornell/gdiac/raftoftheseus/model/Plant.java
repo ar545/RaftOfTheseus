@@ -16,7 +16,7 @@ public class Plant extends Stationary {
         static void setFrame(FrameCalculator fc){ fc.setFrame(animationSpeed, start, frames, reverse); }
     }
 
-    private static class PlantC{
+    private static class Grass{
         final static float animationSpeed = 2f;
         final static int start = 0;
         final static int frames = 8;
@@ -29,7 +29,7 @@ public class Plant extends Stationary {
     public Plant(Vector2 position, StationaryType rt, int terrain) { super(position, rt, terrain); }
 
     private boolean isAnimated(){
-        return terrainType == Stationary.plantD || terrainType == Stationary.plantC || terrainType == Stationary.plantA;
+        return terrainType != Stationary.plantStatic;
     }
 
     public void setAnimationFrame(float dt) {
@@ -37,7 +37,7 @@ public class Plant extends Stationary {
             fc.addTime(dt);
         }
         if(terrainType == Stationary.plantD || terrainType == Stationary.plantA) { Daisy.setFrame(fc); }
-        if(terrainType == Stationary.plantC) { PlantC.setFrame(fc); }
+        if(terrainType == Stationary.plantC || terrainType == Stationary.plantB) { Grass.setFrame(fc); }
     }
 
     public void draw(GameCanvas canvas){

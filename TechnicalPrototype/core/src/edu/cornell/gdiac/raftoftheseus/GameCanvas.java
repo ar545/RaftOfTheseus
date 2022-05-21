@@ -454,6 +454,12 @@ public class GameCanvas {
 //		spriteBatch.setProjectionMatrix(global);// custom shader must be set before this (or maybe not?)
 	}
 
+	public void setItemShaderUniforms(int rows, int cols, float yOffset, float bobAmplitude) {
+		itemShader.setUniformf("film_strip_dims", cols, rows);
+		itemShader.setUniformf("height", yOffset);
+		itemShader.setUniformf("bobbing_amplitude", bobAmplitude);
+	}
+
 	public void setDataMaps(Texture flowMap, Texture surfMap) {
 		Gdx.gl.glActiveTexture(Gdx.gl.GL_TEXTURE1);
 		flowMap.bind();

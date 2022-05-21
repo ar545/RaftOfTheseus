@@ -1087,6 +1087,7 @@ public class WorldController implements Screen, ContactListener {
             if(sw.noHealth()){
                 sw.setDestroyed(true);
                 levelModel.addWood(sw.getPosition(), Shipwreck.getDrops());
+                canvas.recalculation_required = true; // remove shipwreck surf
             }
             SfxController.getInstance().playSFX("raft_damage");
         }
