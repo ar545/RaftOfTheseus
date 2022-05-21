@@ -119,15 +119,25 @@
     "calm_ocean" : "sounds/Sfx_CalmOcean.ogg"
   },
   "music" : {
-      "m": "music/Msc_Menu_RoTTheme.ogg",
-      "e1": "music/Msc_Explore_Longing.ogg",
-      "d1": "music/Msc_Danger_Longing.ogg",
-    "e2": "music/Msc_Explore_Flow.ogg",
-    "d2": "music/Msc_Danger_Flow.ogg"
+    "menu": "music/Msc_Menu_RoTTheme.ogg",
+    "explore_longing": "music/Msc_Explore_Longing.ogg",
+    "danger_longing": "music/Msc_Danger_Longing.ogg",
+    "explore_flow": "music/Msc_Explore_Flow.ogg",
+    "danger_flow": "music/Msc_Danger_Flow.ogg",
+    "longing_explore": "music/Msc_Longing_Explore.ogg",
+    "longing_siren": "music/Msc_Longing_Siren.ogg",
+    "longing_shark": "music/Msc_Longing_Shark.ogg",
+    "flow_explore": "music/Msc_Flow_Explore.ogg",
+    "flow_siren": "music/Msc_Flow_Siren.ogg",
+    "flow_shark": "music/Msc_Flow_Shark.ogg",
+    "despair_explore": "music/Msc_Despair_Explore.ogg",
+    "despair_siren": "music/Msc_Despair_Siren.ogg",
+    "despair_shark": "music/Msc_Despair_Shark.ogg"
   },
   "jsons" : {
     "sound_settings" : "sound_settings.json",
-    "music_settings" : "music_settings.json",
+    "fsm_music_settings" : "fsm_music_settings.json",
+    "thread_music_settings" : "thread_music_settings.json",
     "object_settings" : "object_settings.json",
     "screen_settings" : "screen_settings.json",
     "input_settings" : "input_settings.json",

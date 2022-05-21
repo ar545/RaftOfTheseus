@@ -59,4 +59,12 @@ public class Timer {
         }
         return false;
     }
+
+    /**
+     * Return the amount of time elapsed from timestamp in milliseconds.
+     */
+    public long getTimeElapsed(){
+        if(!timeStamped) throw new RuntimeException("Timer not started.");
+        else return TimeUtils.timeSinceMillis(timeStamp);
+    }
 }

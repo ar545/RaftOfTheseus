@@ -43,10 +43,10 @@ public class MusicController {
         // Settings values
         JsonValue set = directory.getEntry("sound_settings", JsonValue.class);
         musicVolume = set.getFloat("music_volume", 1.0f);
-        tradeTime = set.getLong("trade_time", 1000L);
+        tradeTime = set.getLong("trade_time", 500L);
 
         // Get music presets
-        JsonValue mscpresets = directory.getEntry("music_settings", JsonValue.class);
+        JsonValue mscpresets = directory.getEntry("thread_music_settings", JsonValue.class);
         int i = 0;
         for(JsonValue m : mscpresets){
             musicPresets.put(i, m);
@@ -96,11 +96,13 @@ public class MusicController {
     /**
      * Sets the values in sfx and music based on provided ids.
      * Must be called every WorldController or MenuController change due to memory constraints on sounds.
-     * @param musicPreset is the JsonValue that contains text references to all sounds
+     * @param level is the JsonValue that contains text references to all sounds
      */
-    public void setMusicPreset(int musicPreset){
-        if (this.musicPreset != musicPreset){
-            this.musicPreset = musicPreset;
+    public void setMusicPreset(int level){
+        JsonValue indicator = musicPresets.get(4);
+        int preset = indicator.getInt(Integer.toString(level));
+        if (this.musicPreset != preset){
+            this.musicPreset = preset;
             setMusic();
         }
     }
@@ -110,20 +112,21 @@ public class MusicController {
      * Precondition: volume > 0 and < musicVolume
      * @param index
      */
-    private void playMusic(String index, float volume){
+    private void playMusic(String index, float volume, boolean looping){
         Music m = music.get(index).getMusic();
         if (!m.isPlaying()) {
             m.play();
             m.setVolume(volume);
+            m.setLooping(looping);
         }
     }
 
     /**
-     * Plays a music file at musicVolume with reference index at musicVolume.
+     * Plays a music file at musicVolume with reference index at musicVolume. Looping is true.
      * @param index
      */
     private void playMusic(String index){
-        playMusic(index, musicVolume);
+        playMusic(index, musicVolume, true);
     }
 
     /**
@@ -145,33 +148,22 @@ public class MusicController {
     }
 
     /**
-     * For looping menu music only.
-     * @param name
-     */
-    public void loopMusic(String name){
-        Music m = music.get(name).getMusic();
-        m.play();
-        m.setLooping(true);
-        m.setVolume(musicVolume);
-    }
-
-    /**
      * Starts the music for the menu
      */
     public void startMenuMusic(){
-        setMusicPreset(0);
-        loopMusic("background");
+        musicPreset = 0;
+        setMusic();
+        playMusic("menu");
     }
 
     /**
      * Starts the music for a level, fails silently if proper preset is not loaded.
      */
-    public void startLevelMusic(int preset){
-        if(preset < 1) throw new RuntimeException("Invalid level music preset.");
-        setMusicPreset(preset);
-        setMusicVolume(0, "enemy", "siren", "explore");
-        playMusic("enemy", 0);
-        playMusic("siren", 0);
+    public void startLevelMusic(int level){
+        setMusicPreset(level);
+        setMusicVolume(0, "shark", "siren", "explore");
+        playMusic("shark", 0, true);
+        playMusic("siren", 0, true);
         playMusic("explore");
     }
 
@@ -187,29 +179,19 @@ public class MusicController {
         }
     }
 
-    /** Updates the Music based on booleans */
-    public void updateMusic(boolean shark, boolean siren){
-        if(levelComplete) return;
-        if(siren){
-            if(!music.get("enemy").isFadeIn()){
-                music.get("enemy").FadeIn();
+    /**
+     * Fade siren music in.
+     * @param fadeIn
+     */
+    public void tradeMusic(boolean fadeIn, String name){
+        print(name, music.get(name).isFadeIn());
+        if(fadeIn){
+            if(!music.get(name).isFadeIn()){
+                music.get(name).FadeIn();
             }
-            if(!music.get("siren").isFadeIn()){
-                music.get("siren").FadeIn();
-            }
-        } else if (!siren){
-            if(music.get("siren").isFadeIn()){
-                music.get("siren").FadeOut();
-            }
-        }
-        if(shark){
-            if(!music.get("enemy").isFadeIn()){
-                music.get("enemy").FadeIn();
-            }
-        }
-        if(!shark && !siren){
-            if(music.get("enemy").isFadeIn()){
-                music.get("enemy").FadeOut();
+        } else {
+            if(music.get(name).isFadeIn()){
+                music.get(name).FadeOut();
             }
         }
     }
@@ -221,12 +203,41 @@ public class MusicController {
         }
     }
 
+    /**
+     * Stops all music.
+     */
+    public void resetThreads(){
+        for(DynamicMusic m : music.values()){
+            m.resetThread();
+        }
+    }
+
     public static float getMusicVolume() {
         return musicVolume;
     }
 
     public static long getTradeTime() {
         return tradeTime;
+    }
+
+    /**
+     * Resumes all music for restarting the level.
+     */
+    public void resumeMusic(){
+        resetThreads();
+        for(DynamicMusic m : music.values()){
+            m.getMusic().pause();
+        }
+    }
+
+    /**
+     * Pauses all music for restarting or completing the level.
+     */
+    public void pauseMusic(){
+        haltThreads();
+        for(DynamicMusic m : music.values()){
+            m.getMusic().pause();
+        }
     }
 
     /**
@@ -244,5 +255,9 @@ public class MusicController {
             m.getMusic().dispose();
         }
         music.clear();
+    }
+
+    public void print(String name, boolean val){
+        System.out.println(name + ": " +  val);
     }
 }
