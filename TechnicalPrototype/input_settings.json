@@ -1,9 +1,9 @@
 {
 "mouse keyboard": {
-	"next": "1",
-	"previous": "2",
+	"next": "8",
+	"previous": "9",
 	"reset": "R",
-	"debug": "G",
+	"debug": "O",
 	"exit": "P",
 	"fire": 0,
 	"fireKey": "Space",
