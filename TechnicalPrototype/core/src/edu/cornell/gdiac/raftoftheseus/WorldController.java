@@ -485,11 +485,7 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-//<<<<<<< HEAD
-//            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
-//=======
             table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(70);
-//>>>>>>> abfcea97a406aaf6ff75df499fba3cdbaae8b415
             table.row();
 
             TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.SMALL);

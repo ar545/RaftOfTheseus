@@ -120,7 +120,7 @@
     "min speed": 0.01,
     "max speed" : 6.25,
     "max speed against current" : 9,
-    "width" : 2.4,
+    "width" : 2.1,
     "height" : 0.8,
     "sensor size" : 1.45,
     "texture scale" : 1.5,
