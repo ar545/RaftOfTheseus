@@ -1090,7 +1090,7 @@ public class WorldController implements Screen, ContactListener {
             ((Hydra) g).setHit();
         } else if (g.getType() == GameObject.ObjectType.SIREN){
             Siren sn = ((Siren) g);
-            if(sn.isNotFlying()) {
+            if(sn.canBeHit()) {
                 ((Siren) g).setHit();
                 SfxController.getInstance().playSFX("spear_enemy_hit");
                 s.setDestroyed(true);

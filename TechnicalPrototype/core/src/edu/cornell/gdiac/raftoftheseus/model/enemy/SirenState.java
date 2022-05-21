@@ -20,7 +20,6 @@ public enum SirenState implements State<Siren> {
         }
     },
     SINGING() {
-
         @Override
         public void update (Siren entity){
             entity.stateTimer.setTimeStamp();
@@ -29,8 +28,7 @@ public enum SirenState implements State<Siren> {
                 entity.attackTimer.setTimeStamp();
                 if(entity.isStationary()) entity.getStateMachine().changeState(IDLE);
                 else {
-                    entity.setMoveVector();
-                    entity.scaleMoveVector(false);
+
                     entity.getStateMachine().changeState(TAKEOFF);
                 }
             }
@@ -48,6 +46,8 @@ public enum SirenState implements State<Siren> {
         @Override
         public void enter(Siren entity) {
             entity.setFlyingMask();
+            entity.setMoveVector();
+            entity.scaleMoveVector(false);
         }
 
         @Override
@@ -74,7 +74,7 @@ public enum SirenState implements State<Siren> {
             entity.stateTimer.setTimeStamp();
             if(entity.stateTimer.hasTimeElapsed(Siren.STUN_TIME, true)){
                 entity.getFrameCalculator().setFlash(false);
-                entity.getStateMachine().changeState(SINGING);
+                entity.getStateMachine().changeState(TAKEOFF);
             }
         }
     };

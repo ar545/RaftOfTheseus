@@ -174,6 +174,7 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
             fc.setFlash(false);
         } else {
             stateTimer.resetTimeStamp();
+            stateTimer.setTimeStamp();
         }
         return true;
     }

@@ -246,7 +246,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         return hasAttacked;
     }
 
-    /** Get how much damage is done to the player. */
+    /** Get which direction to fire the note. */
     @Override
     public Vector2 getTargetDirection(Vector2 playerCurrentVelocity) {
         start.set(getPosition());
@@ -259,8 +259,9 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         if (isNotFlying()){
             stateMachine.changeState(SirenState.STUNNED);
             fc.setFlash(true);
-        } else {
+        } else if(stateMachine.isInState(SirenState.STUNNED)) {
             stateTimer.resetTimeStamp();
+            stateTimer.setTimeStamp();
         }
         return true;
     }
@@ -310,7 +311,14 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
     }
 
     /**
-     * @return whether the Siren is idle singing to check for collisions.
+     * @return whether the Siren is idle singing to check for collisions or state changes.
+     */
+    public boolean canBeHit(){
+        return isNotFlying() || stateMachine.isInState(SirenState.STUNNED);
+    }
+
+    /**
+     * @return whether the Siren is idle singing to check for collisions or state changes.
      */
     public boolean isNotFlying(){
         return stateMachine.isInState(SirenState.IDLE) || stateMachine.isInState(SirenState.SINGING);
