@@ -505,7 +505,7 @@ public class WorldController implements Screen, ContactListener {
             table.add(settingsButton);
             table.row();
 
-            TextButton exitButton = UICreator.createTextButton("EXIT", skin, Color.GOLD, UICreator.FontSize.MEDIUM);
+            TextButton exitButton = UICreator.createTextButton("EXIT", skin, Color.GOLD, UICreator.FontSize.SMALL);
             exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
             table.add(exitButton);
             table.row();
