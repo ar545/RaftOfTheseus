@@ -385,6 +385,8 @@ public class MenuMode implements Screen {
                 prevPageButton.setVisible(currentPage == 2);
                 currentScreen = MenuScreen.TITLE;
                 listener.exitScreen(this, 0);
+            } else if (input.didPause()) { // pause to go back
+                changeScreenTo(MenuScreen.TITLE);
             }
         }
     }
