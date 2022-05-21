@@ -349,8 +349,14 @@ public class SettingsMode implements Screen, InputProcessor {
         InputController input = InputController.getInstance();
         input.readInput();
         if (active) {
+            boolean exitKeyPressed = InputController.getInstance().didPause(); // use pause key to go back
+            if (editPauseKeyEnable && exitKeyPressed) {
+                editPauseKeyEnable = false;
+                exitKeyPressed = false; // don't exit when changing pause key
+                updateKeyButtonAppearance();
+            }
             draw();
-            if (exitPressed || InputController.getInstance().didExit()) {
+            if (exitPressed || exitKeyPressed) {
                 resetExitPressed();
                 resetEditKeys();
                 listener.exitScreen(this, previousMode);
@@ -413,7 +419,7 @@ public class SettingsMode implements Screen, InputProcessor {
         } else if (editPauseKeyEnable && !displayText.equals(currentMapKey) && !displayText.equals(currentResetKey) ) {
             controlSettings.get("mouse keyboard").get("pause").set(key); // update the local copy
             pauseKeyButton.getLabel().setText(displayText);
-            editPauseKeyEnable = false;
+//            editPauseKeyEnable = false;
         }
         updateKeyButtonAppearance();
         FileHandle file = Gdx.files.local("input_settings.json"); // update json copy

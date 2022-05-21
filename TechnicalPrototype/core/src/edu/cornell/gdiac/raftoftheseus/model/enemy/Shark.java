@@ -172,9 +172,10 @@ public class Shark extends Enemy<Shark, SharkState> implements Animated {
         if (!(stateMachine.isInState(SharkState.STUNNED) || stateMachine.isInState(SharkState.DYING))){
             stateMachine.changeState(SharkState.STUNNED);
             fc.setFlash(false);
-            return true;
+        } else {
+            stateTimer.resetTimeStamp();
         }
-        return false;
+        return true;
     }
 
     @Override

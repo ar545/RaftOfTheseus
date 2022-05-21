@@ -730,9 +730,17 @@ public class WorldController implements Screen, ContactListener {
             settingsPressed = false;
             listener.exitScreen(this, WORLD_TO_SETTINGS);
             return false;
-        } else if ((input.didPause() || pausePressed) && (!complete && !failed))  {
-            pause();
-            pausePressed = true;
+        } else if (input.didPause()) {
+            if (pausePressed) { // unpause
+                resetPausePressed();
+                return true;
+            } else if (!complete && !failed) {
+                pause();
+                pausePressed = true;
+                return false;
+            }
+        }
+        if (pausePressed) {
             return false;
         } else if (input.didPrevious()) {
             pause();
