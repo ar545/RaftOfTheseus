@@ -72,7 +72,7 @@
       "daisyOraPurple":     "images/YellowDaisy_purpleTheme.png",
       "fuel": "images/fuel.png",
       "shipwreck" : "images/Obj_Shipwreck.png",
-      "terrain": "images/terrain_combined.png",
+      "terrain": "images/terrain_combined_fixed.png",
       "hint_wasd": "images/settings_wasd.png",
       "hint_arrows": "images/settings_arrows.png",
       "hint_attack": "images/hint_fire.png",

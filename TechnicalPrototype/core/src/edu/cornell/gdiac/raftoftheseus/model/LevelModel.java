@@ -284,9 +284,9 @@ public class LevelModel {
         int height = width; // known to be square
         for(int row = 0; row < DIFFICULTY_COUNT; row ++) {
             for(int col = 0; col < Tiled.TERRAIN_TYPES; col++){
-                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row * 2 + 1,
+                terrain[row][col] = new TextureRegion(terrainTexture, width * col + 1, height * row + 1,
                         width - 2, height - 2); // low terrain
-                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * row * 2 + 1,
+                terrain[row + DIFFICULTY_COUNT][col] = new TextureRegion(terrainTexture, width * col + 1, height * (row * 2 + DIFFICULTY_COUNT) + 1,
                         width - 2, height*(2) - 2); // high terrain
             }
         }
@@ -1265,7 +1265,7 @@ public class LevelModel {
         // hardcoded values for the new map texture (to avoid things appearing "off the map"
         canvas.draw(mapBackground, Color.WHITE, 382, 255,
                 bounds().width/2, bounds().height/2, 0.0f,
-                bounds().width/mapBackground.getWidth()*1.349f, bounds().height/mapBackground.getHeight()*1.149f);
+                bounds().width/mapBackground.getWidth()*1.35f, bounds().height/mapBackground.getHeight()*1.25f);
         for(GameObject obj : getObjects()) {
             GameObject.ObjectType type = obj.getType();
             if (type == GameObject.ObjectType.CURRENT || type == GameObject.ObjectType.STATIONARY
