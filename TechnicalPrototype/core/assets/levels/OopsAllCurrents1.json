@@ -42,13 +42,13 @@
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.7.2",
- "tileheight":48,
+ "tileheight":50,
  "tilesets":[
         {
          "firstgid":1,
          "source":"updatedTiledSet.tsx"
         }],
- "tilewidth":48,
+ "tilewidth":50,
  "type":"map",
  "version":"1.6",
  "width":40

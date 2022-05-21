@@ -224,7 +224,7 @@ public class SettingsMode implements Screen, InputProcessor {
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
         SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
 
-        musicVolume = SfxController.getInstance().getMasterMusicVolume() * 100f;
+        musicVolume = MusicController.getInstance().getMasterMusicVolume() * 100f;
         Label musicValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(musicVolume)), skin,  UICreator.FontSize.SMALL);
 
         musicSlider = new Slider(0, 100, 1, false, sliderStyle);
