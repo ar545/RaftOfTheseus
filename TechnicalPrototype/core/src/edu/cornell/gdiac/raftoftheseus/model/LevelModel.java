@@ -39,7 +39,7 @@ public class LevelModel {
     /** Default num of rows in the map (y, height). NEW: MAXIMUM num of rows show on any screen. */
     private static final int DEFAULT_GRID_ROW = 12;
     /** Default num of columns in the map (x, width) NEW: MAXIMUM num of cols show on any screen. */
-    private static final int DEFAULT_GRID_COL = 18;
+    private static final int DEFAULT_GRID_COL = 24;
     /** a final vector 2 with both x and y as 0, e.g. Top-down game with no gravity */
     private static final Vector2 ZERO_VECTOR_2 = new Vector2(0, 0);
     /** This is used as a level int representing restarting the level */
@@ -126,6 +126,7 @@ public class LevelModel {
     /*=*=*=*=*=*=*=*=*=* Graphics assets for the entities (constant through out game) *=*=*=*=*=*=*=*=*=*/
     /** Texture for all ships, as they look the same */
     private FilmStrip raftTexture;
+    private FilmStrip topAura;
     private FilmStrip raftAura;
     /** Texture for all treasures */
     private FilmStrip treasureTexture;
@@ -231,6 +232,7 @@ public class LevelModel {
     public void gatherAssets() {
         raftTexture = new FilmStrip(directory.getEntry("raft", Texture.class), 8, 5, 40);// TODO: use data-driven design for rows/cols/size
         raftAura = new FilmStrip(directory.getEntry("raft_aura", Texture.class), 2, 5);
+        topAura = new FilmStrip(directory.getEntry("top_aura", Texture.class), 2, 4);
         woodSTexture = new TextureRegion(directory.getEntry("woodS", Texture.class));
         woodMTexture = new TextureRegion(directory.getEntry("woodM", Texture.class));
         woodRTexture = new TextureRegion(directory.getEntry("woodR", Texture.class));
@@ -299,6 +301,7 @@ public class LevelModel {
     private static float GRID_PIXELS = STANDARD_GRID_PIXELS;
     /** Active pixels per Box2D unit, calculated based on pixels per grid square */
     private static float PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
+    float BAR_PLAYER_OFFSET = 0.65f * GRID_PIXELS; /* the height offset between the health bar and the player height */
     /** update the pixel size for the game screen */
     public void resizeScreen(){
         if(canvas == null){ return; }
@@ -306,6 +309,7 @@ public class LevelModel {
         float width_req = (float) canvas.getWidth() / DEFAULT_GRID_COL;
         GRID_PIXELS = Math.max(STANDARD_GRID_PIXELS, Math.max(height_req, width_req));
         PIXELS_PER_UNIT = GRID_PIXELS/GRID_SIZE;
+        BAR_PLAYER_OFFSET = 0.65f * GRID_PIXELS;
     }
 
     /*=*=*=*=*=*=* Level Parser: bounds of the world *=*=*=*=*=*=*=*/
@@ -783,7 +787,7 @@ public class LevelModel {
     private void addRaft(int row, int col) {
         computePosition(col, row);
         Raft this_raft = new Raft(compute_temp);
-        this_raft.setTexture(raftTexture, raftAura);
+        this_raft.setTexture(raftTexture, raftAura, topAura, (BAR_PLAYER_OFFSET + 22) / PIXELS_PER_UNIT);
         addObject(this_raft);
         raft = this_raft;
         populateEnemyRaftField();
@@ -1383,7 +1387,7 @@ public class LevelModel {
     /** Precondition & post-condition: the game canvas is open
      * @param player_position the on-screen position of player */
     private void drawHealthBar(Vector2 player_position) {
-        float BAR_PLAYER_OFFSET = 0.65f * GRID_PIXELS; /* the height offset between the health bar and the player height */
+
         canvas.draw(greyBar, Color.WHITE, (player_position.x - greyBar.getRegionWidth()/2f),
                 (player_position.y + BAR_PLAYER_OFFSET), greyBar.getRegionWidth(), greyBar.getRegionHeight());
         canvas.drawRadialHealth(new Vector2(player_position.x, player_position.y + 6 + BAR_PLAYER_OFFSET),

@@ -125,6 +125,7 @@ public class Raft extends GameObject implements Animated {
     /** frame count of the attack animation */
     private static int AURA_FC;
     private TextureHolder attackAura;
+    private TextureHolder topAura;
 
     /** restore the player health to half life */
     public void halfLife() { addHealth(MAXIMUM_PLAYER_HEALTH / 2); }
@@ -333,15 +334,21 @@ public class Raft extends GameObject implements Animated {
      * @param raft texture
      * @param aura texture
      */
-    public void setTexture(TextureRegion raft, TextureRegion aura){
+    public void setTexture(TextureRegion raft, TextureRegion aura, TextureRegion barTopAura, float offset){
         super.setTexture(raft);
         attackAura = new TextureHolder(aura);
-        attackAura.setTextureScale(new Vector2(
-                getWidth() * 2/ this.attackAura.getTexture().getRegionWidth(),
-                getWidth() * 2/ this.attackAura.getTexture().getRegionHeight()));
-        attackAura.setTextureOffset(new Vector2(
-                HORIZONTAL_OFFSET,
-                (attackAura.getTexture().getRegionHeight() * attackAura.getTextureScale().y - getHeight())/2f));
+        setAura(attackAura, getWidth(), 0);
+        topAura = new TextureHolder(barTopAura);
+        setAura(topAura, getWidth(), offset);
+        topAura.setColor(Color.RED);
+    }
+
+    private void setAura(TextureHolder aura, float width, float offset){
+        aura.setTextureScale(new Vector2(
+                width * 2/ aura.getTexture().getRegionWidth(),
+                width * 2/ aura.getTexture().getRegionHeight()));
+        aura.setTextureOffset(new Vector2( HORIZONTAL_OFFSET,
+                (aura.getTexture().getRegionHeight() * aura.getTextureScale().y - getHeight())/2f + offset));
     }
 
     /** Realign the raft so thsat the bottom of it is at the bottom of the capsule object. */
@@ -352,10 +359,8 @@ public class Raft extends GameObject implements Animated {
         textureOffset = new Vector2(HORIZONTAL_OFFSET,(texture.getRegionHeight()*textureScale.y - getHeight())/2f);
         // 0.25 offset because the texture is off-center horizontally
     }
-    /**
-     * Set the filmstrip frame before call the super draw method.
-     * @param canvas Drawing context
-     */
+
+    /** this draw function is not in active use */
     @Override
     public void draw(GameCanvas canvas){
         ((FilmStrip) texture).setFrame(fc.getFrame());
@@ -366,7 +371,10 @@ public class Raft extends GameObject implements Animated {
             super.draw(canvas, attackAura);
         }
     }
-
+    /**
+     * Set the filmstrip frame before call the super draw method.
+     * @param canvas Drawing context
+     */
     public void draw(GameCanvas canvas, int ticks){
         ((FilmStrip) texture).setFrame(fc.getFrame());
         if (texture != null) {
@@ -377,6 +385,10 @@ public class Raft extends GameObject implements Animated {
             ((FilmStrip) attackAura.getTexture()).setFrame(aurafc.getFrame());
             attackAura.setColor(canFire() ? Color.YELLOW : Color.RED);
             super.draw(canvas, attackAura);
+        }
+        if(raftState == RaftState.CHARGING){
+            ((FilmStrip) topAura.getTexture()).setFrame(aurafc.getFrame());
+            super.draw(canvas, topAura);
         }
     }
 

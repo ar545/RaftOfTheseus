@@ -30,6 +30,7 @@
       "success_background_2": "images/success_2.png",
       "success_background_3": "images/success_3.png",
       "raft":     "images/Obj_Player_GM.png",
+      "top_aura" : "images/UI_ChargeHighlight.png",
       "raft_aura" : "images/Obj_AttackHighlight.png",
       "woodS":     "images/Small_Log.png",
       "woodM":     "images/New_Medium_Log.png",
