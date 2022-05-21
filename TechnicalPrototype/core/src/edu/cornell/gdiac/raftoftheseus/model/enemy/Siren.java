@@ -5,6 +5,7 @@ import com.badlogic.gdx.ai.fsm.StateMachine;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.raftoftheseus.GameCanvas;
@@ -155,8 +156,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         physicsObject.setRestitution(.75f);
         setPosition(waypoints.get(0));
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
-        physicsObject.getFilterData().categoryBits = CATEGORY_ENEMY;
-        physicsObject.getFilterData().maskBits = MASK_SIREN;
+        setStationaryMask();
         physicsObject.setSensor(true);
         moveVector.set(0.0f, 0.0f);
         stateMachine = new DefaultStateMachine<>(this, SirenState.IDLE);
@@ -256,7 +256,7 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
 
     // Stunned
     public boolean setHit(){
-        if (stateMachine.isInState(SirenState.SINGING) || stateMachine.isInState(SirenState.IDLE)){
+        if (isNotFlying()){
             stateMachine.changeState(SirenState.STUNNED);
             fc.setFlash(true);
         } else {
@@ -307,6 +307,31 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
                 break;
         }
         setTextureXOrientation(true);
+    }
+
+    /**
+     * @return whether the Siren is idle singing to check for collisions.
+     */
+    public boolean isNotFlying(){
+        return stateMachine.isInState(SirenState.IDLE) || stateMachine.isInState(SirenState.SINGING);
+    }
+
+    /**
+     * Change the filtering mask of the Siren so it cannot be hit mid flight.
+     */
+    public void setFlyingMask(){
+        Filter f = physicsObject.getFilterData();
+        f.categoryBits = 0;
+        f.maskBits = 0;
+    }
+
+    /**
+     * Change the filtering mask of the Siren so it can be hit when statinoary.
+     */
+    public void setStationaryMask(){
+        Filter f = physicsObject.getFilterData();
+        f.categoryBits = CATEGORY_ENEMY;
+        f.maskBits = MASK_SIREN;
     }
 
     /**

@@ -7,6 +7,11 @@ public enum SirenState implements State<Siren> {
 
     IDLE() {
         @Override
+        public void enter(Siren entity) {
+            entity.setStationaryMask();
+        }
+
+        @Override
         public void update (Siren entity){
             entity.stateTimer.setTimeStamp();
             if(entity.stateTimer.hasTimeElapsed(Siren.IDLE_TIME, true)) {
@@ -15,9 +20,6 @@ public enum SirenState implements State<Siren> {
         }
     },
     SINGING() {
-        @Override
-        public void enter(Siren entity) {
-        }
 
         @Override
         public void update (Siren entity){
@@ -43,6 +45,11 @@ public enum SirenState implements State<Siren> {
         }
     },
     TAKEOFF(){
+        @Override
+        public void enter(Siren entity) {
+            entity.setFlyingMask();
+        }
+
         @Override
         public void update (Siren entity){
             if(entity.isAnimationDone()) {
@@ -73,9 +80,7 @@ public enum SirenState implements State<Siren> {
     };
 
     @Override
-    public void enter(Siren entity) {
-
-    }
+    public void enter(Siren entity) {}
 
     @Override
     public void exit(Siren entity) {

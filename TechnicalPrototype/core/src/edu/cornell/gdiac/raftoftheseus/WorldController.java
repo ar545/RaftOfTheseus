@@ -1089,10 +1089,12 @@ public class WorldController implements Screen, ContactListener {
             SfxController.getInstance().playSFX("shark_hit");
             ((Hydra) g).setHit();
         } else if (g.getType() == GameObject.ObjectType.SIREN){
-            if(((Siren) g).setHit()) {
+            Siren sn = ((Siren) g);
+            if(sn.isNotFlying()) {
+                ((Siren) g).setHit();
                 SfxController.getInstance().playSFX("spear_enemy_hit");
+                s.setDestroyed(true);
             }
-            s.setDestroyed(true);
         } else if (g.getType() == GameObject.ObjectType.STATIONARY) {
             if(((Stationary) g).hasCliff()) {
                 SfxController.getInstance().playSFX("spear_break");
