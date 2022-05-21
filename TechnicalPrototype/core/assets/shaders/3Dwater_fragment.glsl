@@ -68,7 +68,7 @@ const float tile_factor = 0.25; // the wave texture is displayed 1/tile_factor l
 
 // current animation parameters
 const float current_speed = 2.0; // scroll speed multiplier
-const float current_blend = 0.2; // radius in which current animation is blended. Must be in [0,0.5].
+const float current_blend = 0.5; // radius in which current animation is blended. Must be in [0,0.5].
 
 // texture-based displacement parameters
 const float texture_offset_height = 0.02;

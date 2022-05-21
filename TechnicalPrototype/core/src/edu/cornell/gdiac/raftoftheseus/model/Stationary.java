@@ -59,6 +59,7 @@ public class Stationary extends GameObject {
     @Override
     public ObjectType getType() { return ObjectType.STATIONARY; }
     public StationaryType getStationaryType() { return stationaryType; }
+    public int getTerrainType() { return terrainType; }
 
     /**
      * Load the constants for the rock

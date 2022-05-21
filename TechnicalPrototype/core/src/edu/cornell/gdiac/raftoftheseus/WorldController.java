@@ -486,7 +486,7 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            table.add(UICreator.createLabel("LEVEL " + level_id, skin, 0.5f)).padTop(-20);
+            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
             table.row();
 
             TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
@@ -540,7 +540,7 @@ public class WorldController implements Screen, ContactListener {
 
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
 
-        table.add(UICreator.createLabel("LEVEL " + level_id, skin, 0.5f)).padTop(-20);
+        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
         table.row();
 
         TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.MEDIUM);
