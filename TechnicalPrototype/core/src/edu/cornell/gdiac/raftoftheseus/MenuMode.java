@@ -127,23 +127,7 @@ public class MenuMode implements Screen {
         playPressed = false;
         currentScreen = MenuScreen.TITLE;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
-
-        FreeTypeFontParameter smallParameter = new FreeTypeFontParameter();
-        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
-        BitmapFont smallFont = generator.generateFont(smallParameter);
-
-        FreeTypeFontParameter mediumParameter = new FreeTypeFontParameter();
-        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
-        BitmapFont mediumFont = generator.generateFont(mediumParameter);
-
-        FreeTypeFontParameter largeParameter = new FreeTypeFontParameter();
-        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
-        BitmapFont largeFont = generator.generateFont(largeParameter);
-
-        skin.add("diogenes-font-small", smallFont);
-        skin.add("diogenes-font-medium", mediumFont);
-        skin.add("diogenes-font-large", largeFont);
+        setSkinFonts();
     }
 
     /**
@@ -223,7 +207,7 @@ public class MenuMode implements Screen {
     private void initLevelTables(){
         Table part2 = new Table();
         part2.row();
-        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, 0.6f)).expandX().align(Align.center).padTop(-50);
+        part2.add(UICreator.createLabel("SELECT A LEVEL", skin, UICreator.FontSize.LARGE)).expandX().align(Align.center).padTop(-50);
         levelTables.add(backTable, part2);
 
         // Button styles
@@ -232,12 +216,12 @@ public class MenuMode implements Screen {
             buttonStyles[i] = new TextButtonStyle();
             buttonStyles[i].up = buttonDrawables[i];
             buttonStyles[i].down = buttonDrawables[i].tint(Color.GRAY);
-            buttonStyles[i].font = skin.getFont("diogenes-font-large");
+            buttonStyles[i].font = skin.getFont("diogenes-font-medium");
         }
         TextureRegionDrawable lockButtonDrawable =  new TextureRegionDrawable(new TextureRegion(levelButtonImages[4]));
         lockButtonStyle.up = lockButtonDrawable;
         lockButtonStyle.down = lockButtonDrawable;
-        lockButtonStyle.font = skin.getFont("diogenes-font-large");
+        lockButtonStyle.font = skin.getFont("diogenes-font-medium");
     }
 
     /**
@@ -250,17 +234,17 @@ public class MenuMode implements Screen {
         float subheadingFontSize = 0.5f * Gdx.graphics.getDensity();
 
         Table tb2 = new Table();
-        tb2.add(UICreator.createLabel("CREDITS", skin, titleFontSize)).expandX().align(Align.center);
+        tb2.add(UICreator.createLabel("CREDITS", skin,  UICreator.FontSize.LARGE)).expandX().align(Align.center);
 
         Table tb3 = new Table();
         tb3.align(Align.center);
 
         Table part3L = new Table();
-        part3L.add(UICreator.createLabel("PROGRAMMERS", skin, headingFontSize)).expandX().align(Align.center);
+        part3L.add(UICreator.createLabel("PROGRAMMERS", skin,  UICreator.FontSize.MEDIUM)).expandX().align(Align.center);
         part3L.row().padTop(-20);
 
         Table part3R = new Table();
-        part3R.add(UICreator.createLabel("DESIGNERS", skin, headingFontSize)).expandX().align(Align.center);
+        part3R.add(UICreator.createLabel("DESIGNERS", skin,  UICreator.FontSize.MEDIUM)).expandX().align(Align.center);
         part3R.row().padTop(-20);
 
         Array<String> members = new Array<String>(new String[]{"Amy Huang", "Demian Yutin", "Howard Fu",
@@ -278,20 +262,39 @@ public class MenuMode implements Screen {
             }
             i++;
         }
-
-        tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
-        tb3.add(part3R).expandX().align(Align.center).padTop(-160);
-
-        Table tb4 = new Table(); // group logo table
         logoB = UICreator.createTextButton(" ", skin, Color.WHITE, groupLogo, UICreator.FontSize.SMALL);
         logoB.addListener(UICreator.createListener(logoB, this::changeLogo));
-        tb4.add(logoB).align(Align.center).width(600).height(225);
+        part3R.row();
+        part3R.add(logoB);
 
-        creditTables.add(backTable, tb2, tb3, tb4);
+        tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
+        tb3.add(part3R).expandX();
+        creditTables.add(backTable, tb2, tb3);
+    }
+
+    /** Sets the generator for fonts */
+    private void setSkinFonts() {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        mediumParameter.size = (int) (80*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        largeParameter.size = (int) (100*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
     }
 
     /** update the appearance of the logo button */
-    private void updateLogo(){ UICreator.setTextButtonStyle(logoB, skin, 1, Color.WHITE, logoChanged ? altLogo : groupLogo); }
+    private void updateLogo(){ UICreator.setTextButtonStyle(logoB, skin, UICreator.FontSize.SMALL, Color.WHITE, logoChanged ? altLogo : groupLogo); }
     /** reference to the logo button */
     TextButton logoB;
     /** whether the logo has been changed to alternative logo */
@@ -475,7 +478,6 @@ public class MenuMode implements Screen {
             int score = levelData.get("score").asInt();
             boolean canPlay = saveData.get("debug").asBoolean() ||  levelData.get("unlocked").asBoolean();
             levelButtons[levelNumber] = new TextButton(String.valueOf(levelNumber), canPlay ? buttonStyles[score] : lockButtonStyle);
-            levelButtons[levelNumber].getLabel().setFontScale(0.5f);
             levelButtons[levelNumber].addListener(UICreator.createListener(levelButtons[levelNumber], canPlay, this::selectlevel, levelNumber));
             //Add button to table
             float buttonPaddingLeft = buttonPadding[levelNumber % LEVELS_PER_PAGE][0];

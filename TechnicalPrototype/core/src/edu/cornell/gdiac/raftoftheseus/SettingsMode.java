@@ -117,24 +117,7 @@ public class SettingsMode implements Screen, InputProcessor {
         editResetKeyEnable = false;
         editPauseKeyEnable = false;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
-
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
-
-        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
-        BitmapFont smallFont = generator.generateFont(smallParameter);
-
-        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
-        BitmapFont mediumFont = generator.generateFont(mediumParameter);
-
-        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
-        BitmapFont largeFont = generator.generateFont(largeParameter);
-
-        skin.add("diogenes-font-small", smallFont);
-        skin.add("diogenes-font-medium", mediumFont);
-        skin.add("diogenes-font-large", largeFont);
+        setSkinFonts();
     }
 
     /**
@@ -166,6 +149,27 @@ public class SettingsMode implements Screen, InputProcessor {
 
     /** @param previousMode the previous mode value to be set */
     public void setPreviousMode(int previousMode) { this.previousMode = previousMode; }
+
+    /** Sets the generator for fonts */
+    private void setSkinFonts() {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        mediumParameter.size = (int) (80*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        largeParameter.size = (int) (100*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
+    }
 
     /** Called when this screen becomes the current screen. */
     public void show() {
@@ -200,28 +204,28 @@ public class SettingsMode implements Screen, InputProcessor {
 
         Table part1 = new Table();
         part1.align(Align.left);
-        TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
+        TextButton menuButton = UICreator.createTextButton("BACK", skin, Color.WHITE, UICreator.FontSize.SMALL);
         menuButton.addListener(UICreator.createListener(menuButton, Color.GOLD, Color.WHITE, this::setExitPressed));
-        part1.add(menuButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(10);
+        part1.add(menuButton).expandX().align(Align.left).padRight(canvas.getWidth() * Gdx.graphics.getDensity()).padTop(50 * Gdx.graphics.getDensity());
         table.add(part1);
         table.row();
 
         Table part2 = new Table();
-        part2.add(UICreator.createLabel("SETTINGS", skin, titleFontSize)).expandX().align(Align.center);
+        part2.add(UICreator.createLabel("SETTINGS", skin,  UICreator.FontSize.LARGE)).expandX().align(Align.center);
         table.add(part2).padTop(-50);
         table.row();
 
         Table part3 = new Table();
-        part3.add(UICreator.createLabel("VOLUME", skin, headingFontSize)).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("VOLUME", skin,  UICreator.FontSize.MEDIUM)).padLeft(80).expandX().align(Align.left);
         part3.row();
-        part3.add(UICreator.createLabel("MUSIC", skin, subheadingFontSize)).padLeft(100).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("MUSIC", skin,  UICreator.FontSize.SMALL)).padLeft(100).expandX().align(Align.left);
 
         Drawable sliderKnobDrawable = new TextureRegionDrawable(new TextureRegion(sliderKnob));
         Drawable sliderBarDrawable = new TextureRegionDrawable(new TextureRegion(sliderBar));
         SliderStyle sliderStyle = new SliderStyle(sliderBarDrawable, sliderKnobDrawable);
 
         musicVolume = SfxController.getInstance().getMasterMusicVolume() * 100f;
-        Label musicValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(musicVolume)), skin, subheadingFontSize);
+        Label musicValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(musicVolume)), skin,  UICreator.FontSize.SMALL);
 
         musicSlider = new Slider(0, 100, 1, false, sliderStyle);
         musicSlider.setValue(musicVolume);
@@ -240,9 +244,9 @@ public class SettingsMode implements Screen, InputProcessor {
         part3.row();
 
         soundEffectsVolume = SfxController.getInstance().getMasterSFXVolume() * 100;
-        part3.add(UICreator.createLabel("SOUND EFFECTS", skin, subheadingFontSize)).padLeft(100).align(Align.left);
+        part3.add(UICreator.createLabel("SOUND EFFECTS", skin,  UICreator.FontSize.SMALL)).padLeft(100).align(Align.left);
 
-        Label soundEffectsValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(soundEffectsVolume)), skin, subheadingFontSize);
+        Label soundEffectsValueLabel = UICreator.createLabel(String.valueOf((int) Math.floor(soundEffectsVolume)), skin,  UICreator.FontSize.SMALL);
         soundEffectsSlider = new Slider(0, 100, 1, false, sliderStyle);
         soundEffectsSlider.setValue(soundEffectsVolume);
         soundEffectsSlider.addListener(new ChangeListener() {
@@ -258,20 +262,19 @@ public class SettingsMode implements Screen, InputProcessor {
         part3.add(soundEffectsValueLabel).align(Align.left).width(80).padLeft(60);
         part3.row();
 
-        part3.add(UICreator.createLabel("ACCESSIBILITY", skin, headingFontSize)).padLeft(80).expandX().align(Align.left);
+        part3.add(UICreator.createLabel("ACCESSIBILITY", skin,  UICreator.FontSize.MEDIUM)).padLeft(80).expandX().align(Align.left);
         part3.row();
 
         Table part3a = new Table();
-        part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin, subheadingFontSize)).padLeft(100);
-        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "ON" : "OFF", skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
+        part3a.add(UICreator.createLabel("ACCESSIBILITY MODE", skin,  UICreator.FontSize.SMALL)).padLeft(0).expandX().align(Align.left);
+        accessibilityButton = UICreator.createTextButton(accessibilityModeActive ? "On" : "Off", skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.SMALL);
         accessibilityButton.addListener(UICreator.createListener(accessibilityButton, Color.GRAY, Color.WHITE, this::changeAccessibilityMode));
         part3a.add(accessibilityButton).padLeft(30).width(80).height(60);
         part3.add(part3a);
         part3.row();
 
-        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin, headingFontSize)).padLeft(80).expandX().align(Align.left);
-        part3.row();
-        table.add(part3).padTop(-50);
+        part3.add(UICreator.createLabel("KEYBOARD SHORTCUTS", skin,  UICreator.FontSize.MEDIUM)).padLeft(80).expandX().align(Align.left);
+        table.add(part3);
         table.row();
 
         Table part4 = new Table();
@@ -280,27 +283,22 @@ public class SettingsMode implements Screen, InputProcessor {
         String mapKeyString = controlSettings.get("mouse keyboard").get("map").asString();
         String resetKeyString = controlSettings.get("mouse keyboard").get("reset").asString();
         String pauseKeyString = controlSettings.get("mouse keyboard").get("pause").asString();
-//        mapKeyString = mapKeyString.equals("Escape") ? "Esc" : mapKeyString;
-//        resetKeyString = resetKeyString.equals("Escape") ? "Esc" : resetKeyString;
-//        pauseKeyString = pauseKeyString.equals("Escape") ? "Esc" : pauseKeyString;
+        mapKeyString = mapKeyString.equals("Escape") ? "Esc" : mapKeyString;
+        resetKeyString = resetKeyString.equals("Escape") ? "Esc" : resetKeyString;
+        pauseKeyString = pauseKeyString.equals("Escape") ? "Esc" : pauseKeyString;
 
-        part4.add(UICreator.createLabel("MAP", skin, keysFontSize)).padRight(keysPadding);
-        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
+        part4.add(UICreator.createLabel("MAP", skin,  UICreator.FontSize.SMALL)).padRight(keysPadding);
+        mapKeyButton = UICreator.createTextButton(mapKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.SMALL);
         mapKeyButton.addListener(UICreator.createListener(mapKeyButton, this::changeKeyMapping));
         part4.add(mapKeyButton).padRight(keysPadding).width(60).height(60);
 
-        part4.add(UICreator.createLabel("FIRE", skin, keysFontSize)).padRight(keysPadding);
-        TextButton fireKeyButton = UICreator.createTextButton("left mouse", skin, Color.WHITE, longTextKeyBackground, UICreator.FontSize.MEDIUM);
-        fireKeyButton.addListener(UICreator.createListener(fireKeyButton, this::changeKeyMapping));
-        part4.add(fireKeyButton).padRight(keysPadding).width(170).height(60);
-
-        part4.add(UICreator.createLabel("RESTART", skin, keysFontSize)).padRight(keysPadding);
-        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
+        part4.add(UICreator.createLabel("RESTART", skin,  UICreator.FontSize.SMALL)).padRight(keysPadding);
+        resetKeyButton = UICreator.createTextButton(resetKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.SMALL);
         resetKeyButton.addListener(UICreator.createListener(resetKeyButton, this::changeKeyMapping));
         part4.add(resetKeyButton).padRight(keysPadding).width(60).height(60);
 
-        part4.add(UICreator.createLabel("PAUSE", skin, keysFontSize)).padRight(keysPadding);
-        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.MEDIUM);
+        part4.add(UICreator.createLabel("PAUSE", skin, UICreator.FontSize.SMALL)).padRight(keysPadding);
+        pauseKeyButton = UICreator.createTextButton(pauseKeyString, skin, Color.WHITE, blackKeyBackground, UICreator.FontSize.SMALL);
         pauseKeyButton.addListener(UICreator.createListener(pauseKeyButton, this::changeKeyMapping));
         part4.add(pauseKeyButton).padRight(keysPadding).width(60).height(60);
         table.add(part4);
@@ -326,16 +324,16 @@ public class SettingsMode implements Screen, InputProcessor {
     }
 
     private void updateKeyButtonAppearance() {
-        UICreator.setTextButtonStyle(mapKeyButton, skin, 0.3f, Color.WHITE, editMapKeyEnable ? goldKeyBackground : blackKeyBackground);
-        UICreator.setTextButtonStyle(resetKeyButton, skin, 0.3f, Color.WHITE, editResetKeyEnable ? goldKeyBackground : blackKeyBackground);
-        UICreator.setTextButtonStyle(pauseKeyButton, skin, 0.3f, Color.WHITE, editPauseKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(mapKeyButton, skin, UICreator.FontSize.SMALL, Color.WHITE, editMapKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(resetKeyButton, skin, UICreator.FontSize.SMALL, Color.WHITE, editResetKeyEnable ? goldKeyBackground : blackKeyBackground);
+        UICreator.setTextButtonStyle(pauseKeyButton, skin, UICreator.FontSize.SMALL, Color.WHITE, editPauseKeyEnable ? goldKeyBackground : blackKeyBackground);
     }
 
     /** Set accessibility mode */
     private void changeAccessibilityMode() {
         // TODO
         accessibilityModeActive = !accessibilityModeActive;
-        accessibilityButton.setText(accessibilityModeActive ? "ON" : "OFF");
+        accessibilityButton.setText(accessibilityModeActive ? "On" : "Off");
         canvas.setAccessibility(accessibilityModeActive); // Update game canvas to accessible
     }
 
@@ -403,18 +401,18 @@ public class SettingsMode implements Screen, InputProcessor {
         String currentMapKey = mapKeyButton.getText().toString();
         String currentResetKey = resetKeyButton.getText().toString();
         String currentPauseKey = pauseKeyButton.getText().toString();
-//        key = key.equals("Escape") ? "Esc" : key;
-        if (editMapKeyEnable && !key.equals(currentResetKey) && !key.equals(currentPauseKey)) {
+        String displayText = key.equals("Escape") ? "Esc" : key;
+        if (editMapKeyEnable && !displayText.equals(currentResetKey) && !displayText.equals(currentPauseKey)) {
             controlSettings.get("mouse keyboard").get("map").set(key); // update the local copy
-            mapKeyButton.getLabel().setText(key);
+            mapKeyButton.getLabel().setText(displayText);
             editMapKeyEnable = false;
-        } else if (editResetKeyEnable && !key.equals(currentMapKey) && !key.equals(currentPauseKey) ) {
+        } else if (editResetKeyEnable && !displayText.equals(currentMapKey) && !displayText.equals(currentPauseKey) ) {
             controlSettings.get("mouse keyboard").get("reset").set(key); // update the local copy
-            resetKeyButton.getLabel().setText(key);
+            resetKeyButton.getLabel().setText(displayText);
             editResetKeyEnable = false;
-        } else if (editPauseKeyEnable && !key.equals(currentMapKey) && !key.equals(currentResetKey) ) {
+        } else if (editPauseKeyEnable && !displayText.equals(currentMapKey) && !displayText.equals(currentResetKey) ) {
             controlSettings.get("mouse keyboard").get("pause").set(key); // update the local copy
-            pauseKeyButton.getLabel().setText(key);
+            pauseKeyButton.getLabel().setText(displayText);
             editPauseKeyEnable = false;
         }
         updateKeyButtonAppearance();
