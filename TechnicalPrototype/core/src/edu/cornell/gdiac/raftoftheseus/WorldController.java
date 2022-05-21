@@ -410,7 +410,7 @@ public class WorldController implements Screen, ContactListener {
                 );
                 break;
             case(3):
-                canvas.draw(hintAttack, c, hintAttack.getRegionWidth()*0.5f, 0.0f, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f + 120, hintAttack.getRegionWidth(), hintAttack.getRegionHeight());
+                canvas.draw(hintAttack, c, hintAttack.getRegionWidth()*0.5f, 0, canvas.getWidth()*0.5f, canvas.getHeight()*0.5f, hintAttack.getRegionWidth(), hintAttack.getRegionHeight());
                 break;
             default:
                 // draw nothing
