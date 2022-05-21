@@ -13,7 +13,7 @@
     "raft_sail_open" : "sounds/Sfx_Raft_SailOpening.ogg",
     "raft_sail_wind" : "sounds/Sfx_Raft_SailWind.ogg",
     "raft_sail_down" : "sounds/Sfx_Raft_SailDown.ogg",
-    "chest_collect" : "sounds/Sfx_Chest_Collect.mp3",
+    "chest_collect" : "sounds/Sfx_Chest_Collect.ogg",
     "spear_splash" : "sounds/Sfx_Spear_Splash.ogg",
     "spear_throw" : "sounds/Sfx_Spear_Throw.ogg",
     "spear_break" : "sounds/Sfx_Spear_Break.ogg",
