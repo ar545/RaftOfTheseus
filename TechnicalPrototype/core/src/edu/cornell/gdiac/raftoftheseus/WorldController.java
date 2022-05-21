@@ -517,7 +517,7 @@ public class WorldController implements Screen, ContactListener {
         if (!transitionBuilt) {
             transitionBuilt = true;
             if (complete && !failed) {
-                buildTransitionScreen(successBackgrounds[level_id < TUTORIAL_COUNT ? 0 : playerScore], false);
+                buildTransitionScreen(successBackgrounds[level_id < TUTORIAL_COUNT ? 4 : playerScore], false);
             } else {
                 buildTransitionScreen(failedBackground, true);
             }
@@ -539,11 +539,7 @@ public class WorldController implements Screen, ContactListener {
 
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
 
-//<<<<<<< HEAD
-//        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
-//=======
         table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(level_id < TUTORIAL_COUNT || failed ? 100 : 180);
-//>>>>>>> abfcea97a406aaf6ff75df499fba3cdbaae8b415
         table.row();
 
         TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.SMALL);
@@ -617,10 +613,11 @@ public class WorldController implements Screen, ContactListener {
         filledStar = new TextureRegion(directory.getEntry("filled_star", Texture.class));
         pauseBackground = directory.getEntry("pause_background", Texture.class);
         failedBackground = directory.getEntry("failed_background", Texture.class);
-        successBackgrounds = new Texture[4];
+        successBackgrounds = new Texture[5];
         for (int i = 0; i < 4; i++) {
             successBackgrounds[i] = directory.getEntry("success_background_" + i, Texture.class);
         }
+        successBackgrounds[4] = directory.getEntry("success_background_tutorial", Texture.class);
         transitionScreen = new TextureRegion(directory.getEntry("transition_screen", Texture.class));
         hintAttack = new TextureRegion(directory.getEntry( "hint_attack", Texture.class ));
         wasdIcon = new TextureRegion(directory.getEntry( "hint_wasd", Texture.class ));
