@@ -99,7 +99,7 @@
   },
   "stationary": {
     "rock width": 2.5,
-    "rock height": 1.4,
+    "rock height": 2.25,
     "terrain size": 3,
     "plant size" : 2,
     "sharp rock damage": -15,
@@ -121,7 +121,7 @@
     "max speed" : 6.25,
     "max speed against current" : 9,
     "width" : 2.4,
-    "height" : 0.7,
+    "height" : 0.8,
     "sensor size" : 1.45,
     "texture scale" : 1.5,
     "idle animation speed" : 0.05,
