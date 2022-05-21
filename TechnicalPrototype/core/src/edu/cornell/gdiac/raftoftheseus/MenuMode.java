@@ -269,7 +269,11 @@ public class MenuMode implements Screen {
 
         tb3.add(part3L).expandX().align(Align.center).padRight(180).padLeft(-100);
         tb3.add(part3R).expandX();
-        creditTables.add(backTable, tb2, tb3);
+
+        Table thanks = new Table();
+        thanks.add(UICreator.createLabel("Thanks for playing!", skin,  UICreator.FontSize.LARGE)).expandX().align(Align.center);
+
+        creditTables.add(backTable, tb2, tb3, thanks);
     }
 
     /** Sets the generator for fonts */
