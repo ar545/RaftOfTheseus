@@ -74,7 +74,9 @@ public enum SirenState implements State<Siren> {
             entity.stateTimer.setTimeStamp();
             if(entity.stateTimer.hasTimeElapsed(Siren.STUN_TIME, true)){
                 entity.getFrameCalculator().setFlash(false);
-                entity.getStateMachine().changeState(TAKEOFF);
+                // Check whether Siren is stationary or not.
+                if(entity.isStationary()) entity.getStateMachine().changeState(IDLE);
+                else entity.getStateMachine().changeState(TAKEOFF);
             }
         }
     };
