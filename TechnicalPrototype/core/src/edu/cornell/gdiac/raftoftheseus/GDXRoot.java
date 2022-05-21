@@ -75,6 +75,9 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	/** Exit code for menu to settings = 8 */
 	public static int MENU_TO_SETTINGS;
 
+	// Whether to use MusicController or not.
+	public static final boolean USE_THREAD = true;
+
 	/**
 	 * Creates a new game from the configuration settings.
 	 *
@@ -170,7 +173,7 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 			setMenuScreen(false);
 			menu.setSaveData(saveData);
 			// Start the music
-			SfxController.getInstance().startMenuMusic();
+			MusicController.getInstance().startMenuMusic();
 			loading.dispose();
 			loading = null;
 		}
@@ -256,10 +259,11 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 */
 	private void setMenuScreen(boolean stopMusic){
 		if(stopMusic) {
-			SfxController.getInstance().haltMusic();
-			SfxController.getInstance().haltSFX();
+			if(USE_THREAD) MusicController.getInstance().haltMusic();
+			else SfxController.getInstance().haltMusic();
 		}
-		SfxController.getInstance().startMenuMusic();
+		SfxController.getInstance().haltSFX();
+		MusicController.getInstance().startMenuMusic();
 		menu.setScreenListener(this);
 		setScreen(menu);
 	}
@@ -268,10 +272,11 @@ public class GDXRoot extends Game implements edu.cornell.gdiac.util.ScreenListen
 	 * Set the playing screen when going from everything but settings.
 	 */
 	private void setPlayScreen(int currentLevel){
-		SfxController.getInstance().haltMusic();
+		if(USE_THREAD) MusicController.getInstance().haltMusic();
+		else SfxController.getInstance().haltMusic();
 		SfxController.getInstance().haltSFX();
 		this.currentLevel = currentLevel;
-		playing.setLevel(this.currentLevel);
+		playing.setLevel(this.currentLevel, false);
 		setPlayScreen();
 		playing.setSaveData(saveData);
 	}

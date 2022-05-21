@@ -4,6 +4,7 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ArrayMap;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.AssetDirectory;
 
@@ -83,7 +84,7 @@ public class SfxController {
             sfx.put(s.name(), directory.getEntry(s.name(), Sound.class));
         }
         // Get music presets
-        JsonValue mscpresets = directory.getEntry("music_settings", JsonValue.class);
+        JsonValue mscpresets = directory.getEntry("fsm_music_settings", JsonValue.class);
         int i = 0;
         for(JsonValue m : mscpresets){
             musicPresets.put(i, m);
@@ -137,12 +138,13 @@ public class SfxController {
     /**
      * Sets the values in sfx and music based on provided ids.
      * Must be called every WorldController or MenuController change due to memory constraints on sounds.
-     * @param musicPreset is the JsonValue that contains text references to all sounds
+     * @param level is the JsonValue that contains text references to all sounds
      */
-    public void setMusicPreset(int musicPreset){
+    public void setMusicPreset(int level){
         STATE = MusicState.SAFE;
-        if (this.musicPreset != musicPreset){
-            this.musicPreset = musicPreset;
+        JsonValue indicator = musicPresets.get(3);
+        if (this.musicPreset != indicator.getInt(Integer.toString(level))){
+            this.musicPreset = level;
             setMusic();
         }
     }
@@ -451,9 +453,9 @@ public class SfxController {
      * Stops all sound.
      */
     public void haltSFX(){
-        for(Sound s : sfx.values()){
-            s.stop();
-        }
+        sfx.get("raft_sail_wind").stop();
+        sfx.get("current_flow").stop();
+        sfx.get("calm_ocean").stop();
     }
 
     /**
