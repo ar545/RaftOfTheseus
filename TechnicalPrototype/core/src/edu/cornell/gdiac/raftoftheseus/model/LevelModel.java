@@ -1015,12 +1015,42 @@ public class LevelModel {
             boolean isShipwreck = (oType == GameObject.ObjectType.SHIPWRECK);
             boolean isRock = false;
             boolean isTerrain = false;
+            // which corner of the tile is the terrain's center of curvature in (or, -1 if not a corner terrain tile)
+            boolean isCornerTerrain = false;
+            int terrainCornerX = -1;
+            int terrainCornerY = -1;
             if (isStationary) {
                 Stationary.StationaryType st = ((Stationary)o).getStationaryType();
                 if (st == SHARP_ROCK || st == REGULAR_ROCK)
                     isRock = true;
-                if (st == TERRAIN || st == CLIFF_TERRAIN)
+                if (st == TERRAIN || st == CLIFF_TERRAIN) {
                     isTerrain = true;
+                    int tt = ((Stationary)o).getTerrainType();
+                    switch (tt) {
+                        case 1:
+                            isCornerTerrain = true;
+                            terrainCornerX = 1;
+                            terrainCornerY = 0;
+                            break;
+                        case 2:
+                            isCornerTerrain = true;
+                            terrainCornerX = 0;
+                            terrainCornerY = 0;
+                            break;
+                        case 8:
+                            isCornerTerrain = true;
+                            terrainCornerX = 1;
+                            terrainCornerY = 1;
+                            break;
+                        case 9:
+                            isCornerTerrain = true;
+                            terrainCornerX = 0;
+                            terrainCornerY = 1;
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
             boolean hasSurf = isGoal || isShipwreck || isRock || isTerrain;
             // add the surf pattern to the texture
@@ -1034,6 +1064,10 @@ public class LevelModel {
                 float cy = ry + 0.5f;
                 if (isShipwreck)
                     cy -= 0.15f;
+                else if (isCornerTerrain) {
+                    cx += (terrainCornerX - 0.5f);
+                    cy += (terrainCornerY - 0.5f)*(2.0f - sqrt2)*0.9f;
+                }
 
                 // determine surf shape
                 boolean isRound = isGoal || isRock || isShipwreck;
@@ -1055,6 +1089,11 @@ public class LevelModel {
                                     float dy = (y - cy)*sqrt2;
                                     d = (float)Math.sqrt(dx*dx+dy*dy);
                                     d = Math.max(0.0f, d - rockRadius);
+                                } else if (isCornerTerrain) {
+                                    float dx = x - cx;
+                                    float dy = (y - cy)*sqrt2;
+                                    d = (float)Math.sqrt(dx*dx+dy*dy);
+                                    d = Math.max(0.0f, d - 1.0f);
                                 } else {
                                     // nearest point in the rock to (x, y)
                                     float nx = Math.min(Math.max(cx-0.5f, x), cx+0.5f);
