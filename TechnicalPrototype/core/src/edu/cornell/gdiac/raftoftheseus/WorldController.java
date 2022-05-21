@@ -187,23 +187,7 @@ public class WorldController implements Screen, ContactListener {
         this.exitPressed = false;
         this.stage = new Stage();
         this.skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
-
-        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
-        BitmapFont smallFont = generator.generateFont(smallParameter);
-
-        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
-        BitmapFont mediumFont = generator.generateFont(mediumParameter);
-
-        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
-        BitmapFont largeFont = generator.generateFont(largeParameter);
-
-        skin.add("diogenes-font-small", smallFont);
-        skin.add("diogenes-font-medium", mediumFont);
-        skin.add("diogenes-font-large", largeFont);
+        setSkinFonts();
         this.table = new Table();
         enemySight = new EnemyRayCast();
         startTime = System.currentTimeMillis();
@@ -340,8 +324,7 @@ public class WorldController implements Screen, ContactListener {
         } else {
             c = Color.WHITE;
         }
-        BitmapFont font = skin.getFont("diogenes-font-medium");
-        font.getData().setScale(0.3f);
+        BitmapFont font = skin.getFont("diogenes-font-small");
         font.setColor(c);
         canvas.begin();
         switch(level_id) {
@@ -353,7 +336,6 @@ public class WorldController implements Screen, ContactListener {
                         canvas.getWidth()*0.5f - 1.25f * wasdIcon.getRegionWidth(), canvas.getHeight()*0.5f + 120,
                         wasdIcon.getRegionWidth() * 1.4f, wasdIcon.getRegionHeight() * 1.4f
                 );
-                font.getData().setScale(0.3f);
                 canvas.drawText(
                         "OR", font,
                         canvas.getWidth()*0.5f - 30, canvas.getHeight()*0.5f + 120 + wasdIcon.getRegionHeight() / 2
@@ -364,7 +346,6 @@ public class WorldController implements Screen, ContactListener {
                         canvas.getWidth()*0.5f + 0.75f * arrowsIcon.getRegionWidth(), canvas.getHeight()*0.5f + 120,
                         arrowsIcon.getRegionWidth() * 1.4f, arrowsIcon.getRegionHeight() * 1.4f
                 );
-                font.getData().setScale(0.5f);
                 // BOTTOM SECTION LEFT
                 canvas.drawText(
                         "RESTART", font,
@@ -373,12 +354,12 @@ public class WorldController implements Screen, ContactListener {
                 );
                 String resetText = controlSettings.get("mouse keyboard").get("reset").asString();
                 resetText = resetText.equals("Escape") ? "Esc" : resetText;
-                float resetBoxScale = (resetText.equals("Tab") || resetText.equals("Esc")) ? 1.25f : 0.7f;
+                float resetBoxScale = (resetText.equals("Tab") || resetText.equals("Esc")) ? 1f : 0.6f;
                 canvas.draw(
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
                         canvas.getWidth()*0.5f - hintKey.getRegionWidth(),
-                        canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        canvas.getHeight()*0.5f - 85 + wasdIcon.getRegionHeight(),
                         hintKey.getRegionWidth() * resetBoxScale, hintKey.getRegionHeight() * 0.85f
                 );
                 canvas.drawText(
@@ -389,7 +370,7 @@ public class WorldController implements Screen, ContactListener {
                 // BOTTOM SECTION RIGHT
                 String pauseText = controlSettings.get("mouse keyboard").get("pause").asString();
                 pauseText = pauseText.equals("Escape") ? "Esc" : pauseText;
-                float pauseTextScale = (pauseText.equals("Tab") || pauseText.equals("Esc")) ? 1.25f : 0.7f;
+                float pauseTextScale = (pauseText.equals("Tab") || pauseText.equals("Esc")) ? 1f : 0.6f;
                 canvas.drawText(
                         "PAUSE", font,
                         canvas.getWidth()*0.5f + 0.5f * hintKey.getRegionWidth() + 20 ,
@@ -399,7 +380,7 @@ public class WorldController implements Screen, ContactListener {
                         hintKey, c,
                         hintKey.getRegionWidth()*0.5f, hintKey.getRegionWidth() *0.5f,
                         canvas.getWidth()*0.5f + 3f * hintKey.getRegionWidth() + 20,
-                        canvas.getHeight()*0.5f - 90 + wasdIcon.getRegionHeight(),
+                        canvas.getHeight()*0.5f - 85 + wasdIcon.getRegionHeight(),
                         hintKey.getRegionWidth() * pauseTextScale, hintKey.getRegionHeight() * 0.85f
                 );
                 canvas.drawText(
@@ -409,10 +390,9 @@ public class WorldController implements Screen, ContactListener {
                 );
                 break;
             case(2):
-                font.getData().setScale(0.5f);
                 String mapText = controlSettings.get("mouse keyboard").get("map").asString();
                 mapText = mapText.equals("Escape") ? "Esc" : mapText;
-                float mapTextScale = (mapText.equals("Tab") || mapText.equals("Esc")) ? 1.25f : 0.7f;
+                float mapTextScale = (mapText.equals("Tab") || mapText.equals("Esc")) ? 1f : 0.6f;
                 canvas.drawText(
                         "MAP", font,
                         canvas.getWidth()*0.5f - 140, canvas.getHeight()*0.5f + 100 + hintKey.getRegionHeight()
@@ -506,7 +486,7 @@ public class WorldController implements Screen, ContactListener {
 
             TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
             resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
-            table.add(resumeButton).padTop(-20);
+            table.add(resumeButton).padTop(70);
             table.row();
 
             TextButton restartButton = UICreator.createTextButton("RESTART", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
@@ -515,15 +495,14 @@ public class WorldController implements Screen, ContactListener {
             table.row();
 
             TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
-            table.add(settingsButton);
             settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
+            table.add(settingsButton);
             table.row();
 
-            TextButton exitButton = new TextButton("EXIT", skin);
-            exitButton.getLabel().setFontScale(0.35f);
-            exitButton.getLabel().setColor(Color.GOLD);
+            TextButton exitButton = UICreator.createTextButton("EXIT", skin, Color.GOLD, UICreator.FontSize.MEDIUM);
             exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
             table.add(exitButton);
+            table.row();
         }
         stage.act();
         stage.draw();
@@ -555,11 +534,10 @@ public class WorldController implements Screen, ContactListener {
         table.setBackground(skin.getDrawable("transition_background"));
 
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
-        float fontSize = 0.6f * Gdx.graphics.getDensity();
 
         TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.MEDIUM);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
-        table.add(mainButton).expandX().align(Align.center).padTop(50);
+        table.add(mainButton).expandX().align(Align.center).padTop(level_id < TUTORIAL_COUNT ? 70 : 180);
         table.row();
 
         if (!didFail) {
@@ -654,6 +632,27 @@ public class WorldController implements Screen, ContactListener {
         levelModel.gatherAssets();
         this.directory = directory;
 
+    }
+
+    /** Sets the generator for fonts */
+    private void setSkinFonts() {
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
+
+        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
+        BitmapFont smallFont = generator.generateFont(smallParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        mediumParameter.size = (int) (80*Gdx.graphics.getDensity());
+        BitmapFont mediumFont = generator.generateFont(mediumParameter);
+
+        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+        largeParameter.size = (int) (100*Gdx.graphics.getDensity());
+        BitmapFont largeFont = generator.generateFont(largeParameter);
+
+        skin.add("diogenes-font-small", smallFont);
+        skin.add("diogenes-font-medium", mediumFont);
+        skin.add("diogenes-font-large", largeFont);
     }
 
     /*=*=*=*=*=*=*=*=*=* Main Game Loop *=*=*=*=*=*=*=*=*=*/
@@ -1237,23 +1236,7 @@ public class WorldController implements Screen, ContactListener {
         table.clear();
         playerScore = 0;
         skin = new Skin(Gdx.files.internal("skins/default/uiskin.json"));
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.local("fonts/DIOGENES.ttf"));
-
-        FreeTypeFontGenerator.FreeTypeFontParameter smallParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        smallParameter.size = (int) (60*Gdx.graphics.getDensity());
-        BitmapFont smallFont = generator.generateFont(smallParameter);
-
-        FreeTypeFontGenerator.FreeTypeFontParameter mediumParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        mediumParameter.size = (int) (120*Gdx.graphics.getDensity());
-        BitmapFont mediumFont = generator.generateFont(mediumParameter);
-
-        FreeTypeFontGenerator.FreeTypeFontParameter largeParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
-        largeParameter.size = (int) (180*Gdx.graphics.getDensity());
-        BitmapFont largeFont = generator.generateFont(largeParameter);
-
-        skin.add("diogenes-font-small", smallFont);
-        skin.add("diogenes-font-medium", mediumFont);
-        skin.add("diogenes-font-large", largeFont);
+        setSkinFonts();
         transitionBuilt = false;
         pausePressed = false;
         pauseBuilt = false;
