@@ -488,7 +488,7 @@ public class WorldController implements Screen, ContactListener {
 //<<<<<<< HEAD
 //            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
 //=======
-            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.SMALL)).padTop(70);
+            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(70);
 //>>>>>>> abfcea97a406aaf6ff75df499fba3cdbaae8b415
             table.row();
 
@@ -546,7 +546,7 @@ public class WorldController implements Screen, ContactListener {
 //<<<<<<< HEAD
 //        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
 //=======
-        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.SMALL)).padTop(level_id < TUTORIAL_COUNT || failed ? 100 : 180);
+        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(level_id < TUTORIAL_COUNT || failed ? 100 : 180);
 //>>>>>>> abfcea97a406aaf6ff75df499fba3cdbaae8b415
         table.row();
 
