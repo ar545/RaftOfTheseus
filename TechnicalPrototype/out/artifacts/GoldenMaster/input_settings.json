@@ -1,0 +1,27 @@
+{
+"mouse keyboard": {
+	"next": "1",
+	"previous": "2",
+	"reset": "R",
+	"debug": "G",
+	"exit": "0",
+	"fire": 0,
+	"fireKey": "Space",
+	"map": "Z",
+	"map_alt": "M",
+	"sprint": "Shift",
+	"w": "W",
+	"s": "S",
+	"a": "A",
+	"d": "D",
+	"up": "Up",
+	"down": "Down",
+	"left": "Left",
+	"right": "Right",
+	"test": "T",
+	"pause": "P",
+	"special": "C",
+	"rotate left": "J",
+	"rotate right": "K"
+}
+}

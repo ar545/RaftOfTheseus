@@ -68,7 +68,7 @@ const float tile_factor = 0.25; // the wave texture is displayed 1/tile_factor l
 
 // current animation parameters
 const float current_speed = 2.0; // scroll speed multiplier
-const float current_blend = 0.2; // radius in which current animation is blended. Must be in [0,0.5].
+const float current_blend = 0.5; // radius in which current animation is blended. Must be in [0,0.5].
 
 // texture-based displacement parameters
 const float texture_offset_height = 0.02;
@@ -83,7 +83,7 @@ const float surf_start = 0.0; // surf which is less than this distance away from
 const float surf_range = 0.5; // surf which is more than this distance away from a shore won't show up
 
 // wake parameters
-const float wake_amplitude = 0.025;
+const float wake_amplitude = 0.03;
 const int wake_samples_number = 8; // number of samples which are tracked (older samples are discarded). TODO: make sure this matches WorldController
 const float wake_sample_period = 0.15; // interval between sample times, in seconds. TODO: make sure this matches WorldController
 const float wake_wavelet_wavelength = 0.75; // wavelength of circle wavelets emanating from samples, in tile units
