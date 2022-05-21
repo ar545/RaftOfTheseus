@@ -297,7 +297,6 @@ public class WorldController implements Screen, ContactListener {
         transitionTimer += dt;
         if (transitionTimer >= transitionTimeEnd) {
             drawFadeTransition = false;
-            System.out.println("here");
             shouldNext = complete;
         }
         canvas.begin();
@@ -486,25 +485,29 @@ public class WorldController implements Screen, ContactListener {
             skin.add("pause_background", pauseBackground);
             table.setBackground(skin.getDrawable("pause_background"));
 
-            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
+//<<<<<<< HEAD
+//            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
+//=======
+            table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.SMALL)).padTop(70);
+//>>>>>>> abfcea97a406aaf6ff75df499fba3cdbaae8b415
             table.row();
 
-            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
+            TextButton resumeButton =  UICreator.createTextButton("RESUME", skin, Color.WHITE, UICreator.FontSize.SMALL);
             resumeButton.addListener(UICreator.createListener(resumeButton, Color.LIGHT_GRAY, Color.WHITE, this::resetPausePressed));
-            table.add(resumeButton).padTop(70);
+            table.add(resumeButton);
             table.row();
 
-            TextButton restartButton = UICreator.createTextButton("RESTART", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
+            TextButton restartButton = UICreator.createTextButton("RESTART", skin, Color.WHITE, UICreator.FontSize.SMALL);
             restartButton.addListener(UICreator.createListener(restartButton, Color.LIGHT_GRAY, Color.WHITE, this::reset));
             table.add(restartButton);
             table.row();
 
-            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, Color.WHITE, UICreator.FontSize.MEDIUM);
+            TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, Color.WHITE, UICreator.FontSize.SMALL);
             settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, Color.WHITE, this::setSettingsPressed));
             table.add(settingsButton);
             table.row();
 
-            TextButton exitButton = UICreator.createTextButton("EXIT", skin, Color.GOLD, UICreator.FontSize.MEDIUM);
+            TextButton exitButton = UICreator.createTextButton("EXIT", skin, Color.GOLD, UICreator.FontSize.SMALL);
             exitButton.addListener(UICreator.createListener(exitButton, Color.LIGHT_GRAY, Color.GOLD, this::setExitPressed));
             table.add(exitButton);
             table.row();
@@ -540,27 +543,31 @@ public class WorldController implements Screen, ContactListener {
 
         Color textColor = new Color(83f/256, 46f/255, 20f/255, 1);
 
-        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
+//<<<<<<< HEAD
+//        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.MEDIUM)).padTop(-20);
+//=======
+        table.add(UICreator.createLabel("LEVEL " + level_id, skin, UICreator.FontSize.SMALL)).padTop(level_id < TUTORIAL_COUNT || failed ? 100 : 180);
+//>>>>>>> abfcea97a406aaf6ff75df499fba3cdbaae8b415
         table.row();
 
-        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.MEDIUM);
+        TextButton mainButton = UICreator.createTextButton(didFail ? "RESTART" : "NEXT", skin, textColor, UICreator.FontSize.SMALL);
         mainButton.addListener(UICreator.createListener(mainButton, Color.LIGHT_GRAY, textColor, this::goNext, didFail));
-        table.add(mainButton).expandX().align(Align.center).padTop(level_id < TUTORIAL_COUNT ? 70 : 180);
+        table.add(mainButton).expandX().align(Align.center);
         table.row();
 
         if (!didFail) {
-            TextButton replayButton = UICreator.createTextButton("RESTART", skin, textColor, UICreator.FontSize.MEDIUM);
+            TextButton replayButton = UICreator.createTextButton("RESTART", skin, textColor, UICreator.FontSize.SMALL);
             replayButton.addListener(UICreator.createListener(replayButton, Color.LIGHT_GRAY, textColor, this::reset));
             table.add(replayButton).expandX().align(Align.center);
             table.row();
         }
 
-        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, textColor, UICreator.FontSize.MEDIUM);
+        TextButton settingsButton = UICreator.createTextButton("SETTINGS", skin, textColor, UICreator.FontSize.SMALL);
         settingsButton.addListener(UICreator.createListener(settingsButton, Color.LIGHT_GRAY, textColor, this::setSettingsPressed));
         table.add(settingsButton).expandX();
         table.row();
 
-        TextButton exitButton = UICreator.createTextButton("EXIT", skin, textColor, UICreator.FontSize.MEDIUM);
+        TextButton exitButton = UICreator.createTextButton("EXIT", skin, textColor, UICreator.FontSize.SMALL);
         exitButton.addListener(UICreator.createListener(exitButton, Color.GRAY, textColor, this::setExitPressed));
         table.add(exitButton).expandX();
         table.row();

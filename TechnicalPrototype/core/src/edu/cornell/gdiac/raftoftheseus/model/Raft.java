@@ -12,6 +12,7 @@ import edu.cornell.gdiac.raftoftheseus.model.util.Animated;
 import edu.cornell.gdiac.raftoftheseus.model.util.FrameCalculator;
 import edu.cornell.gdiac.raftoftheseus.model.util.TextureHolder;
 import edu.cornell.gdiac.raftoftheseus.model.util.Timer;
+import edu.cornell.gdiac.raftoftheseus.obstacle.BoxObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.CapsuleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.SimpleObstacle;
 import edu.cornell.gdiac.raftoftheseus.obstacle.WheelObstacle;
@@ -77,8 +78,6 @@ public class Raft extends GameObject implements Animated {
     public static float MAXIMUM_PLAYER_HEALTH;
     /** Initial player health */
     public static float INITIAL_PLAYER_HEALTH;
-//    /** Whether the raft is actively firing */
-//    private boolean isCharging;
     private boolean canFire;
     /** Whether the raft is currently being damaged (feedback purposes) */
     private boolean isDamaged;
@@ -140,7 +139,9 @@ public class Raft extends GameObject implements Animated {
      * @param position: position of raft
      */
     public Raft(Vector2 position) {
-        physicsObject = new CapsuleObstacle(OBJ_WIDTH, OBJ_HEIGHT);
+//        physicsObject = new CapsuleObstacle(OBJ_WIDTH, OBJ_HEIGHT);
+        physicsObject = new BoxObstacle(OBJ_WIDTH + OBJ_HEIGHT / 3, OBJ_HEIGHT);
+        physicsObject = new BoxObstacle(OBJ_WIDTH , OBJ_HEIGHT);
         setPosition(position);
         physicsObject.setBodyType(BodyDef.BodyType.DynamicBody);
         physicsObject.getFilterData().categoryBits = CATEGORY_PLAYER;
