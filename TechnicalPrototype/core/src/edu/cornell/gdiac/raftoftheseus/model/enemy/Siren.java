@@ -259,9 +259,10 @@ public class Siren extends Enemy<Siren, SirenState> implements Animated {
         if (stateMachine.isInState(SirenState.SINGING) || stateMachine.isInState(SirenState.IDLE)){
             stateMachine.changeState(SirenState.STUNNED);
             fc.setFlash(true);
-            return true;
+        } else {
+            stateTimer.resetTimeStamp();
         }
-        return false;
+        return true;
     }
 
     // Animation
