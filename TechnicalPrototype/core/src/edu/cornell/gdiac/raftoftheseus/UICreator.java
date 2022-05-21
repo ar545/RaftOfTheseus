@@ -67,27 +67,40 @@ public class UICreator {
             case LARGE:
                 style.font = skin.getFont("diogenes-font-large");
                 break;
+        }
+    }
+
+    public static void setFontSize(FontSize size, Label.LabelStyle style, Skin skin) {
+        switch (size) {
+            case SMALL:
+                style.font = skin.getFont("diogenes-font-small");
+                break;
+            case MEDIUM:
+                style.font = skin.getFont("diogenes-font-medium");
+                break;
+            case LARGE:
+                style.font = skin.getFont("diogenes-font-large");
+                break;
 
         }
     }
 
-    public static void setTextButtonStyle(TextButton button, Skin skin, float fontSize, Color c, Texture background) {
+    public static void setTextButtonStyle(TextButton button, Skin skin, FontSize fontSize, Color c, Texture background) {
         TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(background));
         TextButton.TextButtonStyle buttonStyle = new TextButton.TextButtonStyle();
         buttonStyle.up = drawable;
         buttonStyle.down = drawable.tint(Color.GRAY);
-        buttonStyle.font = skin.getFont("diogenes-font-medium");
+        setFontSize(fontSize, buttonStyle, skin);
         button.setStyle(buttonStyle);
-        button.getLabel().setFontScale(fontSize);
         button.getLabel().setColor(c);
     }
 
     // LABEL CREATORS
 
-    public static Label createLabel(String name, Skin skin, float fontSize){
-        Label label = new Label(name, skin);
-        label.setFontScale(fontSize);
-        return label;
+    public static Label createLabel(String name, Skin skin, FontSize fontSize){
+        Label.LabelStyle style = new Label.LabelStyle();
+        setFontSize(fontSize, style, skin);
+        return new Label(name, style);
     }
 
     // LISTENER CREATORS
