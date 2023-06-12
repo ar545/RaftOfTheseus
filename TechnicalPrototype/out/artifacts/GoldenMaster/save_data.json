@@ -40,14 +40,14 @@
 		"name": "Level 5",
 		"level": 5,
 		"complete": true,
-		"score": 2,
+		"score": 3,
 		"unlocked": true
 	},
 	{
 		"name": "Level 6",
 		"level": 6,
 		"complete": true,
-		"score": 1,
+		"score": 3,
 		"unlocked": true
 	},
 	{
@@ -61,21 +61,21 @@
 		"name": "Level 8",
 		"level": 8,
 		"complete": true,
-		"score": 1,
+		"score": 2,
 		"unlocked": true
 	},
 	{
 		"name": "Level 9",
 		"level": 9,
 		"complete": true,
-		"score": 0,
+		"score": 2,
 		"unlocked": true
 	},
 	{
 		"name": "Level 10",
 		"level": 10,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 2,
 		"unlocked": true
 	},
 	{
@@ -83,7 +83,7 @@
 		"level": 11,
 		"complete": true,
 		"score": 0,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 12",
@@ -95,43 +95,43 @@
 	{
 		"name": "Level 13",
 		"level": 13,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 1,
 		"unlocked": true
 	},
 	{
 		"name": "Level 14",
 		"level": 14,
-		"complete": false,
-		"score": 0,
-		"unlocked": false
+		"complete": true,
+		"score": 1,
+		"unlocked": true
 	},
 	{
 		"name": "Level 15",
 		"level": 15,
-		"complete": false,
-		"score": 0,
-		"unlocked": false
+		"complete": true,
+		"score": 1,
+		"unlocked": true
 	},
 	{
 		"name": "Level 16",
 		"level": 16,
-		"complete": false,
-		"score": 0,
-		"unlocked": false
+		"complete": true,
+		"score": 1,
+		"unlocked": true
 	},
 	{
 		"name": "Level 17",
 		"level": 17,
 		"complete": true,
 		"score": 3,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 18",
 		"level": 18,
-		"complete": false,
-		"score": 0,
+		"complete": true,
+		"score": 1,
 		"unlocked": true
 	},
 	{
@@ -139,7 +139,7 @@
 		"level": 19,
 		"complete": true,
 		"score": 2,
-		"unlocked": false
+		"unlocked": true
 	},
 	{
 		"name": "Level 20",
